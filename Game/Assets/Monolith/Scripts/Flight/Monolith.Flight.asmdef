@@ -1,0 +1,16 @@
+{
+    "name": "Monolith.Flight",
+    "rootNamespace": "Monolith.Flight",
+    "references": [
+        "Monolith.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

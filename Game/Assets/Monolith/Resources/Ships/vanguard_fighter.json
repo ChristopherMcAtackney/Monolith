@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "vanguard_fighter",
+  "name": "Vanguard fighter",
+  "role": "The player's alien fighter (placeholder name). Flight numbers start on the GTF Ulysses'.",
+  "flight": {
+    "topSpeed": {
+      "value": 70,
+      "unit": "m/s",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Max Velocity (z) (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Rear Velocity (brief: start our fighter on the Ulysses' numbers; tune from playtests); fighters and bombers never reverse"
+    },
+    "rotationTime": {
+      "value": [
+        3.0,
+        2.6,
+        5.0
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Rotation time (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "rotDamp": {
+      "value": 0.35,
+      "unit": "s (turn-rate time constant)",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Rotdamp (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "sideDamp": {
+      "value": 0.1,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Damp (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "forwardAccel": {
+      "value": 2.0,
+      "unit": "s (speed-up time constant)",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Forward accel (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "forwardDecel": {
+      "value": 1.5,
+      "unit": "s (slow-down time constant)",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Forward decel (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "afterburner": {
+      "value": true,
+      "unit": "bool",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Afterburner (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "afterburnerSpeed": {
+      "value": 150,
+      "unit": "m/s",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Max Vel (z) (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "afterburnerAccel": {
+      "value": 0.7,
+      "unit": "s (afterburner speed-up time constant)",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn For accel (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "afterburnerFuel": {
+      "value": 300,
+      "unit": "fuel units",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Fuel (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "afterburnerBurnRate": {
+      "value": 50,
+      "unit": "fuel/s",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Burn Rate (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "afterburnerRechargeRate": {
+      "value": 25,
+      "unit": "fuel/s before rules.afterburnerRechargeScale",
+      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Rec Rate (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+    },
+    "mass": {
+      "value": 12000,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model, not ships.tbl); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        11,
+        4,
+        14
+      ],
+      "unit": "m (width, height, length)",
+      "source": "Estimate of the hull's width, height, length; used for knock spin (box inertia) and the targeting radius"
+    }
+  }
+}

@@ -4,6 +4,7 @@
     "references": [
         "Monolith.Core",
         "Monolith.Capture",
+        "Monolith.Flight",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
     ],

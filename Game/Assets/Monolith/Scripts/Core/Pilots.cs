@@ -50,7 +50,10 @@ namespace Monolith.Core
         }
     }
 
-    /// <summary>A pilot that plays back keyed inputs by simulated time (tests, capture plans): each key holds until the next.</summary>
+    /// <summary>
+    /// A pilot that plays back keyed inputs by simulated time (tests, capture plans, target drones): each key holds until
+    /// the next. With a loop period the timeline repeats (time is taken modulo the period, counted from the first tick).
+    /// </summary>
     public sealed class ScriptedPilot : IPilotSource
     {
         public readonly struct Key
@@ -61,18 +64,21 @@ namespace Monolith.Core
         }
 
         readonly Key[] _keys;
+        readonly int _loopTicks;
 
-        public ScriptedPilot(IEnumerable<Key> keys)
+        public ScriptedPilot(IEnumerable<Key> keys, float loopSeconds = 0f)
         {
             var list = new List<Key>(keys);
             list.Sort((a, b) => a.Time.CompareTo(b.Time));
             _keys = list.ToArray();
+            _loopTicks = loopSeconds > 0f ? Math.Max(1, (int)Math.Round(loopSeconds * Sim.Hz)) : 0;
         }
 
         public ControlInput Sample(in SimFrame frame)
         {
+            float t = _loopTicks > 0 ? (frame.Tick % _loopTicks) * Sim.Dt : frame.Time;
             var result = default(ControlInput);
-            for (int i = 0; i < _keys.Length && _keys[i].Time <= frame.Time + 1e-5f; i++) result = _keys[i].Input;
+            for (int i = 0; i < _keys.Length && _keys[i].Time <= t + 1e-5f; i++) result = _keys[i].Input;
             return result;
         }
     }

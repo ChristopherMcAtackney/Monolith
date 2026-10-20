@@ -20,6 +20,8 @@ namespace Monolith.Core
         {
             Sim = sim;
             Pilots = new Pilots();
+            Ships = new ShipRegistry();
+            Knocks = new KnockQueue();
         }
 
         /// <summary>The fixed-rate clock (owner: Game/GameRoot).</summary>
@@ -27,6 +29,12 @@ namespace Monolith.Core
 
         /// <summary>Per-ship control inputs (owner: Core/Pilots; sources attach through <see cref="Pilots.Attach"/>).</summary>
         public Pilots Pilots { get; }
+
+        /// <summary>Every ship's published flight state (owner: Flight; <see cref="ShipState.Target"/> owner: Targeting).</summary>
+        public ShipRegistry Ships { get; }
+
+        /// <summary>Shoves waiting to be applied to ships (owner: anyone adds; Flight drains each tick).</summary>
+        public KnockQueue Knocks { get; }
 
         public int Tick => Sim.Tick;
         public float Time => Sim.Time;

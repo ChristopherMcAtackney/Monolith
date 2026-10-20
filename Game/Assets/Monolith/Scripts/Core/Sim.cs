@@ -25,6 +25,7 @@ namespace Monolith.Core
     public static class SimOrder
     {
         public const int Pilots = 100;        // every ship's ControlInput is filled (player pad, AI, script, remote)
+        public const int Targeting = 200;     // target selection reacts to this tick's buttons
         public const int Flight = 300;        // ships move
         public const int Weapons = 400;       // guns, missiles, beams
         public const int Collision = 500;     // hits, damage, destruction

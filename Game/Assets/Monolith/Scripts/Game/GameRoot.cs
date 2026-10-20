@@ -1,6 +1,7 @@
 using System;
 using Monolith.Capture;
 using Monolith.Core;
+using Monolith.Flight;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -23,6 +24,14 @@ namespace Monolith.Game
         {
             Application.runInBackground = true;
             QualitySettings.vSyncCount = 1;
+
+            // Flight-trace mode: replay the feel scenarios through the flight model, write traces, quit. No world needed.
+            if (CommandLine.Has(FlightScenarioRunner.Flag))
+            {
+                int code = FlightScenarioRunner.RunFromCommandLine();
+                Application.Quit(code);
+                return;
+            }
 
             GameEvents.Reset();
             World = new GameWorld(new Sim());
