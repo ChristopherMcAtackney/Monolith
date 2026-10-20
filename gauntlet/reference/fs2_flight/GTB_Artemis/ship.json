@@ -1,0 +1,50 @@
+{
+  "ship": {
+    "name": "GTB Artemis",
+    "max_vel": [
+      0.0,
+      0.0,
+      65.0
+    ],
+    "max_rear_vel": 0.0,
+    "rotation_time": [
+      5.0,
+      4.5,
+      5.0
+    ],
+    "damp": 0.35,
+    "rotdamp": 0.55,
+    "forward_accel": 4.0,
+    "forward_decel": 2.0,
+    "slide_accel": 0.0,
+    "slide_decel": 0.0,
+    "has_afterburner": true,
+    "aburn_max_vel": [
+      0.0,
+      0.0,
+      110.0
+    ],
+    "aburn_forward_accel": 0.7,
+    "aburn_fuel": 300.0,
+    "aburn_burn_rate": 50.0,
+    "aburn_recover_rate": 25.0,
+    "max_overclocked_speed": 65.0,
+    "max_speed": 65.0,
+    "max_rotvel": [
+      1.2566370614359172,
+      1.3962634015954636,
+      1.2566370614359172
+    ],
+    "slide_enabled": false
+  },
+  "source": {
+    "table": "data/tables/ships.tbl inside Root_fs2.vp (Freespace 2 retail, Steam)",
+    "ships_tbl_sha256": "60266906ff4bc25932ecda1aa8070c92de0e7ab6cde42c2d5a02169c7e6315ca",
+    "model": "tools/fs2ref/fs2_flight.py (rules documented there and in tools/fs2ref/README.md)"
+  },
+  "sim": {
+    "tick_hz": 60.0,
+    "skill_level": 1,
+    "ets_engine_index": 4
+  }
+}

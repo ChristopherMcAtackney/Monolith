@@ -1,0 +1,44 @@
+{
+  "scenario": "roll_pulse",
+  "ship": "GTB Artemis",
+  "tick_hz": 60.0,
+  "measure": [
+    "turn_step:roll"
+  ],
+  "metrics": {
+    "roll_plateau": 1.25576,
+    "roll_rate_t63": 0.54623,
+    "roll_rate_t95": 1.64051,
+    "roll_settle": 2.15163
+  },
+  "units": {
+    "roll_plateau": "rad/s",
+    "roll_rate_t63": "s",
+    "roll_rate_t95": "s",
+    "roll_settle": "s"
+  },
+  "tolerance": {
+    "roll_plateau": {
+      "relative": 0.02,
+      "floor": 0.02
+    },
+    "roll_rate_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "roll_rate_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "roll_settle": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "roll_rate_t63": 0.54684,
+    "roll_rate_t95": 1.64765,
+    "roll_plateau": 1.25664,
+    "roll_settle": 2.15161
+  }
+}

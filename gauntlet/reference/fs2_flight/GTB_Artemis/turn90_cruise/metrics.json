@@ -1,0 +1,33 @@
+{
+  "scenario": "turn90_cruise",
+  "ship": "GTB Artemis",
+  "tick_hz": 60.0,
+  "measure": [
+    "sideslip"
+  ],
+  "metrics": {
+    "slide_peak": 15.93088,
+    "slide_decay": 2.16427,
+    "turn_angle_deg": 51.51042
+  },
+  "units": {
+    "slide_peak": "m/s",
+    "slide_decay": "s",
+    "turn_angle_deg": "deg"
+  },
+  "tolerance": {
+    "slide_peak": {
+      "relative": 0.1,
+      "floor": 0.5
+    },
+    "slide_decay": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "turn_angle_deg": {
+      "relative": 0.03,
+      "floor": 1.0
+    }
+  },
+  "closed_form_expectation": {}
+}

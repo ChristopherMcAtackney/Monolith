@@ -1,0 +1,49 @@
+{
+  "scenario": "afterburner_to_empty",
+  "ship": "GTF Ulysses",
+  "tick_hz": 60.0,
+  "measure": [
+    "afterburner_empty"
+  ],
+  "metrics": {
+    "fuel_empty_t": 6.0,
+    "ab_peak": 150.0,
+    "ab_end": 70.0,
+    "fuelout_t63": 1.50807,
+    "fuelout_t95": 4.51029
+  },
+  "units": {
+    "fuel_empty_t": "s",
+    "ab_peak": "m/s",
+    "ab_end": "m/s",
+    "fuelout_t63": "s",
+    "fuelout_t95": "s"
+  },
+  "tolerance": {
+    "fuel_empty_t": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_peak": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "ab_end": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "fuelout_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "fuelout_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "fuel_empty_t": 6.0,
+    "fuelout_t63": 1.50805,
+    "fuelout_t95": 4.51027
+  }
+}

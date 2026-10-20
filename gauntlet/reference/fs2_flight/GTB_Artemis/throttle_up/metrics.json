@@ -1,0 +1,44 @@
+{
+  "scenario": "throttle_up",
+  "ship": "GTB Artemis",
+  "tick_hz": 60.0,
+  "measure": [
+    "throttle_step"
+  ],
+  "metrics": {
+    "speed_start": 0.0,
+    "speed_end": 65.0,
+    "speed_t63": 3.97702,
+    "speed_t95": 11.98293
+  },
+  "units": {
+    "speed_start": "m/s",
+    "speed_end": "m/s",
+    "speed_t63": "s",
+    "speed_t95": "s"
+  },
+  "tolerance": {
+    "speed_start": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "speed_end": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "speed_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "speed_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "speed_t63": 3.97701,
+    "speed_t95": 11.98293,
+    "speed_start": 0.0,
+    "speed_end": 65.0
+  }
+}

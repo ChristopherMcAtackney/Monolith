@@ -1,0 +1,44 @@
+{
+  "scenario": "throttle_cut",
+  "ship": "GTF Myrmidon",
+  "tick_hz": 60.0,
+  "measure": [
+    "throttle_step"
+  ],
+  "metrics": {
+    "speed_start": 75.0,
+    "speed_end": 0.0,
+    "speed_t63": 1.98852,
+    "speed_t95": 5.99148
+  },
+  "units": {
+    "speed_start": "m/s",
+    "speed_end": "m/s",
+    "speed_t63": "s",
+    "speed_t95": "s"
+  },
+  "tolerance": {
+    "speed_start": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "speed_end": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "speed_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "speed_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "speed_t63": 1.9885,
+    "speed_t95": 5.99146,
+    "speed_start": 75.0,
+    "speed_end": 0.0
+  }
+}

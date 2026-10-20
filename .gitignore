@@ -1,0 +1,43 @@
+# Unity (project lives in Game/)
+Game/[Ll]ibrary/
+Game/[Tt]emp/
+Game/[Oo]bj/
+Game/[Bb]uild/
+Game/[Bb]uilds/
+Game/[Ll]ogs/
+Game/[Uu]ser[Ss]ettings/
+Game/[Mm]emoryCaptures/
+Game/[Rr]ecordings/
+Game/*.csproj
+Game/*.sln
+Game/*.suo
+Game/*.user
+Game/.vs/
+Game/.vscode/
+Game/.idea/
+
+# Heavy or regenerated media
+gauntlet/captures/
+gauntlet/blind/
+gauntlet/keys/
+*.blend1
+*.mp4
+*.webm
+*.mkv
+
+# Reference material (copyrighted frames and footage, kept locally for critics, never committed)
+reference/video/
+reference/**/video/
+reference/_work/
+reference/frames*/
+reference/stills/
+
+# Playtest builds and logs
+Playtest/
+
+# Tool scratch
+tools/.locks/
+__pycache__/
+
+# Claude Code local state
+.claude/

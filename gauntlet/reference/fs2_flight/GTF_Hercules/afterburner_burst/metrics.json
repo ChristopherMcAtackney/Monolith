@@ -1,0 +1,58 @@
+{
+  "scenario": "afterburner_burst",
+  "ship": "GTF Hercules",
+  "tick_hz": 60.0,
+  "measure": [
+    "afterburner_burst"
+  ],
+  "metrics": {
+    "ab_peak": 119.76354,
+    "ab_t63": 0.70868,
+    "ab_t95": 2.07017,
+    "ab_release_t63": 1.50819,
+    "ab_release_t95": 4.51041,
+    "ab_end": 50.0
+  },
+  "units": {
+    "ab_peak": "m/s",
+    "ab_t63": "s",
+    "ab_t95": "s",
+    "ab_release_t63": "s",
+    "ab_release_t95": "s",
+    "ab_end": "m/s"
+  },
+  "tolerance": {
+    "ab_peak": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "ab_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_release_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_release_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_end": {
+      "relative": 0.02,
+      "floor": 0.5
+    }
+  },
+  "closed_form_expectation": {
+    "ab_peak": 119.76354,
+    "ab_t63": 0.70863,
+    "ab_release_t63": 1.50805,
+    "ab_t95": 2.07013,
+    "ab_release_t95": 4.51027,
+    "ab_end": 50.0
+  }
+}

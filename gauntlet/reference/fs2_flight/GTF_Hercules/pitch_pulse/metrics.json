@@ -1,0 +1,44 @@
+{
+  "scenario": "pitch_pulse",
+  "ship": "GTF Hercules",
+  "tick_hz": 60.0,
+  "measure": [
+    "turn_step:pitch"
+  ],
+  "metrics": {
+    "pitch_plateau": 1.57078,
+    "pitch_rate_t63": 0.34802,
+    "pitch_rate_t95": 1.04847,
+    "pitch_settle": 1.36926
+  },
+  "units": {
+    "pitch_plateau": "rad/s",
+    "pitch_rate_t63": "s",
+    "pitch_rate_t95": "s",
+    "pitch_settle": "s"
+  },
+  "tolerance": {
+    "pitch_plateau": {
+      "relative": 0.02,
+      "floor": 0.02
+    },
+    "pitch_rate_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "pitch_rate_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "pitch_settle": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "pitch_rate_t63": 0.34799,
+    "pitch_rate_t95": 1.04851,
+    "pitch_plateau": 1.5708,
+    "pitch_settle": 1.36921
+  }
+}

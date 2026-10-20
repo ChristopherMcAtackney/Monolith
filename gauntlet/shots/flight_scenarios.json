@@ -1,0 +1,82 @@
+{
+  "format": "monolith-flight-scenarios/1",
+  "about": "Input timelines for flight-feel traces. tools/fs2ref runs them through the FS2 model to make the reference; the game replays the same file and writes its own trace, and tools/fs2ref/compare.py compares the two. Do not edit a scenario without regenerating gauntlet/reference/fs2_flight.",
+  "conventions": {
+    "timeline": "Each entry in 'keys' sets the listed inputs at time 't' (seconds). An input holds its value until a later key changes it (step, no interpolation). Inputs a key does not mention keep their previous value. Before the first key, stick and afterburner are 0/false and throttle is initial.throttle.",
+    "pitch": "-1..+1. +1 = nose down (stick forward). Linear: the value after any dead zone or response curve.",
+    "yaw": "-1..+1. +1 = nose right.",
+    "roll": "-1..+1. +1 = roll left (counter-clockwise seen from behind). Positive yaw also adds an automatic bank to the right, as FS2 does.",
+    "throttle": "0..1. Fraction of top speed the ship tries to hold (FS2 forward_cruise_percent / 100). Not smoothed: the ship's own accel/decel lag does that.",
+    "afterburner": "true while the afterburner key is held.",
+    "initial": "speed_fraction = starting forward speed as a fraction of the class's normal top speed (1.0 = steady cruise at 100% throttle); throttle = starting throttle. The ship starts at the origin, nose along +z, up along +y, not rotating, with a full afterburner tank.",
+    "duration": "Seconds simulated.",
+    "measure": "Which metric groups tools/fs2ref/metrics.py extracts from this scenario's trace. Ignored by the game.",
+    "trace": "The game writes one CSV per scenario (columns in tools/fs2ref/README.md), one row per physics tick, state at the START of the tick together with the inputs about to be applied."
+  },
+  "scenarios": [
+    {
+      "name": "throttle_up",
+      "description": "Sitting still, throttle to 100%. Shows the forward speed-up time constant.",
+      "duration": 28.0,
+      "initial": { "speed_fraction": 0.0, "throttle": 0.0 },
+      "keys": [ { "t": 1.0, "throttle": 1.0 } ],
+      "measure": [ "throttle_step" ]
+    },
+    {
+      "name": "throttle_cut",
+      "description": "Cruising at 100%, throttle cut to 0. Shows the slow-down time constant (no reverse thrust, so the ship coasts to a halt).",
+      "duration": 20.0,
+      "initial": { "speed_fraction": 1.0, "throttle": 1.0 },
+      "keys": [ { "t": 1.0, "throttle": 0.0 } ],
+      "measure": [ "throttle_step" ]
+    },
+    {
+      "name": "pitch_pulse",
+      "description": "From rest, full pitch for 4 s, then release. Shows the pitch-rate time constant, the maximum pitch rate, and how fast rotation dies after release.",
+      "duration": 10.0,
+      "initial": { "speed_fraction": 0.0, "throttle": 0.0 },
+      "keys": [ { "t": 1.0, "pitch": 1.0 }, { "t": 5.0, "pitch": 0.0 } ],
+      "measure": [ "turn_step:pitch" ]
+    },
+    {
+      "name": "yaw_pulse",
+      "description": "From rest, full yaw for 4 s, then release. Shows the yaw-rate response and the automatic bank (roll rate = -1/2 of the yaw rate).",
+      "duration": 10.0,
+      "initial": { "speed_fraction": 0.0, "throttle": 0.0 },
+      "keys": [ { "t": 1.0, "yaw": 1.0 }, { "t": 5.0, "yaw": 0.0 } ],
+      "measure": [ "turn_step:yaw" ]
+    },
+    {
+      "name": "roll_pulse",
+      "description": "From rest, full roll for 4 s, then release.",
+      "duration": 10.0,
+      "initial": { "speed_fraction": 0.0, "throttle": 0.0 },
+      "keys": [ { "t": 1.0, "roll": 1.0 }, { "t": 5.0, "roll": 0.0 } ],
+      "measure": [ "turn_step:roll" ]
+    },
+    {
+      "name": "afterburner_burst",
+      "description": "Cruising at 100%, afterburner held for 4 s, then released. Shows the afterburner speed-up, its top speed, and the (slower) fall back to cruise. The physics reacts one tick after the key edge, as in FS2.",
+      "duration": 18.0,
+      "initial": { "speed_fraction": 1.0, "throttle": 1.0 },
+      "keys": [ { "t": 1.0, "afterburner": true }, { "t": 5.0, "afterburner": false } ],
+      "measure": [ "afterburner_burst" ]
+    },
+    {
+      "name": "afterburner_to_empty",
+      "description": "Cruising at 100%, afterburner held down past the point where the fuel runs out (key released at 14 s). The afterburner cuts out on its own, speed falls back to normal top speed with the slow-down constant, and the tank starts refilling after release.",
+      "duration": 28.0,
+      "initial": { "speed_fraction": 1.0, "throttle": 1.0 },
+      "keys": [ { "t": 1.0, "afterburner": true }, { "t": 14.0, "afterburner": false } ],
+      "measure": [ "afterburner_empty" ]
+    },
+    {
+      "name": "turn90_cruise",
+      "description": "Cruising at 100%, full yaw for 0.65 s then release: about a 90 degree turn for a GTF Ulysses (turn angle = max yaw rate x hold time; other classes turn less). Shows sideways slip building up and decaying while the velocity swings round to follow the nose.",
+      "duration": 8.0,
+      "initial": { "speed_fraction": 1.0, "throttle": 1.0 },
+      "keys": [ { "t": 1.0, "yaw": 1.0 }, { "t": 1.65, "yaw": 0.0 } ],
+      "measure": [ "sideslip" ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "ship": {
+    "name": "GTF Ulysses",
+    "max_vel": [
+      0.0,
+      0.0,
+      70.0
+    ],
+    "max_rear_vel": 0.0,
+    "rotation_time": [
+      3.0,
+      2.6,
+      5.0
+    ],
+    "damp": 0.1,
+    "rotdamp": 0.35,
+    "forward_accel": 2.0,
+    "forward_decel": 1.5,
+    "slide_accel": 0.0,
+    "slide_decel": 0.0,
+    "has_afterburner": true,
+    "aburn_max_vel": [
+      0.0,
+      0.0,
+      150.0
+    ],
+    "aburn_forward_accel": 0.7,
+    "aburn_fuel": 300.0,
+    "aburn_burn_rate": 50.0,
+    "aburn_recover_rate": 25.0,
+    "max_overclocked_speed": 94.0,
+    "max_speed": 70.0,
+    "max_rotvel": [
+      2.0943951023931953,
+      2.41660973353061,
+      1.2566370614359172
+    ],
+    "slide_enabled": false
+  },
+  "source": {
+    "table": "data/tables/ships.tbl inside Root_fs2.vp (Freespace 2 retail, Steam)",
+    "ships_tbl_sha256": "60266906ff4bc25932ecda1aa8070c92de0e7ab6cde42c2d5a02169c7e6315ca",
+    "model": "tools/fs2ref/fs2_flight.py (rules documented there and in tools/fs2ref/README.md)"
+  },
+  "sim": {
+    "tick_hz": 60.0,
+    "skill_level": 1,
+    "ets_engine_index": 4
+  }
+}

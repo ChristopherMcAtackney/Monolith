@@ -1,0 +1,58 @@
+{
+  "scenario": "afterburner_burst",
+  "ship": "GTF Myrmidon",
+  "tick_hz": 60.0,
+  "measure": [
+    "afterburner_burst"
+  ],
+  "metrics": {
+    "ab_peak": 134.58721,
+    "ab_t63": 0.80278,
+    "ab_t95": 2.31499,
+    "ab_release_t63": 2.00547,
+    "ab_release_t95": 6.00843,
+    "ab_end": 75.0
+  },
+  "units": {
+    "ab_peak": "m/s",
+    "ab_t63": "s",
+    "ab_t95": "s",
+    "ab_release_t63": "s",
+    "ab_release_t95": "s",
+    "ab_end": "m/s"
+  },
+  "tolerance": {
+    "ab_peak": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "ab_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_release_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_release_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_end": {
+      "relative": 0.02,
+      "floor": 0.5
+    }
+  },
+  "closed_form_expectation": {
+    "ab_peak": 134.58721,
+    "ab_t63": 0.80275,
+    "ab_release_t63": 2.00517,
+    "ab_t95": 2.31497,
+    "ab_release_t95": 6.00813,
+    "ab_end": 75.0
+  }
+}

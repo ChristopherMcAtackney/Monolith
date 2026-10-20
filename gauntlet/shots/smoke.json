@@ -1,0 +1,11 @@
+{
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 2.0 },
+  "stills": [
+    { "name": "smoke_front", "pos": [0, 1.6, -9], "rot": [9, 0, 0], "fov": 40 },
+    { "name": "smoke_side", "pos": [-7, 1.2, -5.5], "lookAt": [0, 0, 0], "fov": 40, "warmup": 2.0 },
+    { "name": "smoke_720", "pos": [0, 1.6, -9], "rot": [9, 0, 0], "fov": 40, "width": 1280, "height": 720 }
+  ],
+  "perf": [
+    { "name": "smoke", "seconds": 10, "pos": [0, 1.6, -9], "rot": [9, 0, 0], "fov": 40 }
+  ]
+}

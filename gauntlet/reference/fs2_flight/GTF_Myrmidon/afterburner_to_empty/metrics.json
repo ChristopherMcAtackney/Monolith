@@ -1,0 +1,49 @@
+{
+  "scenario": "afterburner_to_empty",
+  "ship": "GTF Myrmidon",
+  "tick_hz": 60.0,
+  "measure": [
+    "afterburner_empty"
+  ],
+  "metrics": {
+    "fuel_empty_t": 5.33333,
+    "ab_peak": 135.0,
+    "ab_end": 75.0,
+    "fuelout_t63": 2.00519,
+    "fuelout_t95": 6.00815
+  },
+  "units": {
+    "fuel_empty_t": "s",
+    "ab_peak": "m/s",
+    "ab_end": "m/s",
+    "fuelout_t63": "s",
+    "fuelout_t95": "s"
+  },
+  "tolerance": {
+    "fuel_empty_t": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "ab_peak": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "ab_end": {
+      "relative": 0.02,
+      "floor": 0.5
+    },
+    "fuelout_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "fuelout_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "fuel_empty_t": 5.33333,
+    "fuelout_t63": 2.00517,
+    "fuelout_t95": 6.00813
+  }
+}

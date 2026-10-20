@@ -1,0 +1,44 @@
+{
+  "scenario": "roll_pulse",
+  "ship": "GTF Myrmidon",
+  "tick_hz": 60.0,
+  "measure": [
+    "turn_step:roll"
+  ],
+  "metrics": {
+    "roll_plateau": 1.25662,
+    "roll_rate_t63": 0.34802,
+    "roll_rate_t95": 1.04847,
+    "roll_settle": 1.36926
+  },
+  "units": {
+    "roll_plateau": "rad/s",
+    "roll_rate_t63": "s",
+    "roll_rate_t95": "s",
+    "roll_settle": "s"
+  },
+  "tolerance": {
+    "roll_plateau": {
+      "relative": 0.02,
+      "floor": 0.02
+    },
+    "roll_rate_t63": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "roll_rate_t95": {
+      "relative": 0.05,
+      "floor": 0.04
+    },
+    "roll_settle": {
+      "relative": 0.05,
+      "floor": 0.04
+    }
+  },
+  "closed_form_expectation": {
+    "roll_rate_t63": 0.34799,
+    "roll_rate_t95": 1.04851,
+    "roll_plateau": 1.25664,
+    "roll_settle": 1.36921
+  }
+}

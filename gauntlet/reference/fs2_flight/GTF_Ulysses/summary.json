@@ -1,0 +1,57 @@
+{
+  "ship": "GTF Ulysses",
+  "tick_hz": 60.0,
+  "scenarios": {
+    "throttle_up": {
+      "speed_start": 0.0,
+      "speed_end": 70.0,
+      "speed_t63": 1.98852,
+      "speed_t95": 5.99148
+    },
+    "throttle_cut": {
+      "speed_start": 70.0,
+      "speed_end": 0.0,
+      "speed_t63": 1.4914,
+      "speed_t95": 4.49362
+    },
+    "pitch_pulse": {
+      "pitch_plateau": 2.09437,
+      "pitch_rate_t63": 0.34802,
+      "pitch_rate_t95": 1.04847,
+      "pitch_settle": 1.36926
+    },
+    "yaw_pulse": {
+      "yaw_plateau": 2.41658,
+      "yaw_rate_t63": 0.34802,
+      "yaw_rate_t95": 1.04847,
+      "yaw_settle": 1.36926,
+      "autobank_ratio": -0.5
+    },
+    "roll_pulse": {
+      "roll_plateau": 1.25662,
+      "roll_rate_t63": 0.34802,
+      "roll_rate_t95": 1.04847,
+      "roll_settle": 1.36926
+    },
+    "afterburner_burst": {
+      "ab_peak": 149.72976,
+      "ab_t63": 0.70868,
+      "ab_t95": 2.07017,
+      "ab_release_t63": 1.50819,
+      "ab_release_t95": 4.51041,
+      "ab_end": 70.0
+    },
+    "afterburner_to_empty": {
+      "fuel_empty_t": 6.0,
+      "ab_peak": 150.0,
+      "ab_end": 70.0,
+      "fuelout_t63": 1.50807,
+      "fuelout_t95": 4.51029
+    },
+    "turn90_cruise": {
+      "slide_peak": 14.41897,
+      "slide_decay": 1.16666,
+      "turn_angle_deg": 86.96369
+    }
+  }
+}
