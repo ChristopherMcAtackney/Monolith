@@ -375,7 +375,8 @@ What gets it (calls):
   debris with trails, sparks, and a shockwave ring. Capital-ship deaths are staged: internal blasts, the
   ship breaking into sections, then a final flash and a shockwave that shoves nearby ships, the player
   included (the loosened damping in section 4).
-- **Weapons:** bright HDR bolts with bloom and muzzle flash; hits that look different on shields (a
+- **Weapons:** the user loved FS2's "big powerful meaty lasers everywhere", so capital-ship battles are
+  thick with heavy laser and beam fire. Bright HDR bolts with bloom and muzzle flash; hits that look different on shields (a
   ripple) and hulls (sparks, debris, scorch); beams with a visible charge glow before they fire; missile
   exhaust glow.
 - **Rumble:** the pad's motors are driven by the same trauma and events: gun fire, afterburner, hits,
@@ -429,10 +430,10 @@ The user's playtests are the main judge and overrule everything below.
 
 1. **Flight feel:** traces match FS2-derived curves within tolerance (section 4).
 2. **Look:** blind critic on in-game stills; plus a readability check (can you tell what matters?).
-   The user had no particular game in mind, only "more FS2 than TF". Call on the reference pool: real
-   spacecraft and planetary photography (NASA and ESA) for light, materials and scale cues, plus stills
-   from high-end photoreal space films and games for composition and spectacle. Reference images are
-   kept locally for the critic and never go into the game. Cabin stills are judged against photos of
+   **The bar (user, 2026-10-20): The Expanse's space battles, with FS2's big, meaty lasers everywhere.**
+   The critic compares against real frames from The Expanse's battle scenes for photoreal look, and
+   real footage of FS2's capital-ship beam battles for the weight and density of laser fire. Reference
+   images are kept locally for the critic and never go into the game. Cabin stills are judged against photos of
    real spacecraft interiors.
    Lesson from Trap Door: critics are reliable about which image is real, unreliable about how to fix
    ours. Treat the verdict as the signal, the prescription as noise.
