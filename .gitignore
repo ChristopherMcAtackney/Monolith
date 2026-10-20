@@ -26,11 +26,8 @@ gauntlet/keys/
 *.mkv
 
 # Reference material (copyrighted frames and footage, kept locally for critics, never committed)
-reference/video/
-reference/**/video/
-reference/_work/
-reference/frames*/
-reference/stills/
+# Reference footage and frames: local only, critics only (copyrighted)
+reference/
 
 # Playtest builds and logs
 Playtest/
