@@ -1,0 +1,251 @@
+<title>Monolith Gauntlet Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wght@300;400;600&display=swap">
+<style>
+/* Layout: a ship's ops console. Summary strip, then the build order as sensor rows, then the log. One dark world on purpose. */
+:root {
+  --void: #0a0d10;
+  --panel: #10161b;
+  --line: #22303a;
+  --ink: #dbe3e8;
+  --dim: #7f8d97;
+  --amber: #f0a43a;
+  --scan: #6cc3d6;
+  --won: #93d39a;
+  --alert: #ff6a4d;
+  --queued: #4a5862;
+  --display: "Martian Mono", "Cascadia Mono", Consolas, monospace;
+  --body: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+body { background: var(--void); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+.label { font-family: var(--display); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+header { display: grid; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 20px; }
+header h1 { margin: 0; font-family: var(--display); font-weight: 300; font-size: clamp(26px, 5vw, 40px); letter-spacing: 0.18em; text-wrap: balance; }
+header h1 b { font-weight: 600; color: var(--amber); }
+.headline { margin: 0; max-width: 65ch; color: var(--ink); }
+.stamp { font-family: var(--display); font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.gate { border: 1px solid var(--amber); background: color-mix(in srgb, var(--amber) 8%, var(--void)); padding: 14px 16px; display: grid; gap: 4px; }
+.gate .label { color: var(--amber); }
+.gate p { margin: 0; max-width: 70ch; }
+.strip { display: flex; flex-wrap: wrap; gap: 10px 28px; font-family: var(--display); font-size: 13px; font-variant-numeric: tabular-nums; }
+.strip span { display: inline-flex; align-items: center; gap: 8px; }
+.blip { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--queued); }
+.st-building .blip, .blip.st-building { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+.st-judging .blip, .blip.st-judging { background: var(--scan); box-shadow: 0 0 8px var(--scan); }
+.st-won .blip, .blip.st-won { background: var(--won); }
+.st-waiting .blip, .blip.st-waiting { background: var(--void); border: 2px solid var(--amber); }
+.st-blocked .blip, .blip.st-blocked { background: var(--alert); }
+@media (prefers-reduced-motion: no-preference) {
+  .st-building .blip, .st-judging .blip { animation: ping 1.8s ease-in-out infinite; }
+  @keyframes ping { 50% { opacity: 0.35; } }
+}
+section { display: grid; gap: 10px; }
+section h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); display: flex; gap: 12px; align-items: baseline; }
+section h2 em { font-style: normal; color: var(--ink); }
+.rows { display: grid; border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.row .blip { margin-top: 7px; }
+.row .main { min-width: 0; display: grid; gap: 3px; }
+.row .name { font-weight: 600; }
+.row .bar { color: var(--dim); font-size: 13px; }
+.row .verdict, .row .gap { font-size: 13px; max-width: 70ch; }
+.row .verdict b, .row .gap b { font-family: var(--display); font-weight: 400; font-size: 11px; letter-spacing: 0.1em; color: var(--dim); margin-right: 6px; }
+.row .side { display: grid; justify-items: end; gap: 4px; font-family: var(--display); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { padding: 2px 7px; border: 1px solid var(--line); color: var(--dim); }
+.st-building .pill { border-color: var(--amber); color: var(--amber); }
+.st-judging .pill { border-color: var(--scan); color: var(--scan); }
+.st-won .pill { border-color: var(--won); color: var(--won); }
+.st-waiting .pill { border-color: var(--amber); color: var(--void); background: var(--amber); }
+.st-blocked .pill { border-color: var(--alert); color: var(--alert); }
+.row .shot { grid-column: 2 / 4; margin-top: 6px; }
+.row .shot img { display: block; max-width: min(100%, 520px); border: 1px solid var(--line); }
+.log { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.log div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.log time { font-family: var(--display); font-size: 11px; color: var(--dim); padding-top: 3px; font-variant-numeric: tabular-nums; }
+.empty { color: var(--dim); padding: 14px 0; border-top: 1px solid var(--line); max-width: 65ch; }
+@media (max-width: 560px) {
+  .row { grid-template-columns: 18px minmax(0, 1fr); }
+  .row .side { grid-column: 2; justify-items: start; grid-auto-flow: column; justify-content: start; gap: 10px; }
+  .log div { grid-template-columns: 1fr; gap: 2px; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="label">Gauntlet loop · lead console</div>
+    <h1>MONO<b>LITH</b></h1>
+    <p class="headline" id="headline">Building the vertical slice: one Oort Cloud strike, FS2's flight, The Expanse's look, FS2's lasers.</p>
+    <div class="stamp" id="stamp">Waiting for the first report from the lead.</div>
+  </header>
+
+  <div class="gate" id="gate" hidden>
+    <div class="label">Waiting on you</div>
+    <p id="gateText"></p>
+  </div>
+
+  <div class="strip" id="strip" aria-label="Piece counts"></div>
+
+  <div id="groups">
+    <p class="empty">The build order loads here: every piece of the slice with its status, round, the bar it has to beat, the critic's last verdict and the biggest gap left.</p>
+  </div>
+
+  <section>
+    <h2>Log <em id="logCount"></em></h2>
+    <div class="log" id="log"><p class="empty">Builder and critic reports appear here as they land.</p></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var STATUS = {
+    building: "Building",
+    judging: "With the critic",
+    won: "Beat the bar",
+    waiting: "Waiting on you",
+    blocked: "Blocked",
+    queued: "Queued"
+  };
+  var meta = null, pieces = null, log = null;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function ago(iso) {
+    if (!iso) return "";
+    var t = Date.parse(iso);
+    if (isNaN(t)) return "";
+    var s = Math.max(0, (Date.now() - t) / 1000);
+    if (s < 90) return "just now";
+    if (s < 3600) return Math.round(s / 60) + " min ago";
+    if (s < 86400) return Math.round(s / 3600) + " h ago";
+    return Math.round(s / 86400) + " d ago";
+  }
+  function clock(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return "";
+    var mon = d.toLocaleString(undefined, { month: "short" });
+    return d.getDate() + " " + mon + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function renderMeta() {
+    if (!meta) return;
+    if (meta.headline) document.getElementById("headline").textContent = meta.headline;
+    document.getElementById("stamp").textContent =
+      (meta.phase ? meta.phase + " · " : "") + (meta.updatedAt ? "updated " + ago(meta.updatedAt) : "");
+    var gate = document.getElementById("gate");
+    if (meta.gate) { document.getElementById("gateText").textContent = meta.gate; gate.hidden = false; }
+    else gate.hidden = true;
+  }
+
+  function renderPieces() {
+    if (!pieces) return;
+    var host = document.getElementById("groups");
+    host.textContent = "";
+    if (!pieces.length) {
+      host.appendChild(el("p", "empty", "No pieces yet. The lead adds them as the build order is set."));
+      return;
+    }
+    var counts = {};
+    pieces.forEach(function (p) { counts[p.status || "queued"] = (counts[p.status || "queued"] || 0) + 1; });
+    var strip = document.getElementById("strip");
+    strip.textContent = "";
+    ["won", "judging", "building", "waiting", "blocked", "queued"].forEach(function (k) {
+      if (!counts[k]) return;
+      var s = el("span", "st-" + k);
+      s.appendChild(el("i", "blip"));
+      s.appendChild(document.createTextNode(counts[k] + " " + STATUS[k].toLowerCase()));
+      strip.appendChild(s);
+    });
+
+    var groups = [], byName = {};
+    pieces.forEach(function (p) {
+      var g = p.group || "Other";
+      if (!byName[g]) { byName[g] = []; groups.push(g); }
+      byName[g].push(p);
+    });
+    groups.forEach(function (g) {
+      var sec = el("section");
+      var h = el("h2");
+      h.appendChild(document.createTextNode(g));
+      var done = byName[g].filter(function (p) { return p.status === "won"; }).length;
+      h.appendChild(el("em", null, done + " / " + byName[g].length));
+      sec.appendChild(h);
+      var rows = el("div", "rows");
+      byName[g].forEach(function (p) {
+        var st = STATUS[p.status] ? p.status : "queued";
+        var row = el("div", "row st-" + st);
+        row.appendChild(el("i", "blip"));
+        var main = el("div", "main");
+        main.appendChild(el("div", "name", p.name || p.id));
+        if (p.bar) main.appendChild(el("div", "bar", "Bar: " + p.bar));
+        if (p.verdict) { var v = el("div", "verdict"); v.appendChild(el("b", null, "VERDICT")); v.appendChild(document.createTextNode(p.verdict)); main.appendChild(v); }
+        if (p.gap) { var gp = el("div", "gap"); gp.appendChild(el("b", null, "GAP")); gp.appendChild(document.createTextNode(p.gap)); main.appendChild(gp); }
+        row.appendChild(main);
+        var side = el("div", "side");
+        side.appendChild(el("span", "pill", STATUS[st]));
+        if (p.round) side.appendChild(el("span", null, "Round " + String(p.round).padStart(2, "0")));
+        if (p.updatedAt) side.appendChild(el("span", null, ago(p.updatedAt)));
+        row.appendChild(side);
+        if (p.image) {
+          var shot = el("div", "shot");
+          var img = el("img");
+          img.src = p.image; img.alt = (p.name || p.id) + ", latest capture"; img.loading = "lazy";
+          shot.appendChild(img);
+          row.appendChild(shot);
+        }
+        rows.appendChild(row);
+      });
+      sec.appendChild(rows);
+      host.appendChild(sec);
+    });
+  }
+
+  function renderLog() {
+    if (!log) return;
+    var host = document.getElementById("log");
+    host.textContent = "";
+    document.getElementById("logCount").textContent = log.length ? String(log.length) : "";
+    if (!log.length) { host.appendChild(el("p", "empty", "Builder and critic reports appear here as they land.")); return; }
+    log.forEach(function (e) {
+      var d = el("div");
+      var t = el("time", null, clock(e.at));
+      t.dateTime = e.at || "";
+      d.appendChild(t);
+      d.appendChild(el("span", null, e.text || ""));
+      host.appendChild(d);
+    });
+  }
+
+  function renderAll() { renderMeta(); renderPieces(); renderLog(); }
+
+  function offline(msg) {
+    document.getElementById("stamp").textContent = msg;
+  }
+
+  async function start() {
+    var db = null;
+    try { db = await window.claude.use("db"); } catch (e) { db = null; }
+    if (!db) { offline("Live updates aren't available in this view. Open the board on claude.ai while signed in."); return; }
+    function fail(e) { offline("The live feed stopped (" + (e && e.code || "error") + "). Reload the page to reconnect."); }
+    db.doc("board/meta").onSnapshot(function (s) { meta = s.exists ? s.data() : null; renderMeta(); }, fail);
+    db.collection("pieces").orderBy("order").onSnapshot(function (s) {
+      pieces = s.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; });
+      renderPieces();
+    }, fail);
+    db.collection("log").orderBy("at", "desc").limit(60).onSnapshot(function (s) {
+      log = s.docs.map(function (d) { return d.data(); });
+      renderLog();
+    }, fail);
+    setInterval(renderAll, 60000);
+  }
+  if (window.claude && window.claude.use) start();
+  else offline("Live updates aren't available in this view. Open the board on claude.ai while signed in.");
+})();
+</script>
