@@ -1,6 +1,6 @@
 # Monolith: vertical slice design
 
-Date: 2026-10-20. Status: draft for approval.
+Date: 2026-10-20. Status: approved by the user on 2026-10-20.
 
 Monolith is a single-player space combat game in Unity, in the spirit of FreeSpace 2 (FS2) and, to a
 lesser degree, TIE Fighter (TF). It is built entirely by agents, headless, using the gauntlet loop. This
