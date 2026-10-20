@@ -46,8 +46,9 @@ tools\unity.ps1 <Namespace.Class.Method> [-TimeoutMin 45] [-NoGraphics] [-Full] 
   A misspelt field aborts the run.
 - A perf run: the same camera fields plus `seconds` (real time, after `warmup`/`perfWarmup`). It plays in real time on a
   1920x1080 window with vsync off.
-- Stills render offscreen at the exact resolution with game time fixed at one 60 Hz tick per frame, so reruns give the
-  same picture. The window shows black while capturing; that is normal.
+- Stills render offscreen at the exact resolution with game time fixed at one 60 Hz tick per frame from the first frame, so
+  a rerun takes each shot on the same tick and matches to within 1 LSB in a handful of pixels (HDRP dithering). `-Only`
+  changes how many ticks pass before a later shot, so a moving scene differs. The window shows black while capturing.
 - Output in `-Out` (default `gauntlet\captures\<plan>_<stamp>\`, git-ignored): `<still>.png`, `perf_<run>.json`,
   `capture_manifest.json`, `player.log`. A perf JSON holds `avgFps`, `low1PctFps`, `worstFrameMs`, p50/p95/p99 ms,
   GPU and CPU ms, `simTicks` and `simHzMeasured` (should read ~60), and the GPU name.
@@ -81,4 +82,6 @@ Shared Blender helpers will live in `tools\blender_lib\` when the first model sc
   shot; `System.Random` is not.
 - **Resolution:** in a capture, `Screen.width/height` is the window, not the shot. Use `camera.pixelWidth`.
 - **Unity Personal** shows a splash for about 2 s at player start. It does not affect captures.
+- **Keep the repo path short.** HDRP's package paths are long, and a checkout deeper than ~100 characters hits Windows'
+  260-character limit during import (`DirectoryNotFoundException` under `Library\PackageCache`).
 - **Disk:** `Game\Library` is ~2 GB and each cold shader build adds more. Clean old `gauntlet\captures\` runs.

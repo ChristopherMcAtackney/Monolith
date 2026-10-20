@@ -34,7 +34,14 @@ namespace Monolith.Game
 
             SmokeWorld.Build(World, transform);
 
-            if (CommandLine.Has("-mnCapture")) gameObject.AddComponent<CaptureRunner>();
+            if (CommandLine.Has("-mnCapture"))
+            {
+                // Capture mode from the very first frame: one tick per frame at fixed game time, so which tick a shot is
+                // taken on does not depend on how quickly this machine booted.
+                Sim.OneTickPerFrame = true;
+                Time.captureDeltaTime = 1f / Sim.Hz;
+                gameObject.AddComponent<CaptureRunner>();
+            }
 
             GameEvents.Raise(EventIds.BootComplete);
             var pipeline = GraphicsSettings.currentRenderPipeline;
