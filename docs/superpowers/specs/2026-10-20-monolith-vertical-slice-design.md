@@ -42,6 +42,12 @@ the ice giants, Jupiter, the asteroid belt, Mars, and a huge final battle at Ear
 ships and fighters. The inspiration is Ender's Game turned around: this time it is Earth that gets nuked
 at the end.
 
+- **Humanity** has nearly ascended into techno-god machine beings, like Mass Effect's Reapers. They
+  aren't quite gods yet, but they think they're close (user). They hold "biologics" in contempt (user),
+  and they still talk to the aliens: taunts and demands over the radio (user).
+- **The player's side** comes from the alien species in this part of the galaxy that Earth's expansion
+  subjugated, now pushing back (user). The player flies with their vanguard.
+- **The story needs a MacGuffin**, to be worked out later (user).
 - The aliens are noticeably alien but not bizarre. The player must feel affinity for the people they
   fly with (user).
 - The tone is serious throughout (user). The user's other games were deliberately zany; this one is not.
@@ -186,7 +192,7 @@ All of these were proposed and accepted (user approved the list; details are cal
 - **Alien self-healing (user's idea):** the player's side's ships slowly heal hull and subsystems, a
   living technology. It starts after a few seconds without taking damage and is never fast enough to
   tank a fight. It creates a rhythm: dive in, take damage, break off to heal, go back in. Human ships do
-  not heal; they rely on repair ships (not needed in the slice).
+  not heal; they rely on repair ships or drones (not needed in the slice).
 - **Wingman orders:** attack my target, disable my target, cover me, form up. From a hold-a-button quick
   menu so they don't use up buttons.
 - **Radar:** always on the HUD, FS2-style (blips above/below the plane), with incoming missiles shown.
@@ -223,7 +229,8 @@ all but disappears and the HUD takes over. Out of the seat, the cabin is physica
 ### The interactions
 - **Go dark:** pull the main breaker. The HUD dies, the cabin goes black apart from emergency glow, and
   the ship drifts. A ship or station's scan sweeps past: its light crawls through the canopy, the hull
-  creaks, you hear your own breathing. Whether you are detected depends on your power state (the builder
+  creaks, you hear your own breathing. The humans scan for life signs, so going dark hides the fact that you're alive (call).
+  Whether you are detected depends on your power state (the builder
   may add more, such as moving or making noise while dark). The result is a mission event, so the mission
   data decides what detection means.
 - **Hand repairs:** for damage beyond self-healing, such as a destroyed engine module or weapon mount.
@@ -256,6 +263,14 @@ ISS modules.
 ## 7. Enemies, AI and pacing
 
 ### Human forces (user: "take basic direction from FS2 and/or TF")
+The roles follow FS2; the fiction is that humanity's forces are near-machine now (user). Calls,
+approved by the user in the playback:
+- **Most fighters are drone-like:** no fear, no breaking off when hurt (FS2's courage at zero).
+- **A few "ascended" aces** are the frightening exceptions: much better pilots, recognisable ships, and
+  cold contempt over the radio. Not required in the slice, but the AI profiles must allow them.
+- **Their radio** is contemptuous and superior, aimed at "biologics" (user).
+
+The roster:
 - **Interceptors:** fast, fragile, in packs; go straight for the player.
 - **Heavy fighters:** slower, shielded, missile-heavy; escort bombers and capital ships.
 - **Bombers:** slow, tough; make runs on capital ships with slow torpedoes that can be shot down.
@@ -273,9 +288,8 @@ ISS modules.
 - **Turrets:** track with lead, flak bursts in the player's path; beams telegraph and then sweep.
 - **Wingmen:** the same AI, taking the player's orders.
 - **Skill knobs (FS2's ai table):** accuracy, evasion, courage (how long a pilot stays in a fight when
-  hurt), patience (how long it holds a firing line before shooting). Difficulty levels and veteran
-  pilots are different values for these four. Idea (call): a few named human aces with recognisable
-  ships who taunt over the radio; not required for the slice.
+  hurt), patience (how long it holds a firing line before shooting). Difficulty levels, drones and
+  aces are different values for these four.
 
 ### Pacing: event-driven, not timer-driven (from FS2's missions)
 FS2 missions are scripted almost entirely with reactive triggers, which is why they always feel pressured
@@ -314,7 +328,7 @@ Missions are data files (one file per mission), not C#. A future mission editor 
 - **Cabin controls on the pad (call):** left stick walks, right stick looks, one context button; hold a
   button to stand or sit.
 
-## 9. Look and sound
+## 9. Look, sound and juice
 
 - **Photorealistic all round** (user), with FS2's spectacle (user): capital ships that fill the screen,
   beams crossing, planets hanging behind the fight.
@@ -324,9 +338,13 @@ Missions are data files (one file per mission), not C#. A future mission editor 
 - **Ships and stations are modelled by script in Blender** (user), as in Trap Door. PBR materials,
   panel detail, wear, lights and engine glows. Capital ships need to read as enormous: surface detail at
   several scales.
-- **Ship design direction (proposed, and approved by the user in the playback):** human ships are
-  heavy, grey and naval, in the spirit of FS2's Terran ships. Alien ships are darker and smoother, slightly organic,
-  matching the self-healing, and still clearly machines flown by people.
+- **Your side's look (user):** the ships, the cabin and the HUD take inspiration from the technology of
+  the aliens in Independence Day (1996), but not from their bodies (user: "that's taking it too far").
+  Approved guess: dark, ribbed, biomechanical shapes and glowing, glyph-like displays, kept rough and
+  spare. It suits the self-healing, living tech. Inspiration only; no copied designs.
+- **The humans' look (proposed, approved in the playback):** cold and precise. Matte black and chrome,
+  perfect hard geometry, harsh white light, and a deep Reaper-like horn when a capital ship arrives. The
+  contrast with your warm, ribbed, glowing ships helps the battle read at a glance.
 - **Sky and planets (call):** a real star catalogue / Milky Way panorama for the sky (for example NASA
   SVS "Deep Star Maps"; verify licence). Planets later from real NASA and mission imagery (verify licence
   per source; much is public domain). The slice needs the sky and the Sun only.
@@ -334,10 +352,42 @@ Missions are data files (one file per mission), not C#. A future mission editor 
   short stings for friendly and enemy arrivals; victory, failure and death. Driven by mission state and
   the music actions in mission data. Agents compose it as MIDI (user), rendered to audio for the game;
   the user can replace any track with their own MP3s later (user).
-- **Radio voices (call):** generated with Trap Door's TTS pipeline, with a radio filter and an alien
-  vocal texture; the user's own recordings can replace any line. Radio and briefing text are data.
+- **Radio voices (call):** generated with Trap Door's TTS pipeline, with a radio filter; the aliens get
+  an alien vocal texture, the humans a cold, machine-edged one. The user's own recordings can replace
+  any line. Radio and briefing text are data.
 - **Sound effects:** weighty and physical: hits, shield and hull impacts, lock tones, missile warning,
   beam charge-up, big explosions. Sound in space, as FS2 has.
+
+### Juice (user: "really quite a bit of effort")
+Explosions, lasers, rumble, oomph and screen shake get serious effort (user). The rules come from the
+research behind Dr Insane's juice pass (see section 14):
+- **Success gets the loudest reaction.** Feedback that fires only on success raises enjoyment; big effects
+  that fire regardless, or that cover the action, lower it (Kao et al., CHI 2024). Kills and destroyed
+  subsystems get the biggest reactions. Nothing ever hides your target or the HUD's essentials.
+- **Medium beats extreme** (Kao 2020). Medium is the default, with an intensity setting.
+- **Shake is "trauma"** (Eiserloh, GDC 2016): hits add trauma, which fades; the shake grows with trauma
+  squared and moves smoothly (noise), not as random jitter. In first person it is mostly rotation.
+- **Accessibility:** shake and flashes have an intensity setting and an off switch (Xbox Accessibility
+  Guideline 117).
+
+What gets it (calls):
+- **Explosions,** layered and scaled by size: a flash, a fireball that dims fast in vacuum, glowing
+  debris with trails, sparks, and a shockwave ring. Capital-ship deaths are staged: internal blasts, the
+  ship breaking into sections, then a final flash and a shockwave that shoves nearby ships, the player
+  included (the loosened damping in section 4).
+- **Weapons:** bright HDR bolts with bloom and muzzle flash; hits that look different on shields (a
+  ripple) and hulls (sparks, debris, scorch); beams with a visible charge glow before they fire; missile
+  exhaust glow.
+- **Rumble:** the pad's motors are driven by the same trauma and events: gun fire, afterburner, hits,
+  nearby explosions, a beam charging. Rumble in the triggers too, if Unity can do it on Windows (nice to
+  have).
+- **Sound:** layered and weighty, with near and far versions; the biggest moments duck everything else.
+- **In the cabin:** hull hits shake it, lights flicker, sparks fly.
+- **Hit-stop** (a tiny freeze or slow-down on kills) is tried in the sandbox, not assumed.
+
+**The juice sandbox (call):** this worked especially well for Dr Insane. An in-game test build where the
+user fires events (fighter kill, bomber kill, capital-ship death, shield hit, hull hit, near miss, beam
+hit), switches each effect on and off, picks intensity presets, slows time down, and tunes it by feel.
 
 ## 10. How it gets made (calls, carried over from Star Frog and Trap Door; the user's direction is to
 treat those as useful, not gospel)
@@ -393,11 +443,13 @@ The user's playtests are the main judge and overrule everything below.
    code changes.
 6. **Cabin moments:** the go-dark moment, the hand repair and the death sequence are judged on the
    user's playtests: tense and physical, never a chore.
+7. **Juice:** the user tunes it in the sandbox. Frame rate holds during the biggest capital-ship death.
 
 ## 12. Build order (call)
 
 Flight feel comes first and gates the rest. The first deliverable is a flight-only playtest build: one
-fighter, a few targets and some capital-ship hulls to fly around, and the pad. Work that depends on the
+fighter, a few targets and some capital-ship hulls to fly around, and the pad. The juice sandbox comes
+soon after, so the user can tune the feel of hits and explosions early. Work that depends on the
 flight numbers (AI tuning, weapon speeds and lead, engagement ranges, mission distances) waits for the
 user's sign-off on the feel. Work that doesn't (Blender models, the sky, HUD style, the mission and event
 system, the audio system, the cabin's interior model) can go ahead in parallel. Walking, the stand/sit
@@ -427,6 +479,7 @@ characters.
 - TF install: `C:\Program Files (x86)\Steam\steamapps\common\STAR WARS Tie Fighter`. Mission files
   (`remastered\MISSION\*.TIE`) are binary, but briefing questions, radio lines and objective text are
   readable strings.
+- Dr Insane's juice research and plan: `C:\Users\chris\Documents\Code\Dr_Insane\docs\superpowers\plans\2026-09-27-juice.md`.
 - Outer Wilds install: `C:\Program Files (x86)\Steam\steamapps\common\Outer Wilds`, the reference for
   the feeling of being a person inside your ship (in the opposite tone to ours).
 - **Boundary (user):** these are reference only. Study the numbers, behaviour and structure; never copy
