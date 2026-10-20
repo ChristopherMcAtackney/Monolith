@@ -1,0 +1,20 @@
+# One line ending everywhere: Unity, the tools and the agents here all write LF, so a checkout must not turn it into CRLF.
+* text=auto eol=lf
+
+# Binary assets (text=auto usually detects these; this makes it certain).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tga binary
+*.psd binary
+*.exr binary
+*.hdr binary
+*.fbx binary
+*.blend binary
+*.dll binary
+*.exe binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.ttf binary
+*.otf binary
