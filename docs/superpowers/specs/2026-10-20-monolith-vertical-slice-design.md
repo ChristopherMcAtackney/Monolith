@@ -202,6 +202,12 @@ All of these were proposed and accepted (user approved the list; details are cal
 - **Damage you feel:** the player's ship has subsystems. Damaged engines cap speed; a damaged weapon
   mount takes a gun offline; damaged sensors put static on the radar and target box. The player knows
   from how the ship behaves before reading a number.
+- **Destructible parts and visible, progressive damage (user, 2026-10-24):** as in FS2, ship parts
+  are separately targetable and visibly destroyable: weapon launchers, flak and turrets, sensor and
+  radar arrays, comms, engines, the hangar. Destroying one has a real effect (a silenced turret, a blind
+  ship, a crippled engine). Hulls show damage building up as they are hit: scorching, holes, sparks,
+  venting, pieces breaking away. Capital ships first, but every ship class supports it, fighters
+  included.
 - **Living-tech self-healing (user's idea):** the diaspora's ships slowly heal hull and subsystems,
   using living technology from their alien allies (call). It starts after a few seconds without taking damage and is never fast enough to
   tank a fight. It creates a rhythm: dive in, take damage, break off to heal, go back in. Earth's ships
