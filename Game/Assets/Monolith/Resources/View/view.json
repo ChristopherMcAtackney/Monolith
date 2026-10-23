@@ -1,0 +1,26 @@
+{
+  "format": "monolith-view/1",
+  "about": "The player's first-person view: camera, FS2-style motion dust, placeholder starfield. Look is placeholder; these numbers serve the feel of speed.",
+  "camera": {
+    "fovVertical": 55,
+    "eye": [0.0, 0.4, 1.5],
+    "near": 0.1,
+    "far": 100000,
+    "why": "55 degrees vertical is about 86 horizontal at 16:9: wide enough that things streaming past the edges sell speed, not so wide that targets ahead shrink. Eye a little up and forward of the ship's centre; the ship itself is never drawn (seated: the HUD takes over)."
+  },
+  "dust": {
+    "count": 450,
+    "radius": 110,
+    "streakSeconds": 0.04,
+    "halfWidthPx": 0.9,
+    "brightness": 0.42,
+    "nearFade": 4.0,
+    "seed": 11,
+    "why": "FS2's motion debris: specks fixed in space around the player, drawn as short streaks along the player's velocity, so speed reads even with nothing else near. 0.04 s of travel per streak: 2.8 m at cruise (70 m/s), 6 m on afterburner. Specks fade in at the far radius and out right next to the eye so none pop."
+  },
+  "stars": {
+    "count": 0,
+    "seed": 7,
+    "why": "Off: the Sky system now draws the real star catalogue. A count above 0 brings back the placeholder points (scenes without the sky)."
+  }
+}

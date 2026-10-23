@@ -1,0 +1,17 @@
+{
+    "name": "Monolith.Input",
+    "rootNamespace": "Monolith.Input",
+    "references": [
+        "Monolith.Core",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -20,12 +20,13 @@ namespace Monolith.EditorTools
         public const string SettingsDir = Root + "/Settings";
         public const string HdrpAssetPath = SettingsDir + "/Monolith_HDRP.asset";
         public const string SmokeMaterialsDir = Root + "/Resources/Smoke";
+        public const string FlightMaterialsDir = Root + "/Resources/Flight";
         public const string BootScenePath = Root + "/Scenes/" + GameBootstrap.BootSceneName + ".unity";
 
         static readonly string[] Folders =
         {
             Root + "/Scripts/Core", Root + "/Scripts/Capture", Root + "/Scripts/Game", Root + "/Editor",
-            Root + "/Scenes", SettingsDir, SmokeMaterialsDir,
+            Root + "/Scenes", SettingsDir, SmokeMaterialsDir, FlightMaterialsDir,
         };
 
         public static void Project() => Batch.Run("Setup.Project", ProjectStep);
@@ -45,6 +46,8 @@ namespace Monolith.EditorTools
             // Smoke scene surfaces (the scene itself is built from code at boot, see Game/SmokeWorld).
             Hdrp.EnsureLit(SmokeMaterialsDir + "/MN_SmokeSphere.mat", new Color(0.72f, 0.72f, 0.74f), 0f, 0.55f);
             Hdrp.EnsureLit(SmokeMaterialsDir + "/MN_SmokeBox.mat", new Color(0.55f, 0.36f, 0.22f), 0f, 0.40f);
+            // The flight playtest's base materials (Game/PlaceholderShips makes its ship materials from instances of them).
+            FlightAssets.Ensure(FlightMaterialsDir);
 
             EnsureBootScene();
             ConfigurePlayer();

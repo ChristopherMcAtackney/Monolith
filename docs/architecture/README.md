@@ -10,20 +10,42 @@ C# at start-up. Each system lives in `Game/Assets/Monolith/Scripts/<System>/` wi
 It holds the fixed 60 Hz `Sim` clock (ordered `ISimSystem` steps, an `Alpha` for render interpolation, `SimDriver` to feed
 it), `GameWorld` (shared state, one named owner per field), `GameEvents` (named events: `Raise` and `Subscribe`),
 `CommandLine` (`-mn` flags), `MnLog` (`[MN]` log lines), `ControlInput` (pitch, yaw, roll, throttle, buttons) with
-`IPilotSource` and `Pilots` (every ship's input each tick, whoever is flying), and `CoreSelfTest`.
+`IPilotSource` and `Pilots` (every ship's input each tick, whoever is flying), `ShipState`/`ShipRegistry` (every ship's
+published flight state, `GameWorld.Ships`), `ShipKnock`/`KnockQueue` (shoves for Flight to apply, `GameWorld.Knocks`),
+`ScriptedPilot` (keyed inputs, optionally looping) and `CoreSelfTest`.
 
 **Capture** (`Monolith.Capture`) is the headless picture-taker. In the built player, `-mnCapture plan.json -mnOut dir`
 renders stills at exact resolutions with fixed game time and runs real-time perf runs, writing PNGs, `perf_*.json` and
 `capture_manifest.json`. It shoots through `GameWorld.MainCamera` and knows nothing else about the game.
 
+**Flight** (`Monolith.Flight`) moves every ship once per tick from its `ControlInput`, FS2's way (exponential chases,
+auto-bank, slip, afterburner fuel, match speed, knocks), and publishes `ShipState`. Ship numbers are data
+(`Resources/Ships/<class>.json`, every value with its source; shared constants in `Resources/Flight/flight_rules.json`).
+`-mnFlightScenarios` replays the feel scenarios and writes traces for `tools/fs2ref/compare.py`. Detail:
+`Scripts/Flight/README.md`.
+
+**Input** (`Monolith.Input`) is the local player's pad and keyboard as an `IPilotSource` (`PlayerPilot`), with mappings,
+dead zones and response curves in `Resources/Input/controls.json` (or `-mnControls file`).
+
+**Targeting** (`Monolith.Targeting`) sets `ShipState.Target` from the target-ahead and next-target buttons. Minimal for now.
+
+**View** (`Monolith.View`) is the player's first-person camera at the interpolated ship pose, FS2-style motion dust and
+`ShipViews` (every other ship's visual at its interpolated pose). Settings in `Resources/View/view.json`. No external camera.
+
+**Hud** (`Monolith.Hud`) draws the flight HUD (reticle, speed and throttle, afterburner fuel, target bracket) as line
+graphics after post-processing, so captures show it. Both View and Hud draw through HDRP custom passes with
+`Resources/Shaders/MN_Lines.shader`.
+
 **Game** (`Monolith.Game`) is the composition root. `GameBootstrap` runs after the Boot scene loads and creates
 `GameRoot`, which builds the clock, the world and every system, and registers them. Today it also builds the smoke scene
-(`SmokeWorld`: camera, sun, sphere and box), a stand-in until the Render system exists. It is the only assembly allowed to
-reference the others.
+(`SmokeWorld`: camera, sun, sphere and box) and, with `-mnScene flight` or a plan's `"scene": "flight"`, the flight
+playtest (`FlightPlaytest`: the Sky, placeholder ships from `PlaceholderShips`, layout in `Resources/Flight/playtest.json`).
+It is the only assembly allowed to reference the others.
 
 **Editor** (`Monolith.Editor`, namespace `Monolith.EditorTools`, editor only) is scripted project set-up and building:
 `Batch.Run` wrapper, `Setup.Project` (HDRP asset and global settings, colour space, Input System, player settings, the
-Boot scene), `Build.Player`. It is run by `tools/unity.ps1`; nobody opens the editor.
+Boot scene, and through `FlightAssets` the flight playtest's base materials), `Build.Player`. It is run by
+`tools/unity.ps1`; nobody opens the editor.
 
 ## Rules
 

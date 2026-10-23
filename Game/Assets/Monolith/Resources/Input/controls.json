@@ -1,0 +1,82 @@
+{
+  "format": "monolith-controls/1",
+  "about": "Pad and keyboard mappings, dead zones and response curves. The pad layout starts from Star Wars: Squadrons' default Xbox scheme (left stick throttle and roll, right stick pitch and yaw, L3 boost, RT fire, LT target ahead, A cycle targets, B countermeasures, LB/RB auxiliaries). Control names are Unity Input System paths on the Gamepad / Keyboard device. The playtest build reads controls.json next to Play.bat instead, so this can be tuned without a rebuild.",
+  "pad": {
+    "aim": {
+      "stick": "rightStick",
+      "deadZone": 0.10,
+      "outerDeadZone": 0.04,
+      "exponent": 1.6,
+      "pushForwardIsNoseDown": true,
+      "why": "The right stick is FS2's joystick: pitch and yaw together, auto-bank does the rest. Radial (not per-axis) dead zone so diagonals keep their direction; scaled so output starts at 0 at the edge of the dead zone (no jump). 0.10 clears worn Xbox sticks' rest drift. Exponent 1.6 on the deflection past the dead zone: a quarter stick gives 6% of the turn rate (8 deg/s of yaw on a Ulysses instead of 35) for fine aim, half stick 29%, full stick the full table rate. The flight model's own 0.35 s turn lag smooths the rest, so no extra input smoothing. Outer dead zone 0.04 so full rate is reachable before the stick gate."
+    },
+    "roll": {
+      "control": "leftStick/x",
+      "deadZone": 0.18,
+      "outerDeadZone": 0.04,
+      "exponent": 1.5,
+      "rightIsRollRight": true,
+      "why": "Roll on the left stick's x (Squadrons default). Its own axial dead zone, larger than the aim stick's, so working the throttle up and down does not start a roll by accident."
+    },
+    "throttle": {
+      "control": "leftStick/y",
+      "deadZone": 0.30,
+      "outerDeadZone": 0.05,
+      "exponent": 1.0,
+      "ratePerSecond": 0.8,
+      "why": "The left stick's y moves the throttle SETTING, which stays where you leave it (Squadrons' gamepad throttle; FS2's throttle is a setting too). Full stick sweeps 0 to 100% in 1.25 s. A wide 0.30 dead zone keeps rolling from nudging the throttle. The ship's own accel/decel lag does the smoothing."
+    },
+    "buttons": {
+      "afterburner": "leftStickPress",
+      "primaryFire": "rightTrigger",
+      "targetAhead": "leftTrigger",
+      "targetNext": "buttonSouth",
+      "countermeasure": "buttonEast",
+      "matchSpeed": "buttonWest",
+      "orders": "buttonNorth",
+      "secondaryFire": "leftShoulder",
+      "missileFire": "rightShoulder",
+      "throttleFull": "dpad/up",
+      "throttleZero": "dpad/down",
+      "throttleThird": "dpad/left",
+      "throttleTwoThirds": "dpad/right"
+    },
+    "afterburnerToggle": true,
+    "afterburnerToggleWhy": "Clicking L3 lights the afterburner and it stays lit until you click again or the tank runs dry (Squadrons' boost click). Holding a stick button down while also rolling with that stick is tiring; set false to make it hold-to-burn like FS2's key.",
+    "system": {
+      "pause": "start",
+      "testKnock": "select",
+      "resume": "buttonSouth",
+      "respawn": "buttonNorth",
+      "quit": "buttonEast"
+    }
+  },
+  "keyboard": {
+    "pitchDown": "w",
+    "pitchUp": "s",
+    "yawLeft": "a",
+    "yawRight": "d",
+    "rollLeft": "q",
+    "rollRight": "e",
+    "throttleUp": "r",
+    "throttleDown": "f",
+    "throttleRatePerSecond": 0.8,
+    "throttleZero": "1",
+    "throttleThird": "2",
+    "throttleTwoThirds": "3",
+    "throttleFull": "4",
+    "afterburner": "tab",
+    "matchSpeed": "m",
+    "targetNext": "t",
+    "targetAhead": "y",
+    "primaryFire": "space",
+    "why": "Fallback for development: stick-style pitch (W = nose down), full deflection while a key is held (the flight model's turn lag smooths it). Afterburner is held, as FS2's Tab.",
+    "system": {
+      "pause": "escape",
+      "testKnock": "k",
+      "resume": "enter",
+      "respawn": "backspace",
+      "quit": "f10"
+    }
+  }
+}

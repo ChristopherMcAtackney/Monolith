@@ -1,0 +1,14 @@
+{
+  "scene": "flight",
+  "sceneOptions": { "pilot": "demo" },
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 2.0 },
+  "stills": [
+    { "name": "hull_run", "follow": true, "warmup": 4.0 },
+    { "name": "turn", "follow": true, "warmup": 6.0 },
+    { "name": "target", "follow": true, "warmup": 3.0 },
+    { "name": "bank", "follow": true, "warmup": 9.0 }
+  ],
+  "perf": [
+    { "name": "flight_playtest", "follow": true, "seconds": 20 }
+  ]
+}

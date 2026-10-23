@@ -1,0 +1,45 @@
+{
+  "format": "monolith-flight-playtest/1",
+  "about": "The flight playtest scene, built from code at boot (-mnScene flight, the default). Positions in metres, rotations as Euler degrees (pitch, yaw, roll). Target and demo inputs use Core's ControlInput signs: pitch +1 = nose up, yaw +1 = nose right, roll +1 = roll right. Everything here is placeholder; the feel is the point.",
+  "player": {
+    "ship": "vanguard_fighter",
+    "pos": [0, 90, -250],
+    "rot": [0, 0, 0],
+    "speedFraction": 0.66,
+    "throttle": 0.66
+  },
+  "lighting": {
+    "about": "The sun, sky, ambient fill and exposure come from the Sky system (SkyRig.Enable). This scene only widens the shadow range for kilometre-long hulls.",
+    "shadowDistance": 6000
+  },
+  "hulls": [
+    { "name": "Carrier", "pos": [255, -20, 950], "rot": [0, 0, 0], "length": 1600, "width": 240, "height": 170, "seed": 1 },
+    { "name": "Destroyer", "pos": [-760, 160, 2900], "rot": [4, 34, 0], "length": 2200, "width": 300, "height": 220, "seed": 2 },
+    { "name": "Cruiser", "pos": [950, 420, 3700], "rot": [-3, -62, 7], "length": 1100, "width": 180, "height": 140, "seed": 3 }
+  ],
+  "targets": [
+    { "ship": "gtf_myrmidon", "callsign": "Loop", "pos": [-70, 60, 650], "rot": [0, 0, 0], "speedFraction": 0.7, "throttle": 0.7,
+      "loop": 0, "keys": [ { "t": 0, "pitch": 0.35, "throttle": 0.7 } ] },
+    { "ship": "gtf_hercules", "callsign": "Circle", "pos": [90, -40, 1150], "rot": [0, 0, 90], "speedFraction": 0.8, "throttle": 0.8,
+      "loop": 0, "keys": [ { "t": 0, "pitch": 0.45, "throttle": 0.8 } ] },
+    { "ship": "gtb_artemis", "callsign": "Weave", "pos": [-160, 110, 1500], "rot": [0, 160, 0], "speedFraction": 0.6, "throttle": 0.6,
+      "loop": 12, "keys": [ { "t": 0, "yaw": 0.45, "pitch": 0.15, "throttle": 0.6 }, { "t": 6, "yaw": -0.45, "pitch": 0.15, "throttle": 0.6 } ] },
+    { "ship": "gtf_ulysses", "callsign": "Tumble", "pos": [-30, 0, 2100], "rot": [0, 180, 0], "speedFraction": 0.8, "throttle": 0.8,
+      "loop": 10, "keys": [ { "t": 0, "pitch": 0.3, "roll": 0.0, "throttle": 0.8 }, { "t": 5, "pitch": 0.3, "roll": 0.25, "throttle": 0.8 } ] }
+  ],
+  "demo": {
+    "about": "-mnPilot demo: the player's ship flies this instead of the pad (capture stills and perf runs). A key with 'place' puts the ship there first.",
+    "loop": 40,
+    "keys": [
+      { "t": 0, "place": { "pos": [0, 90, -250], "rot": [3, 3, 0], "speedFraction": 1.0 }, "throttle": 1.0 },
+      { "t": 0.3, "throttle": 1.0, "afterburner": true },
+      { "t": 8.8, "throttle": 1.0, "yaw": -0.5, "pitch": 0.3, "roll": -0.2 },
+      { "t": 12, "place": { "pos": [-70, 150, 330], "rot": [0, 0, 0], "speedFraction": 0.6 }, "throttle": 0.6, "yaw": 0.0, "pitch": 0.0, "afterburner": false },
+      { "t": 12.2, "throttle": 0.6, "targetNext": true },
+      { "t": 20, "place": { "pos": [-300, 120, 300], "rot": [-4, 25, 0], "speedFraction": 0.8 }, "throttle": 0.8, "yaw": 0.0, "pitch": 0.0 },
+      { "t": 21, "throttle": 0.8, "yaw": 0.25, "roll": -0.3 },
+      { "t": 24, "throttle": 0.8, "yaw": 0.0, "roll": 0.0, "pitch": 0.1 },
+      { "t": 30, "throttle": 1.0, "afterburner": true }
+    ]
+  }
+}

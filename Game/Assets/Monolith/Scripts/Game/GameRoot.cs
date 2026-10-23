@@ -2,6 +2,7 @@ using System;
 using Monolith.Capture;
 using Monolith.Core;
 using Monolith.Flight;
+using Monolith.Targeting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -41,10 +42,17 @@ namespace Monolith.Game
 
             if (CommandLine.Has("-mnLogEvents")) _eventLog = GameEvents.SubscribeAll(e => MnLog.Info("event " + e));
 
-            // A capture plan may ask for a particular test scene ("scene": "sky"); otherwise the smoke world.
+            // Flight and targeting run in every scene; the scene decides whether there are any ships.
+            var flight = new FlightSystem(World);
+            Sim.Register(new TargetingSystem(World));
+            Sim.Register(flight);
+
+            // A capture plan may ask for a particular test scene ("scene": "sky", "flight"); else -mnScene; else the smoke world.
             string scene = null, sceneOptions = null;
             if (CommandLine.Has("-mnCapture")) CapturePlan.PeekScene(CommandLine.Get("-mnCapture"), out scene, out sceneOptions);
-            if (!SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
+            scene ??= CommandLine.Get("-mnScene");
+            if (string.Equals(scene, FlightPlaytest.SceneName, StringComparison.OrdinalIgnoreCase)) FlightPlaytest.Build(World, flight, transform, sceneOptions);
+            else if (!SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
             if (CommandLine.Has("-mnCapture"))
             {

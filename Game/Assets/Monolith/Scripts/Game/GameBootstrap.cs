@@ -10,6 +10,8 @@ namespace Monolith.Game
     ///   -mnCapture plan.json -mnOut dir   capture stills and perf runs, then quit (see Capture/CaptureRunner)
     ///   -mnOnly a,b  -mnKind stills|perf  narrow a capture to some shots, or to one kind
     ///   -mnLogEvents                      log every GameEvents event as an [MN] line
+    ///   -mnScene flight                   the flight playtest (with -mnShip class, -mnPilot demo, -mnControls file, -mnFps n)
+    ///   -mnFlightScenarios f.json -mnShip class -mnOut dir   write flight traces for tools/fs2ref/compare.py, then quit
     /// </summary>
     public static class GameBootstrap
     {

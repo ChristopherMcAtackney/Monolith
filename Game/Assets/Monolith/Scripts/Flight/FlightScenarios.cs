@@ -169,8 +169,12 @@ namespace Monolith.Flight
                 }
             }
 
+            bool selfTest = FlightSelfTest.Run();
+            if (!selfTest) failed++;
+
             var info = new JObject
             {
+                ["selfTest"] = selfTest ? "ok" : "failed",
                 ["ship"] = cls.Name,
                 ["shipId"] = cls.Id,
                 ["tickHz"] = Sim.Hz,
@@ -182,7 +186,7 @@ namespace Monolith.Flight
                 ["model"] = "Game/Assets/Monolith/Scripts/Flight (ShipFlight, FlightSystem) run through Core's Sim and Pilots",
             };
             File.WriteAllText(Path.Combine(outDir, "run.json"), info.ToString());
-            MnLog.Info($"FLIGHT DONE {scenarios.Count - failed}/{scenarios.Count} ok");
+            MnLog.Info($"FLIGHT DONE {scenarios.Count - (selfTest ? failed : failed - 1)}/{scenarios.Count} ok, selftest {(selfTest ? "ok" : "FAILED")}");
             return failed == 0 ? 0 : 1;
         }
 

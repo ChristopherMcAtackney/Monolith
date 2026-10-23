@@ -16,6 +16,7 @@ namespace Monolith.Capture
         Pose _pose;
         float _fov;
         bool _active = true;
+        readonly bool _follow;
 
         public CaptureCamera(Camera cam, ShotBase shot, Pose basePose, float baseFov)
         {
@@ -30,19 +31,20 @@ namespace Monolith.Capture
             else if (shot.rot != null) r = Quaternion.Euler(V3(shot.rot));
             _pose = new Pose(p, r);
             _fov = shot.fov ?? baseFov;
+            _follow = shot.follow == true;
 
             RenderPipelineManager.beginCameraRendering += OnBeginCamera;
             Apply();
         }
 
-        public string Description =>
+        public string Description => _follow ? $"{_cam.name} following the game (fov {_fov:0.#})" :
             $"{_cam.name} pos {_pose.position.x:0.###},{_pose.position.y:0.###},{_pose.position.z:0.###} " +
             $"euler {_pose.rotation.eulerAngles.x:0.#},{_pose.rotation.eulerAngles.y:0.#},{_pose.rotation.eulerAngles.z:0.#} fov {_fov:0.#}";
 
         public void Apply()
         {
             if (!_active || _cam == null) return;
-            _cam.transform.SetPositionAndRotation(_pose.position, _pose.rotation);
+            if (!_follow) _cam.transform.SetPositionAndRotation(_pose.position, _pose.rotation);
             _cam.fieldOfView = _fov;
         }
 
@@ -58,7 +60,7 @@ namespace Monolith.Capture
             RenderPipelineManager.beginCameraRendering -= OnBeginCamera;
             if (_cam != null)
             {
-                _cam.transform.SetPositionAndRotation(_restorePose.position, _restorePose.rotation);
+                if (!_follow) _cam.transform.SetPositionAndRotation(_restorePose.position, _restorePose.rotation);
                 _cam.fieldOfView = _restoreFov;
             }
         }

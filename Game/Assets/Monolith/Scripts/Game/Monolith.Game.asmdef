@@ -6,6 +6,10 @@
         "Monolith.Capture",
         "Monolith.Flight",
         "Monolith.Sky",
+        "Monolith.Input",
+        "Monolith.View",
+        "Monolith.Hud",
+        "Monolith.Targeting",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
     ],

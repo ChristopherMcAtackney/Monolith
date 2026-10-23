@@ -69,6 +69,8 @@ namespace Monolith.Capture
                 throw new InvalidDataException($"{kind} name '{s.name}' must be letters, digits, _ - . only (it becomes a file name)");
             if (!names.Add(s.name)) throw new InvalidDataException($"duplicate name '{s.name}' (stills and perf runs share one namespace)");
             Vec(s.pos, "pos", s.name); Vec(s.rot, "rot", s.name); Vec(s.lookAt, "lookAt", s.name);
+            if (s.follow == true && (s.pos != null || s.rot != null || s.lookAt != null))
+                throw new InvalidDataException($"'{s.name}': a follow shot takes the game camera's pose, so it cannot also give pos, rot or lookAt");
         }
 
         static void Vec(float[] v, string field, string shot)
@@ -102,6 +104,9 @@ namespace Monolith.Capture
         public float? fov;
         public float? warmup;
         public int? seed;
+        /// <summary>true: shoot through the game's own camera wherever the game moves it (the player's view, e.g. a cockpit
+        /// flying a demo route). pos, rot and lookAt must then be absent.</summary>
+        public bool? follow;
     }
 
     public sealed class StillShot : ShotBase

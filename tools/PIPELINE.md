@@ -9,6 +9,7 @@ and bash. Never start Unity any other way: `tools\unity.ps1` holds the project l
 | Project set-up (idempotent) | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\unity.ps1 Monolith.EditorTools.Setup.Project` | 7 s |
 | Build player | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\unity.ps1 Monolith.EditorTools.Build.Player` | 12 s after a script edit, ~90 s cold (HDRP shaders) |
 | Capture a plan | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\capture.ps1 -Plan gauntlet\shots\smoke.json -Out gauntlet\captures\smoke\r1` | 4 s boot + 0.3 s per still + the perf seconds |
+| Flight traces + FS2 compare | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\flight.ps1 -Out gauntlet\captures\flight-model\rN\traces` | ~10 s for five classes |
 | Blender script | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\Viper\build_viper.py` | 2-5 s + your work |
 
 The whole loop is **edit, Build.Player, capture** (~30 s); the build compiles too. Use `-CompileOnly` straight after
@@ -58,7 +59,16 @@ tools\unity.ps1 <Namespace.Class.Method> [-TimeoutMin 45] [-NoGraphics] [-Full] 
   A plan with perf runs also waits for the `unity` lock so a build cannot skew the numbers; builds hold the `player` lock.
 - Smoke-plan baseline (RTX 4070 Ti, 1920x1080): about 1,080 fps average, 1% low about 540 fps, GPU 0.7 ms.
 
+- `"follow": true` on a still or perf run shoots through the game's own camera wherever the game moves it (the cockpit
+  flying a demo route); it cannot also give `pos`, `rot` or `lookAt`. `gauntlet\shots\flight_playtest.json` is the example:
+  `"scene": "flight"` with `"sceneOptions": { "pilot": "demo" }` flies the player's ship on the demo route in
+  `Resources/Flight/playtest.json`, and the shots are taken at its game times.
+
 Player flags: `-mnCapture plan.json -mnOut dir [-mnOnly a,b] [-mnKind stills|perf] [-mnLogEvents]`.
+Flight: `-mnScene flight` (the playtest; `Play.bat` in a playtest folder passes it), `-mnShip <class>`, `-mnPilot demo`,
+`-mnControls file`, `-mnFps n` (cap the frame rate to check smoothness), and
+`-batchmode -nographics -mnFlightScenarios gauntlet\shots\flight_scenarios.json -mnShip "GTF Ulysses" -mnOut dir`
+(traces only; `tools\flight.ps1` runs it for every class, then `tools\fs2ref\compare.py`, and also runs the flight self-test).
 
 ## Blender
 
