@@ -1,6 +1,7 @@
 # Monolith: vertical slice design
 
-Date: 2026-10-20. Status: approved by the user on 2026-10-20.
+Date: 2026-10-20. Status: approved by the user on 2026-10-20; story and tone revised by the user on
+2026-10-23 (the human diaspora, gallows humour, 80s synth).
 
 Monolith is a single-player space combat game in Unity, in the spirit of FreeSpace 2 (FS2) and, to a
 lesser degree, TIE Fighter (TF). It is built entirely by agents, headless, using the gauntlet loop. This
@@ -36,21 +37,31 @@ FS2-versus-TF for the view: FS2 in the seat, a real cabin out of it.
 
 ### The premise (user)
 
-You fly for an alien force that has arrived at the outer edge of the solar system to strike back at
-humanity, a warmongering, conquering species. The campaign fights its way inward: the Oort Cloud, past
+Revised by the user on 2026-10-23. You fly for the human diaspora: the descendants of the people who
+spread out from Earth during its conquering expansion, now arriving at the outer edge of the solar system
+to fight the humans who stayed behind (user). The campaign fights its way inward: the Oort Cloud, past
 the ice giants, Jupiter, the asteroid belt, Mars, and a huge final battle at Earth, with lots of capital
-ships and fighters. The inspiration is Ender's Game turned around: this time it is Earth that gets nuked
-at the end.
+ships and fighters. Earth gets nuked at the end (user; the idea began as Ender's Game turned around).
 
-- **Humanity** has nearly ascended into techno-god machine beings, like Mass Effect's Reapers. They
-  aren't quite gods yet, but they think they're close (user). They hold "biologics" in contempt (user),
-  and they still talk to the aliens: taunts and demands over the radio (user).
-- **The player's side** comes from the alien species in this part of the galaxy that Earth's expansion
-  subjugated, now pushing back (user). The player flies with their vanguard.
+- **Earth's humans** stayed behind and have nearly ascended into techno-god machine tyrants, like Mass
+  Effect's Reapers. They aren't quite gods yet, but they think they're close (user). They hold
+  "biologics" in contempt and see the diaspora as impure, fallen from grace (user). They still talk to
+  you: pronouncements, taunts and demands over the radio (user).
+- **The diaspora** diverged as it spread: generations on other worlds changed them, so they are
+  noticeably different from baseline humans but still unmistakably human (user). The player must feel
+  affinity for the people they fly with (user). Some diaspora peoples allied with alien species (user),
+  often ones Earth's expansion had subjugated (call), and those allies fly alongside them.
+- **Not Star Wars:** no chosen one, no mystic order, no destiny (user, choosing ideas 1 and 3 from the
+  brainstorm). Earth cut its own diaspora loose; the diaspora comes home with the peoples Earth
+  conquered. The gods are what humanity became and the diaspora is what's left of what it was, so the
+  gods' taunts can be personal: "we were you, once" (call).
 - **The story needs a MacGuffin**, to be worked out later (user).
-- The aliens are noticeably alien but not bizarre. The player must feel affinity for the people they
-  fly with (user).
-- The tone is serious throughout (user). The user's other games were deliberately zany; this one is not.
+- **Tone (user, 2026-10-23):** the universe plays it completely straight. The stakes are real, and the
+  gods are terrifying and speak like scripture. The protagonists are gritty, ordinary people with
+  gallows humour: the contrast of Ghostbusters' three New Yorkers facing a Sumerian god. Touchstones:
+  Venkman against Gozer, the Nostromo's crew in Alien, the Colonial Marines in Aliens, The Expanse's
+  Belters. The humour is dry and comes only from the crew, never from the world winking at the player,
+  and it is never zany (the user's other games were zany; this one is not).
 - The story's emotional arc ("the pathos") is deliberately parked for now (user). The slice needs only
   enough story to frame one mission: a briefing, radio chatter and a debrief.
 
@@ -70,7 +81,7 @@ at the end.
 **Non-goals for the slice**
 - The campaign beyond the one mission, campaign map, save system beyond what one mission needs.
 - Co-op or any networking (keep it in mind only, user).
-- Story arc, cutscenes, the alien homeworld or species lore beyond what the mission needs.
+- Story arc, cutscenes, the diaspora's worlds or alien-ally lore beyond what the mission needs.
 - Joystick tuning (supported, not tuned around; see section 8).
 - Walking anywhere outside the cabin, spacewalks, inventory, survival meters.
 
@@ -83,6 +94,8 @@ at the end.
 - Cabin moments that feel like chores. Getting up is rare, tense and purposeful; the seat is where the
   game lives (call).
 - Anything copied from FS2 or TF: code, assets, text, or audio (user; section 14).
+- Star Wars trappings: chosen ones, mystic orders, destiny (user).
+- Zany humour, or a world that winks at the player. The jokes belong to the crew (user).
 
 ## 3. The vertical slice
 
@@ -94,7 +107,7 @@ mission, skip phases, toggle invulnerability, and spawn waves (Star Frog had the
 
 ### The mission (call: an outline the builder may reshape, keeping its beats)
 
-A strike at a human early-warning outpost built into a comet nucleus in the Oort Cloud: humanity's
+A strike at Earth's early-warning outpost, built into a comet nucleus in the Oort Cloud: Earth's
 outermost picket. It should run roughly 10 to 15 minutes.
 
 1. **Quiet opening (TF-style).** The strike group drops in from its jump short of the outpost, with
@@ -106,7 +119,7 @@ outermost picket. It should run roughly 10 to 15 minutes.
    turrets are ready, its interceptors launch sooner and the comms array starts its warning sooner.
 3. **The strike.** Back in the seat, power up, and attack. The outpost's turrets wake up and
    interceptors scramble from it.
-4. **The fight opens up.** Waves of human fighters, arriving on FS2-style triggers (section 7). The
+4. **The fight opens up.** Waves of Earth's fighters, arriving on FS2-style triggers (section 7). The
    outpost has a comms array: if it isn't knocked out (subsystem targeting), it warns the inner system and
    a bigger human force will come. This is the first real decision. Call: if the array survives, the
    warning gets out and a heavier human response arrives late in the mission. It makes the mission
@@ -122,7 +135,7 @@ outermost picket. It should run roughly 10 to 15 minutes.
 
 If the player dies at any point, the death sequence plays (section 6).
 
-Cast for the slice (call): the player's fighter, 2 or 3 named wingmen, at least one friendly capital
+Cast for the slice (call): the player's fighter, 2 or 3 named wingmen (a mix of diaspora humans and alien allies), at least one friendly capital
 ship (the strike group's carrier or cruiser, the bombers' target; more are allowed if the climax needs
 them), the human outpost, human interceptors, heavy
 fighters, bombers, one corvette and one destroyer. Peak counts around 3 to 4 capital ships and up to
@@ -189,10 +202,10 @@ All of these were proposed and accepted (user approved the list; details are cal
 - **Damage you feel:** the player's ship has subsystems. Damaged engines cap speed; a damaged weapon
   mount takes a gun offline; damaged sensors put static on the radar and target box. The player knows
   from how the ship behaves before reading a number.
-- **Alien self-healing (user's idea):** the player's side's ships slowly heal hull and subsystems, a
-  living technology. It starts after a few seconds without taking damage and is never fast enough to
-  tank a fight. It creates a rhythm: dive in, take damage, break off to heal, go back in. Human ships do
-  not heal; they rely on repair ships or drones (not needed in the slice).
+- **Living-tech self-healing (user's idea):** the diaspora's ships slowly heal hull and subsystems,
+  using living technology from their alien allies (call). It starts after a few seconds without taking damage and is never fast enough to
+  tank a fight. It creates a rhythm: dive in, take damage, break off to heal, go back in. Earth's ships
+  do not heal; they rely on repair ships or drones (not needed in the slice).
 - **Wingman orders:** attack my target, disable my target, cover me, form up. From a hold-a-button quick
   menu so they don't use up buttons.
 - **Radar:** always on the HUD, FS2-style (blips above/below the plane), with incoming missiles shown.
@@ -218,7 +231,8 @@ all but disappears and the HUD takes over. Out of the seat, the cabin is physica
   view rises out of the seat and the HUD collapses into the cabin's own displays; sitting reverses it.
 - **While you're up, nobody is flying.** The ship holds its last heading and speed. In a fight, getting up
   is a gamble.
-- **Your own hands are visible**, noticeably alien but not bizarre, doing physical things. Seeing them
+- **Your own hands are visible**: human, but noticeably changed by the diaspora's divergence (call),
+  doing physical things. Seeing them
   work tells the player who they are without a word of story.
 - **Interactions are short physical actions** (pull, hold, turn, push; a few seconds) on one context
   button, with minimal prompts in the rough tech style. No puzzles, no inventory, no minigames, and they
@@ -229,7 +243,7 @@ all but disappears and the HUD takes over. Out of the seat, the cabin is physica
 ### The interactions
 - **Go dark:** pull the main breaker. The HUD dies, the cabin goes black apart from emergency glow, and
   the ship drifts. A ship or station's scan sweeps past: its light crawls through the canopy, the hull
-  creaks, you hear your own breathing. The humans scan for life signs, so going dark hides the fact that you're alive (call).
+  creaks, you hear your own breathing. Earth's forces scan for life signs, so going dark hides the fact that you're alive (call).
   Whether you are detected depends on your power state (the builder
   may add more, such as moving or making noise while dark). The result is a mission event, so the mission
   data decides what detection means.
@@ -262,13 +276,14 @@ ISS modules.
 
 ## 7. Enemies, AI and pacing
 
-### Human forces (user: "take basic direction from FS2 and/or TF")
-The roles follow FS2; the fiction is that humanity's forces are near-machine now (user). Calls,
+### Earth's forces (user: "take basic direction from FS2 and/or TF")
+The roles follow FS2; the fiction is that Earth's forces are near-machine now (user). Calls,
 approved by the user in the playback:
 - **Most fighters are drone-like:** no fear, no breaking off when hurt (FS2's courage at zero).
 - **A few "ascended" aces** are the frightening exceptions: much better pilots, recognisable ships, and
   cold contempt over the radio. Not required in the slice, but the AI profiles must allow them.
-- **Their radio** is contemptuous and superior, aimed at "biologics" (user).
+- **Their radio** is contemptuous, grand and scriptural, aimed at "biologics" and the "fallen" diaspora
+  (user). Against it, your crew's dry gallows humour (user).
 
 The roster:
 - **Interceptors:** fast, fragile, in packs; go straight for the player.
@@ -338,22 +353,28 @@ Missions are data files (one file per mission), not C#. A future mission editor 
 - **Ships and stations are modelled by script in Blender** (user), as in Trap Door. PBR materials,
   panel detail, wear, lights and engine glows. Capital ships need to read as enormous: surface detail at
   several scales.
-- **Your side's look (user):** the ships, the cabin and the HUD take inspiration from the technology of
-  the aliens in Independence Day (1996), but not from their bodies (user: "that's taking it too far").
-  Approved guess: dark, ribbed, biomechanical shapes and glowing, glyph-like displays, kept rough and
-  spare. It suits the self-healing, living tech. Inspiration only; no copied designs.
-- **The humans' look (proposed, approved in the playback):** cold and precise. Matte black and chrome,
+- **Your side's look:** the diaspora's ships are worn, used-future human hulls, practical and patched,
+  in the spirit of the Nostromo and The Expanse's Belter ships (call), with alien-ally technology grafted
+  on. That grafted tech, and the HUD and cabin displays it powers, take inspiration from the technology
+  of the aliens in Independence Day (1996), not from their bodies (user). Approved guess for those
+  parts: dark, ribbed, biomechanical shapes and glowing, glyph-like displays, kept rough and spare; it is
+  where the self-healing comes from. Inspiration only; no copied designs.
+- **Earth's look (proposed, approved in the playback):** cold and precise. Matte black and chrome,
   perfect hard geometry, harsh white light, and a deep Reaper-like horn when a capital ship arrives. The
-  contrast with your warm, ribbed, glowing ships helps the battle read at a glance.
+  contrast with your patched, part-living ships helps the battle read at a glance.
 - **Sky and planets (call):** a real star catalogue / Milky Way panorama for the sky (for example NASA
   SVS "Deep Star Maps"; verify licence). Planets later from real NASA and mission imagery (verify licence
   per source; much is public domain). The slice needs the sky and the Sun only.
-- **Music (from FS2's music table):** the music follows the fight: ambience; three battle intensities;
-  short stings for friendly and enemy arrivals; victory, failure and death. Driven by mission state and
-  the music actions in mission data. Agents compose it as MIDI (user), rendered to audio for the game;
-  the user can replace any track with their own MP3s later (user).
-- **Radio voices (call):** generated with Trap Door's TTS pipeline, with a radio filter; the aliens get
-  an alien vocal texture, the humans a cold, machine-edged one. The user's own recordings can replace
+- **Music: 80s epic synth (user, 2026-10-23).** Touchstones: Vangelis's Blade Runner, Tangerine Dream,
+  John Carpenter, Mass Effect 1's score. Its structure follows FS2's music table: the music follows the
+  fight with ambience, three battle intensities, short stings for friendly and enemy arrivals, and
+  victory, failure and death. Driven by mission state and the music actions in mission data. Agents
+  compose it as MIDI (user) and render it through an analog-style synth with a proper 80s sound (call:
+  polysynths, chorus, big reverb, gated drums; never plain General MIDI); the user can replace any
+  track with their own MP3s later (user). The same 80s feel carries into the atmosphere (user).
+- **Radio voices (call):** generated with Trap Door's TTS pipeline, with a radio filter. Diaspora crews
+  sound human, with varied accents and dry humour; alien allies get an alien vocal texture; Earth's gods
+  sound vast, cold and machine-edged. The user's own recordings can replace
   any line. Radio and briefing text are data.
 - **Sound effects:** weighty and physical: hits, shield and hull impacts, lock tones, missile warning,
   beam charge-up, big explosions. Sound in space, as FS2 has.
@@ -465,8 +486,8 @@ screens (call).
 Exact tuning numbers (starting from the appendix), the mission's layout and exact script, the pad
 mapping, the number of difficulty levels, HUD layout within the stated style, ship and station designs within the stated direction,
 weapon names and visuals, sound design, the debug and capture tools, file formats, and how the
-architecture is split in detail, the cabin's layout, and the exact interactions and death variations. Placeholder names are fine for the alien species, factions, ships and
-characters.
+architecture is split in detail, the cabin's layout, and the exact interactions and death variations. Placeholder names are fine for the diaspora peoples, alien allies,
+factions, ships and characters.
 
 ## 14. Reference material and boundaries
 
