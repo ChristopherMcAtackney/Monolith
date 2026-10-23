@@ -39,22 +39,37 @@ namespace Monolith.Sky
 
         // ---- stars and the Milky Way ---------------------------------------------------------------------------------------
         /// <summary>Stars fainter than this are not drawn (V magnitude). The catalogue goes to about 9.</summary>
-        public float LimitMagnitude = 8.8f;
+        public float LimitMagnitude = 8.4f;
         /// <summary>Energy of a magnitude-<see cref="StarReferenceMagnitude"/> star, in display units.</summary>
-        public float StarGain = 0.7f;
+        public float StarGain = 0.55f;
         public float StarReferenceMagnitude = 6f;
         /// <summary>1 follows real flux ratios; lower compresses the range between Sirius and the faintest stars so both stay visible.</summary>
         public float StarGamma = 1.0f;
         /// <summary>Standard deviation of a star's core in screen pixels (0.75: a star's peak varies by about 1.45 times between the best and worst sub-pixel position; 0.65 gives 1.65 and crisper dots; 1.0 gives 1.25 and soft ones).</summary>
         public float StarSigmaPx = 0.75f;
         /// <summary>0 = every star white, 1 = true colours, above 1 = exaggerated.</summary>
-        public float StarSaturation = 1.0f;
+        public float StarSaturation = 0.85f;
         /// <summary>How much of a bright star's light goes into its halo (0 to 1) and the halo scale in pixels for dim and for very bright stars.</summary>
         public float StarHaloFraction = 0.8f;
         public float StarHaloSizeDimPx = 0.9f;
         public float StarHaloSizeBrightPx = 7f;
         /// <summary>The brightest stars get a faint horizontal streak: strength (0 = none) and reach in pixels.</summary>
         public float StarStreak = 0.5f;
+        /// <summary>
+        /// Camera exposure for the stars. The camera look's meter reports how much light the frame holds; stars are caught by 1 / (1 + (light / L0)^power):
+        /// a dark quiet frame shows nearly all of them, one with the Sun, lit hulls or an explosion in it only the brightest. L0 is the frame brightness
+        /// (display units, the square of the mean square-root luminance) at which stars lose half their light; the Milky Way follows the same curve to
+        /// the power MilkyWayExposure. StarThinning is the share of the faintest stars the camera misses outright, picked per star so it never changes.
+        /// </summary>
+        public float StarExposureL0 = 0.0035f;
+        public float StarExposurePower = 1.0f;
+        public float MilkyWayExposure = 0.35f;
+        public float StarThinning = 0.5f;
+        /// <summary>No two stars catch the same light: brightness varies by this fraction, size by this fraction, and a share of the brightest get a short vertical glint.</summary>
+        public float StarBrightnessJitter = 0.35f;
+        public float StarSizeJitter = 0.3f;
+        public float StarGlintRate = 0.15f;
+        public float StarGlintReachPx = 14f;
         public float StarStreakReachPx = 6f;
         /// <summary>The map is 0 to 1; this scales it to display units. About 0.55 with the contrast below shows the band and its dust lanes and leaves the faint background nearly black.</summary>
         public float MilkyWayGain = 0.55f;

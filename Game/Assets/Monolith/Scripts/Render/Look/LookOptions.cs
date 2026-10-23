@@ -17,16 +17,16 @@ namespace Monolith.Look
 
         // ---- the film: runs after tonemapping, on the whole picture -----------------------------------------------------------
         /// <summary>The colour the darkest areas rise to (display-encoded values, so 0.02 is about 5 of 255, added to black and fading out as a pixel brightens): a graded floor, not a flat zero.</summary>
-        public Color FloorColor = new Color(0.008f, 0.020f, 0.036f);
+        public Color FloorColor = new Color(0.011f, 0.022f, 0.034f);
         /// <summary>How much the corners lose, 0 to 1.</summary>
-        public float Vignette = 0.10f;
+        public float Vignette = 0.04f;
         /// <summary>Grain strength as a standard deviation in display-encoded values (0.01 is about 2.5 of 255), strongest in shadows and midtones.</summary>
         public float GrainAmount = 0.014f;
         /// <summary>Grain clump size in pixels, and how much of it differs per colour channel (0 = monochrome, 1 = fully coloured).</summary>
         public float GrainSizePx = 2.0f;
         public float GrainChroma = 0.3f;
         /// <summary>A slow fixed mottle in the black, as display-encoded values (0.005 is about 1 of 255 here) and its size in pixels: black that is not perfectly flat.</summary>
-        public float Mottle = 0.006f;
+        public float Mottle = 0.0035f;
         public float MottleSizePx = 160f;
 
         // ---- the lens: runs before post-processing, in HDR ---------------------------------------------------------------------
@@ -38,16 +38,16 @@ namespace Monolith.Look
         public float NitsPerUnit = 19660.8f;
 
         /// <summary>The wide veil that lifts the whole frame around the Sun: energy, and size as a fraction of the screen height. Cool lavender.</summary>
-        public float VeilEnergy = 60000f;
+        public float VeilEnergy = 95000f;
         public float VeilSize = 0.40f;
         public Color VeilTint = new Color(0.52f, 0.68f, 1.0f);
         /// <summary>The haze: a very wide, very faint glow that lifts even the corners of the frame when the Sun is in view (energy, size as a fraction of the screen height).</summary>
-        public float HazeEnergy = 70000f;
+        public float HazeEnergy = 110000f;
         public float HazeSize = 1.0f;
         /// <summary>The wings (mid-size power-law glow) and the tight halo.</summary>
-        public float WingEnergy = 6500f;
+        public float WingEnergy = 10000f;
         public float WingSize = 0.055f;
-        public float HaloEnergy = 1100f;
+        public float HaloEnergy = 1800f;
         public float HaloSize = 0.010f;
         /// <summary>Red glows a little tighter and blue a little wider than green by this fraction: the colour fringe.</summary>
         public float Fringe = 0.12f;
@@ -60,18 +60,34 @@ namespace Monolith.Look
         public float StreakReach = 0.10f;
         public float StreakUneven = 0.75f;
         /// <summary>The broad tinted streaks (one on the Sun, two fainter siblings above and below): peak, thickness, reach, spacing.</summary>
-        public float BroadPeak = 0.26f;
-        public float BroadThickness = 0.010f;
+        public float BroadPeak = 0.40f;
+        public float BroadThickness = 0.013f;
         public float BroadReach = 0.24f;
-        public float BroadSpacing = 0.07f;
+        public float BroadSpacing = 0.08f;
         public Color BroadTint = new Color(0.24f, 0.68f, 1.0f);
 
         /// <summary>Reflections of the Sun between lens surfaces, on the line through the middle of the picture: 0 = none.</summary>
-        public float Ghosts = 0.16f;
+        public float Ghosts = 0.30f;
         /// <summary>Dust and smudges on the lens or canopy that the glare lights: dust, bokeh discs, and the scale of the dust map (1 = one map across the frame).</summary>
         public float Dust = 1.0f;
         public float DustBokeh = 0.4f;
         public float DustScale = 1.0f;
+        /// <summary>The crystalline core: a soft six-sided bloom on the Sun and a few uneven spikes (strength, bloom radius and spike length as fractions of the screen height). 0 = none.</summary>
+        public float Crystal = 0.9f;
+        public float CrystalSize = 0.012f;
+        public float CrystalSpikeLength = 0.09f;
         public int Seed = 7;
+
+        // ---- the meter: how bright the frame is -------------------------------------------------------------------------
+        /// <summary>
+        /// Measure how bright the picture is (a 32 x 18 grid, then one number) so the sky can show the stars a camera would catch: few when the
+        /// frame holds a lot of light (the Sun, lit hulls, lasers, an explosion), more when it is dark and quiet. The sky reads the number the
+        /// next frame. Seconds for the reading to follow a brighter frame (the iris closes fast) and a darker one (it opens slowly).
+        /// </summary>
+        public bool SceneMeter = true;
+        public float MeterAttackSeconds = 0.15f;
+        public float MeterReleaseSeconds = 1.4f;
+        /// <summary>Log the meter reading (and what fraction of the faint light the sky lets through at the default L0 of 0.0035) every 10 frames. For tuning.</summary>
+        public bool LogMeter = false;
     }
 }

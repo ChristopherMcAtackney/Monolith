@@ -41,6 +41,9 @@ namespace Monolith.Sky
         static readonly int IdStarParams = Shader.PropertyToID("_StarParams");
         static readonly int IdStarShape = Shader.PropertyToID("_StarShape");
         static readonly int IdStarHalo = Shader.PropertyToID("_StarHalo");
+        static readonly int IdStarExposure = Shader.PropertyToID("_StarExposure");
+        static readonly int IdStarVariety = Shader.PropertyToID("_StarVariety");
+        static readonly int IdSceneKey = Shader.PropertyToID("_MnSceneKey");
 
         public MonolithSkyRenderer()
         {
@@ -57,6 +60,7 @@ namespace Monolith.Sky
             _material.SetTexture(IdMilkyWay, _milkyWay);
             _material.SetBuffer(IdStarPosMag, _stars.PosMag);
             _material.SetBuffer(IdStarColor, _stars.Color);
+            if (Shader.GetGlobalTexture(IdSceneKey) == null) Shader.SetGlobalTexture(IdSceneKey, Texture2D.blackTexture);     // no meter running: every star shows
         }
 
         public override void Cleanup()
@@ -128,6 +132,8 @@ namespace Monolith.Sky
             _block.SetVector(IdStarParams, starParams);
             _block.SetVector(IdStarShape, sky.starShape.value);
             _block.SetVector(IdStarHalo, sky.starHalo.value);
+            _block.SetVector(IdStarExposure, sky.starExposure.value);
+            _block.SetVector(IdStarVariety, sky.starVariety.value);
 
             CoreUtils.DrawFullScreen(cmd, _material, _block, PassRender);
 

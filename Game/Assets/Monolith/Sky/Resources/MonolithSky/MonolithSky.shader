@@ -20,6 +20,7 @@ Shader "Hidden/Monolith/Sky"
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Sky/SkyUtils.hlsl"
+    #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Random.hlsl"
 
     TEXTURE2D(_MilkyWay);
     SAMPLER(sampler_MilkyWay);
@@ -45,6 +46,9 @@ Shader "Hidden/Monolith/Sky"
     float4 _StarParams;        // x gain, y gamma, z reference magnitude, w limit magnitude
     float4 _StarShape;         // x core sigma px, y saturation, z halo fraction
     float4 _StarHalo;          // x halo size px (dim), y halo size px (bright), z streak strength, w streak reach px (brightest)
+    float4 _StarExposure;      // x frame brightness at which the stars lose half their light, y how sharply, z the same for the Milky Way (exponent), w fraction of the faintest stars a camera misses
+    float4 _StarVariety;       // x brightness jitter, y size jitter, z glint rate (share of the brightest stars with a vertical glint), w glint length px
+    TEXTURE2D(_MnSceneKey);    // 1 x 1, written by the camera look's meter: mean of sqrt(luminance) of the last frame (black if there is no meter)
 
     // ------------------------------------------------------------------------------------------------ helpers
 
@@ -130,11 +134,20 @@ Shader "Hidden/Monolith/Sky"
         return float4(c, 1.0);
     }
 
+    // How much of the faint light a camera exposed for this frame still catches: 1 in a dark quiet frame, falling toward 0 as the frame holds more light
+    // (the Sun, lit hulls, lasers, explosions). The meter gives the last frame's brightness.
+    float CameraCatch()
+    {
+        float key = LOAD_TEXTURE2D(_MnSceneKey, int2(0, 0)).x;
+        float L = key * key;
+        return rcp(1.0 + pow(L / max(_StarExposure.x, 1e-5), max(_StarExposure.y, 0.1)));
+    }
+
     float4 FragRender(Varyings input) : SV_Target
     {
         UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
         float3 dirWS = ViewDirWS(input.positionCS.xy);
-        float3 c = MilkyWay(dirWS) + _BlackLift.rgb + SunLayer(input.positionCS.xy);
+        float3 c = MilkyWay(dirWS) * pow(CameraCatch(), _StarExposure.z) + _BlackLift.rgb + SunLayer(input.positionCS.xy);
         return float4(c * (_NitsPerUnit * GetCurrentExposureMultiplier()), 1.0);
     }
 
@@ -147,6 +160,7 @@ Shader "Hidden/Monolith/Sky"
         nointerpolation float4 energy : TEXCOORD1;            // x core energy, y halo energy, z halo size px, w 1 / (sigma * sqrt 2)
         nointerpolation float2 streak : TEXCOORD3;            // x streak peak, y streak reach px
         nointerpolation float2 wing : TEXCOORD4;              // x wing energy, y wing size px
+        nointerpolation float2 glint : TEXCOORD5;             // x vertical glint peak, y its reach px
         nointerpolation float3 colour : TEXCOORD2;            // luminance-1 colour
     };
 
@@ -161,6 +175,7 @@ Shader "Hidden/Monolith/Sky"
         o.colour = 0.0;
         o.streak = 0.0;
         o.wing = 0.0;
+        o.glint = 0.0;
 
         uint star = vertexID / 6u;
         uint corner = vertexID - star * 6u;
@@ -174,9 +189,16 @@ Shader "Hidden/Monolith/Sky"
         float mag = pm.w;
         float fade = saturate((_StarParams.w - mag) * 4.0);
         float flux = _StarParams.x * exp2(-0.4 * _StarParams.y * (mag - _StarParams.z) * 3.321928) * fade;
+
+        // Every star gets its own dice: the camera misses some of the faint ones, and no two catch the same light, the same size or the same tint.
+        float h1 = GenerateHashedRandomFloat(uint2(star, 1u)), h2 = GenerateHashedRandomFloat(uint2(star, 2u)), h3 = GenerateHashedRandomFloat(uint2(star, 3u));
+        float h4 = GenerateHashedRandomFloat(uint2(star, 4u)), h5 = GenerateHashedRandomFloat(uint2(star, 5u)), h6 = GenerateHashedRandomFloat(uint2(star, 6u));
+        float keep = 1.0 - _StarExposure.w * saturate((mag - 6.0) / 2.6);
+        if (h3 > keep) return o;
+        flux *= CameraCatch() * lerp(1.0 - _StarVariety.x, 1.0 + _StarVariety.x, h1);
         if (flux < 1e-6) return o;
 
-        float sigma = _StarShape.x;
+        float sigma = _StarShape.x * lerp(1.0 - _StarVariety.y, 1.0 + 1.4 * _StarVariety.y, h2);
         float lf = log2(flux) * 0.30103;                      // log10
         float t = saturate((lf + 1.5) / 3.0);                 // 0 for dim stars, 1 for the brightest
         // A point-spread function: the sharp core, a halo that even middling stars have a little of, and wide wings on the bright ones.
@@ -190,23 +212,29 @@ Shader "Hidden/Monolith/Sky"
         rHalo = max(rHalo, aw * sqrt(max(sqrt(wingPeak / 0.0012) - 1.0, 0.0)));
         float extent = clamp(max(3.2 * sigma, rHalo) + 1.0, 3.0, 140.0);
         // The brightest stars also get a faint horizontal streak, like the Sun does (only the top of the range: t above about 0.75).
-        float streakK = _StarHalo.z * smoothstep(0.72, 1.0, t);
+        float streakK = _StarHalo.z * smoothstep(0.72, 1.0, t) * lerp(0.2, 1.7, h5);
         float streakReach = _StarHalo.w * streakK;
         float extentX = clamp(max(extent, streakReach * 6.0 + 2.0), 3.0, 240.0);
+        // A share of the brightest stars also catch a short vertical glint (a cross), most do not.
+        float glintK = smoothstep(0.62, 0.95, t) * step(1.0 - _StarVariety.z, h6) * lerp(0.5, 1.4, h4);
+        float glintReach = _StarVariety.w * glintK;
+        float extentY = clamp(max(extent, glintReach * 6.0 + 2.0), 3.0, 240.0);
 
         float2 ndc = clip.xy / clip.w;
-        float2 marginNdc = float2(extentX, extent) * 2.0 * _ScreenSize.zw;
+        float2 marginNdc = float2(extentX, extentY) * 2.0 * _ScreenSize.zw;
         if (any(abs(ndc) > 1.0 + marginNdc)) return o;
 
         uint packed = _StarColor[star];
         float3 chroma = float3(packed & 255u, (packed >> 8) & 255u, (packed >> 16) & 255u) * (1.0 / 255.0);
         float lum = dot(chroma, float3(0.2126, 0.7152, 0.0722));
-        o.colour = lerp(1.0, chroma / max(lum, 1e-3), _StarShape.y);
+        float sat = _StarShape.y * lerp(0.35, 1.0, h4) * (1.0 - 0.5 * t);
+        o.colour = lerp(1.0, chroma / max(lum, 1e-3), sat) * lerp(float3(1.0, 0.97, 0.90), float3(0.90, 0.97, 1.0), h5);
 
         o.energy = float4(flux * (1.0 - haloFrac - wingFrac), flux * haloFrac, a, rcp(sigma * 1.41421356));
         o.wing = float2(flux * wingFrac, aw);
-        float2 offsetPx = kCorner[corner] * float2(extentX, extent);
+        float2 offsetPx = kCorner[corner] * float2(extentX, extentY);
         o.streak = float2(flux * 0.02 * streakK, max(streakReach, 0.01));
+        o.glint = float2(flux * 0.012 * glintK, max(glintReach, 0.01));
         o.offsetPx = offsetPx;
         float2 ndcOut = ndc + offsetPx * 2.0 * _ScreenSize.zw;
         o.positionCS = float4(ndcOut * clip.w, UNITY_RAW_FAR_CLIP_VALUE * clip.w, clip.w);
@@ -226,6 +254,8 @@ Shader "Hidden/Monolith/Sky"
         float v = i.energy.x * core + i.energy.y * halo + i.wing.x * wing;
         if (i.streak.x > 0.0)
             v += i.streak.x * exp(-abs(d.y) / 0.8) * pow(rcp(1.0 + abs(d.x) / i.streak.y), 1.6);
+        if (i.glint.x > 0.0)
+            v += i.glint.x * exp(-abs(d.x) / 0.7) * pow(rcp(1.0 + abs(d.y) / i.glint.y), 1.8);
         return float4(i.colour * (v * _NitsPerUnit * GetCurrentExposureMultiplier()), 0.0);
     }
 

@@ -122,6 +122,8 @@ namespace Monolith.Sky
             _sky.sunCore.Override(new Vector4(o.SunCore, o.SunCoreSigmaPx, 0f, 0f));
                 _sky.starParams.Override(new Vector4(o.StarGain, o.StarGamma, o.StarReferenceMagnitude, o.LimitMagnitude));
             _sky.starShape.Override(new Vector4(o.StarSigmaPx, o.StarSaturation, o.StarHaloFraction, 0f));
+            _sky.starExposure.Override(new Vector4(o.StarExposureL0, o.StarExposurePower, o.MilkyWayExposure, o.StarThinning));
+            _sky.starVariety.Override(new Vector4(o.StarBrightnessJitter, o.StarSizeJitter, o.StarGlintRate, o.StarGlintReachPx));
             _sky.starHalo.Override(new Vector4(o.StarHaloSizeDimPx, o.StarHaloSizeBrightPx, o.StarStreak, o.StarStreakReachPx));
             _sky.milkyWay.Override(new Vector4(o.MilkyWayGain, o.MilkyWayContrast, o.MilkyWaySaturation, 0f));
             _sky.milkyWayTint.Override(o.MilkyWayTint);
