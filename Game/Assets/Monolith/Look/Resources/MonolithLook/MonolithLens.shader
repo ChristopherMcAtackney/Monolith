@@ -34,7 +34,7 @@ Shader "Hidden/Monolith/Lens"
 
     float4 _Grade;          // x: grain amount, y: grain size px, z: grain chroma, w: frame
     float4 _Floor;          // rgb: black floor colour (display), w: vignette amount
-    float4 _GradeMisc;      // x: master scale for the grade
+    float4 _GradeMisc;      // x: master scale for the grade, y: mottle amount, z: mottle size px
 
     // ----------------------------------------------------------------------------------------------- helpers
 
@@ -86,18 +86,22 @@ Shader "Hidden/Monolith/Lens"
 
     // ----------------------------------------------------------------------------------------------- glare
 
-    // A soft round or six-sided ghost: 1 at its rim, fading in toward the middle and out beyond.
-    float GhostShape(float2 d, float radius, float hex)
+    // A soft ghost: a glow with no edge to it. Round, or a rounded six-sided one (a hexagon blurred and halfway to a circle), a little
+    // lopsided and lumpy so it does not look drawn. d is in screen heights from its centre.
+    float GhostShape(float2 d, float radius, float hex, float seed)
     {
-        float r = length(d);
+        float2 q = d / radius;
+        float r = length(q);
         if (hex > 0.5)
         {
-            float2 q = abs(d);
-            r = max(dot(q, float2(0.8660254, 0.5)), q.y) * 1.0;      // hexagon distance
+            float2 a = abs(q);
+            float h = max(dot(a, float2(0.8660254, 0.5)), a.y);
+            r = lerp(r, h, 0.5);
         }
-        float edge = smoothstep(radius * 1.12, radius * 0.92, r);       // outer edge
-        float body = 0.35 + 0.65 * smoothstep(radius * 0.2, radius * 0.95, r);    // brighter toward the rim
-        return edge * body;
+        r *= 1.0 + 0.18 * (Noise2(q * 1.3 + seed) - 0.5);                  // lopsided
+        float body = exp(-r * r * 1.35) * 0.85 + 0.15 * smoothstep(2.2, 0.4, r);
+        float lumpy = 0.78 + 0.44 * Noise2(q * 2.1 + seed * 3.1 + 7.0);
+        return body * lumpy;
     }
 
     float3 Glare(float2 pos, float vis, out float lightField)
@@ -122,26 +126,29 @@ Shader "Hidden/Monolith/Lens"
         }
         float3 wide = (veil * seen + halo * vis) * _VeilTint.rgb;
 
-        // Anamorphic streaks: a thin pale one, and a broad tinted one with fainter siblings above and below. Uneven along their length.
+        // Anamorphic streaks: a thin pale one, and a broad tinted one with fainter siblings above and below. They are fat near the Sun and
+        // thin out and fade with distance, break up into patches, wander off the line and are longer to one side.
         float ax = abs(d.x), ay = abs(d.y);
         float u = _StreakThin.w;
-        float along = lerp(1.0 - u, 1.0, Noise1(d.x / (0.23 * H) + _Seed.x)) * lerp(1.0 - 0.5 * u, 1.0, Noise1(d.x / (0.07 * H) + _Seed.x * 1.7 + 5.0));
-        float wob = (Noise1(d.x / (0.31 * H) + _Seed.x * 0.3 + 9.0) - 0.5) * 0.004 * H * u;    // the streak wanders a little off the line
-        float yThin = abs(d.y - wob);
-        float sideK = d.x > 0.0 ? 1.0 : 0.55 + 0.35 * Noise1(_Seed.x * 0.7);      // longer on one side than the other
-        float thick = _StreakThin.y * H * lerp(1.0, 0.45 + 1.5 * Noise1(d.x / (0.13 * H) + 3.0), u);
-        float thin = _StreakThin.x * exp(-yThin / max(thick, 0.3))
-                     * rcp(1.0 + ax / max(_StreakThin.z * H * sideK, 1.0)) * exp(-ax / (7.0 * _StreakThin.z * H * sideK + 1.0)) * along * vis;
+        float sideK = d.x > 0.0 ? 1.0 : 0.55 + 0.35 * Noise1(_Seed.x * 0.7);
+        float wob = (Noise1(d.x / (0.31 * H) + _Seed.x * 0.3 + 9.0) - 0.5) * 0.004 * H * u;
+        float tr = ax / max(_StreakThin.z * H * sideK, 1.0);                       // distance in reach units
+        float breakup = lerp(1.0, smoothstep(0.12, 0.7, Noise1(d.x / (0.09 * H) + _Seed.x * 1.7 + 5.0)) * 0.8 + 0.2, u)
+                      * lerp(1.0, 0.45 + 0.55 * Noise1(d.x / (0.27 * H) + _Seed.x), u);
+        float thick = _StreakThin.y * H * lerp(2.6, 0.5, saturate(tr / 2.2)) * lerp(1.0, 0.6 + 0.8 * Noise1(d.x / (0.13 * H) + 3.0), u);
+        float taper = exp(-pow(tr, 0.9) * 1.5);
+        float thin = _StreakThin.x * exp(-abs(d.y - wob) / max(thick, 0.3)) * taper * breakup * vis;
         float broad = 0.0;
         [unroll] for (int b = 0; b < 3; b++)
         {
             float off = (b == 0) ? 0.0 : ((b == 1) ? 1.0 : -1.6) * _StreakBroad.w * H;
             float amp = (b == 0) ? 1.0 : ((b == 1) ? 0.30 : 0.18);
             float reach = _StreakBroad.z * H * ((b == 0) ? 1.0 : 0.7);
-            float th = _StreakBroad.y * H * ((b == 0) ? 1.0 : 1.6);
+            float tb = ax / max(reach, 1.0);
+            float th = _StreakBroad.y * H * ((b == 0) ? 1.0 : 1.6) * lerp(1.7, 0.7, saturate(tb / 2.0));
             float yy = abs(d.y - off - wob * 1.5);
-            broad += amp * exp(-pow(yy / max(th, 0.5), 1.4)) * rcp(1.0 + ax / max(reach, 1.0)) * exp(-ax / (6.0 * reach + 1.0))
-                     * lerp(1.0 - 0.7 * u, 1.0, Noise1(d.x / (0.19 * H) + _Seed.x * 2.3 + 11.0 * b));
+            broad += amp * exp(-pow(yy / max(th, 0.5), 1.4)) * exp(-pow(tb, 0.9) * 1.3)
+                     * lerp(1.0 - 0.8 * u, 1.0, Noise1(d.x / (0.15 * H) + _Seed.x * 2.3 + 11.0 * b));
         }
         broad *= _StreakBroad.x * lerp(0.12, 1.0, vis);
         // The broad streaks drift in hue along their length (teal toward violet), as coated glass does.
@@ -154,19 +161,19 @@ Shader "Hidden/Monolith/Lens"
         // Ghosts: the Sun reflected between lens surfaces lands on the line through the picture centre, mirrored.
         float2 ctr = 0.5 * _ScreenSize.xy;
         float2 toSun = s - ctr;
-        float edgeK = saturate(length(toSun) / (0.55 * H));            // ghosts grow as the Sun moves away from the middle
+        float edgeK = 0.4 + 0.6 * saturate(length(toSun) / (0.55 * H));       // ghosts grow as the Sun moves away from the middle
         float3 ghosts = 0.0;
         if (_GlareScale.w > 0.0)
         {
-            static const float kT[4] = { 0.55, 1.35, 1.9, -0.45 };
-            static const float kR[4] = { 0.050, 0.030, 0.085, 0.020 };
-            static const float3 kC[4] = { float3(0.35, 0.65, 1.0), float3(1.0, 0.55, 0.35), float3(0.55, 1.0, 0.8), float3(0.9, 0.8, 1.0) };
-            static const float kA[4] = { 0.5, 0.35, 0.22, 0.45 };
-            [unroll] for (int g = 0; g < 4; g++)
+            static const float kT[3] = { 0.62, 1.45, -0.5 };
+            static const float kR[3] = { 0.075, 0.13, 0.045 };
+            static const float3 kC[3] = { float3(0.35, 0.62, 1.0), float3(0.95, 0.62, 0.45), float3(0.8, 0.8, 1.0) };
+            static const float kA[3] = { 0.55, 0.32, 0.45 };
+            [unroll] for (int g = 0; g < 3; g++)
             {
                 float2 gp = ctr - toSun * kT[g];
                 float2 gd = (pos - gp) / H;
-                ghosts += kC[g] * kA[g] * GhostShape(gd, kR[g], g == 2 ? 1.0 : 0.0);
+                ghosts += kC[g] * kA[g] * GhostShape(gd, kR[g], g == 1 ? 1.0 : 0.0, _Seed.x + g * 5.3);
             }
             ghosts *= _GlareScale.w * edgeK * vis;
         }
@@ -216,15 +223,14 @@ Shader "Hidden/Monolith/Lens"
 
     // ----------------------------------------------------------------------------------------------- grade
 
+    // Unit-variance noise made of two scales: single-pixel static and clumps about _Grade.y pixels across, so that some of it survives being
+    // scaled down and compressed (the single-pixel part does not).
     float GrainSample(float2 pix, float frame, float channel)
     {
-        // Two scales of hashed noise, so the grain has clumps a little bigger than a pixel instead of single-pixel static.
-        float2 p1 = pix / max(_Grade.y, 0.5);
         float2 off = float2(frame * 37.0 + channel * 101.0, frame * 91.0 + channel * 53.0);
-        float a = Noise2(p1 + off) + Noise2(p1 * 1.9 + off.yx + 13.0) * 0.6;
-        float b = GenerateHashedRandomFloat(uint3(uint(pix.x), uint(pix.y), uint(frame * 7.0 + channel * 3.0 + 11.0)));
-        float n = (a / 1.6) * 0.65 + b * 0.35;      // 0..1, centred near 0.5
-        return (n - 0.5) * 3.4;                     // about unit variance
+        float fine = (GenerateHashedRandomFloat(uint3(uint(pix.x), uint(pix.y), uint(frame * 7.0 + channel * 3.0 + 11.0))) - 0.5) / 0.2887;
+        float clump = (Noise2(pix / max(_Grade.y, 0.6) + off) - 0.5) / 0.17;
+        return 0.55 * fine + 0.83 * clump;
     }
 
     float4 FragGrade(Varyings input) : SV_Target
@@ -249,13 +255,16 @@ Shader "Hidden/Monolith/Lens"
         float3 floorC = _Floor.rgb * k * (1.2 - 0.4 * smoothstep(0.0, 1.1, rr));
         e = e + floorC * (1.0 - e);
 
+        // Uneven black: a slow, fixed mottle (sensor and glass are never perfectly flat), a few levels at most.
+        float mottle = (Noise2(input.positionCS.xy / max(_GradeMisc.z, 8.0) + 3.7) - 0.5) / 0.17 * 0.7 + (Noise2(input.positionCS.xy / (_GradeMisc.z * 0.37) + 19.1) - 0.5) / 0.17 * 0.5;
+        e += _GradeMisc.y * k * mottle * float3(0.6, 0.8, 1.0) * (1.0 - e);
+
         // Film grain, strongest in the shadows and midtones.
         float lum = dot(e, float3(0.2126, 0.7152, 0.0722));
-        float resp = lerp(1.0, 0.4, smoothstep(0.1, 0.8, lum));
+        float resp = lerp(1.0, 0.45, smoothstep(0.1, 0.8, lum));
         float amp = _Grade.x * k * resp;
         float mono = GrainSample(input.positionCS.xy, _Grade.w, 0.0);
-        uint3 hp = uint3(pix.x, pix.y, uint(_Grade.w) * 3u + 5u);
-        float3 gr = (float3(GenerateHashedRandomFloat(hp), GenerateHashedRandomFloat(hp + 7u), GenerateHashedRandomFloat(hp + 13u)) - 0.5) * 3.4;
+        float3 gr = float3(GrainSample(input.positionCS.xy, _Grade.w, 1.0), GrainSample(input.positionCS.xy, _Grade.w, 2.0), GrainSample(input.positionCS.xy, _Grade.w, 3.0));
         e += amp * lerp(mono.xxx, gr, _Grade.z);
 
         c = SRGBToLinear(saturate(e));

@@ -21,10 +21,13 @@ namespace Monolith.Look
         /// <summary>How much the corners lose, 0 to 1.</summary>
         public float Vignette = 0.10f;
         /// <summary>Grain strength as a standard deviation in display-encoded values (0.01 is about 2.5 of 255), strongest in shadows and midtones.</summary>
-        public float GrainAmount = 0.009f;
+        public float GrainAmount = 0.014f;
         /// <summary>Grain clump size in pixels, and how much of it differs per colour channel (0 = monochrome, 1 = fully coloured).</summary>
-        public float GrainSizePx = 1.25f;
+        public float GrainSizePx = 2.0f;
         public float GrainChroma = 0.3f;
+        /// <summary>A slow fixed mottle in the black, as display-encoded values (0.005 is about 1 of 255 here) and its size in pixels: black that is not perfectly flat.</summary>
+        public float Mottle = 0.006f;
+        public float MottleSizePx = 160f;
 
         // ---- the lens: runs before post-processing, in HDR ---------------------------------------------------------------------
         public bool Glare = true;
@@ -37,7 +40,7 @@ namespace Monolith.Look
         /// <summary>The wide veil that lifts the whole frame around the Sun: energy, and size as a fraction of the screen height. Cool lavender.</summary>
         public float VeilEnergy = 60000f;
         public float VeilSize = 0.40f;
-        public Color VeilTint = new Color(0.62f, 0.74f, 1.0f);
+        public Color VeilTint = new Color(0.52f, 0.68f, 1.0f);
         /// <summary>The haze: a very wide, very faint glow that lifts even the corners of the frame when the Sun is in view (energy, size as a fraction of the screen height).</summary>
         public float HazeEnergy = 70000f;
         public float HazeSize = 1.0f;
@@ -61,10 +64,10 @@ namespace Monolith.Look
         public float BroadThickness = 0.010f;
         public float BroadReach = 0.24f;
         public float BroadSpacing = 0.07f;
-        public Color BroadTint = new Color(0.30f, 0.78f, 1.0f);
+        public Color BroadTint = new Color(0.24f, 0.68f, 1.0f);
 
         /// <summary>Reflections of the Sun between lens surfaces, on the line through the middle of the picture: 0 = none.</summary>
-        public float Ghosts = 0.12f;
+        public float Ghosts = 0.16f;
         /// <summary>Dust and smudges on the lens or canopy that the glare lights: dust, bokeh discs, and the scale of the dust map (1 = one map across the frame).</summary>
         public float Dust = 1.0f;
         public float DustBokeh = 0.4f;

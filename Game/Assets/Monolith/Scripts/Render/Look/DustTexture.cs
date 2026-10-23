@@ -5,7 +5,7 @@ namespace Monolith.Look
     /// <summary>
     /// The dirt on the lens or canopy, drawn once at start-up from a fixed seed (so it is the same every run): 2048 x 1024, three
     /// channels the glare lights up differently. R is fine dust, fibres and scratches; G is greasy smudges; B is out-of-focus dust discs
-    /// (bokeh) with a brighter rim. It sits still on the screen, as dirt on glass does.
+    /// (bokeh), soft and lumpy. It sits still on the screen, as dirt on glass does.
     /// </summary>
     public static class DustTexture
     {
@@ -35,22 +35,22 @@ namespace Monolith.Look
             // Fibres: short curved hairs.
             for (int i = 0; i < 26; i++)
             {
-                float x = Rand() * Width, y = Rand() * Height, a = Rand() * Mathf.PI * 2f, curve = Range(-0.05f, 0.05f);
-                float len = Range(40f, 170f), amp = Range(0.35f, 0.9f);
+                float x = Rand() * Width, y = Rand() * Height, a = Rand() * Mathf.PI * 2f, curve = Range(-0.012f, 0.012f);
+                float len = Range(40f, 170f), amp = Range(0.25f, 0.6f);
                 for (float t = 0; t < len; t += 0.8f)
                 {
-                    Disc(r, x, y, 0.85f, amp, 1.2f);
-                    a += curve + Range(-0.03f, 0.03f);
+                    Disc(r, x, y, 1.1f, amp, 1.0f);
+                    a += curve + Range(-0.012f, 0.012f);
                     x += Mathf.Cos(a) * 0.8f; y += Mathf.Sin(a) * 0.8f;
                 }
             }
             // Scratches: a few long, straight, faint lines.
             for (int i = 0; i < 7; i++)
             {
-                float x = Rand() * Width, y = Rand() * Height, a = Rand() * Mathf.PI, len = Range(120f, 420f), amp = Range(0.15f, 0.4f);
+                float x = Rand() * Width, y = Rand() * Height, a = Rand() * Mathf.PI, len = Range(120f, 420f), amp = Range(0.06f, 0.18f);
                 for (float t = 0; t < len; t += 0.8f)
                 {
-                    Disc(r, x, y, 0.7f, amp, 1.2f);
+                    Disc(r, x, y, 1.2f, amp, 1.0f);
                     x += Mathf.Cos(a) * 0.8f; y += Mathf.Sin(a) * 0.8f;
                 }
             }
@@ -66,20 +66,23 @@ namespace Monolith.Look
                     g[k] = Mathf.Clamp01(g[k]) * Mathf.SmoothStep(0.25f, 0.8f, n);
                 }
 
-            // Bokeh: round, a little brighter at the rim.
+            // Bokeh: soft round blobs with no edge to them, lumpy inside (out-of-focus dust is never a clean disc or ring).
             for (int i = 0; i < 80; i++)
             {
-                float cx = Rand() * Width, cy = Rand() * Height, rad = Range(7f, 32f), amp = Range(0.25f, 0.8f);
-                int x0 = Mathf.Max(0, (int)(cx - rad - 2)), x1 = Mathf.Min(Width - 1, (int)(cx + rad + 2));
-                int y0 = Mathf.Max(0, (int)(cy - rad - 2)), y1 = Mathf.Min(Height - 1, (int)(cy + rad + 2));
+                float cx = Rand() * Width, cy = Rand() * Height, rad = Range(8f, 38f), amp = Range(0.2f, 0.7f);
+                float sx = Range(0.8f, 1.25f), nOff = Rand() * 100f;
+                int x0 = Mathf.Max(0, (int)(cx - rad * 1.3f - 2)), x1 = Mathf.Min(Width - 1, (int)(cx + rad * 1.3f + 2));
+                int y0 = Mathf.Max(0, (int)(cy - rad * 1.3f - 2)), y1 = Mathf.Min(Height - 1, (int)(cy + rad * 1.3f + 2));
                 for (int y = y0; y <= y1; y++)
                     for (int x = x0; x <= x1; x++)
                     {
-                        float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
-                        float edge = 1f - Mathf.SmoothStep(rad * 0.88f, rad * 1.02f, d);
-                        float body = 0.35f + 0.65f * Mathf.SmoothStep(rad * 0.5f, rad * 0.95f, d);
+                        float dx = (x - cx) * sx, dy = (y - cy) / sx;
+                        float d = Mathf.Sqrt(dx * dx + dy * dy);
+                        float edge = 1f - Mathf.SmoothStep(rad * 0.45f, rad * 1.2f, d);
+                        float body = 0.8f + 0.2f * Mathf.SmoothStep(rad * 0.4f, rad * 1.0f, d);
+                        float lump = 0.65f + 0.7f * Mathf.PerlinNoise(x * 0.045f + nOff, y * 0.045f + nOff * 0.7f);
                         int k = y * Width + x;
-                        b[k] = Mathf.Max(b[k], amp * edge * body);
+                        b[k] = Mathf.Max(b[k], amp * edge * body * lump);
                     }
             }
 

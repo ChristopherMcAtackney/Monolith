@@ -162,7 +162,7 @@ namespace Monolith.Look
             mpb.SetTexture(IdSource, _copy);
             mpb.SetVector(IdGrade, new Vector4(o.GrainAmount, o.GrainSizePx, o.GrainChroma, Time.frameCount % 4096));
             mpb.SetVector(IdFloor, new Vector4(o.FloorColor.r, o.FloorColor.g, o.FloorColor.b, o.Vignette));
-            mpb.SetVector(IdGradeMisc, new Vector4(o.Intensity, 0f, 0f, 0f));
+            mpb.SetVector(IdGradeMisc, new Vector4(o.Intensity, o.Mottle, o.MottleSizePx, 0f));
             CoreUtils.DrawFullScreen(ctx.cmd, _material, mpb, 1);
         }
 

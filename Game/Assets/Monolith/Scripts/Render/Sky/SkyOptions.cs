@@ -50,7 +50,7 @@ namespace Monolith.Sky
         /// <summary>0 = every star white, 1 = true colours, above 1 = exaggerated.</summary>
         public float StarSaturation = 1.0f;
         /// <summary>How much of a bright star's light goes into its halo (0 to 1) and the halo scale in pixels for dim and for very bright stars.</summary>
-        public float StarHaloFraction = 0.6f;
+        public float StarHaloFraction = 0.8f;
         public float StarHaloSizeDimPx = 0.9f;
         public float StarHaloSizeBrightPx = 7f;
         /// <summary>The brightest stars get a faint horizontal streak: strength (0 = none) and reach in pixels.</summary>

@@ -146,6 +146,7 @@ Shader "Hidden/Monolith/Sky"
         float2 offsetPx   : TEXCOORD0;                        // this pixel's centre minus the star's centre, in pixels
         nointerpolation float4 energy : TEXCOORD1;            // x core energy, y halo energy, z halo size px, w 1 / (sigma * sqrt 2)
         nointerpolation float2 streak : TEXCOORD3;            // x streak peak, y streak reach px
+        nointerpolation float2 wing : TEXCOORD4;              // x wing energy, y wing size px
         nointerpolation float3 colour : TEXCOORD2;            // luminance-1 colour
     };
 
@@ -159,6 +160,7 @@ Shader "Hidden/Monolith/Sky"
         o.energy = 0.0;
         o.colour = 0.0;
         o.streak = 0.0;
+        o.wing = 0.0;
 
         uint star = vertexID / 6u;
         uint corner = vertexID - star * 6u;
@@ -177,15 +179,20 @@ Shader "Hidden/Monolith/Sky"
         float sigma = _StarShape.x;
         float lf = log2(flux) * 0.30103;                      // log10
         float t = saturate((lf + 1.5) / 3.0);                 // 0 for dim stars, 1 for the brightest
-        float haloFrac = _StarShape.z * t * t;
+        // A point-spread function: the sharp core, a halo that even middling stars have a little of, and wide wings on the bright ones.
+        float haloFrac = _StarShape.z * (0.25 + 0.75 * t) * (0.4 + 0.6 * t);
         float a = lerp(_StarHalo.x, _StarHalo.y, t);
+        float wingFrac = 0.22 * smoothstep(0.15, 0.85, t);
+        float aw = lerp(_StarHalo.y * 1.8, _StarHalo.y * 5.5, t);
         float haloPeak = flux * haloFrac * rcp(PI * a * a);
-        float rHalo = a * sqrt(max(sqrt(haloPeak / 0.0015) - 1.0, 0.0));
-        float extent = clamp(max(3.2 * sigma, rHalo) + 1.0, 3.0, 96.0);
+        float rHalo = a * sqrt(max(sqrt(haloPeak / 0.0012) - 1.0, 0.0));
+        float wingPeak = flux * wingFrac * rcp(PI * aw * aw);
+        rHalo = max(rHalo, aw * sqrt(max(sqrt(wingPeak / 0.0012) - 1.0, 0.0)));
+        float extent = clamp(max(3.2 * sigma, rHalo) + 1.0, 3.0, 140.0);
         // The brightest stars also get a faint horizontal streak, like the Sun does (only the top of the range: t above about 0.75).
         float streakK = _StarHalo.z * smoothstep(0.72, 1.0, t);
         float streakReach = _StarHalo.w * streakK;
-        float extentX = clamp(max(extent, streakReach * 6.0 + 2.0), 3.0, 220.0);
+        float extentX = clamp(max(extent, streakReach * 6.0 + 2.0), 3.0, 240.0);
 
         float2 ndc = clip.xy / clip.w;
         float2 marginNdc = float2(extentX, extent) * 2.0 * _ScreenSize.zw;
@@ -196,7 +203,8 @@ Shader "Hidden/Monolith/Sky"
         float lum = dot(chroma, float3(0.2126, 0.7152, 0.0722));
         o.colour = lerp(1.0, chroma / max(lum, 1e-3), _StarShape.y);
 
-        o.energy = float4(flux * (1.0 - haloFrac), flux * haloFrac, a, rcp(sigma * 1.41421356));
+        o.energy = float4(flux * (1.0 - haloFrac - wingFrac), flux * haloFrac, a, rcp(sigma * 1.41421356));
+        o.wing = float2(flux * wingFrac, aw);
         float2 offsetPx = kCorner[corner] * float2(extentX, extent);
         o.streak = float2(flux * 0.02 * streakK, max(streakReach, 0.01));
         o.offsetPx = offsetPx;
@@ -212,7 +220,10 @@ Shader "Hidden/Monolith/Sky"
         float a2 = i.energy.z * i.energy.z;
         float u = dot(d, d) / a2;
         float halo = rcp(PI * a2) / ((1.0 + u) * (1.0 + u));
-        float v = i.energy.x * core + i.energy.y * halo;
+        float aw2 = i.wing.y * i.wing.y;
+        float uw = dot(d, d) / max(aw2, 1e-4);
+        float wing = i.wing.x > 0.0 ? rcp(PI * max(aw2, 1e-4)) / ((1.0 + uw) * (1.0 + uw)) : 0.0;
+        float v = i.energy.x * core + i.energy.y * halo + i.wing.x * wing;
         if (i.streak.x > 0.0)
             v += i.streak.x * exp(-abs(d.y) / 0.8) * pow(rcp(1.0 + abs(d.x) / i.streak.y), 1.6);
         return float4(i.colour * (v * _NitsPerUnit * GetCurrentExposureMultiplier()), 0.0);
