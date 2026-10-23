@@ -8,7 +8,7 @@ namespace Monolith.Game
 {
     /// <summary>
     /// A test scene for the sky: a camera, a plain grey hull (a box and a sphere) at the origin, and <see cref="SkyRig"/> switched on.
-    /// A capture plan asks for it with <c>"scene": "sky"</c> (gauntlet/shots/sky.json) and may set any <see cref="SkyOptions"/> field in <c>"sceneOptions"</c>. <c>"scene": "sky_off"</c> is the same scene
+    /// A capture plan asks for it with <c>"scene": "sky"</c> (gauntlet/shots/sky.json) and may set any <see cref="SkyOptions"/> field in <c>"sceneOptions"</c>. <c>"scene": "sky_off"</c> is the same scene (the camera look still on)
     /// with the sky not drawn (black background), which is the baseline for measuring what the sky costs. Stand-in until the
     /// playtest scene switches the sky on itself with one <c>SkyRig.Enable(camera)</c>.
     /// </summary>
@@ -16,6 +16,8 @@ namespace Monolith.Game
     {
         public const string SceneOn = "sky";
         public const string SceneOff = "sky_off";
+        /// <summary>No sky drawn and no camera look: the bare scene, for measuring what both cost together.</summary>
+        public const string SceneBare = "sky_bare";
         public const string HullMaterial = "MonolithSky/MN_TestHull";
         public const string HullLightsMaterial = "MonolithSky/MN_TestHullLights";
 
@@ -24,8 +26,8 @@ namespace Monolith.Game
         /// <summary>Builds the scene when <paramref name="scene"/> names it; returns false (and builds nothing) otherwise.</summary>
         public static bool TryBuild(GameWorld world, Transform parent, string scene, string optionsJson = null)
         {
-            bool on = scene == SceneOn, off = scene == SceneOff;
-            if (!on && !off) return false;
+            bool on = scene == SceneOn, off = scene == SceneOff, bare = scene == SceneBare;
+            if (!on && !off && !bare) return false;
 
             var root = new GameObject("SkyTestWorld").transform;
             root.SetParent(parent, false);
@@ -34,8 +36,9 @@ namespace Monolith.Game
             world.MainCamera = cam;
             var options = new SkyOptions();
             if (!string.IsNullOrEmpty(optionsJson)) JsonConvert.PopulateObject(optionsJson, options);    // the plan's "sceneOptions" override SkyOptions fields by name
+            if (bare) options.CameraLook = false;
             Rig = SkyRig.Enable(cam, root, options);
-            if (off) cam.GetComponent<HDAdditionalCameraData>().clearColorMode = HDAdditionalCameraData.ClearColorMode.Color;
+            if (off || bare) cam.GetComponent<HDAdditionalCameraData>().clearColorMode = HDAdditionalCameraData.ClearColorMode.Color;
 
             var mat = Resources.Load<Material>(HullMaterial);
             if (mat == null) throw new System.InvalidOperationException($"Resources/{HullMaterial}.mat is missing: run tools\\unity.ps1 Monolith.EditorTools.SkySetup.Run");

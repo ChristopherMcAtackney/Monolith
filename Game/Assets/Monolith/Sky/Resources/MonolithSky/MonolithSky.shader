@@ -39,14 +39,12 @@ Shader "Hidden/Monolith/Sky"
     float4 _SunPx;             // xy: position in pixels (SV_Position convention), z: 1 when the Sun is in front of the camera
     float4 _SunColor;
     float4 _SunCore;           // x energy, y sigma in pixels
-    float4 _SunHalo;           // x halo energy, y halo size, z veil energy, w veil size (sizes as fractions of the screen height)
-    float4 _SunStreak;         // x peak, y thickness, z reach (fractions of the screen height)
 
     StructuredBuffer<float4> _StarPosMag;
     StructuredBuffer<uint>   _StarColor;
     float4 _StarParams;        // x gain, y gamma, z reference magnitude, w limit magnitude
     float4 _StarShape;         // x core sigma px, y saturation, z halo fraction
-    float4 _StarHalo;          // x halo size px (dim), y halo size px (bright)
+    float4 _StarHalo;          // x halo size px (dim), y halo size px (bright), z streak strength, w streak reach px (brightest)
 
     // ------------------------------------------------------------------------------------------------ helpers
 
@@ -88,28 +86,14 @@ Shader "Hidden/Monolith/Sky"
         return c * _MilkyWayParams.x * _MilkyWayTint.rgb;
     }
 
+    // The Sun itself: a point. Its glare (veil, wings, streaks, ghosts, dust) is the camera look's job (Monolith.Look), added over the whole picture.
     float3 SunLayer(float2 pos)
     {
         if (_SunPx.z < 0.5) return 0.0;
-        float H = _ScreenSize.y;
         float2 d = pos - _SunPx.xy;
-
         float invS = rcp(max(_SunCore.y, 0.05) * 1.41421356);
         float core = PixelFraction(d.x, invS) * PixelFraction(d.y, invS);
-
-        float a = max(_SunHalo.y * H, 0.5);
-        float u = dot(d, d) / (a * a);
-        float halo = rcp(PI * a * a) / ((1.0 + u) * (1.0 + u));      // energy-normalised, falls as r^-4 past the knee
-
-        float av = max(_SunHalo.w * H, 1.0);
-        float uv = dot(d, d) / (av * av);
-        float veil = rcp(PI * av * av) / ((1.0 + uv) * (1.0 + uv));
-
-        float th = max(_SunStreak.y * H, 0.25);
-        float reach = max(_SunStreak.z * H, 1.0);
-        float streak = exp(-abs(d.y) / th) * rcp(1.0 + abs(d.x) / reach) * exp(-abs(d.x) / (6.0 * reach));
-
-        return _SunColor.rgb * (_SunCore.x * core + _SunHalo.x * halo + _SunHalo.z * veil + _SunStreak.x * streak);
+        return _SunColor.rgb * (_SunCore.x * core);
     }
 
     // ------------------------------------------------------------------------------------------------ full-screen passes
@@ -161,6 +145,7 @@ Shader "Hidden/Monolith/Sky"
         float4 positionCS : SV_POSITION;
         float2 offsetPx   : TEXCOORD0;                        // this pixel's centre minus the star's centre, in pixels
         nointerpolation float4 energy : TEXCOORD1;            // x core energy, y halo energy, z halo size px, w 1 / (sigma * sqrt 2)
+        nointerpolation float2 streak : TEXCOORD3;            // x streak peak, y streak reach px
         nointerpolation float3 colour : TEXCOORD2;            // luminance-1 colour
     };
 
@@ -173,6 +158,7 @@ Shader "Hidden/Monolith/Sky"
         o.offsetPx = 0.0;
         o.energy = 0.0;
         o.colour = 0.0;
+        o.streak = 0.0;
 
         uint star = vertexID / 6u;
         uint corner = vertexID - star * 6u;
@@ -196,9 +182,13 @@ Shader "Hidden/Monolith/Sky"
         float haloPeak = flux * haloFrac * rcp(PI * a * a);
         float rHalo = a * sqrt(max(sqrt(haloPeak / 0.0015) - 1.0, 0.0));
         float extent = clamp(max(3.2 * sigma, rHalo) + 1.0, 3.0, 96.0);
+        // The brightest stars also get a faint horizontal streak, like the Sun does (only the top of the range: t above about 0.75).
+        float streakK = _StarHalo.z * smoothstep(0.72, 1.0, t);
+        float streakReach = _StarHalo.w * streakK;
+        float extentX = clamp(max(extent, streakReach * 6.0 + 2.0), 3.0, 220.0);
 
         float2 ndc = clip.xy / clip.w;
-        float2 marginNdc = extent * 2.0 * _ScreenSize.zw;
+        float2 marginNdc = float2(extentX, extent) * 2.0 * _ScreenSize.zw;
         if (any(abs(ndc) > 1.0 + marginNdc)) return o;
 
         uint packed = _StarColor[star];
@@ -207,7 +197,8 @@ Shader "Hidden/Monolith/Sky"
         o.colour = lerp(1.0, chroma / max(lum, 1e-3), _StarShape.y);
 
         o.energy = float4(flux * (1.0 - haloFrac), flux * haloFrac, a, rcp(sigma * 1.41421356));
-        float2 offsetPx = kCorner[corner] * extent;
+        float2 offsetPx = kCorner[corner] * float2(extentX, extent);
+        o.streak = float2(flux * 0.02 * streakK, max(streakReach, 0.01));
         o.offsetPx = offsetPx;
         float2 ndcOut = ndc + offsetPx * 2.0 * _ScreenSize.zw;
         o.positionCS = float4(ndcOut * clip.w, UNITY_RAW_FAR_CLIP_VALUE * clip.w, clip.w);
@@ -222,6 +213,8 @@ Shader "Hidden/Monolith/Sky"
         float u = dot(d, d) / a2;
         float halo = rcp(PI * a2) / ((1.0 + u) * (1.0 + u));
         float v = i.energy.x * core + i.energy.y * halo;
+        if (i.streak.x > 0.0)
+            v += i.streak.x * exp(-abs(d.y) / 0.8) * pow(rcp(1.0 + abs(d.x) / i.streak.y), 1.6);
         return float4(i.colour * (v * _NitsPerUnit * GetCurrentExposureMultiplier()), 0.0);
     }
 

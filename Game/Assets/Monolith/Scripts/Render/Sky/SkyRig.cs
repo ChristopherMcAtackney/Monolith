@@ -1,4 +1,5 @@
 using Monolith.Core;
+using Monolith.Look;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -28,6 +29,7 @@ namespace Monolith.Sky
         Bloom _bloom;
         VolumeProfile _skyProfile, _lookProfile;
         Volume _skyVolume, _lookVolume;
+        CameraLook _look;
         HDAdditionalCameraData _cameraData;
         HDAdditionalCameraData.ClearColorMode _previousClear;
 
@@ -81,6 +83,9 @@ namespace Monolith.Sky
                 _lookVolume = MakeVolume("LookVolume", _lookProfile, 21f);
             }
 
+            // The lens and film: the Sun's glare needs to know where the Sun is, so the rig owns it.
+            if (options.CameraLook) _look = CameraLook.Enable(camera, transform, options.Look);
+
             Apply();
             MnLog.Info($"SKY on: sun {SunDirection.x:0.000},{SunDirection.y:0.000},{SunDirection.z:0.000}, " +
                        $"{(options.ConfigureExposure ? options.Exposure + " EV " + options.ExposureEv100 : "scene exposure")}, limit V {options.LimitMagnitude}");
@@ -115,11 +120,9 @@ namespace Monolith.Sky
             _sky.skyRotationEuler.Override(o.SkyRotationEuler);
             _sky.sunColor.Override(new Color(o.SunColor.r / lum, o.SunColor.g / lum, o.SunColor.b / lum, 1f));
             _sky.sunCore.Override(new Vector4(o.SunCore, o.SunCoreSigmaPx, 0f, 0f));
-            _sky.sunHalo.Override(new Vector4(o.SunHalo, o.SunHaloSize, o.SunVeil, o.SunVeilSize));
-            _sky.sunStreak.Override(new Vector4(o.SunStreak, o.SunStreakThickness, o.SunStreakReach, 0f));
-            _sky.starParams.Override(new Vector4(o.StarGain, o.StarGamma, o.StarReferenceMagnitude, o.LimitMagnitude));
+                _sky.starParams.Override(new Vector4(o.StarGain, o.StarGamma, o.StarReferenceMagnitude, o.LimitMagnitude));
             _sky.starShape.Override(new Vector4(o.StarSigmaPx, o.StarSaturation, o.StarHaloFraction, 0f));
-            _sky.starHalo.Override(new Vector4(o.StarHaloSizeDimPx, o.StarHaloSizeBrightPx, 0f, 0f));
+            _sky.starHalo.Override(new Vector4(o.StarHaloSizeDimPx, o.StarHaloSizeBrightPx, o.StarStreak, o.StarStreakReachPx));
             _sky.milkyWay.Override(new Vector4(o.MilkyWayGain, o.MilkyWayContrast, o.MilkyWaySaturation, 0f));
             _sky.milkyWayTint.Override(o.MilkyWayTint);
             _sky.blackLift.Override(o.BlackLift);
@@ -127,6 +130,12 @@ namespace Monolith.Sky
             _sky.ambientNits.Override(o.AmbientNits);
             _sky.ambientShape.Override(new Vector4(o.AmbientAwayFromSun, o.AmbientMilkyWay, 0f, 0f));
             _sky.nitsPerUnit.Override(nitsPerUnit);
+
+            if (_look != null)
+            {
+                _look.SetSun(SunDirection, new Color(o.SunColor.r / lum, o.SunColor.g / lum, o.SunColor.b / lum, 1f), nitsPerUnit);
+                _look.Apply();
+            }
 
             if (_exposure != null)
             {

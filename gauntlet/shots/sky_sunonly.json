@@ -1,0 +1,44 @@
+{
+ "scene": "sky",
+ "sceneOptions": {
+  "LimitMagnitude": -9.0,
+  "MilkyWayGain": 0.0
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "sun_only",
+   "pos": [
+    -17566.457,
+    2614.672,
+    -24178.153
+   ],
+   "lookAt": [
+    -35132.913,
+    5229.345,
+    -48356.306
+   ],
+   "fov": 40
+  },
+  {
+   "name": "sun_only_edge",
+   "pos": [
+    -25344.631,
+    2614.672,
+    -15837.083
+   ],
+   "lookAt": [
+    -50689.261,
+    5229.345,
+    -31674.166
+   ],
+   "fov": 40
+  }
+ ],
+ "perf": []
+}

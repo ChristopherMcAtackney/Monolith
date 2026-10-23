@@ -3,6 +3,7 @@
     "rootNamespace": "Monolith.Sky",
     "references": [
         "Monolith.Core",
+        "Monolith.Look",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
     ],

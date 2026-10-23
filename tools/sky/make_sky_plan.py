@@ -109,6 +109,9 @@ def main():
     # Orion, to prove the catalogue positions and orientation (the belt: Mintaka, Alnilam, Alnitak; Betelgeuse upper left, Rigel lower right).
     stills.append(sky_shot("starfield_orion", eq_to_world(equatorial(5.6, -1.0)), fov=30))
 
+    # A field with no Milky Way in it: the south galactic pole, far from the Sun.
+    stills.append(sky_shot("starfield_nomw", galactic_to_world(0, -85), fov=40))
+
     # Toward the Sun: off-centre (a third in from the left), dead centre, just off the edge of the frame, and wide.
     stills.append(sky_shot("sun_toward", rotate_yaw(SUN, 10.0), fov=40))
     stills.append(sky_shot("sun_centered", SUN, fov=40))
@@ -171,6 +174,12 @@ def main():
     cam = add(scale(SUN, -95.0), scale(side, -12.8))
     stills.append({"name": "hull_backlit", "pos": r3(cam), "lookAt": r3(add(scale(SUN, 400.0), scale(side, -14.3))), "fov": 40})
 
+    # A ship-sized silhouette crossing the Sun: the camera sits behind the hull on the Sun line and the hull covers part of it. a: the Sun just
+    # peeking past the dome (most of the glare); b: the hull fully in front of the Sun (only the scatter around its edge is left).
+    for name, lateral, look_lat in (("hull_crossing_sun_a", -12.9, -14.4), ("hull_crossing_sun_b", -1.5, -1.5)):
+        camx = add(scale(SUN, -95.0), scale(side, lateral))
+        stills.append({"name": name, "pos": r3(camx), "lookAt": r3(add(scale(SUN, 400.0), scale(side, look_lat))), "fov": 40})
+
     # Turning: 24 frames at 0.005 degrees (about an eighth of a pixel at 40 degrees vertical) from a star-rich spot near the band,
     # then 12 frames at 1.5 degrees (a 90 degree/s turn at 60 Hz). Stills, so each frame is exact.
     f0 = norm(galactic_to_world(40, 3))
@@ -195,14 +204,41 @@ def main():
         json.dump(plan, f, indent=1)
         f.write("\n")
 
-    base = {
-        "scene": "sky_off",
+    # Cost baselines for the same view: the bare scene (no sky drawn, no camera look), and the camera look alone (no sky drawn).
+    for scene, name, fname in (("sky_bare", "sky_bare_toward_sun", "sky_baseline.json"), ("sky_off", "sky_off_toward_sun", "sky_lookonly.json")):
+        base = {
+            "scene": scene,
+            "defaults": {"width": 1920, "height": 1080, "warmup": 0.5, "perfWarmup": 2.0},
+            "perf": [{"name": name, "seconds": 10, "pos": plan["perf"][0]["pos"], "lookAt": plan["perf"][0]["lookAt"], "fov": 40}],
+        }
+        with open(os.path.join(ROOT, "gauntlet", "shots", fname), "w", newline="\n") as f:
+            json.dump(base, f, indent=1)
+            f.write("\n")
+
+    # The glare with nothing else in the frame: no stars, no Milky Way. Its own plan because the scene options are per plan.
+    only = {
+        "scene": "sky",
+        "sceneOptions": {"LimitMagnitude": -9.0, "MilkyWayGain": 0.0},
         "defaults": {"width": 1920, "height": 1080, "warmup": 0.5, "perfWarmup": 2.0},
-        "perf": [{"name": "sky_off_toward_sun", "seconds": 10, "pos": plan["perf"][0]["pos"], "lookAt": plan["perf"][0]["lookAt"], "fov": 40}],
+        "stills": [sky_shot("sun_only", rotate_yaw(SUN, 8.0), fov=40), sky_shot("sun_only_edge", rotate_yaw(SUN, 30.0), fov=40)],
+        "perf": [],
     }
-    out2 = os.path.join(ROOT, "gauntlet", "shots", "sky_baseline.json")
-    with open(out2, "w", newline="\n") as f:
-        json.dump(base, f, indent=1)
+    out3 = os.path.join(ROOT, "gauntlet", "shots", "sky_sunonly.json")
+    with open(out3, "w", newline="\n") as f:
+        json.dump(only, f, indent=1)
+        f.write("\n")
+
+    # The turn on its own, with the camera look off (no grain, no dust): measures the stars, not the grain.
+    shimmer = {
+        "scene": "sky",
+        "sceneOptions": {"Look": {"GrainAmount": 0.0, "Dust": 0.0, "DustBokeh": 0.0}},
+        "defaults": {"width": 1920, "height": 1080, "warmup": 0.5, "perfWarmup": 2.0},
+        "stills": [st for st in stills if st["name"].startswith("turn_slow_")],
+        "perf": [],
+    }
+    out4 = os.path.join(ROOT, "gauntlet", "shots", "sky_shimmer.json")
+    with open(out4, "w", newline="\n") as f:
+        json.dump(shimmer, f, indent=1)
         f.write("\n")
 
     print("sun world dir", r3(SUN), "hull_lit background galactic", lon, lat, "angle to sun", round(ang, 1), "| field", lon2, lat2, round(ang2, 1), "| shadow band", lon3, lat3, round(ang3, 1), "| shadow field", lon4, lat4, round(ang4, 1))

@@ -35,25 +35,16 @@ namespace Monolith.Sky
         /// <summary>The point-star core (peak is many times white; the tonemapper and bloom turn it into a bright dot).</summary>
         public float SunCore = 150f;
         public float SunCoreSigmaPx = 0.8f;
-        /// <summary>Energy of the soft halo around the Sun and its size as a fraction of the screen height.</summary>
-        public float SunHalo = 1500f;
-        public float SunHaloSize = 0.013f;
-        /// <summary>A very wide, very faint veil around the Sun (lens scatter): its energy and its size as a fraction of the screen height.</summary>
-        public float SunVeil = 9000f;
-        public float SunVeilSize = 0.2f;
-        /// <summary>Peak of the thin horizontal anamorphic streak (0 = none), its thickness and reach as fractions of the screen height.</summary>
-        public float SunStreak = 0.35f;
-        public float SunStreakThickness = 0.0035f;
-        public float SunStreakReach = 0.09f;
+        // The Sun's glare (veil, wings, streaks, ghosts, dust) is part of the camera look: see Look below.
 
         // ---- stars and the Milky Way ---------------------------------------------------------------------------------------
         /// <summary>Stars fainter than this are not drawn (V magnitude). The catalogue goes to about 9.</summary>
-        public float LimitMagnitude = 7.6f;
+        public float LimitMagnitude = 8.8f;
         /// <summary>Energy of a magnitude-<see cref="StarReferenceMagnitude"/> star, in display units.</summary>
-        public float StarGain = 0.4f;
+        public float StarGain = 0.7f;
         public float StarReferenceMagnitude = 6f;
         /// <summary>1 follows real flux ratios; lower compresses the range between Sirius and the faintest stars so both stay visible.</summary>
-        public float StarGamma = 0.85f;
+        public float StarGamma = 1.0f;
         /// <summary>Standard deviation of a star's core in screen pixels (0.75: a star's peak varies by about 1.45 times between the best and worst sub-pixel position; 0.65 gives 1.65 and crisper dots; 1.0 gives 1.25 and soft ones).</summary>
         public float StarSigmaPx = 0.75f;
         /// <summary>0 = every star white, 1 = true colours, above 1 = exaggerated.</summary>
@@ -61,7 +52,10 @@ namespace Monolith.Sky
         /// <summary>How much of a bright star's light goes into its halo (0 to 1) and the halo scale in pixels for dim and for very bright stars.</summary>
         public float StarHaloFraction = 0.6f;
         public float StarHaloSizeDimPx = 0.9f;
-        public float StarHaloSizeBrightPx = 4f;
+        public float StarHaloSizeBrightPx = 7f;
+        /// <summary>The brightest stars get a faint horizontal streak: strength (0 = none) and reach in pixels.</summary>
+        public float StarStreak = 0.5f;
+        public float StarStreakReachPx = 6f;
         /// <summary>The map is 0 to 1; this scales it to display units. About 0.55 with the contrast below shows the band and its dust lanes and leaves the faint background nearly black.</summary>
         public float MilkyWayGain = 0.55f;
         /// <summary>Exponent on the map before the gain: above 1 deepens the dark sky and the dust lanes against the bright core.</summary>
@@ -70,8 +64,8 @@ namespace Monolith.Sky
         public Color MilkyWayTint = new Color(0.78f, 0.93f, 1.15f);
         /// <summary>0 = grey, 1 = the map own colours (warm, with brown dust).</summary>
         public float MilkyWaySaturation = 0.7f;
-        /// <summary>A very faint cool lift under everything so black is not a flat 0, display units.</summary>
-        public Color BlackLift = new Color(0.0035f, 0.0050f, 0.0075f);
+        /// <summary>A lift under everything before tonemapping, display units. The ACES toe swallows it; the graded floor is the camera look's (Look.FloorColor).</summary>
+        public Color BlackLift = new Color(0f, 0f, 0f);
 
         // ---- light from the sky on ships (never seen directly) ---------------------------------------------------------------
         /// <summary>
@@ -100,5 +94,10 @@ namespace Monolith.Sky
         /// <summary>Bloom starts above this (display units): lit hulls stay clean, sun glints on shiny surfaces, emissive lights and the brightest stars glow.</summary>
         public float BloomThreshold = 0.9f;
         public float BloomScatter = 0.65f;
+
+        // ---- the camera look (lens glare, dust, grain, graded black) ----------------------------------------------------------------
+        /// <summary>Switch the camera look on with the sky: the Sun's glare needs the Sun, so the rig feeds it. Its options (Enabled, Intensity and the rest) are here.</summary>
+        public bool CameraLook = true;
+        public Monolith.Look.LookOptions Look = new Monolith.Look.LookOptions();
     }
 }

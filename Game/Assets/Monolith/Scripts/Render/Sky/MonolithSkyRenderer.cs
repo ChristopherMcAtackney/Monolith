@@ -36,8 +36,6 @@ namespace Monolith.Sky
         static readonly int IdSunPx = Shader.PropertyToID("_SunPx");
         static readonly int IdSunColor = Shader.PropertyToID("_SunColor");
         static readonly int IdSunCore = Shader.PropertyToID("_SunCore");
-        static readonly int IdSunHalo = Shader.PropertyToID("_SunHalo");
-        static readonly int IdSunStreak = Shader.PropertyToID("_SunStreak");
         static readonly int IdStarPosMag = Shader.PropertyToID("_StarPosMag");
         static readonly int IdStarColor = Shader.PropertyToID("_StarColor");
         static readonly int IdStarParams = Shader.PropertyToID("_StarParams");
@@ -125,8 +123,6 @@ namespace Monolith.Sky
             _block.SetVector(IdSunPx, new Vector4(sunPx.x, sunPx.y, sunValid, 0f));
             _block.SetVector(IdSunColor, AsVector(sky.sunColor.value));
             _block.SetVector(IdSunCore, sky.sunCore.value);
-            _block.SetVector(IdSunHalo, sky.sunHalo.value);
-            _block.SetVector(IdSunStreak, sky.sunStreak.value);
 
             var starParams = sky.starParams.value;
             _block.SetVector(IdStarParams, starParams);

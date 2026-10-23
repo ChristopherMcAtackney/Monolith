@@ -1,5 +1,5 @@
 {
- "scene": "sky_off",
+ "scene": "sky_bare",
  "defaults": {
   "width": 1920,
   "height": 1080,
@@ -8,7 +8,7 @@
  },
  "perf": [
   {
-   "name": "sky_off_toward_sun",
+   "name": "sky_bare_toward_sun",
    "seconds": 10,
    "pos": [
     -18399.561,

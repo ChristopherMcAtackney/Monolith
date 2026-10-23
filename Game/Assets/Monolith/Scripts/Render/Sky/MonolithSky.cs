@@ -21,11 +21,9 @@ namespace Monolith.Sky
         public Vector3Parameter skyRotationEuler = new Vector3Parameter(Vector3.zero);
         public ColorParameter sunColor = new ColorParameter(Color.white, false, false, false);
         public Vector4Parameter sunCore = new Vector4Parameter(new Vector4(400f, 0.8f, 0f, 0f));            // energy, sigma px
-        public Vector4Parameter sunHalo = new Vector4Parameter(new Vector4(1500f, 0.013f, 9000f, 0.2f));         // halo energy, halo size, veil energy, veil size (screen height fractions)
-        public Vector4Parameter sunStreak = new Vector4Parameter(new Vector4(0.35f, 0.0035f, 0.09f, 0f));    // peak, thickness, reach
-        public Vector4Parameter starParams = new Vector4Parameter(new Vector4(0.05f, 0.75f, 6f, 8.3f));      // gain, gamma, reference magnitude, limit magnitude
+        public Vector4Parameter starParams = new Vector4Parameter(new Vector4(0.7f, 1.0f, 6f, 8.8f));      // gain, gamma, reference magnitude, limit magnitude
         public Vector4Parameter starShape = new Vector4Parameter(new Vector4(0.75f, 1.0f, 0.6f, 0f));        // core sigma px, saturation, halo fraction
-        public Vector4Parameter starHalo = new Vector4Parameter(new Vector4(1.2f, 6f, 0f, 0f));              // halo size px: dim, bright
+        public Vector4Parameter starHalo = new Vector4Parameter(new Vector4(0.9f, 7f, 0.5f, 6f));               // halo size px: dim, bright; streak strength, reach px
         public Vector4Parameter milkyWay = new Vector4Parameter(new Vector4(0.55f, 1.5f, 0.7f, 0f));           // gain, contrast, saturation
         public ColorParameter milkyWayTint = new ColorParameter(Color.white, false, false, false);
         public ColorParameter blackLift = new ColorParameter(Color.black, false, false, false);
