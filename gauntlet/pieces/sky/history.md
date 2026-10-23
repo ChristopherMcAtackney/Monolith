@@ -114,3 +114,10 @@ My read, honestly:
 - The grain is a procedural hash, not a scan of film; at 1:1 it is believable, at a glance it is a hint of noise. The floor is deliberately small: the no-Sun show frames are near zero.
 - Dust is plausible but sparse near the Sun (the fibre and scratch are faint). A canopy with real dirt would show more.
 - Not done: halation (red bleed around bright lights), vertical bloom bands on explosions, lens dust lit by lasers and explosions (it only reacts to the Sun), chromatic aberration at the edges, motion blur.
+
+## Round 2 verdict (lead, 2026-10-23)
+Fresh blind critic, 3 pairs vs The Expanse: **lost 3/3** (certain, likely, certain). Ours: A, B, B.
+- Pairs: sun_wide vs 7_ATYOm3nNc_0190 (2:1); sun_only vs 7wFt319UB2o_0004; starfield_nomw vs 7wFt319UB2o_0011.
+- Progress: pair 2 was only "likely", and the critic said the real frame "looks like a stock flare overlay".
+- Biggest giveaway now: procedural precision rather than optics. Hairline one-pixel rims on the ring ghosts and a clean hexagon; a streak of constant width edge to edge with no falloff; stars as crisp dots with no point-spread halo or bloom; the black reads clean and flat (the grain does not survive the critic's 1280-wide JPEG, so check frames at that size).
+- Gap for round 3: everything optical should be soft, uneven and falling off: soft-edged ghosts (or fewer), tapered streaks, a real point-spread function on bright and mid stars, and a noise floor that still reads after downscaling. Pointer, not prescription.
