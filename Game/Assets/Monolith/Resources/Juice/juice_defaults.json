@@ -1,0 +1,16 @@
+{
+  "format": "monolith-juice/1",
+  "about": "The shipped juice defaults (Medium). The sandbox saves your tuning to juice.json next to the game; copy that file over this one to make it the game's default.",
+  "preset": "Medium",
+  "effects": {
+    "bolts": true, "muzzleFlash": true, "beams": true, "flak": true, "missileTrails": true,
+    "shieldRipples": true, "hullHits": true, "explosions": true, "debris": true, "shockwave": true,
+    "lights": true, "screenFlash": true, "cameraShake": true, "rumble": true, "sound": true
+  },
+  "levels": {
+    "shake": 1.0, "rumble": 1.0, "flash": 1.0, "size": 1.0, "density": 1.0,
+    "shove": 1.0, "boltWidth": 1.0, "beamWidth": 1.0, "volume": 0.8
+  },
+  "hitStop": { "enabled": false, "ms": 70.0, "scale": 0.05 },
+  "slowMo": 0.25
+}

@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "juice_destroyer",
+  "name": "Sandbox Destroyer",
+  "role": "Juice sandbox attacker: a destroyer-class hull that fires the heavy beam.",
+  "flight": {
+    "topSpeed": {
+      "value": 18,
+      "unit": "m/s",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): destroyer 15-20 m/s"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): capital ships have no reverse in the slice"
+    },
+    "rotationTime": {
+      "value": [
+        190,
+        190,
+        190
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): destroyer 150-200 s"
+    },
+    "rotDamp": {
+      "value": 1.5,
+      "unit": "s (turn-rate time constant)",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): destroyer rot damp 1.5 s"
+    },
+    "sideDamp": {
+      "value": 1.5,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "Estimate: capital ships do not slide in FS2 (side damping is not in the appendix); set equal to the turn damping"
+    },
+    "forwardAccel": {
+      "value": 20,
+      "unit": "s (speed-up time constant)",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): destroyer accel/decel 20 / 10 s"
+    },
+    "forwardDecel": {
+      "value": 10,
+      "unit": "s (slow-down time constant)",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): destroyer accel/decel 20 / 10 s"
+    },
+    "afterburner": {
+      "value": false,
+      "unit": "bool",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): capital ships have no afterburner"
+    },
+    "afterburnerSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "No afterburner"
+    },
+    "afterburnerAccel": {
+      "value": 0,
+      "unit": "s",
+      "source": "No afterburner"
+    },
+    "afterburnerFuel": {
+      "value": 0,
+      "unit": "fuel units",
+      "source": "No afterburner"
+    },
+    "afterburnerBurnRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "afterburnerRechargeRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "mass": {
+      "value": 600000000.0,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        300,
+        220,
+        2200
+      ],
+      "unit": "m (width, height, length)",
+      "source": "Sandbox hull: matches the placeholder hull Game/PlaceholderShips builds for it"
+    }
+  }
+}

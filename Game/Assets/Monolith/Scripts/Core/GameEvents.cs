@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEngine;
 
 namespace Monolith.Core
 {
@@ -17,15 +18,30 @@ namespace Monolith.Core
         public readonly int Entity;
         /// <summary>The simulation tick it was raised on.</summary>
         public readonly int Tick;
+        /// <summary>A second ship the event concerns (the attacker of a hit, the target of a beam), or <see cref="GameWorld.NoShip"/>.</summary>
+        public readonly int Other;
+        /// <summary>Where it happened in world space (a muzzle, an impact point, a blast centre). Only meaningful when <see cref="HasPosition"/>.</summary>
+        public readonly Vector3 Position;
+        /// <summary>A world-space direction that goes with <see cref="Position"/> (aim, travel, surface normal), or zero.</summary>
+        public readonly Vector3 Direction;
+        public readonly bool HasPosition;
 
         public GameEvent(string id, string subject, float value, int entity, int tick)
         {
             Id = id; Subject = subject; Value = value; Entity = entity; Tick = tick;
+            Other = GameWorld.NoShip; Position = default; Direction = default; HasPosition = false;
+        }
+
+        public GameEvent(string id, string subject, float value, int entity, int tick, int other, Vector3 position, Vector3 direction)
+        {
+            Id = id; Subject = subject; Value = value; Entity = entity; Tick = tick;
+            Other = other; Position = position; Direction = direction; HasPosition = true;
         }
 
         public override string ToString() =>
             $"{Id}" + (Subject != null ? $"({Subject})" : "") + (Value != 0f ? $"={Value.ToString("0.###", CultureInfo.InvariantCulture)}" : "")
-            + (Entity != GameWorld.NoShip ? $" ship#{Entity}" : "") + $"@{Tick}";
+            + (Entity != GameWorld.NoShip ? $" ship#{Entity}" : "") + (Other != GameWorld.NoShip ? $" other#{Other}" : "")
+            + (HasPosition ? $" at({Position.x:0.#},{Position.y:0.#},{Position.z:0.#})" : "") + $"@{Tick}";
     }
 
     /// <summary>Ids that more than one system needs to agree on. Add yours here with a note of who raises it.</summary>
@@ -61,6 +77,22 @@ namespace Monolith.Core
             if (string.IsNullOrEmpty(id)) return;
             var world = GameWorld.Current;
             var e = new GameEvent(id, subject, value, entity, world != null ? world.Tick : 0);
+            _recent.Add(e);
+            if (_recent.Count > RecentMax) _recent.RemoveAt(0);
+            if (ById.TryGetValue(id, out var handlers)) Invoke(handlers, e);
+            Invoke(_all, e);
+        }
+
+        /// <summary>
+        /// Raise an event that happened somewhere: a shot leaving a muzzle, a hit, an explosion. <paramref name="entity"/> is the ship
+        /// it mostly concerns (shooter, victim), <paramref name="other"/> the second one (target, attacker). See <see cref="CombatEvents"/>.
+        /// </summary>
+        public static void RaiseAt(string id, Vector3 position, Vector3 direction = default, string subject = null, float value = 0f,
+                                   int entity = GameWorld.NoShip, int other = GameWorld.NoShip)
+        {
+            if (string.IsNullOrEmpty(id)) return;
+            var world = GameWorld.Current;
+            var e = new GameEvent(id, subject, value, entity, world != null ? world.Tick : 0, other, position, direction);
             _recent.Add(e);
             if (_recent.Count > RecentMax) _recent.RemoveAt(0);
             if (ById.TryGetValue(id, out var handlers)) Invoke(handlers, e);

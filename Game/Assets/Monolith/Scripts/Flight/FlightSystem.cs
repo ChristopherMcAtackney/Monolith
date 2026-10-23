@@ -48,6 +48,7 @@ namespace Monolith.Flight
                 Callsign = callsign ?? cls.Name,
                 Team = team,
                 Radius = cls.Radius,
+                Mass = cls.Mass,
                 TopSpeed = cls.TopSpeed,
                 AfterburnerSpeed = cls.HasAfterburner ? cls.AfterburnerSpeed : cls.TopSpeed,
                 FuelMax = cls.HasAfterburner ? cls.AfterburnerFuel : 0f,

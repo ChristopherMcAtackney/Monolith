@@ -10,6 +10,8 @@
         "Monolith.View",
         "Monolith.Hud",
         "Monolith.Targeting",
+        "Monolith.Juice",
+        "Unity.InputSystem",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
     ],

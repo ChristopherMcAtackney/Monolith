@@ -20,6 +20,8 @@ namespace Monolith.Core
         public int Team;
         /// <summary>Rough bounding radius in metres (targeting, HUD brackets).</summary>
         public float Radius;
+        /// <summary>Mass in kg (owner: whoever spawned the ship; Flight sets it from the ship class). Shockwaves size their shoves by it.</summary>
+        public float Mass = 10000f;
 
         public Vector3 Position, PreviousPosition;
         public Quaternion Rotation = Quaternion.identity, PreviousRotation = Quaternion.identity;
