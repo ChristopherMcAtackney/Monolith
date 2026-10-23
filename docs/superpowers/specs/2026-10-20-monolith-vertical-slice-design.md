@@ -359,6 +359,12 @@ Missions are data files (one file per mission), not C#. A future mission editor 
   exhausts. Never wedges, grey bricks covered in random greebles, Star Destroyer-style towers or flat white
   engine discs. This applies to both sides and to every placeholder (the first flight build's placeholder
   hulls looked like TIE Fighter, and the user called it out).
+- **Rendering, materials and light: modern FS2 made photoreal, never 90s TIE Fighter (user,
+  2026-10-23).** What the user objected to most in the first placeholders was this, more than the
+  geometry. Plated PBR surfaces with panel variation, coloured trim and wear, and real specular response,
+  never flat grey or noise textures. A hard sun key light plus a subtle coloured ambient fill from the
+  environment, so shadow sides keep their form and never crush to pure black. Emissive window rows and
+  running lights that bloom; engines as hot, glowing exhausts with a colour gradient, never flat discs.
 - **Your side's look:** the diaspora's ships are worn, used-future human hulls, practical and patched,
   in the spirit of the Nostromo and The Expanse's Belter ships (call), with alien-ally technology grafted
   on. That grafted tech, and the HUD and cabin displays it powers, take inspiration from the technology
