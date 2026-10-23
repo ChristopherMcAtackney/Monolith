@@ -80,3 +80,9 @@ What I looked at: `reference/critic_pool/space_and_sky/expanse` (7 frames). They
 - The sky frame is the ecliptic: world +Y is ecliptic north, and `SkyOptions.SkyRotationEuler` rotates stars, Milky Way and Sun together.
 - The map is 4096 x 2048 (about 11 pixels per degree at the equator), a little soft when magnified at narrow fields of view; the 8k map is 137 MB and cannot be committed.
 - ESA data is non-commercial (see `SOURCES.md`).
+
+## Round 1 verdict (lead, 2026-10-23)
+Blind critic, 3 pairs vs The Expanse (space_and_sky): **lost 3/3** (certain, certain, likely). Ours was A in all three (random).
+- Pair 1 sun_wide vs XuqEX1PnG9I_0004; pair 2 sun_toward vs 7_ATYOm3nNc_0155 (that reference also has a ship, a weak match); pair 3 starfield_quiet vs 7wFt319UB2o_0011.
+- Biggest giveaway (consistent across all three): ideal optics on crushed black. Pure-zero black with no graded floor, no grain; the Sun's flare is a clean hairline of constant width over a smooth halo, with no ghosts, dust, haze or colour fringing. The faint stars read as an even sprinkle of 1px dots, "a data plot".
+- Gap for round 2: the frame needs a camera. A graded, slightly lifted and tinted black floor with fine grain; sun glare with wide halo wings, a tinted, uneven anamorphic streak, ghosts and lens dust (the cockpit canopy justifies dirt). Treat the critic's wording as a pointer, not a prescription; don't mimic video compression.
