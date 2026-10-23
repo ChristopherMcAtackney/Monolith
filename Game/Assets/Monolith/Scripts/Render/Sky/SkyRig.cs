@@ -1,0 +1,168 @@
+using Monolith.Core;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
+
+namespace Monolith.Sky
+{
+    /// <summary>
+    /// Switches the Monolith sky on for a scene in one call: <c>SkyRig.Enable(camera)</c>. It makes the Sun (an HDRP directional
+    /// light, the scene's hard key light), a global volume that selects the sky and sets the ambient fill, and (optionally)
+    /// a second volume with a fixed exposure, ACES tonemapping and bloom. It also points the camera at the sky instead of
+    /// clearing to black. Change <see cref="Options"/> and call <see cref="Apply"/> to retune at run time.
+    /// Everything it creates is a child of its own GameObject, so destroying that (or calling <see cref="Disable"/>) removes the sky.
+    /// </summary>
+    public sealed class SkyRig : MonoBehaviour
+    {
+        public SkyOptions Options { get; private set; }
+        public Camera Camera { get; private set; }
+        /// <summary>The Sun's directional light.</summary>
+        public Light Sun { get; private set; }
+        /// <summary>World-space unit vector from the viewer toward the Sun.</summary>
+        public Vector3 SunDirection { get; private set; }
+
+        HDAdditionalLightData _sunData;
+        MonolithSky _sky;
+        Exposure _exposure;
+        Tonemapping _tonemapping;
+        Bloom _bloom;
+        VolumeProfile _skyProfile, _lookProfile;
+        Volume _skyVolume, _lookVolume;
+        HDAdditionalCameraData _cameraData;
+        HDAdditionalCameraData.ClearColorMode _previousClear;
+
+        /// <summary>Turn the sky on for this camera. Returns the rig; keep it if you want to retune or turn the sky off later.</summary>
+        public static SkyRig Enable(Camera camera, Transform parent = null, SkyOptions options = null)
+        {
+            if (camera == null) throw new System.ArgumentNullException(nameof(camera));
+            var go = new GameObject("MonolithSky");
+            if (parent != null) go.transform.SetParent(parent, false);
+            var rig = go.AddComponent<SkyRig>();
+            rig.Build(camera, options ?? new SkyOptions());
+            return rig;
+        }
+
+        void Build(Camera camera, SkyOptions options)
+        {
+            Camera = camera;
+            Options = options;
+
+            _cameraData = camera.GetComponent<HDAdditionalCameraData>() ?? camera.gameObject.AddComponent<HDAdditionalCameraData>();
+            _previousClear = _cameraData.clearColorMode;
+            _cameraData.clearColorMode = HDAdditionalCameraData.ClearColorMode.Sky;
+            camera.allowHDR = true;
+
+            // The Sun.
+            var sunGo = new GameObject("Sun");
+            sunGo.transform.SetParent(transform, false);
+            _sunData = sunGo.AddHDLight(HDLightTypeAndShape.Directional);
+            Sun = sunGo.GetComponent<Light>();
+
+            // The sky: a volume that picks the Monolith sky and lights ships from it.
+            _skyProfile = ScriptableObject.CreateInstance<VolumeProfile>();
+            _skyProfile.name = "MN_SkyProfile";
+            var env = _skyProfile.Add<VisualEnvironment>(true);
+            env.skyType.Override(MonolithSky.UniqueId);
+            env.skyAmbientMode.Override(SkyAmbientMode.Dynamic);
+            _sky = _skyProfile.Add<MonolithSky>(true);
+            _skyVolume = MakeVolume("SkyVolume", _skyProfile, 20f);
+
+            // Exposure and look.
+            if (options.ConfigureExposure || options.ConfigureLook)
+            {
+                _lookProfile = ScriptableObject.CreateInstance<VolumeProfile>();
+                _lookProfile.name = "MN_SkyLookProfile";
+                if (options.ConfigureExposure) _exposure = _lookProfile.Add<Exposure>(true);
+                if (options.ConfigureLook)
+                {
+                    _tonemapping = _lookProfile.Add<Tonemapping>(true);
+                    _bloom = _lookProfile.Add<Bloom>(true);
+                }
+                _lookVolume = MakeVolume("LookVolume", _lookProfile, 21f);
+            }
+
+            Apply();
+            MnLog.Info($"SKY on: sun {SunDirection.x:0.000},{SunDirection.y:0.000},{SunDirection.z:0.000}, " +
+                       $"{(options.ConfigureExposure ? options.Exposure + " EV " + options.ExposureEv100 : "scene exposure")}, limit V {options.LimitMagnitude}");
+        }
+
+        Volume MakeVolume(string name, VolumeProfile profile, float priority)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var v = go.AddComponent<Volume>();
+            v.isGlobal = true;
+            v.priority = priority;
+            v.sharedProfile = profile;
+            return v;
+        }
+
+        /// <summary>Push <see cref="Options"/> into the light and the volumes. Call after changing an option.</summary>
+        public void Apply()
+        {
+            var o = Options;
+
+            SunDirection = SkyMath.EclipticToWorld(o.SunEclipticLongitude, o.SunEclipticLatitude, o.SkyRotationEuler);
+            Sun.transform.rotation = Quaternion.LookRotation(-SunDirection, Vector3.up);
+            Sun.color = o.SunColor;
+            _sunData.SetIntensity(o.SunLux, LightUnit.Lux);
+            _sunData.angularDiameter = o.SunLightAngularDiameterDeg;
+            _sunData.EnableShadows(o.SunShadows);
+
+            float nitsPerUnit = 1.2f * Mathf.Pow(2f, o.ExposureEv100);
+            float lum = Mathf.Max(0.2126f * o.SunColor.r + 0.7152f * o.SunColor.g + 0.0722f * o.SunColor.b, 1e-4f);   // the Sun point is luminance-normalised: its energy sets the brightness
+            _sky.sunDirection.Override(SunDirection);
+            _sky.skyRotationEuler.Override(o.SkyRotationEuler);
+            _sky.sunColor.Override(new Color(o.SunColor.r / lum, o.SunColor.g / lum, o.SunColor.b / lum, 1f));
+            _sky.sunCore.Override(new Vector4(o.SunCore, o.SunCoreSigmaPx, 0f, 0f));
+            _sky.sunHalo.Override(new Vector4(o.SunHalo, o.SunHaloSize, o.SunVeil, o.SunVeilSize));
+            _sky.sunStreak.Override(new Vector4(o.SunStreak, o.SunStreakThickness, o.SunStreakReach, 0f));
+            _sky.starParams.Override(new Vector4(o.StarGain, o.StarGamma, o.StarReferenceMagnitude, o.LimitMagnitude));
+            _sky.starShape.Override(new Vector4(o.StarSigmaPx, o.StarSaturation, o.StarHaloFraction, 0f));
+            _sky.starHalo.Override(new Vector4(o.StarHaloSizeDimPx, o.StarHaloSizeBrightPx, 0f, 0f));
+            _sky.milkyWay.Override(new Vector4(o.MilkyWayGain, o.MilkyWayContrast, o.MilkyWaySaturation, 0f));
+            _sky.milkyWayTint.Override(o.MilkyWayTint);
+            _sky.blackLift.Override(o.BlackLift);
+            _sky.ambientColor.Override(o.AmbientColor);
+            _sky.ambientNits.Override(o.AmbientNits);
+            _sky.ambientShape.Override(new Vector4(o.AmbientAwayFromSun, o.AmbientMilkyWay, 0f, 0f));
+            _sky.nitsPerUnit.Override(nitsPerUnit);
+
+            if (_exposure != null)
+            {
+                if (o.Exposure == SkyExposure.Fixed)
+                {
+                    _exposure.mode.Override(ExposureMode.Fixed);
+                    _exposure.fixedExposure.Override(o.ExposureEv100);
+                }
+                else
+                {
+                    _exposure.mode.Override(ExposureMode.Automatic);
+                    _exposure.limitMin.Override(o.AutoExposureMinEv);
+                    _exposure.limitMax.Override(o.AutoExposureMaxEv);
+                    _exposure.meteringMode.Override(MeteringMode.CenterWeighted);
+                }
+            }
+            if (_tonemapping != null) _tonemapping.mode.Override(TonemappingMode.ACES);
+            if (_bloom != null)
+            {
+                _bloom.intensity.Override(o.BloomIntensity);
+                _bloom.threshold.Override(o.BloomThreshold);
+                _bloom.scatter.Override(o.BloomScatter);
+            }
+        }
+
+        /// <summary>Remove the sky and put the camera back to clearing to black.</summary>
+        public void Disable()
+        {
+            Destroy(gameObject);
+        }
+
+        void OnDestroy()
+        {
+            if (_cameraData != null) _cameraData.clearColorMode = _previousClear;
+            if (_skyProfile != null) Destroy(_skyProfile);
+            if (_lookProfile != null) Destroy(_lookProfile);
+        }
+    }
+}

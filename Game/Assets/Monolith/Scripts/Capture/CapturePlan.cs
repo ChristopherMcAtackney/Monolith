@@ -17,9 +17,29 @@ namespace Monolith.Capture
     /// </summary>
     public sealed class CapturePlan
     {
+        /// <summary>Which test scene the game should build for this plan (null: the game's default). The game, not the capture code, knows the names.</summary>
+        public string scene;
+        /// <summary>Free-form settings for that scene (a JSON object), read by the game when it builds the scene. The capture code never looks inside.</summary>
+        public Newtonsoft.Json.Linq.JObject sceneOptions;
         public PlanDefaults defaults = new PlanDefaults();
         public List<StillShot> stills = new List<StillShot>();
         public List<PerfRun> perf = new List<PerfRun>();
+
+        /// <summary>
+        /// The plan's "scene" and "sceneOptions" (as JSON text) without validating the rest: the game builds its world before the
+        /// runner loads the plan. Both are null if absent or if the file is unreadable (the runner reports bad plans itself).
+        /// </summary>
+        public static void PeekScene(string path, out string scene, out string optionsJson)
+        {
+            scene = optionsJson = null;
+            try
+            {
+                var root = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(path));
+                scene = root["scene"]?.ToString();
+                optionsJson = root["sceneOptions"]?.ToString();
+            }
+            catch (Exception) { }
+        }
 
         public static CapturePlan Load(string path)
         {

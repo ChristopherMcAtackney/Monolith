@@ -1,0 +1,274 @@
+// Monolith sky: the Milky Way map, the Sun and the real star catalogue, drawn as an HDRP custom sky.
+//
+//   Pass 0  Bake    the Milky Way plus the cold ambient fill, into HDRP's lighting cubemap. No stars, no Sun.
+//   Pass 1  Render  full-screen background: Milky Way, black lift, the Sun's core, halo and streak.
+//   Pass 2  Stars   one small quad per catalogue star, additive, on top of pass 1.
+//
+// Stars are placed by the camera's own view-projection (the same matrix, jitter included, that the geometry uses) and each
+// is a point-spread function sized in screen pixels: a Gaussian core integrated exactly over each pixel (so a star's total
+// light does not change as it slides across the pixel grid, which is what makes point stars shimmer) plus a faint wide
+// halo for bright ones. Nothing is sampled from a texture except the Milky Way, which is smooth.
+Shader "Hidden/Monolith/Sky"
+{
+    HLSLINCLUDE
+
+    #pragma target 4.5
+    #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
+    #pragma editor_sync_compilation
+
+    #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+    #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+    #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+    #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Sky/SkyUtils.hlsl"
+
+    TEXTURE2D(_MilkyWay);
+    SAMPLER(sampler_MilkyWay);
+
+    float4x4 _SkyToWorld;      // equatorial -> world
+    float4x4 _WorldToSky;      // world -> equatorial
+    float4x4 _SkyViewProj;     // the camera's view-projection (direction in, w = 0)
+
+    float4 _MilkyWayParams;    // x gain, y contrast, z angle of one output pixel in radians, w angle of one map texel at the equator in radians
+    float4 _BlackLift;         // rgb
+    float4 _MilkyWayTint;      // rgb tint, w saturation
+    float4 _AmbientFill;       // rgb nits (bake only)
+    float4 _AmbientShape;      // x: how much stronger the fill is away from the Sun (0 = even all round), y: gain on the Milky Way in the fill
+    float4 _SunDirWS;          // xyz: unit vector toward the Sun
+    float  _NitsPerUnit;       // nits in one display unit at the reference exposure
+
+    float4 _SunPx;             // xy: position in pixels (SV_Position convention), z: 1 when the Sun is in front of the camera
+    float4 _SunColor;
+    float4 _SunCore;           // x energy, y sigma in pixels
+    float4 _SunHalo;           // x halo energy, y halo size, z veil energy, w veil size (sizes as fractions of the screen height)
+    float4 _SunStreak;         // x peak, y thickness, z reach (fractions of the screen height)
+
+    StructuredBuffer<float4> _StarPosMag;
+    StructuredBuffer<uint>   _StarColor;
+    float4 _StarParams;        // x gain, y gamma, z reference magnitude, w limit magnitude
+    float4 _StarShape;         // x core sigma px, y saturation, z halo fraction
+    float4 _StarHalo;          // x halo size px (dim), y halo size px (bright)
+
+    // ------------------------------------------------------------------------------------------------ helpers
+
+    // Abramowitz and Stegun 7.1.27, |error| < 5e-4, smooth everywhere.
+    float ErfApprox(float x)
+    {
+        float ax = abs(x);
+        float t = 1.0 + ax * (0.278393 + ax * (0.230389 + ax * (0.000972 + ax * 0.078108)));
+        float t2 = t * t;
+        float r = 1.0 - 1.0 / (t2 * t2);
+        return x < 0.0 ? -r : r;
+    }
+
+    // Fraction of a 1D Gaussian (invS = 1 / (sigma * sqrt(2))) that falls inside the unit-wide pixel centred d from the star.
+    float PixelFraction(float d, float invS)
+    {
+        return 0.5 * (ErfApprox((d + 0.5) * invS) - ErfApprox((d - 0.5) * invS));
+    }
+
+    // HDRP's GetSkyViewDirWS points from the sky back toward the camera (its own gradient sky uses -y for "up"), so flip it.
+    float3 ViewDirWS(float2 positionCS)
+    {
+        return -GetSkyViewDirWS(positionCS);
+    }
+
+    float3 MilkyWay(float3 dirWS)
+    {
+        float3 e = mul((float3x3)_WorldToSky, dirWS);
+        float ra = atan2(e.y, e.x);
+        float lat = asin(clamp(e.z, -1.0, 1.0));
+        float2 uv = float2(0.5 - ra * (0.5 * INV_PI), 0.5 + lat * INV_PI);
+        // Pick the mip by hand: the map is equirectangular, so a texel is narrower the nearer the pole, and automatic
+        // derivatives would also jump at the wrap. Isotropic, so it blurs a little at the poles instead of aliasing.
+        float widthScale = max(cos(lat), 0.002);
+        float lod = max(0.0, log2(_MilkyWayParams.z / (_MilkyWayParams.w * widthScale)));
+        float3 c = SAMPLE_TEXTURE2D_LOD(_MilkyWay, sampler_MilkyWay, uv, lod).rgb;
+        c = pow(max(c, 0.0), _MilkyWayParams.y);
+        c = lerp(dot(c, float3(0.2126, 0.7152, 0.0722)), c, _MilkyWayTint.w);
+        return c * _MilkyWayParams.x * _MilkyWayTint.rgb;
+    }
+
+    float3 SunLayer(float2 pos)
+    {
+        if (_SunPx.z < 0.5) return 0.0;
+        float H = _ScreenSize.y;
+        float2 d = pos - _SunPx.xy;
+
+        float invS = rcp(max(_SunCore.y, 0.05) * 1.41421356);
+        float core = PixelFraction(d.x, invS) * PixelFraction(d.y, invS);
+
+        float a = max(_SunHalo.y * H, 0.5);
+        float u = dot(d, d) / (a * a);
+        float halo = rcp(PI * a * a) / ((1.0 + u) * (1.0 + u));      // energy-normalised, falls as r^-4 past the knee
+
+        float av = max(_SunHalo.w * H, 1.0);
+        float uv = dot(d, d) / (av * av);
+        float veil = rcp(PI * av * av) / ((1.0 + uv) * (1.0 + uv));
+
+        float th = max(_SunStreak.y * H, 0.25);
+        float reach = max(_SunStreak.z * H, 1.0);
+        float streak = exp(-abs(d.y) / th) * rcp(1.0 + abs(d.x) / reach) * exp(-abs(d.x) / (6.0 * reach));
+
+        return _SunColor.rgb * (_SunCore.x * core + _SunHalo.x * halo + _SunHalo.z * veil + _SunStreak.x * streak);
+    }
+
+    // ------------------------------------------------------------------------------------------------ full-screen passes
+
+    struct Attributes
+    {
+        uint vertexID : SV_VertexID;
+        UNITY_VERTEX_INPUT_INSTANCE_ID
+    };
+
+    struct Varyings
+    {
+        float4 positionCS : SV_POSITION;
+        UNITY_VERTEX_OUTPUT_STEREO
+    };
+
+    Varyings Vert(Attributes input)
+    {
+        Varyings output;
+        UNITY_SETUP_INSTANCE_ID(input);
+        UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+        output.positionCS = GetFullScreenTriangleVertexPosition(input.vertexID, UNITY_RAW_FAR_CLIP_VALUE);
+        return output;
+    }
+
+    float4 FragBake(Varyings input) : SV_Target
+    {
+        float3 dirWS = ViewDirWS(input.positionCS.xy);
+        // The lighting cubemap: cold fill that is strongest on the side facing away from the Sun, plus the Milky Way's own light, so a
+        // hull's shadow side keeps a gradient (form) instead of one flat tone, and never goes black.
+        float awayFromSun = dot(dirWS, -_SunDirWS.xyz);
+        float3 fill = _AmbientFill.rgb * max(0.0, 1.0 + _AmbientShape.x * awayFromSun);
+        float3 c = MilkyWay(dirWS) * (_NitsPerUnit * _AmbientShape.y) + fill;
+        return float4(c, 1.0);
+    }
+
+    float4 FragRender(Varyings input) : SV_Target
+    {
+        UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+        float3 dirWS = ViewDirWS(input.positionCS.xy);
+        float3 c = MilkyWay(dirWS) + _BlackLift.rgb + SunLayer(input.positionCS.xy);
+        return float4(c * (_NitsPerUnit * GetCurrentExposureMultiplier()), 1.0);
+    }
+
+    // ------------------------------------------------------------------------------------------------ stars
+
+    struct StarVaryings
+    {
+        float4 positionCS : SV_POSITION;
+        float2 offsetPx   : TEXCOORD0;                        // this pixel's centre minus the star's centre, in pixels
+        nointerpolation float4 energy : TEXCOORD1;            // x core energy, y halo energy, z halo size px, w 1 / (sigma * sqrt 2)
+        nointerpolation float3 colour : TEXCOORD2;            // luminance-1 colour
+    };
+
+    static const float2 kCorner[6] = { float2(-1, -1), float2(-1, 1), float2(1, -1), float2(1, -1), float2(-1, 1), float2(1, 1) };
+
+    StarVaryings VertStar(uint vertexID : SV_VertexID)
+    {
+        StarVaryings o;
+        o.positionCS = float4(2.0, 2.0, 2.0, 1.0);            // off-screen: the whole quad is clipped away unless the star is real
+        o.offsetPx = 0.0;
+        o.energy = 0.0;
+        o.colour = 0.0;
+
+        uint star = vertexID / 6u;
+        uint corner = vertexID - star * 6u;
+
+        float4 pm = _StarPosMag[star];
+        float3 dirWS = mul((float3x3)_SkyToWorld, pm.xyz);
+        float4 clip = mul(_SkyViewProj, float4(dirWS, 0.0));
+        if (clip.w < 1e-3) return o;
+
+        // Brightness: real flux ratios raised to gamma, so Sirius and a magnitude-8 star both stay on the screen.
+        float mag = pm.w;
+        float fade = saturate((_StarParams.w - mag) * 4.0);
+        float flux = _StarParams.x * exp2(-0.4 * _StarParams.y * (mag - _StarParams.z) * 3.321928) * fade;
+        if (flux < 1e-6) return o;
+
+        float sigma = _StarShape.x;
+        float lf = log2(flux) * 0.30103;                      // log10
+        float t = saturate((lf + 1.5) / 3.0);                 // 0 for dim stars, 1 for the brightest
+        float haloFrac = _StarShape.z * t * t;
+        float a = lerp(_StarHalo.x, _StarHalo.y, t);
+        float haloPeak = flux * haloFrac * rcp(PI * a * a);
+        float rHalo = a * sqrt(max(sqrt(haloPeak / 0.0015) - 1.0, 0.0));
+        float extent = clamp(max(3.2 * sigma, rHalo) + 1.0, 3.0, 96.0);
+
+        float2 ndc = clip.xy / clip.w;
+        float2 marginNdc = extent * 2.0 * _ScreenSize.zw;
+        if (any(abs(ndc) > 1.0 + marginNdc)) return o;
+
+        uint packed = _StarColor[star];
+        float3 chroma = float3(packed & 255u, (packed >> 8) & 255u, (packed >> 16) & 255u) * (1.0 / 255.0);
+        float lum = dot(chroma, float3(0.2126, 0.7152, 0.0722));
+        o.colour = lerp(1.0, chroma / max(lum, 1e-3), _StarShape.y);
+
+        o.energy = float4(flux * (1.0 - haloFrac), flux * haloFrac, a, rcp(sigma * 1.41421356));
+        float2 offsetPx = kCorner[corner] * extent;
+        o.offsetPx = offsetPx;
+        float2 ndcOut = ndc + offsetPx * 2.0 * _ScreenSize.zw;
+        o.positionCS = float4(ndcOut * clip.w, UNITY_RAW_FAR_CLIP_VALUE * clip.w, clip.w);
+        return o;
+    }
+
+    float4 FragStar(StarVaryings i) : SV_Target
+    {
+        float2 d = i.offsetPx;
+        float core = PixelFraction(d.x, i.energy.w) * PixelFraction(d.y, i.energy.w);
+        float a2 = i.energy.z * i.energy.z;
+        float u = dot(d, d) / a2;
+        float halo = rcp(PI * a2) / ((1.0 + u) * (1.0 + u));
+        float v = i.energy.x * core + i.energy.y * halo;
+        return float4(i.colour * (v * _NitsPerUnit * GetCurrentExposureMultiplier()), 0.0);
+    }
+
+    ENDHLSL
+
+    SubShader
+    {
+        Tags { "RenderPipeline" = "HDRenderPipeline" }
+
+        Pass    // 0: lighting cubemap
+        {
+            Name "Bake"
+            ZWrite Off
+            ZTest Always
+            Blend Off
+            Cull Off
+            HLSLPROGRAM
+                #pragma vertex Vert
+                #pragma fragment FragBake
+            ENDHLSL
+        }
+
+        Pass    // 1: background
+        {
+            Name "Render"
+            ZWrite Off
+            ZTest LEqual
+            Blend Off
+            Cull Off
+            HLSLPROGRAM
+                #pragma vertex Vert
+                #pragma fragment FragRender
+            ENDHLSL
+        }
+
+        Pass    // 2: stars
+        {
+            Name "Stars"
+            ZWrite Off
+            ZTest LEqual
+            Blend One One
+            Cull Off
+            HLSLPROGRAM
+                #pragma vertex VertStar
+                #pragma fragment FragStar
+            ENDHLSL
+        }
+    }
+    Fallback Off
+}

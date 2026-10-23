@@ -41,7 +41,10 @@ namespace Monolith.Game
 
             if (CommandLine.Has("-mnLogEvents")) _eventLog = GameEvents.SubscribeAll(e => MnLog.Info("event " + e));
 
-            SmokeWorld.Build(World, transform);
+            // A capture plan may ask for a particular test scene ("scene": "sky"); otherwise the smoke world.
+            string scene = null, sceneOptions = null;
+            if (CommandLine.Has("-mnCapture")) CapturePlan.PeekScene(CommandLine.Get("-mnCapture"), out scene, out sceneOptions);
+            if (!SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
             if (CommandLine.Has("-mnCapture"))
             {

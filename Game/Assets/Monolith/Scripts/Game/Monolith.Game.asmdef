@@ -5,6 +5,7 @@
         "Monolith.Core",
         "Monolith.Capture",
         "Monolith.Flight",
+        "Monolith.Sky",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
     ],
