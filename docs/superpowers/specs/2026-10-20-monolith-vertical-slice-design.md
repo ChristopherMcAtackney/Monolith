@@ -353,6 +353,12 @@ Missions are data files (one file per mission), not C#. A future mission editor 
 - **Ships and stations are modelled by script in Blender** (user), as in Trap Door. PBR materials,
   panel detail, wear, lights and engine glows. Capital ships need to read as enormous: surface detail at
   several scales.
+- **Ship design language: FS2, not TIE Fighter or Star Wars (user, 2026-10-23).** Long, layered
+  silhouettes built from distinct plated segments; panel lines; rows of lit windows and small coloured
+  running lights that give away the scale; spines, fins and some asymmetry; engines as glowing recessed
+  exhausts. Never wedges, grey bricks covered in random greebles, Star Destroyer-style towers or flat white
+  engine discs. This applies to both sides and to every placeholder (the first flight build's placeholder
+  hulls looked like TIE Fighter, and the user called it out).
 - **Your side's look:** the diaspora's ships are worn, used-future human hulls, practical and patched,
   in the spirit of the Nostromo and The Expanse's Belter ships (call), with alien-ally technology grafted
   on. That grafted tech, and the HUD and cabin displays it powers, take inspiration from the technology
