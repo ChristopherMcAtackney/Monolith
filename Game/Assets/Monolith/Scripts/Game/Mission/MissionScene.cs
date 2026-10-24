@@ -256,7 +256,7 @@ namespace Monolith.Game
             foreach (var h in _file.Pacing.Hulls)
             {
                 var c = _rt.CombatOf(h);
-                string v = !_rt.HasArrived(h) ? "-" : c != null && c.Alive ? Mathf.RoundToInt(c.Hull01 * 100f).ToString(CultureInfo.InvariantCulture) + "%" : "LOST";
+                string v = !_rt.HasArrived(h) ? "-" : _rt.HasDeparted(h) ? "GONE" : c != null && c.Alive ? Mathf.RoundToInt(c.Hull01 * 100f).ToString(CultureInfo.InvariantCulture) + "%" : "LOST";
                 hulls.Add($"{h.ToUpperInvariant()} {v}");
             }
             _hud.Info = new[]
