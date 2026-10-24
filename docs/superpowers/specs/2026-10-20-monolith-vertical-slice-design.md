@@ -391,7 +391,10 @@ Missions are data files (one file per mission), not C#. A future mission editor 
   polysynths, chorus, big reverb, gated drums; never plain General MIDI); the user can replace any
   track with their own MP3s later (user). The same 80s feel carries into the atmosphere (user).
 - **Radio voices (call):** generated with Trap Door's TTS pipeline, with a radio filter. Diaspora crews
-  sound human, with varied accents and dry humour; alien allies get an alien vocal texture; Earth's gods
+  sound human, with varied accents (no Scottish accents: user, 2026-10-24) and dry humour. **In battle the
+  crew sounds frantic and panicked, never calm** (user, 2026-10-24: the first voices sounded "very weirdly
+  calm"): urgent, breathless, shouting over the noise, cracking on bad news, with the gallows humour
+  delivered under pressure, like Aliens' Colonial Marines. Calm reads only in quiet moments; alien allies get an alien vocal texture; Earth's gods
   sound vast, cold and machine-edged. The user's own recordings can replace
   any line. Radio and briefing text are data.
 - **Sound effects:** weighty and physical: hits, shield and hull impacts, lock tones, missile warning,
