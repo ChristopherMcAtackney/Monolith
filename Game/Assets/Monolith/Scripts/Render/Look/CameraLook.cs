@@ -114,13 +114,16 @@ namespace Monolith.Look
             var vp = ctx.hdCamera.mainViewConstants.viewProjMatrix;
             Vector4 clip = vp * new Vector4(o.SunDirection.x, o.SunDirection.y, o.SunDirection.z, 0f);
             if (clip.w < 1e-3f) return;     // the Sun is behind the camera
+            float nx = clip.x / clip.w, ny = clip.y / clip.w;
+            float outside = Mathf.Max(Mathf.Max(Mathf.Abs(nx) - 1f, Mathf.Abs(ny) - 1f), 0f);       // 0 with the Sun in the picture
+            float ghostGate = Mathf.Clamp01(1f - outside / Mathf.Max(o.GhostReach, 1e-3f));
             var size = ctx.hdCamera.screenSize;
             var px = new Vector4((clip.x / clip.w * 0.5f + 0.5f) * size.x, (0.5f - clip.y / clip.w * 0.5f) * size.y, 1f, 0f);
 
             var mpb = ctx.propertyBlock;
             mpb.SetVector(IdSunPx, px);
             mpb.SetVector(IdSunTint, Vec(o.SunColor));
-            mpb.SetVector(IdGlareScale, new Vector4(o.Intensity * o.NitsPerUnit, o.HiddenSunGlare, o.Fringe, o.Ghosts));
+            mpb.SetVector(IdGlareScale, new Vector4(o.Intensity * o.NitsPerUnit, o.HiddenSunGlare, o.Fringe, o.Ghosts * ghostGate));
             mpb.SetVector(IdVeil, new Vector4(o.VeilEnergy, o.VeilSize, o.WingEnergy, o.WingSize));
             mpb.SetVector(IdWing, new Vector4(o.HaloEnergy, o.HaloSize, o.HazeEnergy, o.HazeSize));
             mpb.SetVector(IdVeilTint, Vec(o.VeilTint));

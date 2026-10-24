@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace Monolith.ShipArt
 {
@@ -13,6 +15,10 @@ namespace Monolith.ShipArt
         static readonly int EmissiveId = Shader.PropertyToID("_EmissiveColor");
 
         [SerializeField] Renderer[] _core = new Renderer[0], _plume = new Renderer[0];
+        /// <summary>Small point lights in front of the nozzle: the engine's light on the hull and the bell around it (no shadows).</summary>
+        [SerializeField] HDAdditionalLightData[] _lights = new HDAdditionalLightData[0];
+        [SerializeField] float[] _lightCandela = new float[0];
+        ShipSubsystem _sub;
         /// <summary>0 = engine off (no flare, a dark bell), 1 = full burn.</summary>
         [Range(0f, 1f)] public float Throttle = 0.8f;
         /// <summary>How much the brightness and the flare's length waver (0 = steady).</summary>
@@ -23,9 +29,11 @@ namespace Monolith.ShipArt
         float _seed;
         MaterialPropertyBlock _block;
 
-        public void Configure(Renderer[] core, Renderer[] plume)
+        public void Configure(Renderer[] core, Renderer[] plume, HDAdditionalLightData[] lights = null, float[] candela = null)
         {
             _core = core; _plume = plume;
+            _lights = lights ?? new HDAdditionalLightData[0];
+            _lightCandela = candela ?? new float[0];
             _seed = Mathf.Abs(transform.GetSiblingIndex() * 7.31f + name.GetHashCode() % 97) + 3f;
         }
 
@@ -54,7 +62,11 @@ namespace Monolith.ShipArt
             float t = Time.time;
             // two noises at different speeds: a quick flutter and a slower surge
             float fast = Mathf.PerlinNoise(_seed, t * 17f) - 0.5f, slow = Mathf.PerlinNoise(_seed * 1.7f, t * 4.3f) - 0.5f;
-            float k = Throttle <= 0f ? 0f : Throttle * (1f + Flicker * (fast * 1.4f + slow * 1.0f));
+            if (_sub == null) _sub = GetComponent<ShipSubsystem>();
+            bool dead = _sub != null && _sub.Destroyed;
+            float k = dead || Throttle <= 0f ? 0f : Throttle * (1f + Flicker * (fast * 1.4f + slow * 1.0f));
+            for (int i = 0; i < _lights.Length; i++)
+                if (_lights[i] != null) _lights[i].SetIntensity(_lightCandela[i] * Mathf.Clamp01(k) * (k > 0f ? 1f : 0f), LightUnit.Candela);
             for (int i = 0; i < _core.Length; i++) Apply(_core[i], _coreBase[i] * (k <= 0f ? 0.03f : 0.3f + 0.7f * k));
             float length = Mathf.Lerp(0.30f, 1f, Throttle) * (1f + Flicker * (slow * 1.2f + fast * 0.5f));
             for (int i = 0; i < _plume.Length; i++)

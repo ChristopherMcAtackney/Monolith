@@ -1,8 +1,8 @@
 {
  "lods": {
   "0": {
-   "triangles": 45078,
-   "vertices": 87368,
+   "triangles": 59464,
+   "vertices": 116140,
    "subsystemTriangles": 39046
   },
   "1": {
@@ -4325,7 +4325,8 @@
   "mn_earth_plume",
   "mn_earth_plate_d",
   "mn_earth_plate_e",
-  "mn_earth_wear"
+  "mn_earth_wear",
+  "mn_earth_paint"
  ],
  "materialSet": "Assets/Monolith/Art/EarthHull/earth_hull.materials.json",
  "damagePoints": [
@@ -5114,5 +5115,32 @@
   0.16,
   0.05,
   0.012
- ]
+ ],
+ "engineLights": {
+  "SUB_engine_C": {
+   "z": 4.4,
+   "candela": 520000.0,
+   "range": 60.0
+  },
+  "SUB_engine_01": {
+   "z": 3.4,
+   "candela": 210000.0,
+   "range": 45.0
+  },
+  "SUB_engine_02": {
+   "z": 3.4,
+   "candela": 210000.0,
+   "range": 45.0
+  },
+  "SUB_engine_03": {
+   "z": 3.4,
+   "candela": 210000.0,
+   "range": 45.0
+  },
+  "SUB_engine_04": {
+   "z": 3.4,
+   "candela": 210000.0,
+   "range": 45.0
+  }
+ }
 }

@@ -7,6 +7,8 @@ using Monolith.ShipArt;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEditor.Rendering.HighDefinition;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine;
 
 namespace Monolith.EditorTools
@@ -278,7 +280,23 @@ namespace Monolith.EditorTools
                     {
                         // A live engine: its glowing core and its flare flicker and follow the throttle (EngineGlow).
                         var glow = t.gameObject.AddComponent<EngineGlow>();
-                        glow.Configure(RenderersOf(t, s.Name + "__core"), RenderersOf(t, s.Name + "__plume"));
+                        var lights = new List<HDAdditionalLightData>(); var candela = new List<float>();
+                        if (raw["engineLights"]?[s.Name] is JObject spec)
+                        {
+                            // Light from the engine on the hull round the nozzle and the bell: a cold point light just outside the throat, no shadows.
+                            var lg = new GameObject("SPILL");
+                            lg.transform.SetParent(t, false);
+                            lg.transform.localPosition = new Vector3(0f, 0f, (float)spec["z"]);
+                            var data = lg.AddHDLight(HDLightTypeAndShape.Point);
+                            var light = lg.GetComponent<Light>();
+                            light.color = new Color(0.58f, 0.76f, 1f);
+                            light.range = (float)spec["range"];
+                            data.shapeRadius = 0.15f;
+                            data.EnableShadows(false);
+                            data.SetIntensity((float)spec["candela"], LightUnit.Candela);
+                            lights.Add(data); candela.Add((float)spec["candela"]);
+                        }
+                        glow.Configure(RenderersOf(t, s.Name + "__core"), RenderersOf(t, s.Name + "__plume"), lights.ToArray(), candela.ToArray());
                     }
                     foreach (var g in intact) intactRenderers.AddRange(g.GetComponentsInChildren<Renderer>(true));
                     variants += damaged.Length + destroyed.Length;

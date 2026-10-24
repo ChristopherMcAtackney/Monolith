@@ -18,7 +18,7 @@ import sys
 import numpy as np
 
 from blender_lib import mnmesh, mnship, mnkit, mnparts, mnsystems, mnpreview
-from blender_lib.mnkit import Kit, station, complement, PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLATE_D, PLATE_E, WEAR
+from blender_lib.mnkit import Kit, station, complement, PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLATE_D, PLATE_E, WEAR, PAINT
 from blender_lib.mnkit import LIGHT_WHITE, LIGHT_COLD, LIGHT_RED, LIGHT_GREEN, LIGHT_AMBER, LIGHT_BLUE
 from blender_lib.mnmesh import Frame, norm, cross, chamfered_rect, regular_poly
 
@@ -161,6 +161,7 @@ def plate_bands(K, bands, key, windows=None, styles=None, skip=(), detail=True):
                 if detail and K.lod == 0:
                     K.scatter_details(patch, K.last_cells, f"{key}-{bi}-{en}-{gi}")
                     K.wear(patch, K.last_cells, f"{key}-{bi}-{en}-{gi}")
+                    K.edge_wear(patch, K.last_cells, K.last_tones, f"{key}-{bi}-{en}-{gi}")
 
 
 def rails(K, stations, radius=0.3):
@@ -409,10 +410,11 @@ def build(ctx):
             K.light(np.array([x, -187.0, -13.6]), -YHAT, LIGHT_COLD, 0.7, "running")
     if lod == 0:
         # markings: the hull code on a pad on the starboard belt, Earth's mark on the top deck
-        K.slab_box(Frame((34.2, -46.0, 2.0), YHAT, ZHAT), (0.5, 11.0, 3.9), mat=PLATE, chamfer=0.1)
-        K.decal((34.5, -46.0, 2.0), YHAT, XHAT, "label_code", size=(10.0, 3.3), lift=0.0)
-        K.slab_box(Frame((0, -42.0, 23.6), YHAT, ZHAT), (8.8, 8.8, 0.4), mat=PLATE, chamfer=0.1)
-        K.decal((0, -42.0, 23.82), -YHAT, ZHAT, "label_emblem", size=(8.4, 8.4), lift=0.0)
+        # the hull number and the mark are paint on a flat armour pad, aged with it: chipped at the letters' edges, primer showing round the holes
+        K.slab_box(Frame((34.2, -46.0, 2.0), YHAT, ZHAT), (0.5, 11.0, 3.9), mat=PLATE_C, chamfer=0.1, tile=8.0)
+        K.paint_quad("hull_code", (34.45, -46.0, 2.0), YHAT, XHAT, lift=0.016)
+        K.slab_box(Frame((0, -42.0, 23.6), YHAT, ZHAT), (8.8, 8.8, 0.4), mat=PLATE_C, chamfer=0.1, tile=8.0)
+        K.paint_quad("emblem", (0, -42.0, 23.8), -YHAT, ZHAT, lift=0.016)
 
     # --- the collision proxy: the segments and the big appendages as coarse boxes ---
     if lod == 0:
@@ -491,13 +493,16 @@ def damage_points(count=72):
 
 def main():
     preview = "--preview" in sys.argv
-    ship = mnship.Ship(SHIP_ID, "Warden-class corvette", ART, ["mn_earth_plate", "mn_earth_trim", "mn_earth_lights", "mn_earth_engine", "mn_earth_chrome", "mn_earth_plate_b", "mn_earth_plate_c", "mn_earth_plume", "mn_earth_plate_d", "mn_earth_plate_e", "mn_earth_wear"], seed=SEED,
+    ship = mnship.Ship(SHIP_ID, "Warden-class corvette", ART, ["mn_earth_plate", "mn_earth_trim", "mn_earth_lights", "mn_earth_engine", "mn_earth_chrome", "mn_earth_plate_b", "mn_earth_plate_c", "mn_earth_plume", "mn_earth_plate_d", "mn_earth_plate_e", "mn_earth_wear", "mn_earth_paint"], seed=SEED,
                        manifest_dir=RES, material_set=MATERIAL_SET)
     for lod in (0, 1, 2):
         ship.build_lod(lod, build)
     hull_extras(ship)
     ship.extra["damagePoints"] = damage_points()
     ship.extra["lodScreenHeights"] = [0.16, 0.05, 0.012]
+    # the light each engine throws on the hull round its nozzle: position along the exhaust from the hull face (m), candela, range (m)
+    ship.extra["engineLights"] = {f"SUB_engine_{nm}": {"z": z, "candela": cd, "range": rg} for nm, z, cd, rg in
+                                  (("C", 4.4, 520000.0, 60.0), ("01", 3.4, 210000.0, 45.0), ("02", 3.4, 210000.0, 45.0), ("03", 3.4, 210000.0, 45.0), ("04", 3.4, 210000.0, 45.0))}
     stats = ship.export()
     print(f"[MN] bounds {stats['bounds']}")
     if preview:

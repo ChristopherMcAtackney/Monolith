@@ -118,7 +118,7 @@ def project(p_world, cam, look, fov, aspect=16 / 9):
     return round(x, 2), round(y, 2)
 
 
-SUN_IN_SHIP = (0.50, 0.25, 0.83)      # round 2: from ahead, low and to starboard, so it rakes the starboard flank and the decks and leaves the port side dark
+SUN_IN_SHIP = (0.52, 0.52, 0.68)      # round 3: ahead, high and to starboard: the decks, the starboard flank and every forward face carry the light (about 0.5 to 0.7 of full), the port side, the keel and the aft faces are the dark counterweight
 
 
 def corvette(sun=SUN_IN_SHIP, sky=None):
@@ -129,9 +129,10 @@ def corvette(sun=SUN_IN_SHIP, sky=None):
         ("close_hull", (44.0, 6.0, -78.0), (14.0, 6.0, 40.0), 50),
         ("medium_three_quarter", (215.0, 78.0, -310.0), (0.0, 8.0, -20.0), 40),
         ("wide_sun_rake", (470.0, 120.0, -250.0), (0.0, 6.0, 5.0), 32),
-        ("shadow_side", (-150.0, 24.0, -300.0), (-6.0, 4.0, -85.0), 36),
+        ("shadow_side", (-125.0, 100.0, -300.0), (-6.0, 6.0, -85.0), 36),
         ("scale_fighter", (135.0, 28.0, 30.0), (18.0, 8.0, 125.0), 44),
-        ("raking_close", (47.0, 33.0, -30.0), (12.0, 22.0, 14.0), 52),
+        ("raking_close", (46.0, 38.0, -72.0), (10.0, 22.0, -8.0), 52),
+        ("engine_close", (70.0, 22.0, -215.0), (6.0, 2.0, -150.0), 46),
     ]
     perf_cam = ((52.0, 10.0, -130.0), (4.0, 6.0, 60.0), 62)
     out = [shot(name, cam, look, fov, orient) for name, cam, look, fov in shots if name != "scale_fighter"]

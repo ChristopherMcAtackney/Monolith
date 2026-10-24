@@ -476,12 +476,13 @@ class MeshBuilder:
         # walls (base -> mid) and chamfers (mid -> top), four sides each, with edge UVs.
         i0 = np.arange(4)
         i1 = (i0 + 1) % 4
-        for lower, upper in ((B, mid), (mid, top)):
+        wall_rect, chamfer_rect = edge_rect if (isinstance(edge_rect, tuple) and len(edge_rect) == 2 and not np.isscalar(edge_rect[0])) else (edge_rect, edge_rect)
+        for lower, upper, rect in ((B, mid, wall_rect), (mid, top, chamfer_rect)):
             if lower is B and (h - ch).max() <= 1e-4:
                 continue
             P = np.stack([lower[:, i0], lower[:, i1], upper[:, i1], upper[:, i0]], axis=2)    # (m, 4 sides, 4 corners, 3)
             P = P.transpose(0, 1, 2, 3).reshape(-1, 4, 3)
-            self._edge_quads(P, edge_mat, edge_rect, edge_tile, detail)
+            self._edge_quads(P, edge_mat, rect, edge_tile, detail)
 
     def _edge_quads(self, P, mat, rect, tile, detail):
         N = norm(cross(P[:, 2] - P[:, 0], P[:, 3] - P[:, 1]))

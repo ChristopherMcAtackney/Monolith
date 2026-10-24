@@ -17,11 +17,11 @@ namespace Monolith.Look
 
         // ---- the film: runs after tonemapping, on the whole picture -----------------------------------------------------------
         /// <summary>The colour the darkest areas rise to (display-encoded values, so 0.02 is about 5 of 255, added to black and fading out as a pixel brightens): a graded floor, not a flat zero.</summary>
-        public Color FloorColor = new Color(0.011f, 0.022f, 0.034f);
+        public Color FloorColor = new Color(0.010f, 0.017f, 0.026f);
         /// <summary>How much the corners lose, 0 to 1.</summary>
         public float Vignette = 0.04f;
         /// <summary>Grain strength as a standard deviation in display-encoded values (0.01 is about 2.5 of 255), strongest in shadows and midtones.</summary>
-        public float GrainAmount = 0.014f;
+        public float GrainAmount = 0.011f;
         /// <summary>Grain clump size in pixels, and how much of it differs per colour channel (0 = monochrome, 1 = fully coloured).</summary>
         public float GrainSizePx = 2.0f;
         public float GrainChroma = 0.3f;
@@ -67,7 +67,12 @@ namespace Monolith.Look
         public Color BroadTint = new Color(0.24f, 0.68f, 1.0f);
 
         /// <summary>Reflections of the Sun between lens surfaces, on the line through the middle of the picture: 0 = none.</summary>
-        public float Ghosts = 0.30f;
+        public float Ghosts = 0.22f;
+        /// <summary>
+        /// Ghosts are the Sun reflected between lens surfaces, so they only exist when it is in or near the frame: they fade to nothing as the Sun moves this far outside the picture
+        /// (in normalised screen units: 0 = the frame's edge, 1 = half a frame beyond it). Corvette round 3: in ship shots they read as sprites that matched nothing lighting the hull.
+        /// </summary>
+        public float GhostReach = 0.45f;
         /// <summary>Dust and smudges on the lens or canopy that the glare lights: dust, bokeh discs, and the scale of the dust map (1 = one map across the frame).</summary>
         public float Dust = 1.0f;
         public float DustBokeh = 0.4f;

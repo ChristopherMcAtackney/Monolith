@@ -296,6 +296,20 @@
    "specularAA": true
   },
   {
+   "blender": "mn_earth_paint",
+   "name": "MN_EarthPaint",
+   "shader": "HDRP/Lit",
+   "surface": "alpha",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_paint_albedo",
+   "metallic": 0.0,
+   "smoothness": 0.34
+  },
+  {
    "blender": "mn_earth_wear",
    "name": "MN_EarthWear",
    "shader": "HDRP/Lit",

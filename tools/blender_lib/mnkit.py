@@ -17,12 +17,12 @@ import numpy as np
 from . import mnmesh
 from .mnmesh import Frame, Patch, norm, cross, chamfered_rect, EDGE_NAMES
 
-PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLUME, PLATE_D, PLATE_E, WEAR = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10          # material slots, in the order the model script lists them
+PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLUME, PLATE_D, PLATE_E, WEAR, PAINT = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11          # material slots, in the order the model script lists them
 
 # running-light palette (earth_lights_emissive.png): 8 swatches of 16 px
 # the five paint tones, darkest to lightest: deep black, graphite (the default), mid grey, light grey, pale cool grey
 TONE_MATS = (PLATE_B, PLATE, PLATE_C, PLATE_D, PLATE_E)
-TONE_DOMINANT = (0.16, 0.28, 0.28, 0.18, 0.10)
+TONE_DOMINANT = (0.10, 0.34, 0.34, 0.16, 0.06)
 
 LIGHT_WHITE, LIGHT_COLD, LIGHT_RED, LIGHT_GREEN, LIGHT_AMBER, LIGHT_BLUE, LIGHT_EMBER, LIGHT_VIOLET = range(8)
 LIGHT_RGB = {LIGHT_WHITE: (1, 1, 1), LIGHT_COLD: (0.8, 0.9, 1), LIGHT_RED: (1, 0.07, 0.05), LIGHT_GREEN: (0.07, 1, 0.22), LIGHT_AMBER: (1, 0.62, 0.18),
@@ -56,6 +56,7 @@ class Kit:
         self.hull = ctx.hull
         self.trims = trims["pieces"]
         self.trims_all = trims
+        self.paint_info = trims.get("paint", {})
         self.seed = seed
 
     # ---------------------------------------------------------------------------------------------- basics
@@ -183,8 +184,9 @@ class Kit:
         for bi, mat in enumerate(TONE_MATS):
             g = batch == bi
             if g.any():
-                mb.slabs(P[g], n[g], h[g], ch[g], mat, TRIM, tile=12.0, tile_off=off[g], edge_rect=self.rect("edge_paint"), edge_tile=8.0)
-        self.last_cells = np.stack([a0, a1, b0, b1, h], axis=1)
+                mb.slabs(P[g], n[g], h[g], ch[g], mat, TRIM, tile=12.0, tile_off=off[g], edge_rect=(self.rect("edge_wall"), self.rect("edge_chamfer")), edge_tile=8.0)
+        # the cells the overlays use are the plate's top face, inside its chamfer
+        self.last_cells = np.stack([a0 + ch, np.maximum(a1 - ch, a0 + ch + 0.01), b0 + ch, np.maximum(b1 - ch, b0 + ch + 0.01), h], axis=1)
         self.last_tones = batch
         count = m
         if sub_prob > 0:
@@ -208,7 +210,7 @@ class Kit:
                     g = sb_ == bi
                     if g.any():
                         mb.slabs(SP[g], np.tile(patch.normal(), (int(g.sum()), 1)), sh[g], np.minimum(0.06, sh[g] * 0.9), mat, TRIM, tile=12.0,
-                                 tile_off=soff[g], edge_rect=self.rect("edge_paint"), edge_tile=8.0)
+                                 tile_off=soff[g], edge_rect=(self.rect("edge_wall"), self.rect("edge_chamfer")), edge_tile=8.0)
                 count += len(S)
         return count
 
@@ -217,7 +219,7 @@ class Kit:
         region = str(key).rsplit("-", 1)[0]
         rr = self.rng("tone", region)
         dom = int(rr.choice(5, p=TONE_DOMINANT))
-        w = np.exp(-np.abs(np.arange(5) - dom) * 1.15) + 0.03
+        w = np.exp(-np.abs(np.arange(5) - dom) * 1.6) + 0.02                   # neighbours in tone: light, not paint, carries the picture
         t = rng.choice(5, size=m, p=w / w.sum())
         accent = rng.random(m) < 0.06
         t[accent] = rng.choice(5, size=int(accent.sum()))
@@ -453,24 +455,28 @@ class Kit:
             w, l = a1 - a0, b1 - b0
             r = rng.random()
             name = None
+            painted = False
             if w >= 4.6 and l >= 7.0 and r < 0.10:
                 name = "panel_big"
             elif w >= 1.6 and l >= 7.0 and r < 0.17:
-                name = "chevrons"
+                name, painted = "chevron_%d" % int(rng.integers(2)), True
             elif w >= 1.5 and l >= 3.6 and r < 0.30:
-                name = str(rng.choice(["code_a", "code_b", "code_c", "code_d"]))
+                name, painted = "code_%d" % int(rng.integers(6)), True
             elif w >= 3.2 and l >= 6.5 and r < 0.38:
                 name = "vent_big"
             elif w >= min_size[0] and l >= min_size[1] and r < 0.38 + hatch:
                 name = str(rng.choice(["hatch_a", "hatch_a", "hatch_b", "vent"]))
             if name is not None:
-                pw, ph = self.trims[name]["metres"]
+                pw, ph = (self.paint_info if painted else self.trims)[name]["metres"]
                 sc = float(min(1.0, (w - 0.8) / ph, (l - 0.8) / pw, 1.4))
                 if sc >= 0.45:
                     cu = rng.uniform(a0 + ph * sc / 2 + 0.3, max(a0 + ph * sc / 2 + 0.31, a1 - ph * sc / 2 - 0.3))
                     cv = rng.uniform(b0 + pw * sc / 2 + 0.3, max(b0 + pw * sc / 2 + 0.31, b1 - pw * sc / 2 - 0.3))
                     c = patch.pt(cu / Lu, cv / Lv) + n * (h + 0.02)
-                    self.decal(c, run, n, name, scale=sc, lift=0.0)
+                    if painted:
+                        self.paint_quad(name, c, run, n, scale=sc, lift=0.0)
+                    else:
+                        self.decal(c, run, n, name, scale=sc, lift=0.0)
                     continue
             if l >= 5.0 and w >= 2.0 and rng.random() < fasteners:
                 pu = a0 + 0.35 if rng.random() < 0.5 else a1 - 0.55
@@ -491,9 +497,9 @@ class Kit:
         count = 0
         # what shows on which paint: dark plates are marked by pale dust, pale scuffs and repainted patches; light plates by dark grime, scorch and stains
         by_tone = {
-            "dark": (["streak_light", "scuff", "patch_light", "stain", "scorch"], [0.34, 0.30, 0.22, 0.06, 0.08]),
-            "mid": (["streak", "streak_light", "scuff", "scorch", "patch_light", "patch_dark", "stain"], [0.20, 0.14, 0.14, 0.14, 0.14, 0.12, 0.12]),
-            "light": (["streak", "scorch", "stain", "patch_dark", "streak"], [0.34, 0.20, 0.16, 0.16, 0.14]),
+            "dark": (["streak_light", "scuff", "patch_light", "stain", "scorch", "bleach"], [0.32, 0.28, 0.10, 0.05, 0.08, 0.13]),
+            "mid": (["streak", "streak_light", "scuff", "scorch", "patch_light", "patch_dark", "stain", "bleach"], [0.20, 0.14, 0.14, 0.13, 0.06, 0.05, 0.12, 0.16]),
+            "light": (["streak", "scorch", "stain", "patch_dark", "streak"], [0.38, 0.22, 0.18, 0.08, 0.14]),
         }
         tones = getattr(self, "last_tones", np.zeros(len(cells), int))
         for ci, (a0, a1, b0, b1, h) in enumerate(cells):
@@ -531,6 +537,71 @@ class Kit:
                     p0 = patch.pt(cu0 / Lu, (cv0 + sx_) / Lv) + n * (h + 0.012)
                 mb.quad_rect(p0, p0 + x, p0 + x + y, p0 + y, wear[name]["uv"], WEAR)
                 count += 1
+        return count
+
+    def paint_quad(self, name, centre, run, n, scale=1.0, lift=0.016, size=None, mb=None):
+        """One aged paint piece (a stencilled code, a chevron band, the hull number) laid on a surface facing ``n``, x along ``run``; alpha blended, so the plate
+        shows through the chips."""
+        if self.lod >= 1 or name not in self.paint_info:
+            return
+        mb = mb or self.hull
+        info = self.paint_info[name]
+        pw, ph = (size if size is not None else (info["metres"][0] * scale, info["metres"][1] * scale))
+        x = norm(run)
+        n = norm(n)
+        y = cross(n, x)
+        c = np.asarray(centre, np.float64) + n * lift
+        a = c - x * pw / 2 - y * ph / 2
+        mb.quad_rect(a, a + x * pw, a + x * pw + y * ph, a + y * ph, info["uv"], PAINT)
+
+    def edge_wear(self, patch, cells, tones, key, mb=None, chip_p=0.62, grime_p=0.5):
+        """Paint ageing along plate edges, laid just inside each plate's top face (alpha blended): edge chips (flakes of top paint gone to primer with a scrape of bare
+        metal inside, many at the edge and thinning inward, a worn line of metal along it) and edge grime (dirt gathered at the edge, with short drips). Light
+        plates collect more grime, dark plates show their chips more."""
+        if self.lod >= 1 or len(cells) == 0 or not self.paint_info:
+            return 0
+        mb = mb or self.hull
+        P = self.paint_info
+        chips = [k for k, v in P.items() if v["kind"] == "edge_chip"]
+        grimes = [k for k, v in P.items() if v["kind"] == "edge_grime"]
+        rng = self.rng("edge", key)
+        n = patch.normal()
+        ev, eu = patch.ev(), patch.eu()
+        Lu, Lv = patch.lu, patch.lv
+        count = 0
+        for ci, (a0, a1, b0, b1, h) in enumerate(cells):
+            w, l = a1 - a0, b1 - b0
+            if w < 0.5 or l < 0.8:
+                continue
+            tone = int(tones[ci]) if ci < len(tones) else 1
+            for edge in range(4):
+                length = l if edge < 2 else w
+                for kind, prob, lift in (("grime", grime_p * (0.5 if tone <= 1 else 1.0), 0.010), ("chip", chip_p, 0.014)):
+                    if rng.random() > prob:
+                        continue
+                    name = (grimes if kind == "grime" else chips)[int(rng.integers(len(grimes if kind == "grime" else chips)))]
+                    pw, ph = P[name]["metres"]
+                    width = min(ph, 0.4 * min(w, l))
+                    if width < 0.08:
+                        continue
+                    if edge == 0:    # the high-u lateral edge: runs along +ev, inward is toward lower u
+                        origin, x = patch.pt(a1 / Lu, b0 / Lv), ev
+                    elif edge == 1:  # the low-u lateral edge: runs along -ev
+                        origin, x = patch.pt(a0 / Lu, b1 / Lv), -ev
+                    elif edge == 2:  # the low-v end: runs along +eu
+                        origin, x = patch.pt(a0 / Lu, b0 / Lv), eu
+                    else:            # the high-v end: runs along -eu
+                        origin, x = patch.pt(a1 / Lu, b1 / Lv), -eu
+                    y = cross(n, x)
+                    origin = origin + n * (h + lift)
+                    pos = 0.0
+                    while pos < length - 0.05:
+                        seg = min(pw, length - pos)
+                        u0 = float(rng.uniform(0.0, max(0.0, 1.0 - seg / pw)))
+                        pa = origin + x * pos
+                        mb.quad_rect(pa, pa + x * seg, pa + x * seg + y * width, pa + y * width, P[name]["uv"], PAINT, uspan=(u0, u0 + seg / pw), vspan=(0.0, width / ph))
+                        count += 1
+                        pos += seg
         return count
 
     def wear_quad(self, name, centre, run, n, scale=1.0, lift=0.012, size=None, mb=None):
