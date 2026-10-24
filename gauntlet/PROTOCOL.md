@@ -34,6 +34,9 @@ rounds running against different reference frames. Measured pieces win when the 
 - The verdict is the signal, the prescription is noise. Builders treat the critic's giveaway as a
   pointer and decide the fix from the references and measurements.
 - Never fake a capture: every capture comes from the built game as the player sees it.
+- The lead verifies a piece against its own frozen playtest build (`Playtest/...`, via `-Exe`), never
+  `Game/Builds/Win`: other builders overwrite that build, and a check run mid-rebuild fails for nothing
+  (2026-10-24, the mission checks).
 
 ## Agent rules (user)
 Sonnet builders and critics by default. Opus only for hard code, and only with the user's OK; the user
