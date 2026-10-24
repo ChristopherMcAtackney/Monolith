@@ -34,6 +34,7 @@ namespace Monolith.Juice
 
         public void OnShipDestroyed(in GameEvent e)
         {
+            if (e.Entity != GameWorld.NoShip && _c.IsPlayer(e.Entity) && _c.PlayerDestroyed != null && _c.PlayerDestroyed(e)) return;      // the death sequence stages the player's own
             var ship = _c.World.Ships.Get(e.Entity);
             Vector3 pos = e.HasPosition ? e.Position : (ship != null ? ship.Position : _c.CameraPosition + _c.Camera.transform.forward * 300f);
             Vector3 vel = ship != null ? ship.Velocity : Vector3.zero;

@@ -1,0 +1,20 @@
+{
+ "scene": "flight",
+ "sceneOptions": {
+  "pilot": "demo",
+  "pauseScreen": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "pause_flight",
+   "follow": true,
+   "warmup": 1.5
+  }
+ ]
+}

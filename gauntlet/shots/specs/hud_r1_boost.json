@@ -1,0 +1,54 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    0,
+    100
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.5,
+   "throttle": 1.0
+  },
+  {
+   "t": 0.3,
+   "do": "target",
+   "name": "Reaper 1"
+  },
+  {
+   "t": 0.6,
+   "do": "input",
+   "throttle": 1.0,
+   "afterburner": true
+  }
+ ],
+ "at": [
+  {
+   "name": "boost_ignition",
+   "t": 1.0
+  },
+  {
+   "name": "boost_hold",
+   "t": 2.9
+  }
+ ]
+}

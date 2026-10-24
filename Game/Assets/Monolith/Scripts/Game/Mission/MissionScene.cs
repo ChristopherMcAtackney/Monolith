@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Monolith.AI;
 using Monolith.Cabin;
-using Monolith.CombatHud;
+using Monolith.HudUi;
 using Monolith.Core;
 using Monolith.Flight;
 using Monolith.Hud;
@@ -37,8 +37,8 @@ namespace Monolith.Game
         AiDirector _ai;
         JuiceDirector _juice;
         Jumps _jumps;
-        FlightHud _flightHud;
-        CombatHud.CombatHud _hud;
+        PilotHud _hud;
+        HudControls _hudControls;
         PlayerPilot _pad;
         GameMissionHost _host;
         MissionRuntime _rt;
@@ -54,6 +54,9 @@ namespace Monolith.Game
         bool _paused, _briefing, _keepLod0;
         ControlsConfig _controls;                 // the player's controls (null when the AI flies); the pause screen flips its invert switches
         string _controlsSource;
+        bool _hudWanted, _dyingShown, _deathFired;     // the HUDs stand down for the player's death sequence and come back for the failure flow
+        float _deathAt = -1f;                           // -mnDeathTest: kill the player at this sim time (sceneOptions "death": { "at", "cause" })
+        string _deathCause = "gunfire";
         int _nextLevel, _runs;
         string _pacingLog;
 
@@ -102,10 +105,14 @@ namespace Monolith.Game
             self._pacingLog = CommandLine.Get("-mnPacingLog");
 
             bool hud = !CommandLine.Has("-mnNoHud") && (opts == null || opts["hud"] == null || (bool)opts["hud"]);
-            self._flightHud = FlightHud.Create(world, view.Camera, root.transform);
-            self._flightHud.ShowTarget = false;
-            self._hud = CombatHud.CombatHud.Create(world, view.Camera, root.transform);
-            self._flightHud.enabled = hud; self._hud.enabled = hud;
+            self._hud = PilotHud.Create(world, view.Camera, root.transform);
+            self._hud.enabled = hud;
+            self._hudControls = new HudControls(self._hud, ControlsConfig.Load(out _), () => self._cabin != null);      // the pause screen's switches; the pad's own controls replace these below
+            self._hudWanted = hud;
+            self._juice.Death.SeatedEyeShip = viewSettings.camera.Eye;
+            self._juice.Death.WreckVisual = () => PlaceholderShips.Fighter("Wreck", ShipCatalog.Load(world.Ships.Get(world.LocalPlayerShip)?.ClassId ?? "vanguard_fighter").Size, mats, root.transform).transform;
+            if (opts?["death"] is JObject dopt) { self._deathAt = (float)(dopt["at"] ?? 8f); self._deathCause = (string)dopt["cause"] ?? "gunfire"; }
+            else if (CommandLine.Has("-mnDeathTest")) { self._deathAt = CommandLine.GetFloat("-mnDeathAt", 8f); self._deathCause = CommandLine.Get("-mnDeathCause", "gunfire"); }
 
             // The cabin is on in every played mission (a pad, or a scripted cabin in a capture plan); the AI-flown runs leave it out unless the plan asks.
             self._cabinOpts = opts?["cabin"] as JObject;
@@ -116,11 +123,13 @@ namespace Monolith.Game
             {
                 var controls = self._controls;
                 string source = self._controlsSource;
+                self._hudControls = new HudControls(self._hud, controls, () => self._cabin != null);
                 self._pad = new PlayerPilot(world, world.LocalPlayerShip, controls);
                 world.Pilots.Attach(world.LocalPlayerShip, self.WrapPilot());
                 MnLog.Info($"MISSION controls from {source}; {PlayerPilot.Devices()}");
                 if (!CommandLine.Has("-mnCapture")) { Cursor.visible = false; Cursor.lockState = CursorLockMode.Locked; }
             }
+            if (Opt("pauseScreen", null)) self._hud.Overlay = self.PauseText();       // a capture of the pause screen
             self._keepLod0 = Opt("lod0", null);
             if (opts?["spectate"] is JObject spec) DogfightSpectator.Attach(world, view.Camera, root.transform, spec);
             // The briefing first (paused), unless the AI flies or this is a capture or a check. A mission that starts in the cabin briefs at the plan table instead.
@@ -149,6 +158,8 @@ namespace Monolith.Game
             _keeper = new PlayerKeeper(_world, _rig, _rt, _host.PlayerInvulnerable);
             _world.Sim.Register(_keeper);
             _rt.OnEnded += OnEnded;
+            _rt.HoldPlayerDeath = () => _world.Death.Active;
+            _deathFired = false;
             _rt.Start();
         }
 
@@ -169,7 +180,9 @@ namespace Monolith.Game
             _pad?.Attach(_world.LocalPlayerShip);
             if (_pad != null) _world.Pilots.Attach(_world.LocalPlayerShip, WrapPilot());
             _hud.Banner = null; _hud.BannerSub = null;
-            _flightHud.Overlay = null;
+            _hud.Overlay = null;
+            _juice.Death.Reset();
+            _hud.enabled = _hudWanted; _hud.gameObject.SetActive(true); _dyingShown = false;
         }
 
         // ------------------------------------------------------------------------------------------------ the cabin
@@ -236,11 +249,14 @@ namespace Monolith.Game
                 foreach (var l in _host.WarmLods) if (l != null) l.ForceLOD(-1);
                 _host.WarmLods.Clear();
             }
-            if (_file == null) { _flightHud.Overlay = new[] { "MISSION NOT LOADED", _error ?? "" }; if (Keyboard.current?.f10Key.wasPressedThisFrame == true || Gamepad.current?.buttonEast.wasPressedThisFrame == true) Application.Quit(1); return; }
+            if (_file == null) { _hud.Overlay = new[] { "MISSION NOT LOADED", _error ?? "" }; if (Keyboard.current?.f10Key.wasPressedThisFrame == true || Gamepad.current?.buttonEast.wasPressedThisFrame == true) Application.Quit(1); return; }
+            if (_deathAt >= 0f && !_deathFired && _world.Time >= _deathAt) { _deathFired = true; KillPlayer(_deathCause); }
             UpdateInfo();
+            if (UpdateDeath()) return;                      // the player's death sequence has the screen and the buttons
             if (_pad == null) return;
-            _flightHud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
+            _hud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
             var pad = Gamepad.current; var kb = Keyboard.current;
+            _hudControls.Update(_paused || _briefing);
             if (_briefing)
             {
                 if (pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame) SetBriefing(false);
@@ -251,15 +267,8 @@ namespace Monolith.Game
             {
                 if (pad != null && pad.dpad.left.wasPressedThisFrame || kb != null && kb.leftBracketKey.wasPressedThisFrame) _nextLevel = Mathf.Max(0, _nextLevel - 1);
                 if (pad != null && pad.dpad.right.wasPressedThisFrame || kb != null && kb.rightBracketKey.wasPressedThisFrame) _nextLevel = Mathf.Min(_ai.Data.Difficulty.Count - 1, _nextLevel + 1);
-                if (_controls != null)
-                {
-                    bool flipFlight = pad != null && pad.leftShoulder.wasPressedThisFrame || kb != null && kb.iKey.wasPressedThisFrame;
-                    bool flipLook = pad != null && pad.rightShoulder.wasPressedThisFrame || kb != null && kb.oKey.wasPressedThisFrame;
-                    if (flipFlight) _controls.invert.flight = !_controls.invert.flight;
-                    if (flipLook) _controls.invert.cabinLook = !_controls.invert.cabinLook;
-                    if (flipFlight || flipLook) { bool saved = _controls.SaveInvert(); MnLog.Info($"CONTROLS invert: flight {_controls.invert.flight}, cabin look {_controls.invert.cabinLook}" + (saved ? " (saved to " + _controls.SourcePath + ")" : " (this run only)")); }
-                }
-                _flightHud.Overlay = PauseText();
+                _hudControls.UpdatePaused();
+                _hud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { SetPaused(false); Restart(); }
                 else if (_pad.SystemPressed(SystemAction.Quit)) Application.Quit(0);
@@ -282,7 +291,7 @@ namespace Monolith.Game
             _briefing = on;
             _juice.BaseTimeScale = on ? 0f : 1f;
             _world.Sim.TimeScale = on ? 0f : 1f;
-            _flightHud.Overlay = on ? BriefingText() : null;
+            _hud.Overlay = on ? BriefingText() : null;
         }
 
         void SetPaused(bool paused)
@@ -290,19 +299,20 @@ namespace Monolith.Game
             _paused = paused;
             if (_cabin != null) _cabin.Paused = paused;
             _juice.BaseTimeScale = paused || _cabinPrelaunch ? 0f : 1f;
-            _flightHud.Overlay = paused ? PauseText() : null;
+            _hud.Overlay = paused ? PauseText() : null;
         }
 
         string[] BriefingText()
         {
             var b = _file.Briefing;
-            var lines = new List<string> { (b.Title ?? _file.Name).ToUpperInvariant() };
+            var lines = new List<string> { b.Title ?? _file.Name };
             foreach (var st in b.Stages) lines.Add(st);
-            foreach (var q in b.Questions) { lines.Add(""); lines.Add("> " + q.Key.ToUpperInvariant()); lines.Add(q.Value); }
+            foreach (var q in b.Questions) { lines.Add(""); lines.Add("#" + q.Key); lines.Add(q.Value); }
+            lines.Add("#OBJECTIVES");
+            foreach (var o in _file.Objectives) if (!o.Hidden) lines.Add($"{o.Kind.ToUpperInvariant()}	{o.Text}");
             lines.Add("");
-            foreach (var o in _file.Objectives) if (!o.Hidden) lines.Add($"{o.Kind.ToUpperInvariant()}: {o.Text.ToUpperInvariant()}");
-            lines.Add("");
-            lines.Add($"A / ENTER  LAUNCH        B / F10  QUIT        {_ai.LevelName.ToUpperInvariant()}");
+            lines.Add($"A   ENTER	LAUNCH     ({_ai.LevelName.ToUpperInvariant()})");
+            lines.Add("B   F10	QUIT");
             return lines.ToArray();
         }
 
@@ -311,23 +321,84 @@ namespace Monolith.Game
             var lines = new List<string>
             {
                 "PAUSED",
-                "START RESUME      Y FLY AGAIN      B QUIT",
-                $"D-PAD LEFT/RIGHT  DIFFICULTY {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "  (NEXT RUN)" : ""),
-                _controls != null ? $"LB FLIGHT PITCH {(_controls.invert.flight ? "INVERTED" : "NORMAL")}      RB CABIN LOOK {(_controls.invert.cabinLook ? "INVERTED" : "NORMAL")}      (I AND O ON THE KEYBOARD)" : "",
-                "",
+                "START	RESUME",
+                "Y	FLY AGAIN",
+                "B	QUIT",
+                $"D-PAD LEFT / RIGHT	DIFFICULTY   {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "   (NEXT RUN)" : ""),
             };
+            lines.AddRange(_hudControls != null ? _hudControls.SettingsLines() : new List<string>());
             var board = _world.Mission;
             if (board != null)
+            {
+                lines.Add("#OBJECTIVES");
                 foreach (var o in board.Objectives)
-                    if (!o.Hidden) lines.Add($"{o.Kind.ToUpperInvariant()}: {o.Text.ToUpperInvariant()}  {(o.State == MissionBoard.State.Done ? "DONE" : o.State == MissionBoard.State.Failed ? "FAILED" : "")}");
-            lines.Add("");
-            lines.Add("HOLD Y: A ATTACK MY TARGET  B DISABLE MY TARGET  X COVER ME  LB FORM UP");
-            lines.Add("HOLD Y: D-PAD UP GUNS  LEFT SHIELDS  RIGHT ENGINES  DOWN BALANCED");
-            lines.Add("RT FAST GUN   LB HEAVY GUN   RB FIRE MISSILE   R3 NEXT MISSILE   B DECOYS");
-            lines.Add("LT TARGET AHEAD   A NEXT HOSTILE   VIEW NEAREST ATTACKER   Y TAP NEXT PART");
-            lines.Add("L3 AFTERBURNER   X MATCH SPEED   D-PAD THROTTLE PRESETS");
-            lines.Add("SOUND  F3 F4 VOICE   F5 F6 MUSIC   F7 F8 EFFECTS   - AND + MASTER   F2 SOUND OFF");
+                    if (!o.Hidden) lines.Add($"{o.Kind.ToUpperInvariant()}	{o.Text}{(o.State == MissionBoard.State.Done ? "   DONE" : o.State == MissionBoard.State.Failed ? "   FAILED" : "")}");
+            }
+            lines.Add("#CONTROLS");
+            lines.Add("RT   LB   RB	FAST GUN   HEAVY GUN   FIRE MISSILE");
+            lines.Add("R3   B	NEXT MISSILE   DECOYS");
+            lines.Add("LT   A   VIEW	TARGET AHEAD   NEXT HOSTILE   NEAREST ATTACKER");
+            lines.Add("HOLD Y	QUICK MENU: POWER ON THE D-PAD, WING ORDERS ON A  B  X  LB");
+            lines.Add("L3   X	AFTERBURNER   MATCH SPEED");
+            lines.Add("HOLD VIEW	STAND UP     TWICE: BATTLE MAP (NOT PAUSED)");
+            lines.Add("SOUND	F3 F4 VOICE   F5 F6 MUSIC   F7 F8 EFFECTS   - AND = MASTER   F2 OFF");
             return lines.ToArray();
+        }
+
+        // ------------------------------------------------------------------------------------------------ the player's death
+
+        /// <summary>
+        /// While the death sequence plays (Juice/DeathFx): no HUD, no banner, A or Start skips it (after a moment). When it is over the HUD comes back for the
+        /// ordinary failure flow, over a black screen. True while it is playing (the other buttons do nothing).
+        /// </summary>
+        bool UpdateDeath()
+        {
+            var death = _world.Death;
+            bool dying = death.Active;
+            if (dying != _dyingShown)
+            {
+                _dyingShown = dying;
+                _hud.enabled = _hudWanted;
+                _hud.gameObject.SetActive(!dying);                 // the whole object: switching the component off would leave its last frame on the screen
+                if (dying) { _paused = false; _briefing = false; _hud.Banner = null; _hud.BannerSub = null; }
+            }
+            if (!dying)
+            {
+                if (death.Finished && _rt != null && _rt.Started && !_rt.Ended) _rt.End("defeat", "SHIP LOST");      // a mission that lets the player die without ending: the failure flow still follows the sequence
+                return false;
+            }
+            var pad = Gamepad.current; var kb = Keyboard.current;
+            bool skip = pad != null && (pad.buttonSouth.wasPressedThisFrame || pad.startButton.wasPressedThisFrame) || kb != null && (kb.enterKey.wasPressedThisFrame || kb.escapeKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame);
+            if (skip) _juice.Death.TrySkip();
+            return true;
+        }
+
+        /// <summary>The death test (-mnDeathTest, a plan's "death" option): the player is hit by something that kills at once, by gunfire, a blast, a beam or a collision.</summary>
+        void KillPlayer(string cause)
+        {
+            var me = _world.Ships.Get(_world.LocalPlayerShip);
+            var pc = _world.Combat.Get(_world.LocalPlayerShip);
+            if (me == null || pc == null || !pc.Alive) return;
+            pc.Invulnerable = false;
+            Vector3 fwd = me.Rotation * Vector3.forward;
+            Vector3 point = me.Position + me.Rotation * new Vector3(0.7f, 0.5f, 3.2f);
+            var req = new DamageRequest
+            {
+                Ship = me.Id, Attacker = GameWorld.NoShip, Amount = 1e6f, ShieldMult = 1f, HullMult = 1f, SubsystemMult = 1f, Point = point, Direction = fwd, Normal = -fwd, Part = -1,
+                Kind = DamageKind.Projectile, BypassShield = true, Weapon = "turret_laser",
+            };
+            switch (cause)
+            {
+                case "blast": req.Kind = DamageKind.Blast; req.Weapon = "missile_heat"; break;
+                case "beam": req.Kind = DamageKind.Beam; req.Weapon = "beam_slash"; break;
+                case "collision":
+                    req.Kind = DamageKind.Collision; req.Weapon = null;
+                    GameEvents.RaiseAt(CombatEvents.Collision, point, -fwd, null, 55f, me.Id, GameWorld.NoShip);
+                    break;
+            }
+            if (cause != "collision") GameEvents.RaiseAt(CombatEvents.HitHull, point, -fwd, req.Weapon, 400f, me.Id, GameWorld.NoShip);
+            _world.Damage.Add(req);
+            MnLog.Info($"DEATH test: the player is killed by {cause} at {_world.Time:0.0} s");
         }
 
         void UpdateInfo()
@@ -360,7 +431,7 @@ namespace Monolith.Game
                     lines.AddRange(_rt.Debrief());
                     lines.Add("");
                     lines.Add("A / ENTER  FLY AGAIN        B / F10  QUIT");
-                    if (!_paused) _flightHud.Overlay = lines.ToArray();
+                    if (!_paused) _hud.Overlay = lines.ToArray();
                 }
             }
         }

@@ -1,0 +1,94 @@
+MONOLITH: THE NEW HUD
+=====================
+
+Play.bat [mission] [halo|meridian|cipher] [window] [veryeasy|easy|medium|hard|insane]
+
+   Play.bat                       The Crossing (escort), the style you last chose (Halo the first time)
+   Play.bat dogfight cipher       The Dogfight with the Cipher style
+   Play.bat cabin meridian        Dead Water (you start standing at the plan table) with Meridian
+
+You pick a style by playing with it. Change it at any moment: F9 (keyboard), or Start for the pause screen and then D-pad up or down (H on the
+keyboard). The game remembers your choice in hud.json beside Play.bat. The same switch is on every pause screen: the dogfight, the flight test, the
+range and the missions.
+
+
+THE THREE STYLES
+----------------
+All three show the same readings in the same places. They differ in how they look, so you can say which one you read best.
+
+HALO     amber. Oxanium type (squared, a little alien). The two gauges are thick bands cut into cells like a battery, close in round the
+         reticle (radius 232 px at 1080p, 21 px thick). The plainest of the three apart from Meridian: almost no ornament.
+MERIDIAN pale cyan. B612 type, which was designed for aircraft cockpit screens, so it is the one drawn for being read at a glance. The gauges are long,
+         continuous and thinner (292 px out, 13 px thick) with a fine scale outside them like an instrument bezel. No alien ornament at all.
+CIPHER   green-teal. Jura type (light, rounded-square, a little like writing). The gauges are heavy plates (256 px out, 28 px thick) with a row of
+         the aliens' glyphs along their outer edge and beside each heading. The glyphs are ornament only: every reading is a plain number or word.
+         This is the one closest to the Independence Day invaders' glowing consoles.
+
+The warning colour is the only accent: red-orange on Halo and Cipher, orange on Meridian. It means danger: a missile coming at you, a lock on you,
+a lost system, low hull, low energy. Nothing else is ever in that colour.
+
+If the type is too small or too big on your screen, add  -mnHudText 1.2  (1.0 is the design size; 0.7 to 1.6) to the last line of Play.bat, or put
+"textScale": 1.2 in hud.json.
+
+
+WHAT IS WHERE (1920 x 1080; it scales to any shape of screen)
+-------------------------------------------------------------
+THE TWO MAIN BARS, curved, either side of the reticle, filling from the bottom:
+   LEFT   your speed (the thick band; its top is the afterburner's top speed, and the mark across it is where cruising ends, with the afterburner's range
+          past the mark drawn dimmer) and your throttle setting (the thin band beside it, on the same scale: the thick band chases the thin band's marker;
+          ticks at the D-pad's thirds). The big number is the speed in metres a second; the throttle is a percentage under it.
+   RIGHT  your weapon energy (thick band, big number) and your afterburner fuel (thin band, a percentage under the number). "BURNING" while the
+          afterburner is lit; "FUEL OUT" when the tank is dry; the energy goes to the warning colour below 15 percent.
+   Why these pairs: speed and throttle are what you ask for and what you get; energy and fuel are the two things you spend. And each pair sits
+   where a glance sideways finds it without taking your eyes off the fight.
+RETICLE in the middle, and the lead pip where to aim the fast gun at your target.
+TARGET BOX around the target where it is, with its name and range beside it; the part you have picked has its own ring. Off screen, a pointer on a
+   ring round the reticle shows which way to turn and how far away it is.
+LOCK: while a lock-on missile builds its lock a diamond closes in on the target with the percentage; "LOCKED" on a solid tag when it is made.
+TARGET CARD (top right): friend or hostile and its size, name, class, hull and shield in cells, range and speed, the part you picked and its health,
+   and the LOCK row: the progress in cells, a small tone mark that beats at the rate the lock tone beeps (quickening as the lock builds) and holds
+   steady when the lock is made, and the word (SEEKING, LOCKED; for a heat-seeker, SEEKER when it sees the target).
+RADAR (bottom centre), like FreeSpace 2's: you are at the centre facing up the screen; a blip's stem rises when it is above you and drops when it is
+   below; a hollow diamond is a friend, a solid one an enemy, a boxed one a capital ship, a triangle a missile (it blinks in the warning colour when it
+   is coming for you). The range steps up and down by itself. With your sensors damaged the blips shiver and drop out and static fills the disc;
+   with the sensors gone it shows only static and the target card says NO SENSORS.
+SHIELD and HULL: the two short thick arcs either side of the radar, with their numbers. POWER under the radar: BAL, SHD, GUN, ENG, the choice underlined.
+GUNS AND MISSILES (bottom right): your two guns, your missile types with the one selected marked and its reload shown, and your decoys.
+SYSTEMS (bottom left): what is hurt: sensors, engines, a gun mount, the launchers, the reactor (in the warning colour when gone), and MENDING while the
+   living tech knits the hull.
+DIRECTIVES (left) what to do now; ticked when done, crossed when failed. RADIO (top centre) the speaker and what they say. NOTICES (top left) short
+   messages that fade.
+INCOMING MISSILE: a plate at the top with the distance and the seconds left, a pointer on a ring round the reticle toward it (brackets round the
+   reticle when it is dead ahead), the frame of the screen flashing in the last two and a half seconds, and the warning tone.
+
+THE QUICK MENU (hold Y): power on the D-pad (up guns, left shields, right engines, down balanced) and the wingman orders on A (attack my target),
+   B (disable my target), X (cover me) and LB (form up). The current choice is marked. On the keyboard it shows the keys (5 to 8, F1 to F4).
+THE BATTLE MAP (View twice quickly, or B on the keyboard; in a mission with the cabin it is the same double tap of View): the whole area as a retro
+   map, no 3D ships, a scan line sweeping round, a key to the symbols at the top right. The game does NOT pause, and the radio, the directives, the
+   notices and the missile warning stay up. Press the same again to close it.
+PAUSE (Start): resume, fly again, quit; the difficulty for the next run; and under SETTINGS the two invert switches (LB flips flight pitch, RB flips
+   how you look round the cabin; I and O on the keyboard; both are inverted by default and saved to controls.json beside Play.bat) and the HUD style.
+
+
+WHAT WAS DONE ABOUT THE NOTES
+-----------------------------
+"A curved thicker bar for the two main bars, like arcs of a circle": the two gauges are 13 to 28 px thick curved bands, segments of a circle round the reticle.
+"The font is all squished up and hard to read": the old type was a hand-drawn four-by-eight stroke font. All text is now a real typeface (a signed-distance-field
+   atlas, so it is crisp at any size and screen), at four sizes (small tracked capitals, running text, readings, big numbers) with the smallest
+   13 px tall in capitals (19 px to the em) at 1080p, and room between the letters. Mixed case is used for sentences (the radio, the directives).
+"More refined overall": one colour, a restrained glow, a dark keyline round everything so it reads over a bright hull, and nothing in the middle of the screen.
+The cabin's own screens (the dash, the systems panel, the comms, the plan table's map, the weapon rack, the breaker and the repair panels) use the same
+typeface and style, whichever one you picked.
+
+
+FONTS AND LICENCES
+------------------
+Oxanium, B612 and Jura are free fonts under the SIL Open Font License 1.1. Their licence texts are in the Licences folder beside this file. The game ships
+them as baked distance-field atlases, not the font files.
+
+
+CHECKS (for the curious)
+------------------------
+Monolith.exe -batchmode -nographics -mnHudSelfTest   89 checks: the type, the data the HUD reads, the layout of every style at eight screen shapes, the pause screens
+Monolith.exe -batchmode -nographics -mnScene range -mnPadDrive   30 checks, including the map switch, the invert switches and the style switch with a virtual pad
+-mnHudCost logs the HUD's own CPU time per frame.

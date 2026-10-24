@@ -173,6 +173,16 @@
   },
   {
    "voice": "earth_lector",
+   "text": "More of us than there are of you. There always will be.",
+   "intensity": "calm",
+   "say": "More of us than there are of you. There always will be.",
+   "file": "earth_lector/escort_terce2.wav",
+   "sources": [
+    "escort:terce2"
+   ]
+  },
+  {
+   "voice": "earth_lector",
    "text": "Censers, go. Bring me the ark.",
    "intensity": "calm",
    "say": "Censers, go. Bring me the ark.",
@@ -314,6 +324,16 @@
    "file": "earth_warden/escort_terce.wav",
    "sources": [
     "escort:terce"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "More of us than there are of you. There always will be.",
+   "intensity": "calm",
+   "say": "More of us than there are of you. There always will be.",
+   "file": "earth_warden/escort_terce2.wav",
+   "sources": [
+    "escort:terce2"
    ]
   },
   {
@@ -1647,6 +1667,16 @@
    "file": "tamsin/escort_away.wav",
    "sources": [
     "escort:away"
+   ]
+  },
+  {
+   "voice": "tamsin",
+   "text": "We're at the jump point and the drive's still cold. Keep them off us.",
+   "intensity": "frantic",
+   "say": "We're at the jump point and the drive's still cold! Keep them off us!",
+   "file": "tamsin/escort_hold_frantic.wav",
+   "sources": [
+    "escort:hold"
    ]
   },
   {

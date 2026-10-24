@@ -31,6 +31,8 @@ namespace Monolith.Juice
         public HitStopSettings hitStop = new HitStopSettings();
         /// <summary>The boost (afterburner) treatment: the view widening, the jolt, the lens, the dust, the flame and the sound.</summary>
         public BoostSettings boost = new BoostSettings();
+        /// <summary>The player's death sequence (first person: the cabin tears apart, you are flung out, you die).</summary>
+        public DeathSettings death = new DeathSettings();
         /// <summary>How slow the sandbox's slow-motion toggle runs the game (1 = real time).</summary>
         public float slowMo = 0.25f;
 
@@ -94,6 +96,16 @@ namespace Monolith.Juice
             public float flare = 1f;
             /// <summary>Volume of the ignition whoomph and the empty-tank sputter.</summary>
             public float sound = 1f;
+        }
+
+        public sealed class DeathSettings
+        {
+            /// <summary>Off: no sequence, the plain "ship lost" as before.</summary>
+            public bool enabled = true;
+            /// <summary>The flashes, the shake and the pad in it (0 to 2). The shake and rumble switches in the main settings still apply.</summary>
+            public float intensity = 1f;
+            /// <summary>How fast the view tumbles once you are flung out (0 to 1.5; 0 keeps the view steady: the setting for anyone the spinning makes ill).</summary>
+            public float tumble = 1f;
         }
 
         // ---- presets ----------------------------------------------------------------------------------------------------
@@ -189,6 +201,7 @@ namespace Monolith.Juice
             s.levels ??= new Levels();
             s.hitStop ??= new HitStopSettings();
             s.boost ??= new BoostSettings();
+            s.death ??= new DeathSettings();
             return s;
         }
 
@@ -209,6 +222,7 @@ namespace Monolith.Juice
                 var b = boost;
                 b.intensity = R(b.intensity); b.fovHold = R(b.fovHold); b.fovPunch = R(b.fovPunch); b.shake = R(b.shake); b.rumble = R(b.rumble);
                 b.lens = R(b.lens); b.streaks = R(b.streaks); b.flare = R(b.flare); b.sound = R(b.sound);
+                death.intensity = R(death.intensity); death.tumble = R(death.tumble);
                 string path = UserPath;
                 File.WriteAllText(path, ToJson());
                 Source = path;
@@ -230,7 +244,7 @@ namespace Monolith.Juice
             JuiceSettings d = null;
             if (asset != null) { try { d = Parse(asset.text, ResourcePath); } catch (Exception) { } }
             d ??= new JuiceSettings();
-            effects = d.effects; levels = d.levels; hitStop = d.hitStop; boost = d.boost; slowMo = d.slowMo; preset = DetectPreset();
+            effects = d.effects; levels = d.levels; hitStop = d.hitStop; boost = d.boost; death = d.death; slowMo = d.slowMo; preset = DetectPreset();
         }
     }
 }

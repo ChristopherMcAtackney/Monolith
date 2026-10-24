@@ -1,0 +1,34 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "hud": false,
+  "cabin": { "script": [] },
+  "death": { "at": 9.0, "cause": "gunfire" }
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "seated_000", "follow": true, "warmup": 8.9000 },
+  { "name": "seated_001", "follow": true, "warmup": 0.1800 },
+  { "name": "seated_002", "follow": true, "warmup": 0.0500 },
+  { "name": "seated_003", "follow": true, "warmup": 0.0800 },
+  { "name": "seated_004", "follow": true, "warmup": 0.1200 },
+  { "name": "seated_005", "follow": true, "warmup": 0.1400 },
+  { "name": "seated_006", "follow": true, "warmup": 0.1000 },
+  { "name": "seated_007", "follow": true, "warmup": 0.0800 },
+  { "name": "seated_008", "follow": true, "warmup": 0.1000 },
+  { "name": "seated_009", "follow": true, "warmup": 0.1500 },
+  { "name": "seated_010", "follow": true, "warmup": 0.2000 },
+  { "name": "seated_011", "follow": true, "warmup": 0.3000 },
+  { "name": "seated_012", "follow": true, "warmup": 0.4000 },
+  { "name": "seated_013", "follow": true, "warmup": 0.4500 },
+  { "name": "seated_014", "follow": true, "warmup": 0.5000 },
+  { "name": "seated_015", "follow": true, "warmup": 0.5000 },
+  { "name": "seated_016", "follow": true, "warmup": 0.5000 },
+  { "name": "seated_017", "follow": true, "warmup": 0.5000 },
+  { "name": "seated_018", "follow": true, "warmup": 0.5000 },
+  { "name": "seated_019", "follow": true, "warmup": 0.5000 },
+  { "name": "seated_020", "follow": true, "warmup": 0.4000 },
+  { "name": "seated_021", "follow": true, "warmup": 0.5000 }
+ ]
+}

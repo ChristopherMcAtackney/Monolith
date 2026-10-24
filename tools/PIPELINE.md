@@ -74,7 +74,7 @@ Juice sandbox: `-mnScene juice` (the panel is Start; settings save to `juice.jso
 `"scene": "juice"` and `"sceneOptions": { "script": [ {"t": 3.0, "do": "event", "name": "capital_death"} ] }` drives it (steps are
 documented in `Scripts/Game/Sandbox/SandboxScript.cs`); `python tools\juice\make_plan.py spec.json plan.json` turns absolute shot
 times into the plan's warm-ups, `tools\juice\sheet.py` and `clip.py` make contact sheets and clips from the stills. Check flags:
-`-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`, `-mnShakeLog file.csv`, `-mnBoostLog file.csv` (the boost's view, dust and lens numbers each frame; plans `gauntlet/shots/boost_r1_*.json`, `-mnPerfSync` for the GPU time),
+`-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`, `-mnShakeLog file.csv`, `-mnDeathTest [-mnDeathAt s] [-mnDeathCause gunfire|blast|beam|collision]` (the player is killed at that time: in a mission through the real damage path, in the sandbox the sequence just plays; a plan's `sceneOptions.death: { at, cause }` does the same), `-mnBoostLog file.csv` (the boost's view, dust and lens numbers each frame; plans `gauntlet/shots/boost_r1_*.json`, `-mnPerfSync` for the GPU time),
 `-mnJuiceHitchLog`, `-mnAudioMute`. Captures make no sound and never write `juice.json`.
 
 Combat range: `-mnScene range` (Start pauses and lists the controls; `-mnControls file`). A plan with `"scene": "range"` and
@@ -111,6 +111,10 @@ the exe, read first; `Play.bat <name>` in a playtest folder passes it), with `-m
 log and pacing; exit 0 on pass), `-mnDogfightPortCheck seconds -mnOut dir` (the hand-written dogfight against `dogfight.mission.json`, every
 ship's state compared to the bit once a second). `tools\mission.ps1 -Out dir` runs the self-test and every mission's auto-play. The format,
 every condition and action: `Scripts/Mission/README.md`.
+
+HUD: `Scripts/HudUi/README.md`. `-mnHudStyle halo|meridian|cipher` (F9 cycles, the pause screen too; the choice is kept in `hud.json` beside the game), `-mnHudText 1.2` (type size), `-mnHudCost` (logs the HUD's CPU time per frame), `-mnHudSelfTest [-mnOut dir]` (89 headless checks: the type, the data interface, the layout at eight screen shapes, the pause screens).
+Capture plans `gauntlet/shots/hud/hud_r1_*.json` (the range's `map`, `menu` and `overlay` script steps show the battle map, the quick menu and the pause screen; sceneOptions `pauseScreen: true` on the dogfight, flight and mission scenes), `tools\hud\capture_moments.ps1 -Out dir [-Styles a,b] [-Only moment,...]` takes every moment in every style and `tools\hud\make_sheets.py` makes the side-by-side sheets;
+`tools\hud\make_playtest.ps1` makes the HUD playtest folder; `python -I tools/hud/make_font_atlas.py` bakes a font (see `docs/licences/fonts.md`).
 
 Cabin: the pilot as a person in the ship (`Scripts/Cabin/README.md`), on in every played mission. `-mnCabinSelfTest` (73 checks: the plan and prefab, the pad and keyboard through virtual devices (look inverted by default), standing and
 sitting, walking, the breaker, scans, the hand repair, the rack, the plan table, and `cabin.mission.json` played with the real cabin and a scripted pilot) from `Monolith.exe -batchmode -nographics`.

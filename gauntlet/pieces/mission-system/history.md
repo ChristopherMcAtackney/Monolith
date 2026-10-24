@@ -127,3 +127,57 @@ both scenes alike**: two Blender jobs of the other builders were saturating the 
 ### Next
 The user's playtest of the escort; then the slice's Oort Cloud mission as a file (the outpost, the go-dark beat on the cabin's hook, the
 comms array decision as a cond on `subsystem`), the audio system on the music states, the cabin on `ICabin`.
+
+## Round 2: the escort regression (builder, 2026-10-24)
+
+The lead's check on `Playtest\Monolith_2026-10-24_death` failed the escort's event order: "Opening 2.0, Matins in 58.3, Lauds in 106.9, Prime in
+261.5, Terce in -, Spooling 259.9, Tamsin away 283.9". The freighter spooled before Prime and Terce never came; the mission still ended in a victory
+with its climax gone.
+
+### The cause
+The escort ran on two clocks that nothing tied together: Earth's waves advance on kills (the two-thirds rule), but the climax fired on the
+freighter's travel alone (within 300 m of the spool point). In round 1 they lined up only because the Tamsin's engines got shot up and it limped
+in at 459 s. After AI round 2 (turret fire, wingman survival) and Earth's real fighters (c7dd6e5, afe0002), its engines are no longer hit, so it
+arrives at full speed at 260 s; and kills are slower: two free-roaming Lauds drones drifted 0.5 to 1.5 km off and lived 100 s, so the
+two-thirds rule on a four-ship wing (three kills) stalled from 156 s to 256 s. The boost was not the cause (the freighter's speed is its own).
+A baseline of the old file on the new build at every level showed it was hollow everywhere, not only on Medium: on Very easy and Easy Matins was
+never two-thirds destroyed, so Lauds never came and the freighter sailed through after one wave; on Hard the freighter died; on Insane two waves.
+
+### The fix (mission data only; no code)
+- **Waves:** FS2's two-thirds rule first, plus FS2's usual time-out: the next wave 5 s after the current one is two-thirds destroyed, or 75 s
+  after it was called (from the call, not the arrival, so the arrival cap holding a wave back cannot stall the next).
+- **The climax follows the fight:** the Tamsin stops its waypoints short as before; reaching the jump point ("Holding") it creeps on with its
+  drive cold instead of sailing past. Its arrival there is Earth's cue for a final push: Terce's second wave jumps in at once if the wave rule
+  has not sent it. The drive spools 8 s after that second wave is in (a safety net 120 s after Terce's first). Terce, Earth's last throw, is no
+  longer held back by the arrival cap (behind a cap full of survivors it waited minutes).
+- **Bombers:** still called by the Lector's hull dropping below 70% (Thurible) and 40% (Incense). Left alone, the Lector also throws Thurible
+  in when the Tamsin reaches the jump point, so the bombers are a beat of every crossing (in its climax), not only of runs where the escort
+  happens to go for the corvette.
+- **The freighter survives one bomber wave:** six times a Triton's hull (21,000 at its 70% start) against two torpedoes (13,600). Difficulty
+  scales only the player's damage, so before this two torpedoes killed it even on Very easy.
+- **The auto-play's plan flies like an escort:** bombers, or two or more fighters within a kilometre of the Tamsin, first; the Lector when the
+  freighter is clear; otherwise stay on the Tamsin. (Round 1's plan went for the Lector first, which left the freighter alone once waves kept
+  coming.)
+- Two new radio lines (the Tamsin holding, Earth's last throw), voiced with the audio pipeline (three clips; the other 169 untouched).
+
+### The escort now (AI flying an invulnerable player; `gauntlet/captures/mission-system/r2/planE/`, `final/`)
+| Level | Result | Order |
+|---|---|---|
+| Very easy | victory 315 s | Matins 58, Lauds 133, Prime 208, Terce 283, Terce's second wave 283, Spooling 291, away 315 |
+| Easy | victory 315 s | the same as Very easy |
+| Medium | victory 292 s | Matins 58, Lauds 107, Prime 182, Terce 257, second wave 260, Spooling 268, away 292 |
+| Hard | victory 293 s | Matins 58, Lauds 133, Prime 208, Terce 261, second wave 261, Spooling 269, away 293 |
+| Insane | victory 293 s | Matins 58, Lauds 103, Prime 178, Terce 253, second wave 261, Spooling 269, away 293 |
+Thurible comes at the climax (about 259 s) on every level; Lantern on Medium and up, Wick on Insane (the relay is conditional on losses, so
+the easy levels never need it). The Medium expectations pass in full. Very easy and Easy fail only "Lantern here" (no loss ever calls the
+relay), Insane only "at most 4 on the player" (Insane has no attacker cap): both expected; the expectations are Medium's.
+
+### Playing it with the boost (235 m/s), not yet fixed
+- Distances collapse: a wave arriving 2 to 2.5 km from the route is reached in about 10 s and the Lector, 1.8 km off, in 8 s, so the escort's
+  pull between the freighter and the corvette is weak; the player can visit every threat and be back before it matters. Levers, all data:
+  arrivals 4 to 6 km out and on opposite sides at once, the Lector's standoff at 3 to 4 km, the bombers launching from farther.
+- Torpedoes (65 m/s) are easy prey at boost speed; the bombers' threat to the freighter is mostly the AI escort's problem, not the player's.
+- The 58 s quiet opening is long when the ship crosses a kilometre in four seconds.
+- The AI flying the player gets few kills (0 to 5) under the escort plan; the auto-play shows the beats fire and resolve, not the balance.
+- The hidden bonus ("without the Lector finding you") fails in every auto-play: the AI never goes dark. Expected; the real cabin makes it
+  possible by hand.

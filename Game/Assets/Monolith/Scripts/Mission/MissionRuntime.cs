@@ -38,6 +38,8 @@ namespace Monolith.Mission
         /// <summary>When the first hostile fighter or bomber arrived (the fight's start, for the pacing), or -1.</summary>
         public float FightFrom { get; private set; } = -1f;
         public event Action<MissionRuntime> OnEnded;
+        /// <summary>The scene holds the mission from ending on the player's death while this says true (the death sequence plays first; the failure flow follows).</summary>
+        public Func<bool> HoldPlayerDeath;
 
         public int Order => SimOrder.Mission;
 
@@ -202,7 +204,7 @@ namespace Monolith.Mission
                 Track();
                 Cues();
                 CheckObjectives();
-                if (!Ended && File.PlayerDeathEnds && _player != null && _player.DestroyedAt >= 0f) End("defeat", "SHIP LOST");
+                if (!Ended && File.PlayerDeathEnds && _player != null && _player.DestroyedAt >= 0f && !(HoldPlayerDeath != null && HoldPlayerDeath())) End("defeat", "SHIP LOST");
                 for (int i = 0; i < _events.Count && !Ended; i++) StepEvent(_events[i]);
                 Cabin.Step(this);
                 if (frame.Tick % 6 == 0) UpdateDirectives();

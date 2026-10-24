@@ -1,0 +1,17 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "hud": true,
+  "cabin": { "script": [] },
+  "death": { "at": 9.0, "cause": "gunfire" }
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "hudflow_000", "follow": true, "warmup": 8.6500 },
+  { "name": "hudflow_001", "follow": true, "warmup": 1.3000 },
+  { "name": "hudflow_002", "follow": true, "warmup": 2.1000 },
+  { "name": "hudflow_003", "follow": true, "warmup": 3.4000 },
+  { "name": "hudflow_004", "follow": true, "warmup": 1.1000 }
+ ]
+}

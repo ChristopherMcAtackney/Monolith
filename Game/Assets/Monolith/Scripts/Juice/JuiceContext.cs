@@ -47,6 +47,9 @@ namespace Monolith.Juice
         public Debris Debris;
         public Shockwaves Shockwaves;
         public Explosions Explosions;
+        /// <summary>The player's death sequence (Fx/DeathFx), and its claim on the player's own ship_destroyed event: it returns true when it takes it, so the ordinary blast at the eye is not made.</summary>
+        public DeathFx Death;
+        public System.Func<GameEvent, bool> PlayerDestroyed;
         public Transform Root;
         public readonly Dictionary<int, ShipLook> Looks = new Dictionary<int, ShipLook>();
 

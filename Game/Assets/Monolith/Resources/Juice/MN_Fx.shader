@@ -10,6 +10,7 @@
 //   Pass 2 Shield  a shield bubble (ellipsoid mesh) with hex ripples at up to 8 hit points
 //   Pass 3 Edge    a screen-edge flash that never touches the middle of the picture (hits on the player)
 //   Pass 4 BoostLens  the boost's radial blur, colour fringe and rim glow, read from a copy of the picture; clear in the middle and round the target
+//   Pass 5 Death   the death sequence's overlay: cracking canopy lines, a white flash, the iris closing to black (Blend One SrcAlpha)
 //
 // Vertex layout of passes 0 and 1 (one quad = 4 vertices, corner in -1..1):
 //   POSITION   centre, world space metres
@@ -786,6 +787,104 @@ Shader "Hidden/Monolith/Fx"
                 float3 rgb = acc / wsum;
                 rgb += ToExposure(_MN_BoostGlow.rgb * (m * m));
                 return float4(rgb, alpha);
+            }
+            ENDHLSL
+        }
+
+        // ------------------------------------------------------------------ pass 5: the death overlay (Juice/Fx/DeathFx.cs)
+
+        // The canopy cracking (a web of fine white lines from the point of impact, growing), a white flash over everything, and the view closing: an iris
+        // that narrows with a dark red edge, then black. One full-screen triangle, Blend One SrcAlpha: result = add + scene * alpha, so the rgb is the
+        // light added (cracks, flash, the red edge) and the alpha is how much of the picture is left. Only drawn while the sequence is on.
+        Pass
+        {
+            Name "Death"
+            ZWrite Off
+            ZTest Always
+            Cull Off
+            Blend One SrcAlpha
+
+            HLSLPROGRAM
+            #pragma vertex VertDeath
+            #pragma fragment FragDeath
+
+            float4 _MN_DeathA;      // x iris radius (fraction of the half diagonal; above 1.5 the iris is open), y its softness, z black 0..1, w crack amount 0..1
+            float4 _MN_DeathB;      // x, y the point of impact on screen (0..1, y down), z how far the cracks have grown 0..1, w seed
+            float4 _MN_DeathC;      // rgb light added over the whole picture (display units), a the dark red at the iris edge
+
+            struct DeathOut { float4 pos : SV_POSITION; };
+
+            DeathOut VertDeath(uint id : SV_VertexID)
+            {
+                DeathOut o;
+                float2 uv = float2((id << 1) & 2, id & 2);
+                o.pos = float4(uv * 2.0 - 1.0, 0.0, 1.0);
+                return o;
+            }
+
+            float H11(float n) { return frac(sin(n * 127.1 + 11.7) * 43758.5453); }
+
+            // The cracks: p is in screen heights from the point of impact.
+            float Cracks(float2 p, float grow, float seed)
+            {
+                float r = length(p);
+                float ang = atan2(p.y, p.x);
+                float acc = 0.0;
+                [loop] for (int k = 0; k < 18; k++)
+                {
+                    float a0 = (k + H11(seed + k * 7.3) * 0.85) / 18.0 * 6.2831853;
+                    float reach = lerp(0.22, 1.9, H11(seed + k * 3.1 + 1.0)) * grow;
+                    float drift = (Noise3(float3(r * 4.5, k * 1.7, seed)) - 0.5) * 0.30 * r;
+                    float da = abs(frac((ang - a0 - drift) / 6.2831853 + 0.5) - 0.5) * 6.2831853;
+                    float dist = da * r;
+                    float w = 0.0007 + 0.0012 * (1.0 - saturate(r / max(reach, 1e-3)));
+                    float ln = (1.0 - smoothstep(w * 0.35, w, dist)) * step(r, reach) * smoothstep(0.004, 0.03, r);
+                    // a branch splitting off part of the way out
+                    float rb = reach * lerp(0.35, 0.6, H11(seed + k * 5.9));
+                    float da2 = abs(frac((ang - a0 - drift - 0.22 * (H11(seed + k * 1.3) - 0.5) * 2.0) / 6.2831853 + 0.5) - 0.5) * 6.2831853;
+                    float ln2 = (1.0 - smoothstep(w * 0.3, w * 0.8, da2 * r)) * step(rb, r) * step(r, rb + reach * 0.35) * 0.8;
+                    acc = max(acc, max(ln, ln2));
+                }
+                [loop] for (int j = 1; j <= 4; j++)
+                {
+                    float rr = j * 0.105 * (0.85 + 0.3 * H11(seed + j * 2.0));
+                    float wob = 0.006 * sin(ang * 5.0 + j * 2.0 + seed);
+                    float ringD = abs(r - rr - wob);
+                    float arc = smoothstep(0.42, 0.62, Noise3(float3(ang * 2.2 + j * 3.0, j, seed)));
+                    float ring = (1.0 - smoothstep(0.0003, 0.0011, ringD)) * arc * step(rr, grow * 1.5);
+                    acc = max(acc, ring);
+                }
+                return acc;
+            }
+
+            float4 FragDeath(DeathOut i) : SV_Target
+            {
+                float2 uv = i.pos.xy * _MN_Screen.zw;
+                float aspect = _MN_Screen.x * _MN_Screen.w;
+                float2 p = (uv - 0.5) * 2.0;
+                p.x *= aspect;
+                float r = length(p) / length(float2(aspect, 1.0));
+                float3 add = _MN_DeathC.rgb;
+                float keep = 1.0;
+                // The iris: clear inside the radius, falling to black over the softness. A dark red rim just inside the dark.
+                if (_MN_DeathA.x < 1.6)
+                {
+                    float soft = max(_MN_DeathA.y, 0.02);
+                    float edge = smoothstep(_MN_DeathA.x, _MN_DeathA.x + soft, r);
+                    keep = 1.0 - edge;
+                    float band = edge * (1.0 - edge) * 4.0;                 // 0 at both ends of the fall-off, 1 in the middle: a dark red glow where the picture is going
+                    add += float3(0.6, 0.012, 0.006) * band * _MN_DeathC.a * 0.16 * (1.0 - _MN_DeathA.z);
+                }
+                keep *= 1.0 - _MN_DeathA.z;
+                if (_MN_DeathA.w > 0.001)
+                {
+                    float2 q = uv - _MN_DeathB.xy;
+                    q.x *= aspect;
+                    float c = Cracks(q, _MN_DeathB.z, _MN_DeathB.w) * _MN_DeathA.w;
+                    add += float3(0.9, 0.95, 1.0) * (c * 2.3);
+                    keep *= 1.0 - 0.28 * c;
+                }
+                return float4(ToExposure(add), saturate(keep));
             }
             ENDHLSL
         }

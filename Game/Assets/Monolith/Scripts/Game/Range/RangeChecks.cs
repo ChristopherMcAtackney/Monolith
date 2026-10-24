@@ -170,6 +170,54 @@ namespace Monolith.Game
             yield return new WaitForSeconds(0.2f);
             Check(_world.Pilots.Current(me.Id).Throttle > 0.99f, "D-pad up is still 100% throttle outside the menu");
 
+            // The HUD's switches, through the real scene: the battle map on a double tap of View, the pause screen's invert switches and HUD style, F9.
+            {
+                var hud = _range.Hud;
+                var sw = _range.HudSwitches;
+                bool map0 = hud.MapSwitch;
+                yield return Tap(pad, GamepadButton.Select);
+                yield return Tap(pad, GamepadButton.Select);
+                yield return new WaitForSeconds(0.15f);
+                Check(!map0 && hud.MapSwitch, "a double tap of View opens the battle map");
+                yield return Tap(pad, GamepadButton.Select);
+                yield return Tap(pad, GamepadButton.Select);
+                yield return new WaitForSeconds(0.15f);
+                Check(!hud.MapSwitch, "and another closes it");
+
+                yield return Tap(pad, GamepadButton.Start);
+                yield return new WaitForSeconds(0.2f);
+                Check(hud.Overlay != null && hud.Overlay.Length > 0 && System.Array.Exists(hud.Overlay, l => l.Contains("FLIGHT PITCH")) && System.Array.Exists(hud.Overlay, l => l.Contains("CABIN LOOK")), "Start pauses and the pause screen lists both invert switches");
+                bool f0 = sw.Controls.invert.flight, l0 = sw.Controls.invert.cabinLook;
+                yield return Tap(pad, GamepadButton.LeftShoulder);
+                yield return Tap(pad, GamepadButton.RightShoulder);
+                yield return new WaitForSeconds(0.2f);
+                Check(sw.Controls.invert.flight == !f0 && sw.Controls.invert.cabinLook == !l0, $"on the pause screen LB flips flight pitch ({f0} to {sw.Controls.invert.flight}) and RB flips cabin look ({l0} to {sw.Controls.invert.cabinLook})");
+                Check(System.Array.Exists(hud.Overlay, l => l.Contains("FLIGHT PITCH") && l.Contains(f0 ? "NORMAL" : "INVERTED")), "the screen shows the new setting");
+                yield return Tap(pad, GamepadButton.LeftShoulder);
+                yield return Tap(pad, GamepadButton.RightShoulder);
+                yield return new WaitForSeconds(0.2f);
+                Check(sw.Controls.invert.flight == f0 && sw.Controls.invert.cabinLook == l0, "and they flip back");
+                string style0 = Monolith.Hud.HudStyles.Current.Name;
+                yield return Tap(pad, GamepadButton.DpadUp);
+                yield return new WaitForSeconds(0.2f);
+                string style1 = Monolith.Hud.HudStyles.Current.Name;
+                Check(style1 != style0 && hud.Overlay != null && System.Array.Exists(hud.Overlay, l => l.Contains("HUD STYLE") && l.ToUpperInvariant().Contains(style1.ToUpperInvariant())), $"on the pause screen D-pad up changes the HUD style ({style0} to {style1})");
+                yield return Tap(pad, GamepadButton.DpadDown);
+                yield return new WaitForSeconds(0.2f);
+                Check(Monolith.Hud.HudStyles.Current.Name == style0, "and D-pad down changes it back");
+                yield return Tap(pad, GamepadButton.Start);
+                yield return new WaitForSeconds(0.2f);
+                Check(hud.Overlay == null, "Start resumes");
+
+                var kb = InputSystem.AddDevice<Keyboard>("MnVirtualKeys");
+                InputSystem.QueueStateEvent(kb, new KeyboardState(Key.F9));
+                yield return new WaitForSeconds(0.1f);
+                InputSystem.QueueStateEvent(kb, new KeyboardState());
+                yield return new WaitForSeconds(0.2f);
+                Check(Monolith.Hud.HudStyles.Current.Name != style0, $"F9 changes the HUD style in play ({style0} to {Monolith.Hud.HudStyles.Current.Name})");
+                Monolith.Hud.HudStyles.Set(style0);
+            }
+
             MnLog.Info($"PADDRIVE {(_fails == 0 ? "OK" : "FAILED")}: {_checks - _fails} of {_checks} checks pass");
             InputSystem.settings.backgroundBehavior = oldBackground;
             Application.Quit(_fails == 0 ? 0 : 1);
