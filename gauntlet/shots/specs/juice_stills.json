@@ -301,7 +301,7 @@
   },
   {
    "name": "capital_death_final",
-   "t": 47.6
+   "t": 47.35
   },
   {
    "name": "blast_near_hull",
@@ -310,6 +310,10 @@
   {
    "name": "fighter_kill_debris",
    "t": 10.9
+  },
+  {
+   "name": "capital_death_cooling",
+   "t": 47.95
   }
  ],
  "options": {

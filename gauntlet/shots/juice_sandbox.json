@@ -333,7 +333,12 @@
   {
    "name": "capital_death_final",
    "follow": true,
-   "warmup": 2.2001
+   "warmup": 1.9501
+  },
+  {
+   "name": "capital_death_cooling",
+   "follow": true,
+   "warmup": 0.6001
   }
  ]
 }

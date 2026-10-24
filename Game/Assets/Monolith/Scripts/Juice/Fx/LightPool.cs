@@ -18,6 +18,8 @@ namespace Monolith.Juice
             public Light Light;
             public HDAdditionalLightData Hd;
             public float Age, Life, Peak, FadeExp;
+            public Color Start, End;
+            public bool Ramp;
             public int Key;
             public float HeldFor;
             public bool Used;
@@ -66,12 +68,15 @@ namespace Monolith.Juice
         }
 
         /// <summary>A flash: starts at <paramref name="candela"/> and fades over <paramref name="life"/> seconds.</summary>
-        public void Flash(Vector3 position, Color colour, float candela, float range, float life, float fadeExp = 2f)
+        public void Flash(Vector3 position, Color colour, float candela, float range, float life, float fadeExp = 2f, Color? endColour = null, float shapeRadius = 0f)
         {
             if (!Enabled || candela <= 0f || life <= 0f) return;
             var e = Rent();
             if (e == null) return;
             Set(e, position, colour, candela, range);
+            // A light with a size gives a hull a broad, bright highlight (a point gives a pinprick a rough plate hides); a colour ramp lets a blast start white and go amber.
+            e.Hd.shapeRadius = Mathf.Max(0.025f, shapeRadius);
+            e.Start = colour; e.End = endColour ?? colour; e.Ramp = endColour.HasValue;
             e.Age = 0f; e.Life = life; e.Peak = candela; e.FadeExp = fadeExp; e.Key = 0; e.HeldFor = 0f; e.Used = true;
             e.Light.gameObject.SetActive(true);
         }
@@ -116,6 +121,7 @@ namespace Monolith.Juice
                 if (e.Age >= e.Life) { Kill(e); continue; }
                 float k = Mathf.Pow(1f - e.Age / e.Life, e.FadeExp);
                 e.Hd.SetIntensity(e.Peak * k, LightUnit.Candela);
+                if (e.Ramp) e.Hd.SetColor(Color.Lerp(e.Start, e.End, Mathf.Clamp01(e.Age / (e.Life * 0.45f))), -1f);
             }
         }
 

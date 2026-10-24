@@ -204,12 +204,11 @@ namespace Monolith.Juice
             {
                 _fx.Flash(e.Position, R * 0.8f, new Vector3(1f, 0.92f, 0.75f) * 7f, 0.09f, 0.95f, 2f, 1.3f);
                 _fx.Flash(e.Position, R * 3.2f, Emitters.Orange * 1.3f, 0.26f, 0.0f, 1.8f, 1.4f);
-                _fx.Flare(e.Position, R * 4.2f, R * 0.2f, Emitters.WarmWhite * 12f, 0.12f);
+                _fx.Flare(e.Position, R * 2.4f, R * 0.12f, Emitters.WarmWhite * 5f, 0.09f);
                 _fx.Fireball(e.Position, Vector3.zero, R * 0.55f, R * 1.35f, 0.55f, 2.0f, 4.5f, 0f, 1.2f, 0.5f);
                 _fx.Fireball(e.Position + _c.Rng.OnSphere() * R * 0.35f, Vector3.zero, R * 0.4f, R * 1.0f, 0.48f, 1.9f, 4.0f, 0f, 1.2f, 0.5f);
                 // Shrapnel: a fast, bright, short-lived shell of streaks.
-                _fx.SparkBurst(e.Position, Vector3.zero, _c.N(60), 70f, 260f, 0.16f, 0.5f, 0.1f, SparkStyle.Metal, 0.35f, 1.1f);
-                _fx.Ring(e.Position, R * 0.3f, R * 2.2f, 0.2f, new Vector3(1f, 0.8f, 0.5f) * 0.10f, 0.03f);
+                _fx.SparkBurst(e.Position, Vector3.zero, _c.N(22), 70f, 260f, 0.16f, 0.5f, 0.1f, SparkStyle.Metal, 0.35f, 1.1f);
             }
             if (s.effects.lights) _c.Lights.Flash(e.Position, new Color(1f, 0.75f, 0.45f), 3e8f * _c.Bright, 420f, 0.2f, 2f);
             _c.Audio.Play(JuiceCue.FlakBurst, e.Position, 0.8f, dist);

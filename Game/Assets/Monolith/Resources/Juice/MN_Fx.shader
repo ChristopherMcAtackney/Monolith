@@ -226,7 +226,13 @@ Shader "Hidden/Monolith/Fx"
             float3 off = float3(seed * 7.13, seed * 3.71, seed * 11.3);
             float erode = age * (0.50 + erodeRate);
             float life = saturate(1.0 - pow(age, 1.45) * 0.88);       // cools slowly at first: most of the ball stays yellow-white
-            float blurMix = saturate(0.45 + 0.35 * age) * (1.0 - saturate(palette - 1.0));
+            // A blast has a life in two parts. It opens dense, opaque and blown out white (the first fifth of its life: it hides what it hits), then breaks up into
+            // thin, smeared, cooling fire that goes paler and murkier as it cools (the rest).
+            float isFire = 1.0 - saturate(palette);
+            float open = (1.0 - smoothstep(0.05, 0.26, age)) * (1.0 - saturate(palette - 1.0));
+            float cool = smoothstep(0.30, 0.95, age) * isFire;
+            float blurMix = lerp(0.12, 0.55, smoothstep(0.08, 0.60, age)) * (1.0 - saturate(palette - 1.0));
+            float extinction = lerp(3.8, 9.5, open);
             float3 sum = 0.0;
             float A = 0.0;
 
@@ -245,31 +251,39 @@ Shader "Hidden/Monolith/Fx"
                 float3 warp = Tex3(q * 0.5).rgb - 0.5;
                 float4 n = Tex3(q + warp * 0.9);
                 float3 rh = l / max(r, 1e-3);
-                float4 nr = Tex3(rh * (0.95 + 0.22 * r) + off * 0.6 + warp * 0.5);
-                n = lerp(n, nr, blurMix);
+                float4 nr = Tex3(rh * (0.42 + 0.10 * r) + off * 0.6 + warp * 0.35);
+                n = lerp(n, nr, blurMix * (1.0 - 0.75 * smoothstep(0.40, 0.90, r)));        // the smear is inside the ball: its silhouette is not combed into spikes
                 float fbm = n.r * 0.55 + n.g * 0.30 + n.b * 0.15;
                 float base = 1.0 - r / 0.80;                          // a dense body, and lobes of thinning fire out to the edge of the sphere
-                float mask = base * 1.05 + (fbm - 0.45) * 1.9 - erode * 1.6;
-                float dens = pow(saturate(mask / 0.85), 1.6);       // a wide feather: no hard edge anywhere, the fire thins out into the dark
-                dens *= 1.0 - smoothstep(0.62, 1.0, r);             // and the sphere's own rim never shows
+                float mask = base * 1.05 + (fbm - 0.45) * lerp(1.9, 2.5, open) - erode * 1.6 + open * 0.55;
+                float dens = pow(saturate(mask / lerp(0.85, 0.60, open)), lerp(1.6, 1.2, open));   // open: a dense mass; after: a wide feather, the fire thins out into the dark
+                dens *= 1.0 - smoothstep(lerp(0.62, 0.50, open), 1.0, r + 0.40 * (0.45 - fbm));          // the rim is lumpy: a different radius in every direction, never a circle                           // the sphere's own rim never shows
                 if (dens <= 0.0) continue;
 
                 float hotspot = saturate(base) * saturate(base);
-                float T = 0.70 * heat * life * (0.20 + 0.95 * hotspot + 0.80 * (n.g - 0.45) + 0.45 * (n.a - 0.5)) * lerp(0.45, 1.30, n.b);
+                float T = lerp(0.70, 1.15, open) * heat * life * (0.20 + 0.95 * hotspot + 0.80 * (n.g - 0.45) + 0.45 * (n.a - 0.5) + 0.60 * open * saturate(base)) * lerp(0.45, 1.30, n.b);
                 T = max(T, 0.10 * life);
                 float3 ramp = lerp(Incandescent(T), PlasmaRamp(T), saturate(palette));
                 ramp = lerp(ramp, float3(0.78, 0.88, 1.0) * (0.25 + T), saturate(palette - 1.0));
                 float vein = pow(saturate(1.0 - abs(2.0 * n.g - 1.0)), 4.0);
                 float lum = (0.10 + T * T * 1.25) * (0.70 + 0.70 * vein);
                 lum = lerp(lum, 1.0 * (0.7 + 0.5 * vein), saturate(palette - 1.0));      // cool gas is lit, not black: a pale puff, even in front of a fireball
+                // Paler and murkier as it cools: the colour drains toward a warm grey and the light dims; the hot core of the opening stays white.
+                float grey = dot(ramp, float3(0.30, 0.59, 0.11));
+                ramp = lerp(ramp, float3(grey, grey * 0.94, grey * 0.88), (0.20 + 0.50 * cool) * isFire);
+                lum *= lerp(1.0, 0.62, cool) * lerp(1.0, 1.55, open);
+                lum *= 1.0 - 0.72 * smoothstep(0.45, 1.0, r);                                                // limb: the rim is cooler and dimmer, so its thin edge never clips to a bright hard line
                 float3 emit = ramp * lum;
                 dens *= lerp(smoothstep(0.10, 0.55, T), 1.0, saturate(palette - 1.0));                       // gas that has cooled thins out instead of hanging as a smooth red cloud
-                float a = 1.0 - exp(-dens * 5.2 * dt / (2.0 * Rs));
+                float a = 1.0 - exp(-dens * extinction * dt / (2.0 * Rs));
                 sum += (1.0 - A) * emit * a;
                 A += (1.0 - A) * a;
                 if (A > 0.985) break;
             }
-            return float4(sum * i.col.rgb, A);
+            // A ball bigger than its quad is cut by the quad: fade it before the cut so no straight edge ever shows.
+            float2 qc = abs(i.uv.xy);
+            float quadFade = 1.0 - smoothstep(0.80, 1.0, max(qc.x, qc.y));
+            return float4(sum * i.col.rgb * quadFade, A * quadFade);
         }
 
         // ------------------------------------------------------------------ the other kinds

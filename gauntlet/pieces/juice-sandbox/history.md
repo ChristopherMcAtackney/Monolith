@@ -335,3 +335,48 @@ and radial); the numbers are within the run-to-run noise of round 2 (478, 456 an
 - r3c capital_death_final vs explosion_capital/expanse/7_ATYOm3nNc_0182: a pile of hot sprite bursts with spiky edges and uniform dashes "like a stock particle emitter"; no smoky mass or occlusion.
 
 **Gap for round 4 (lead): resolve realism against meat through time.** Each blast opens dense, opaque and blown-out white for its first moments (the meat critic's obliterating core), then breaks into translucent, motion-blurred, cooling fringe (the realism critic's fire). Sparks: far fewer, varied in size, brightness, length and blur, some dark tumbling debris among them; never an even field of identical dashes. Fire colour: less saturated, paler and murkier as it cools. Specular response to blasts on nearby hulls. Bolts and beams stay as they are, since they won.
+
+## Round 4 (builder, 2026-10-25)
+
+The brief: keep the beams and bolts exactly as they are (they beat FS2 in two blind rounds), and resolve realism against meat through time: each blast opens dense, opaque and blown-out
+white (the meat critic's obliterating core), then breaks up into translucent, smeared, cooling fire that goes paler and murkier (the realism critic's fire). Sparks: far fewer and varied.
+The fire less saturated; no spiky star edges; a specular response on nearby hulls; no lens ring and streak on a blast. Reference frames: Expanse `7_ATYOm3nNc_0160` (a hit on a hull: the
+fire is a pale pink streak-blurred fan, the hull is lit and shows a specular sheen), `_0142` (a pale, murky, graded bloom with about a dozen sparks, a few of them fat and slow, one dark tumbling
+chunk), `_0182` (a capital: a blue mass with dark tumbling wreckage showing through); FS2 `clash_of_titans_ii_0179` (the opening: a solid blown-out white mass that fills the frame, a red-orange edge, a field of fine sparks).
+
+### What changed (beams and bolts untouched)
+- **A blast has a life in two parts** (`ShadeFire`). For its first fifth the ball is dense and opaque (extinction 9.5, a solid mask, hotter by half, 1.55 times brighter), a blown-out
+  white mass with only a thin orange edge: it hides what it hits. After that the density feathers out (extinction down to 3.8), the radial smear takes over (0.12 to 0.55 of the noise read
+  along the radius) and the ball drains toward a warm grey (up to 70 per cent) and dims to 0.62: paler and murkier as it cools. The rim is lumpy (a different radius in every direction)
+  and dimmer than the middle, and the ball fades before its quad edge, so there is no circle, no straight cut and no bright hard line round it.
+- **The capital death's final blast** is one central ball the whole size of the blast plus 11 lobes through the space the hull filled (it was 40 fireballs: "a pile of hot sprite bursts"),
+  all opening white and dense, so the corvette is swallowed (`capital_death_final`), then it thins and cools over the next seconds (`capital_death_cooling`, new still). 100 shards of up to 22 m fly out of it.
+- **Sparks, far fewer and all different** (`Emitters.SparkBurst` and `SparkVaried`): a blast throws 18 to 110 (it threw 80 to 800), a final blast about 76 (it threw 390), in two to four jets and a few lone
+  sparks. Every spark differs: size from hair-thin to fat (a factor of 9), length from a dot to a long streak (a factor of 37 in shutter time), brightness from a barely-there ember to a brilliant one
+  (a factor of 9), speed log-spread, blur (45 per cent are soft smears), and colour (14 per cent white-hot heads cooling to pale pink, 20 per cent dull embers, the rest orange). The fine specks are 380 (900).
+- **Dark tumbling debris among the hot**: 45 per cent of shards are cold (no glow, no halo): they show only by the light that falls on them, as the dark chunks in the show's frames do. Fighters throw 22, bombers 32.
+- **Specular response on hulls**: the blast's light now starts white-hot and goes amber (a white light draws a hard glint on a hull; amber warms it), and it has a size (a light with a radius gives a broad bright highlight
+  on a plate, where a point gives a pinprick that a rough plate hides). `LightPool.Flash(..., endColour, shapeRadius)`.
+- **No lens ring and streak over a blast**: the blast ring is gone (blasts, flak and the final blast), the anamorphic flare is a short, faint streak that does not outlast its flash (it was 7.5 radii wide for 0.2 s), and the
+  flak flare is smaller.
+- **The shared Look defaults changed under me** (corvette round 3: ghosts fade as the Sun leaves the frame, a quieter floor, less grain): nothing to do on my side; the stills are shot with them.
+
+### Captures (`gauntlet/captures/juice-sandbox/r4/`, from a fresh build, no HUD)
+- `stills/` as in r3 plus `capital_death_cooling` (the same blast 0.6 s later: thinning, murkier, wreckage showing through). `capital_death.mp4`, `shake.mp4`, `perf/`, `perf_repeats/`, `checks/` (all pass).
+- **Best three**: `stills/capital_death_final.png` (the opening: a solid white mass swallowing the corvette), `stills/capital_death_cooling.png` (the same blast cooling, translucent and murky, wreckage through it),
+  `stills/fighter_kill_fireball.png` (a small blast mid-life: pale amber lobes, a few varied sparks and dark and hot shards).
+
+### Performance (`perf/`; 1920x1080, vsync off, RTX 4070 Ti; the same 18 s run)
+486.1 fps average, 1% low 214.6, worst frame 10.8 ms; repeats 488.8 and 434.7 fps, 1% lows 217.3 and 139.9, worst 11.3 and 10.6 ms. Faster than round 3 (445 average, worst 14.8 ms): there are about a quarter
+as many particles and far fewer fireballs in a death.
+
+### Honest read against the reference frames
+- The opening is now a solid blown-out mass and the afterglow a thin murky one; the join between them is a quick change (about 0.15 of the ball's life), and in one frame the ball can look like a
+  glowing balloon at the moment the opaque mass has just formed. The show's blasts never show a full silhouette at all.
+- The cooling fire is a pale amber, not the show's grey-pink or blue; the ramp is still a fire ramp. The radial smear is a noise trick: real long streaks across the frame are not there.
+- Sparks are a few dozen and differ, but each is still a straight streak; the show's include slow fat dots with a curve and some that fade by cooling in colour along their length.
+- Specular: the light is white-hot at the start, but I could not prove a glint on the corvette's plates in a still: the first 0.1 s is a white wash round the blast. The `blast_near_hull` still shows the warm side
+  and the highlight, not a distinct specular line.
+
+### Gotchas found
+- The fire quad is a camera-facing square: a ball bigger than the screen section it covers is cut by the quad's edge as a straight line unless its density fades before the edge (`quadFade`).

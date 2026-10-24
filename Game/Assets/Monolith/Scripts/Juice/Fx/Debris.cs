@@ -402,7 +402,7 @@ namespace Monolith.Juice
         /// Wreckage with real shapes: torn plates, wedges, struts and chunks (jagged, flat-shaded, each its own size), cut from <paramref name="material"/>, flung from
         /// <paramref name="centre"/>, tumbling, glowing at the torn edges while hot, with a small halo of its own light. Sizes are in metres.
         /// </summary>
-        public void Shards(Vector3 centre, Vector3 inherit, int count, float sizeMin, float sizeMax, float speedMin, float speedMax, Material material, float heat = 1f, float life = 20f, Vector3? bias = null)
+        public void Shards(Vector3 centre, Vector3 inherit, int count, float sizeMin, float sizeMax, float speedMin, float speedMax, Material material, float heat = 1f, float life = 20f, Vector3? bias = null, float coldShare = 0.45f)
         {
             if (material == null || !_c.Settings.effects.debris) return;
             count = Mathf.Min(_c.N(count), Mathf.Max(0, 260 - _pieces.Count));
@@ -426,9 +426,10 @@ namespace Monolith.Juice
                 piece.Rends = new Renderer[] { mr }; piece.Glows = new[] { true };
                 piece.Meshes.Add(mesh);
                 piece.Radius = size; piece.LocalCentre = Vector3.zero;
-                piece.Halo = size * 1.6f + 0.6f;
+                bool cold = _c.Rng.F() < coldShare;                       // dark tumbling wreckage among the hot: it shows only by the light that falls on it
+                piece.Halo = cold ? 0f : size * 1.6f + 0.6f;
                 float spd = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 0.9f)) * Mathf.Lerp(1.15f, 0.65f, Mathf.Clamp01(size / Mathf.Max(0.1f, sizeMax)));
-                Launch(piece, inherit + dir * spd, _c.Rng.Range(0.4f, 3.4f) / Mathf.Sqrt(Mathf.Max(0.5f, size)), heat * _c.Rng.Range(0.6f, 1.0f), _c.Rng.Range(1.6f, 3.6f), life);
+                Launch(piece, inherit + dir * spd, _c.Rng.Range(0.4f, 3.4f) / Mathf.Sqrt(Mathf.Max(0.5f, size)), cold ? 0f : heat * _c.Rng.Range(0.6f, 1.0f), _c.Rng.Range(1.6f, 3.6f), life);
                 if (size > sizeMax * 0.35f) { piece.TrailRate = 6f; piece.TrailLeft = 1.4f; }
                 _pieces.Add(piece);
             }

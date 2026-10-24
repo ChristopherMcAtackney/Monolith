@@ -128,26 +128,72 @@ namespace Monolith.Juice
         }
 
         /// <summary>
-        /// A burst of sparks that is not an even spray: a few jets, each with its own cone, speed and brightness (some thin and fast, some wide and
-        /// slow), and a thin scatter in between. A real blast throws its sparks where the hull tears and where the fire vents, not evenly in every direction.
+        /// A burst of sparks that is not an even spray and not a field of copies: a few jets (each its own cone, speed and brightness) and a few lone ones, and
+        /// every spark differs from its neighbours in size, length, brightness, blur and colour (some fat and slow, some hair-thin and fast, some dim, some
+        /// soft smears, a few white-hot heads). The show's blasts throw about a dozen.
         /// </summary>
         public void SparkBurst(Vector3 pos, Vector3 inherit, int count, float speedMin, float speedMax, float lifeMin, float lifeMax, float width,
                                SparkStyle style = SparkStyle.Hot, float drag = 0.45f, float brightness = 1f, Vector3? tint = null)
         {
-            int jets = _c.Rng.Int(3, 7);
-            int scatter = Mathf.RoundToInt(count * 0.12f);
+            if (count <= 0) return;
+            int jets = _c.Rng.Int(2, 5);
+            int lone = Mathf.RoundToInt(count * 0.18f);
             var w = new float[jets]; float sum = 0f;
-            for (int j = 0; j < jets; j++) { w[j] = Mathf.Exp(_c.Rng.Range(-0.4f, 1.4f)); sum += w[j]; }
+            for (int j = 0; j < jets; j++) { w[j] = Mathf.Exp(_c.Rng.Range(-0.5f, 1.2f)); sum += w[j]; }
             for (int j = 0; j < jets; j++)
             {
                 Vector3 axis = _c.Rng.OnSphere();
-                float cone = _c.Rng.Range(6f, 30f);
-                int n = Mathf.Max(1, Mathf.RoundToInt((count - scatter) * w[j] / sum));
-                float fast = _c.Rng.Range(0.5f, 1.0f);
-                Sparks(pos, inherit, axis, cone, n, speedMin * fast, Mathf.Lerp(speedMin, speedMax, fast), lifeMin, lifeMax * _c.Rng.Range(0.7f, 1.1f), width,
-                       style, drag, brightness * _c.Rng.Range(0.55f, 1.3f), tint);
+                float cone = _c.Rng.Range(8f, 34f);
+                int n = Mathf.Max(1, Mathf.RoundToInt((count - lone) * w[j] / sum));
+                float fast = _c.Rng.Range(0.45f, 1.0f);
+                SparkVaried(pos, inherit, axis, cone, n, speedMin * fast, Mathf.Lerp(speedMin, speedMax, fast), lifeMin, lifeMax, width, style, drag, brightness * _c.Rng.Range(0.5f, 1.3f), tint);
             }
-            if (scatter > 0) Sparks(pos, inherit, Vector3.up, 360f, scatter, speedMin, speedMax * 0.6f, lifeMin, lifeMax * 0.8f, width, style, drag, brightness * 0.6f, tint);
+            if (lone > 0) SparkVaried(pos, inherit, Vector3.up, 360f, lone, speedMin * 0.6f, speedMax * 0.8f, lifeMin, lifeMax * 0.8f, width, style, drag, brightness * 0.8f, tint);
+        }
+
+        void SparkVaried(Vector3 pos, Vector3 inherit, Vector3 dir, float coneDeg, int count, float speedMin, float speedMax, float lifeMin, float lifeMax, float width,
+                         SparkStyle style, float drag, float brightness, Vector3? tint)
+        {
+            Vector4 hot0, hot1, hot2, white0, white1, dim0, dim1;
+            switch (style)
+            {
+                case SparkStyle.Plasma:
+                    hot0 = V4(new Vector3(0.85f, 0.93f, 1f) * 16f, 10f); hot1 = V4(new Vector3(0.35f, 0.58f, 1f) * 7f, 2f); hot2 = V4(new Vector3(0.12f, 0.12f, 0.5f) * 0.6f); break;
+                case SparkStyle.Metal:
+                    hot0 = V4(new Vector3(1f, 0.97f, 0.85f) * 20f, 12f); hot1 = V4(new Vector3(1f, 0.62f, 0.2f) * 8f, 3f); hot2 = V4(new Vector3(0.5f, 0.07f, 0.01f) * 0.8f); break;
+                default:
+                    hot0 = V4(new Vector3(1f, 0.92f, 0.68f) * 15f, 9f); hot1 = V4(new Vector3(1f, 0.46f, 0.10f) * 7f, 2f); hot2 = V4(new Vector3(0.45f, 0.05f, 0.01f) * 0.8f); break;
+            }
+            if (tint.HasValue)
+            {
+                var t = tint.Value;
+                hot0 = new Vector4(Mathf.Lerp(hot0.x, t.x * 16f, 0.55f), Mathf.Lerp(hot0.y, t.y * 16f, 0.55f), Mathf.Lerp(hot0.z, t.z * 16f, 0.55f), hot0.w);
+                hot1 = new Vector4(t.x * 7f, t.y * 7f, t.z * 7f, hot1.w); hot2 = new Vector4(t.x * 0.5f, t.y * 0.5f, t.z * 0.5f, 0f);
+            }
+            white0 = V4(new Vector3(1f, 0.97f, 0.92f) * 18f, 12f); white1 = V4(new Vector3(0.95f, 0.72f, 0.55f) * 5f, 2f);        // a white-hot head cooling to a pale pink
+            dim0 = V4(new Vector3(0.9f, 0.45f, 0.18f) * 6f, 3f); dim1 = V4(new Vector3(0.7f, 0.2f, 0.06f) * 2.5f, 1f);            // a cooler, duller ember
+            bool every = coneDeg >= 179f;
+            Vector3 toCam = _c.CameraPosition - pos;
+            float camDist = toCam.magnitude;
+            toCam = camDist > 1f ? toCam / camDist : Vector3.back;
+            for (int i = 0; i < count; i++)
+            {
+                ref var s = ref _c.Particles.Add();
+                Vector3 d = every ? _c.Rng.OnSphere() : _c.Rng.InCone(dir, coneDeg);
+                if (_c.Rng.F() < (every ? 0.14f : 0.05f) && camDist > 8f) d = (d * 0.55f + toCam * 0.85f).normalized;
+                float spd = speedMin * Mathf.Pow(speedMax / Mathf.Max(1f, speedMin), Mathf.Pow(_c.Rng.F(), 1.4f));                   // log-spread: a few very fast, most not
+                float size = width * Mathf.Exp(_c.Rng.Range(-1.3f, 0.95f));                                                          // hair-thin to fat
+                float shutter = Mathf.Exp(_c.Rng.Range(Mathf.Log(0.004f), Mathf.Log(0.15f)));                                         // a dot to a long streak
+                float lum = Mathf.Exp(_c.Rng.Range(-1.7f, 0.65f));                                                                   // from a barely-there ember to a brilliant one
+                float pick = _c.Rng.F();
+                Vector4 c0 = pick < 0.14f ? white0 : pick < 0.34f ? dim0 : hot0, c1 = pick < 0.14f ? white1 : pick < 0.34f ? dim1 : hot1, c2 = hot2;
+                s.Kind = FxKind.Streak; s.Pos = pos + d * _c.Rng.F() * width * 3f; s.Vel = inherit + d * spd; s.Dir = d; s.Drag = drag * _c.Rng.Range(0.5f, 1.5f);
+                s.Life = _c.Rng.Range(lifeMin, lifeMax) * Mathf.Lerp(0.5f, 1f, _c.Rng.F());
+                s.W0 = s.W1 = size; s.Stretch = shutter; s.MinLen = Mathf.Max(0.4f, size * _c.Rng.Range(1.5f, 7f));
+                s.P1a = s.P1b = _c.Rng.Range(0.6f, 1.4f); s.P2a = 0f; s.P2b = 0f; s.Blur = _c.Rng.F() < 0.45f ? _c.Rng.Range(0.55f, 1f) : _c.Rng.Range(0f, 0.35f);
+                float k = brightness * lum;
+                s.C0 = c0 * k; s.C1 = c1 * k; s.C2 = c2 * k; s.FadeExp = _c.Rng.Range(0.3f, 0.9f); s.Seed = _c.Rng.F(); s.Flicker = _c.Rng.Range(0.1f, 0.5f); s.NearStart = 4f; s.NearRange = 14f;
+            }
         }
 
         /// <summary>
@@ -260,7 +306,8 @@ namespace Monolith.Juice
             Flash(pos, R * 1.7f, core * (70f * intensity), 0.10f + R * 0.0006f, 0.85f, 2.4f, 1.25f, inherit);
             // The haze: a blast scatters light into everything round it (the show's explosions are mostly a hot core and a huge soft warm veil).
             Flash(pos, R * 6.5f, new Vector3(1f, 0.74f, 0.42f) * (0.45f * intensity), life * 1.25f, 0f, 1.6f, 1.15f, inherit);
-            Flare(pos, R * 7.5f, R * 0.30f, Vector3.Lerp(WarmWhite, core, 0.5f) * (36f * intensity), 0.20f + R * 0.001f);
+            // A short, faint anamorphic streak: the lens is the one thing that makes one, and it should not outlast the flash it comes from.
+            Flare(pos, R * 4.0f, R * 0.14f, Vector3.Lerp(WarmWhite, core, 0.5f) * (11f * intensity), 0.12f + R * 0.0006f, 2.2f);
 
             // The fire: a few big turbulent volumes that overlap and swallow what is behind them, and smaller ones that fly out.
             int balls = Mathf.Min(_c.N(Mathf.RoundToInt(3 + R * 0.12f)), 24);
@@ -268,21 +315,21 @@ namespace Monolith.Juice
             {
                 bool main = i < 2;
                 Vector3 off = _c.Rng.OnSphere() * R * (main ? 0.15f : 0.7f) * _c.Rng.F();
-                float rr = R * (main ? _c.Rng.Range(1.0f, 1.25f) : _c.Rng.Range(0.45f, 0.85f));
+                float rr = R * (main ? _c.Rng.Range(1.1f, 1.35f) : _c.Rng.Range(0.45f, 0.85f));
                 Fireball(pos + off, inherit + off.normalized * R * (main ? 0.25f : 1.0f), rr * 0.55f, rr * _c.Rng.Range(1.3f, 1.6f), life * (main ? 1.2f : _c.Rng.Range(0.7f, 1.1f)),
                          _c.Rng.Range(2.0f, 2.5f), _c.Rng.Range(3.6f, 4.6f) * intensity, 0f);
             }
-            int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(80 + R * 5f)), 800);
+            int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(18 + R * 0.7f)), 110);                 // a dozen to a few dozen: the show throws about a dozen
             SparkBurst(pos, inherit, sparks, 40f + R * 1.4f, 140f + R * 8f, 0.5f, 1.3f + R * 0.012f, 0.08f + R * 0.0045f, SparkStyle.Hot, 0.45f, intensity);
-            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(60 + R * 4f)), 900), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.05f + R * 0.0012f);
+            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(16 + R * 1.0f)), 220), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.05f + R * 0.0012f);
             Embers(pos, inherit, R * 0.6f, _c.N(Mathf.RoundToInt(6 + R * 0.25f)), 10f + R * 0.6f, 1.2f, 2.8f + R * 0.015f, 0.55f + R * 0.03f);
-            if (ring && R > 60f) Ring(pos, R * 0.4f, R * (2.6f + R * 0.006f), 0.30f + R * 0.003f, BlueWhite * (0.12f * intensity), 0.012f, 2.4f);
 
             // Light on what is near: a big hot flash, and a longer warm glow (the hulls round the blast light up and the ship in it goes into silhouette).
             if (light && _c.Settings.effects.lights)
             {
                 float b = _c.Bright * intensity;
-                _c.Lights.Flash(pos, new Color(1f, 0.66f, 0.34f), 9.0e6f * R * R * b, Mathf.Max(500f, R * 34f), 0.6f + R * 0.008f, 1.25f);
+                // Starts white-hot (a white light draws a hard bright glint on a hull) and goes amber; it has a size, so the highlight on a plate is broad.
+                _c.Lights.Flash(pos, new Color(1f, 0.90f, 0.72f), 9.0e6f * R * R * b, Mathf.Max(500f, R * 34f), 0.6f + R * 0.008f, 1.25f, new Color(1f, 0.58f, 0.28f), Mathf.Min(R * 0.4f, 40f));
             }
         }
     }
