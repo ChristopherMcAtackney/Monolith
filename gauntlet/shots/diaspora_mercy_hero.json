@@ -1,0 +1,60 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "diaspora_cruiser",
+  "pitch": 9,
+  "yaw": 149,
+  "roll": -30
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "hero_three_quarter",
+   "pos": [
+    -397.61,
+    9.422,
+    149.139
+   ],
+   "rot": [
+    0.376,
+    110.108,
+    -29.044
+   ],
+   "fov": 40
+  },
+  {
+   "name": "hero_bow_quarter",
+   "pos": [
+    5.73,
+    -81.718,
+    -406.681
+   ],
+   "rot": [
+    -12.04,
+    3.771,
+    19.938
+   ],
+   "fov": 42
+  },
+  {
+   "name": "far_three_quarter",
+   "pos": [
+    -954.356,
+    9.44,
+    322.514
+   ],
+   "rot": [
+    0.245,
+    108.832,
+    -28.787
+   ],
+   "fov": 26
+  }
+ ],
+ "perf": []
+}

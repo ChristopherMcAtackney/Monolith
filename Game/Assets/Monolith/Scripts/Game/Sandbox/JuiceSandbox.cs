@@ -140,10 +140,10 @@ namespace Monolith.Game
             new Slot { Name = "Reaper 2", Class = "gtf_myrmidon", Kind = "fighter", Team = 1, Pos = new Vector3(-130, 78, 400), Rot = new Vector3(0, 160, 0), Yaw = -0.14f, Speed = 0.3f },
             new Slot { Name = "Reaper 3", Class = "gtf_ulysses", Model = "earth_interceptor", Kind = "fighter", Team = 1, Pos = new Vector3(190, 150, 540), Rot = new Vector3(0, 245, 0), Yaw = 0.12f, Speed = 0.3f },
             new Slot { Name = "Hammer 1", Class = "gtb_artemis", Model = "earth_bomber", Kind = "bomber", Team = 1, Pos = new Vector3(-30, 172, 730), Rot = new Vector3(0, 190, 0), Yaw = 0.09f, Speed = 0.3f },
-            new Slot { Name = "Vanguard 2", Class = "gtf_myrmidon", Kind = "wingman", Team = 0, Pos = new Vector3(-75, 82, -160), Rot = new Vector3(0, 20, 0), Yaw = 0.2f, Speed = 0.3f },
-            new Slot { Name = "Vanguard 3", Class = "gtf_ulysses", Kind = "wingman", Team = 0, Pos = new Vector3(100, 100, -200), Rot = new Vector3(0, -30, 0), Yaw = -0.18f, Speed = 0.3f },
+            new Slot { Name = "Vanguard 2", Class = "gtf_myrmidon", Model = "vanguard_fighter", Kind = "wingman", Team = 0, Pos = new Vector3(-75, 82, -160), Rot = new Vector3(0, 20, 0), Yaw = 0.2f, Speed = 0.3f },
+            new Slot { Name = "Vanguard 3", Class = "gtf_ulysses", Model = "vanguard_fighter", Kind = "wingman", Team = 0, Pos = new Vector3(100, 100, -200), Rot = new Vector3(0, -30, 0), Yaw = -0.18f, Speed = 0.3f },
             new Slot { Name = "Resolute", Class = "juice_corvette", Kind = "cruiser", Team = 1, Pos = new Vector3(170, 70, 700), Rot = new Vector3(0, 98f, 0), Model = "earth_corvette" },
-            new Slot { Name = "Ravager", Class = "juice_corvette", Kind = "destroyer", Team = 0, Pos = new Vector3(-780, 230, 1750), Rot = new Vector3(0, 62f, 0), Model = "earth_corvette" },
+            new Slot { Name = "Ravager", Class = "juice_corvette", Kind = "destroyer", Team = 0, Pos = new Vector3(-780, 230, 1750), Rot = new Vector3(0, 62f, 0), Model = "diaspora_cruiser" },
         };
 
         void SpawnWorld()

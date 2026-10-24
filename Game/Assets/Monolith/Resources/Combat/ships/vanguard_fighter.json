@@ -153,5 +153,17 @@
       "radius": 1.32,
       "hpPercent": 20
     }
-  ]
+  ],
+  "partKinds": {
+    "engine": {
+      "hpPercent": 17.5
+    },
+    "mount": {
+      "hpPercent": 20
+    },
+    "sensors": {
+      "hpPercent": 10
+    }
+  },
+  "partKindsSource": "Parts come from the model (Resources/ShipArt/vanguard_fighter.ship.json) through the visual adapter; the model's relative part weights scale these. hpPercent is a share of the hull per unit weight: the engines and the sensors keep the shares the stand-in parts above had, a needle mount is weight 0.5 (the pair makes the old single mount's share) and the chin cannon weight 1. The player's own ship is never drawn, so it keeps the stand-in parts; a headless lab without a model does too."
 }

@@ -1,0 +1,60 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "vanguard_fighter",
+  "pitch": 9,
+  "yaw": 149,
+  "roll": -30
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "hero_three_quarter",
+   "pos": [
+    -14.926,
+    0.403,
+    3.336
+   ],
+   "rot": [
+    1.708,
+    103.634,
+    -27.853
+   ],
+   "fov": 34
+  },
+  {
+   "name": "hero_front_quarter",
+   "pos": [
+    -2.828,
+    -3.133,
+    -14.273
+   ],
+   "rot": [
+    -12.149,
+    10.533,
+    17.054
+   ],
+   "fov": 34
+  },
+  {
+   "name": "mid_three_quarter",
+   "pos": [
+    -58.585,
+    -0.115,
+    17.43
+   ],
+   "rot": [
+    -0.108,
+    106.569,
+    -28.282
+   ],
+   "fov": 22
+  }
+ ],
+ "perf": []
+}

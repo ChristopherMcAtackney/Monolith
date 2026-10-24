@@ -1,0 +1,88 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Small Mercy",
+   "offset": [
+    -120.0,
+    40.0,
+    220.0
+   ],
+   "look": "ship"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "mercy_bombers_00",
+   "follow": true,
+   "fov": 50,
+   "warmup": 100.0
+  },
+  {
+   "name": "mercy_bombers_01",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_02",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_03",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_04",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_05",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_06",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_07",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_08",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_bombers_09",
+   "follow": true,
+   "fov": 50,
+   "warmup": 8.0
+  }
+ ],
+ "perf": []
+}

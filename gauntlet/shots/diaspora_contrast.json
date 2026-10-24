@@ -1,0 +1,75 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "diaspora_cruiser",
+  "pitch": 9,
+  "yaw": 141,
+  "roll": -33,
+  "ships": [
+   {
+    "ship": "earth_corvette",
+    "pos": [
+     192.249,
+     105.104,
+     17.008
+    ],
+    "rot": [
+     9,
+     141,
+     -33
+    ]
+   }
+  ]
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "contrast_wide",
+   "pos": [
+    -81.187,
+    -166.587,
+    -461.717
+   ],
+   "rot": [
+    -23.429,
+    20.196,
+    9.697
+   ],
+   "fov": 52
+  },
+  {
+   "name": "contrast_pair",
+   "pos": [
+    -493.119,
+    -45.977,
+    157.226
+   ],
+   "rot": [
+    -9.798,
+    102.674,
+    -30.712
+   ],
+   "fov": 46
+  },
+  {
+   "name": "contrast_split",
+   "pos": [
+    -59.55,
+    77.652,
+    -259.469
+   ],
+   "rot": [
+    5.451,
+    29.406,
+    5.803
+   ],
+   "fov": 56
+  }
+ ],
+ "perf": []
+}

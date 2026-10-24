@@ -1,0 +1,411 @@
+{
+ "format": "monolith-ship-materials/1",
+ "about": "HDRP material recipes for the diaspora's hull set. baseColor and emissiveColor are sRGB display values; emissiveNits scales the emissive map. ShipArtSetup makes the assets.",
+ "materials": [
+  {
+   "blender": "mn_dia_plate",
+   "name": "MN_DiaPlate",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_plate_albedo",
+   "normalMap": "dia_plate_normal",
+   "maskMap": "dia_plate_mask",
+   "normalScale": 0.6,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.72
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "dia_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_trim",
+   "name": "MN_DiaTrim",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_trim_albedo",
+   "normalMap": "dia_trim_normal",
+   "maskMap": "dia_trim_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    1
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "dia_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.5,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.5,
+   "specularAA": true,
+   "emissiveMap": "dia_trim_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 36000
+  },
+  {
+   "blender": "mn_dia_lights",
+   "name": "MN_DiaLights",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.6,
+   "emissiveMap": "dia_lights_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 120000
+  },
+  {
+   "blender": "mn_dia_engine",
+   "name": "MN_DiaEngine",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.4,
+   "emissiveMap": "dia_engine_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 130000
+  },
+  {
+   "blender": "mn_dia_chrome",
+   "name": "MN_DiaMetal",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_chrome_albedo",
+   "normalMap": "dia_chrome_normal",
+   "maskMap": "dia_chrome_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.8
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_plume",
+   "name": "MN_DiaPlume",
+   "shader": "HDRP/Unlit",
+   "surface": "additive",
+   "emissiveMap": "dia_plume_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 44000,
+   "noShadows": true
+  },
+  {
+   "blender": "mn_dia_plate_b",
+   "name": "MN_DiaPlateRust",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_plate_deep_albedo",
+   "normalMap": "dia_plate_normal",
+   "maskMap": "dia_plate_mask",
+   "normalScale": 0.6,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.62
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "dia_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_plate_c",
+   "name": "MN_DiaPlateOlive",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_plate_mid_albedo",
+   "normalMap": "dia_plate_normal",
+   "maskMap": "dia_plate_mask",
+   "normalScale": 0.6,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.68
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "dia_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_plate_d",
+   "name": "MN_DiaPlateSteel",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_plate_light_albedo",
+   "normalMap": "dia_plate_light_normal",
+   "maskMap": "dia_plate_light_mask",
+   "normalScale": 0.8,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.78
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "dia_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_plate_e",
+   "name": "MN_DiaPlateTeal",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_plate_pale_albedo",
+   "normalMap": "dia_plate_normal",
+   "maskMap": "dia_plate_mask",
+   "normalScale": 0.6,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.7
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "dia_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_paint",
+   "name": "MN_DiaPaint",
+   "shader": "HDRP/Lit",
+   "surface": "alpha",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_paint_albedo",
+   "metallic": 0.0,
+   "smoothness": 0.34
+  },
+  {
+   "blender": "mn_dia_wear",
+   "name": "MN_DiaWear",
+   "shader": "HDRP/Lit",
+   "surface": "alpha",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_wear_albedo",
+   "metallic": 0.0,
+   "smoothness": 0.3
+  },
+  {
+   "blender": "mn_dia_bio",
+   "name": "MN_DiaBio",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_bio_albedo",
+   "normalMap": "dia_bio_normal",
+   "maskMap": "dia_bio_mask",
+   "normalScale": 1.4,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.82
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "specularAA": true
+  },
+  {
+   "blender": "mn_dia_glyph",
+   "name": "MN_DiaGlyph",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "dia_glyph_albedo",
+   "normalMap": "dia_glyph_normal",
+   "maskMap": "dia_glyph_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.8
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "emissiveMap": "dia_glyph_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 22000
+  },
+  {
+   "blender": "mn_dia_glass",
+   "name": "MN_DiaGlass",
+   "baseColor": [
+    0.27,
+    0.4,
+    0.45
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.84,
+   "emissiveColor": [
+    0.25,
+    0.85,
+    0.75
+   ],
+   "emissiveNits": 140
+  }
+ ],
+ "decal": {
+  "name": "MN_DiaDamageDecal",
+  "baseMap": "dia_damage_albedo",
+  "normalMap": "dia_damage_normal",
+  "maskMap": "dia_damage_mask",
+  "emissiveMap": "dia_damage_emissive",
+  "emissiveNits": 14000,
+  "affectEmission": true
+ }
+}
