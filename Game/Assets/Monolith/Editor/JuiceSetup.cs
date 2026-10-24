@@ -180,4 +180,34 @@ namespace Monolith.EditorTools
             }
         }
     }
+
+    /// <summary>
+    /// How the explosion flipbook atlases (<c>Resources/Juice/Flip/*.png</c>, made by <c>art_src/juice_fx/build_flip.py</c>) import: data, not colour (linear, no mipmaps
+    /// that would bleed one frame into the next), clamped, compressed with the high-quality format (BC7: the four channels hold independent data), one size for all so
+    /// they can share one texture array.
+    /// </summary>
+    sealed class JuiceFlipImporter : AssetPostprocessor
+    {
+        void OnPreprocessTexture()
+        {
+            if (!assetPath.Replace((char)92, (char)47).Contains("/Resources/Juice/Flip/")) return;
+            var ti = (TextureImporter)assetImporter;
+            ti.textureType = TextureImporterType.Default;
+            ti.sRGBTexture = false;
+            ti.mipmapEnabled = false;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.filterMode = FilterMode.Bilinear;
+            ti.isReadable = false;
+            ti.alphaSource = TextureImporterAlphaSource.FromInput;
+            ti.alphaIsTransparency = false;
+            ti.npotScale = TextureImporterNPOTScale.None;
+            ti.maxTextureSize = 4096;
+            ti.textureCompression = TextureImporterCompression.CompressedHQ;
+            ti.crunchedCompression = false;
+            var ps = ti.GetDefaultPlatformTextureSettings();
+            ps.maxTextureSize = 4096;
+            ps.textureCompression = TextureImporterCompression.CompressedHQ;
+            ti.SetPlatformTextureSettings(ps);
+        }
+    }
 }

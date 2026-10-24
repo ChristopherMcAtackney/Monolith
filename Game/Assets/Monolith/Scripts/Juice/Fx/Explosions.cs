@@ -566,6 +566,41 @@ namespace Monolith.Juice
                 MnLog.Info($"JUICE capital death: hull breaks into {_sections.Count} sections at t={_t:0.0}s{(baked ? " (baked cuts of the model's hull)" : "")} ({sw.Elapsed.TotalMilliseconds:0.0} ms in all, {Debris.LastSliceMs:0.0} ms cutting {Debris.LastSliceTris} triangles)");
             }
 
+            /// <summary>
+            /// The final blast made of many simulated explosions: one big hot opening at the hull's middle, then the whole volume the hull filled lighting up in a chain
+            /// from one end to the other (a dozen more, each its own variant, turned and flipped, at its own time and place), then smoke that outlasts them; with ejecta
+            /// and a shock front thrown outward through all of it.
+            /// </summary>
+            void FinalFlips(Vector3 centre, float R, Vector3 ext)
+            {
+                float dur = Mathf.Clamp(3.0f + R * 0.005f, 3.2f, 5.0f);
+                var big = FlipLibrary.Find("fire_b") ?? FlipLibrary.Pick("fire", _c.Rng);
+                _fx.Flipbook(big, centre, _vel, R * 1.9f, dur, 1.25f, 3.2f, 1.0f, 0f, 0.25f);
+                _fx.Flipbook(FlipLibrary.Find("fire_d") ?? FlipLibrary.Pick("fire", _c.Rng), centre + _rot * new Vector3(0f, 0f, ext.z * 0.18f * (_c.Rng.Chance(0.5f) ? 1f : -1f)), _vel, R * 1.5f, dur * 0.9f, 1.2f, 2.9f, 1.0f, 0.10f, 0.25f);
+                int n = Mathf.Min(_c.N(15), 18);
+                float dir = _c.Rng.Chance(0.5f) ? -1f : 1f;
+                for (int i = 0; i < n; i++)
+                {
+                    float along = dir * Mathf.Lerp(-1f, 1f, (i + 0.5f) / n) * 0.95f;
+                    Vector3 local = new Vector3(_c.Rng.Range(-1f, 1f) * ext.x * 1.1f, _c.Rng.Range(-1f, 1f) * ext.y * 1.1f, along * ext.z);
+                    Vector3 off = _rot * local;
+                    float rr = R * _c.Rng.Range(0.55f, 0.95f);
+                    float delay = (float)i / n * 0.75f + _c.Rng.Range(0f, 0.10f);
+                    _fx.Flipbook(FlipLibrary.Pick("fire", _c.Rng), centre + off, _vel + off.normalized * R * 0.10f, rr, dur * _c.Rng.Range(0.65f, 1.0f),
+                                 _c.Rng.Range(1.0f, 1.25f), _c.Rng.Range(2.6f, 3.3f), _c.Rng.Range(0.8f, 1.3f), delay, 0.3f);
+                    if (i % 3 == 0)
+                    {
+                        float at = delay; Vector3 lp = centre + off; float lr = rr;
+                        _owner.Later(at, () => _c.Lights.Flash(lp, new Color(1f, 0.80f, 0.55f), 1.2e6f * lr * lr * _c.Bright, 2400f, 0.9f, 1.4f, new Color(1f, 0.5f, 0.22f), lr * 0.3f));
+                    }
+                }
+                for (int i = 0; i < 3; i++)
+                    _fx.Flipbook(FlipLibrary.Pick("smoke", _c.Rng), centre + _c.Rng.OnSphere() * R * 0.35f, _vel, R * _c.Rng.Range(0.7f, 1.0f), dur * 1.6f, 0.7f, 1.3f, 1.3f, _c.Rng.Range(0.7f, 1.4f), 0.2f);
+                // Matter torn outward: streaks in jets and a shock front.
+                _fx.Ejecta(centre, _vel, _c.N(44), 160f, 100f + R * 3.4f, 1.2f, 2.6f, 1.4f, 0.8f);
+                _fx.ShockFront(centre, R, 1.5f, 1f);
+            }
+
             void Final()
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -581,15 +616,19 @@ namespace Monolith.Juice
                 // the space the hull filled; far fewer, far bigger balls than before, so it reads as one mass and not a pile of bursts.
                 _fx.Flash(centre, R * 0.9f, Emitters.WarmWhite * 50f, 0.16f, 0.8f, 2.2f, 1.2f, _vel);
                 _fx.Flare(centre, R * 5f, R * 0.30f, Vector3.Lerp(Emitters.WarmWhite, white, 0.5f) * 6f, 0.25f, 2.2f);
-                _fx.Fireball(centre, _vel, R * 0.6f, R * 1.45f, _c.Rng.Range(2.3f, 2.8f), 1.8f, 5.8f, 0f, 0.6f, 0.2f);
-                int balls = Mathf.Min(_c.N(11), 14);
-                for (int i = 0; i < balls; i++)
+                if (FlipLibrary.Available) FinalFlips(centre, R, ext);
+                else
                 {
-                    Vector3 off = _rot * new Vector3(_c.Rng.Range(-1f, 1f) * ext.x * 1.3f, _c.Rng.Range(-1f, 1f) * ext.y * 1.3f, _c.Rng.Range(-1f, 1f) * ext.z * 0.95f);
-                    off += _c.Rng.OnSphere() * R * 0.15f;
-                    float rr = R * _c.Rng.Range(0.55f, 0.95f);
-                    _fx.Fireball(centre + off, _vel + off.normalized * R * _c.Rng.Range(0.15f, 0.55f), rr * 0.75f, rr * _c.Rng.Range(1.3f, 1.8f),
-                                 _c.Rng.Range(1.8f, 2.7f), _c.Rng.Range(1.5f, 2.0f), _c.Rng.Range(4.8f, 6.2f), 0f, 0.7f, 0.3f);
+                    _fx.Fireball(centre, _vel, R * 0.6f, R * 1.45f, _c.Rng.Range(2.3f, 2.8f), 1.8f, 5.8f, 0f, 0.6f, 0.2f);
+                    int balls = Mathf.Min(_c.N(11), 14);
+                    for (int i = 0; i < balls; i++)
+                    {
+                        Vector3 off = _rot * new Vector3(_c.Rng.Range(-1f, 1f) * ext.x * 1.3f, _c.Rng.Range(-1f, 1f) * ext.y * 1.3f, _c.Rng.Range(-1f, 1f) * ext.z * 0.95f);
+                        off += _c.Rng.OnSphere() * R * 0.15f;
+                        float rr = R * _c.Rng.Range(0.55f, 0.95f);
+                        _fx.Fireball(centre + off, _vel + off.normalized * R * _c.Rng.Range(0.15f, 0.55f), rr * 0.75f, rr * _c.Rng.Range(1.3f, 1.8f),
+                                     _c.Rng.Range(1.8f, 2.7f), _c.Rng.Range(1.5f, 2.0f), _c.Rng.Range(4.8f, 6.2f), 0f, 0.7f, 0.3f);
+                    }
                 }
                 // Few sparks, each different; the fine dots of FS2's blasts stay (hundreds, not nine hundred).
                 _fx.SparkBurst(centre, _vel, _c.N(60), 80f, 60f + R * 3.6f, 1.0f, 3.0f, 0.3f, SparkStyle.Hot, 0.4f, 1.2f);

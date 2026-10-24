@@ -100,6 +100,7 @@ namespace Monolith.Juice
                     _n--;
                     continue;
                 }
+                if (p.Age < 0f) { i++; continue; }          // not yet: a delayed particle waits where it was put
                 p.Vel += p.Accel * dt;
                 if (p.Drag > 0f) p.Vel *= Mathf.Exp(-p.Drag * dt);
                 p.Pos += p.Vel * dt;
@@ -117,7 +118,8 @@ namespace Monolith.Juice
             for (int i = 0; i < _n; i++)
             {
                 ref var p = ref _p[i];
-                if (p.Kind == FxKind.Fire)
+                if (p.Age < 0f) continue;
+                if (p.Kind == FxKind.Fire || p.Kind == FxKind.Flip)
                 {
                     if (fires >= _fireIdx.Length) { System.Array.Resize(ref _fireIdx, fires * 2); System.Array.Resize(ref _fireKey, fires * 2); }
                     _fireIdx[fires] = i; _fireKey[fires] = -(p.Pos - camera).sqrMagnitude; fires++;
@@ -149,7 +151,18 @@ namespace Monolith.Juice
             float w = Mathf.Lerp(p.W0, p.W1, sn);
             float h = p.H0 > 0f || p.H1 > 0f ? Mathf.Lerp(p.H0, p.H1, sn) : 0f;
             float p1 = Mathf.Lerp(p.P1a, p.P1b, n), p2 = p.P2Decay > 0f ? p.P2a * Mathf.Exp(-p.Age * p.P2Decay) : Mathf.Lerp(p.P2a, p.P2b, n);
-            var batch = p.Alpha || p.Kind == FxKind.Fire ? alpha : add;
+            var batch = p.Alpha || p.Kind == FxKind.Fire || p.Kind == FxKind.Flip ? alpha : add;
+            if (p.Kind == FxKind.Flip)
+            {
+                // A simulated flipbook: the frame comes from the simulation's own clock; opacity fades out at the end of its life.
+                var v = FlipLibrary.All[(int)p.Palette];
+                float frame = FlipLibrary.FrameAt(v, n);
+                float fade = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.78f, 1f, n));
+                float heat = Mathf.Lerp(p.P1a, p.P1b, n);
+                batch.Quad(p.Pos, new Vector4(c.x, c.y, c.z, 0f), FxKind.Flip, p.Seed, new Vector4(0f, 0f, 0f, p.Angle), w, n, frame, p.Palette,
+                           p.Soft, p.NearStart, p.NearRange, 0f, new Vector4(p.P2a, heat, p.Spin, fade));
+                return;
+            }
 
             if (p.Kind == FxKind.Streak || p.Kind == FxKind.Beam)
             {

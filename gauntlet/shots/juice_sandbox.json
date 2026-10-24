@@ -244,9 +244,9 @@
     "t": 47.5,
     "do": "place",
     "pos": [
-     -330,
-     160,
-     1330
+     -520,
+     230,
+     1750
     ],
     "lookAt": [
      170,
@@ -349,12 +349,12 @@
   {
    "name": "capital_death_final",
    "follow": true,
-   "warmup": 1.9501
+   "warmup": 2.0501
   },
   {
    "name": "capital_death_cooling",
    "follow": true,
-   "warmup": 0.6001
+   "warmup": 2.1501
   }
  ]
 }

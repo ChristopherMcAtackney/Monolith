@@ -119,6 +119,8 @@ namespace Monolith.Juice
             Sub(CombatEvents.BeamAim, e => _beams.OnAim(e));
             Sub(CombatEvents.BeamEnd, e => _beams.OnEnd(e));
             _debris.WarmUp();
+            FlipLibrary.Load();                                  // the simulated explosions: loaded now, not at the first blast
+            MnLog.Info("JUICE " + FlipLibrary.Report);
             _built = true;
             MnLog.Info($"JUICE on: preset {settings.preset}, settings from {settings.Source}, audio {c.Audio.GetType().Name}, rumble: {RumbleOut.Describe()}");
         }
@@ -223,6 +225,7 @@ namespace Monolith.Juice
             c.Dt = dt;
             c.Time += dt;
             _frame.Time = c.Time;
+            UpdateSun();
 
             _frame.Add.Begin();
             _frame.Alpha.Begin();
@@ -244,6 +247,34 @@ namespace Monolith.Juice
             _frame.Add.Upload();
             _frame.Alpha.Upload();
             _frame.Enabled = true;
+        }
+
+        Light _sun;
+        int _sunSearch;
+
+        /// <summary>The Sun for the lit smoke of the simulated explosions: the scene's brightest directional light, found now and then.</summary>
+        void UpdateSun()
+        {
+            if (_sun == null && _sunSearch-- <= 0)
+            {
+                _sunSearch = 120;
+                float best = 0f;
+                foreach (var l in FindObjectsOfType<Light>())
+                {
+                    if (l.type != LightType.Directional || !l.enabled) continue;
+                    float k = l.intensity;
+                    if (k > best) { best = k; _sun = l; }
+                }
+            }
+            if (_sun == null) { _frame.SunDir = new Vector4(0f, 1f, 0f, 0f); return; }
+            Vector3 toSun = -_sun.transform.forward;
+            var hd = _sun.GetComponent<UnityEngine.Rendering.HighDefinition.HDAdditionalLightData>();
+            float lux = hd != null ? hd.intensity : _sun.intensity;
+            if (lux < 100f) lux = 100000f;
+            float units = lux / Mathf.PI / _frame.NitsPerUnit;                       // radiance of a white diffuse surface facing the Sun, in display units
+            Color col = _sun.color;
+            _frame.SunDir = new Vector4(toSun.x, toSun.y, toSun.z, 1f);
+            _frame.SunCol = new Vector4(col.r * units, col.g * units, col.b * units, 0f);
         }
 
         /// <summary>Clear every effect in flight (a scene reset).</summary>

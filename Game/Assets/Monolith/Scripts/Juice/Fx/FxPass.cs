@@ -29,6 +29,10 @@ namespace Monolith.Juice
         public float MinStreakPx = 2.0f;
         public Vector3 EdgeColour;
         public Vector4 EdgeParams = new Vector4(0.55f, 1.0f, 0.5f, 0f);
+        /// <summary>The Sun for lit smoke: direction toward it (w = 1 when there is one), the radiance of a white surface facing it, and the sky's fill, all in display units.</summary>
+        public Vector4 SunDir = new Vector4(0f, 1f, 0f, 0f);
+        public Vector4 SunCol = new Vector4(1.6f, 1.55f, 1.4f, 0f);
+        public Vector4 Fill = new Vector4(0.065f, 0.07f, 0.085f, 0f);
         public bool Enabled = true;
     }
 
@@ -53,7 +57,8 @@ namespace Monolith.Juice
             IdRadii = Shader.PropertyToID("_ShieldRadii"), IdShieldColour = Shader.PropertyToID("_ShieldColor"),
             IdShieldParams = Shader.PropertyToID("_ShieldParams"), IdShieldHit = Shader.PropertyToID("_ShieldHit"),
             IdEdgeColour = Shader.PropertyToID("_MN_EdgeColor"), IdEdgeParams = Shader.PropertyToID("_MN_EdgeParams"),
-            IdNoise = Shader.PropertyToID("_MN_Noise3D");
+            IdNoise = Shader.PropertyToID("_MN_Noise3D"), IdFlip = Shader.PropertyToID("_MN_Flip"), IdSunDir = Shader.PropertyToID("_MN_SunDir"),
+            IdSunCol = Shader.PropertyToID("_MN_SunCol"), IdFill = Shader.PropertyToID("_MN_Fill");
 
         protected override bool executeInSceneView => false;
 
@@ -85,6 +90,11 @@ namespace Monolith.Juice
             p.SetVector(IdEye, eye);
             p.SetVector(IdScreen, new Vector4(w, h, 1f / w, 1f / h));
             p.SetTexture(IdNoise, FxNoise.Get());
+            var flipArray = FlipLibrary.Array;
+            p.SetTexture(IdFlip, flipArray != null ? (Texture)flipArray : Texture2D.blackTexture);
+            p.SetVector(IdSunDir, Frame.SunDir);
+            p.SetVector(IdSunCol, Frame.SunCol);
+            p.SetVector(IdFill, Frame.Fill);
             p.SetVector(IdParams, new Vector4(Frame.NitsPerUnit, focal, Frame.MinStreakPx * Mathf.Max(1f, h / 1080f), Frame.Time));
 
             CoreUtils.SetRenderTarget(ctx.cmd, ctx.cameraColorBuffer, ctx.cameraDepthBuffer, ClearFlag.None);

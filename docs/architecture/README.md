@@ -58,7 +58,7 @@ graphics after post-processing, so captures show it. Both View and Hud draw thro
 
 **Juice** (`Monolith.Juice`) turns combat events into light, fire, sparks, debris, camera shake, pad rumble and sound, and
 knows nothing about who raised them. One HDRP custom pass draws every glow, bolt, beam, spark, fireball and shield ripple in
-the HDR buffer before post-processing (`Resources/Juice/MN_Fx.shader`); fireballs are raymarched turbulent volumes (a 64 cubed tiling noise made in code) that light nearby hulls with real lights; hull visuals registered with
+the HDR buffer before post-processing (`Resources/Juice/MN_Fx.shader`); explosions are a library of simulated fire and smoke (Blender Mantaflow, rendered with Cycles into flipbook atlases by `art_src/juice_fx`, played as sprite sequences, several per blast, with the smoke lit by the Sun and fill; raymarched turbulent volumes from a 64 cubed noise are the fallback) that light nearby hulls with real lights; hull visuals registered with
 `JuiceDirector.RegisterShip` are cut into lit pieces when they die, or, for a ship model that has real parts, handed to it through
 `IJuiceShipDamage` (the Game assembly adapts `ShipDamage` to it: hits scorch the plating, beams blow parts off, a capital ship loses its
 parts one by one and then breaks along cuts baked by `JuiceSetup.BakeSections`); a capital ship dies in stages and its shockwave shoves ships

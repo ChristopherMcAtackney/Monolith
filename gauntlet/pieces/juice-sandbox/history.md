@@ -457,3 +457,67 @@ One more noise tap per march step (the lobe) costs nothing measurable.
 - The giveaway is the same in all four: the fireball reads as **one round, evenly lit volume with a swirl texture painted across it**, a billboard or sphere. There are no ejecta streaming outward, no hull chunks tearing through, no shock front, no light thrown onto nearby ships, and no motion-blurred, compositing-style streaks. The orange-dot fix worked; nobody mentions an even field of dots any more.
 - **Lead's read:** five rounds of tuning one raymarched noise sphere have hit its ceiling. Round 2's capital death won meatiness 3/3 because it was many blasts spread through the hull's space with sparks streaking out. Rounds 4 and 5 consolidated it into one ball and lost the meat check twice.
 - **Round 6, change of technique:** explosions made the way photoreal games make them. Real fluid simulations in Blender 5.2 (Mantaflow fire and smoke, scripted and headless), rendered with Cycles into flipbook atlases with the lighting data needed to light them in-engine, then played in Unity as sequences, several per blast, at several scales. The capital death goes back to a staged, multi-blast composition through the hull's volume, with ejecta streaks and chunks tearing outward, plus a shock front. Keep round 5's shader fixes (coverage-correct sparks, ball-facing quads), its two-phase life and the cold-debris mix. Beams and bolts are untouched.
+
+## Round 6 (builder, 2026-10-25): simulated explosions
+
+The brief: five rounds of tuning one raymarched noise sphere hit its ceiling ("one round, evenly lit volume with a swirl painted across it, nothing tearing outward"). Change the
+technique: simulate real fire and smoke in Blender (Mantaflow), render with Cycles into flipbook atlases with lighting data, play them in Unity as sequences, several per blast,
+and bring back round 2's capital death (many blasts through the hull's volume, ejecta streaking out). Beams and bolts untouched.
+
+### The library (`art_src/juice_fx/build_flip.py`, outputs in `Resources/Juice/Flip/`)
+- **Simulation**: Blender 5.2 Mantaflow gas (fire and smoke, no gravity, vorticity, burning rate, flame smoke), headless through `tools\blender.ps1`. The source is a cluster of 9 to 15 lumpy spheres (jets for the tall variant)
+  that swell and inject fuel and gas for about eight frames and then stop, with a turbulence field through the domain, so the burst is many billows pushing into each other instead of one ball.
+  Grid 192 cubed, no noise upres (noise bake made the volume unreadable by the renderer in this build; the fine detail is added in the shader instead).
+- **Render**: Cycles on the RTX 4070 Ti (OptiX, 64 samples), an emission-only volume material that writes the line integrals of `flame`, `density` and `heat` (no extinction: pure integrals), orthographic, 512 px frames,
+  36 frames per variant with times denser early (`u^1.7`: a blast opens in the first tenth of a second). The integrals are floor-corrected, normalised, and lightly blurred (about a pixel) so a magnified frame is smooth gas, not film grain.
+- **Atlas** (6 x 6 frames, 3072 px, one RGBA8 PNG per variant): **R** the burning gas (sqrt-encoded), **G** the smoke, **B and A** the slope of the smoke's surface (a screen-space normal from the smoothed smoke + fire), plus a json with the frame
+  times, the playable span, scales and the radius that holds 90 per cent of the mass. Motion vectors: not made (frames are blended in time; the simulation advances 1/24 s a frame early on and the blend is invisible at 36 frames).
+- **Variants**: `fire_a` round burst (0.96 s of simulation), `fire_b` broad and slow (0.62 s), `fire_c` a tall jet (0.71 s, thrown out along one axis), `fire_d` a big slow billow (0.71 s), `smoke_a` the cooling variant (1.21 s: a burst
+  that burns out into grey smoke; played from the frame where the fire has gone, 0.39 s). Each is cut where its smoke reaches the edge of the simulation box.
+- **Size**: 13 MB of PNG on disk (1.9, 2.4, 2.7, 3.0, 3.2 MB; none near the 50 MB limit), **45 MB of video memory** in all (BC7, one `Texture2DArray` of 5 x 3072 x 3072, no mipmaps). Each variant took 8 to 12 minutes to make at grid 192.
+
+### In the game
+- `FlipLibrary` (`Fx/Flipbooks.cs`) loads the atlases into one texture array at start (the director logs `JUICE 5 flipbooks, 3072x3072 BC7 each, 45.0 MB of video memory in all`); everything falls back to the raymarched fireballs if there are none.
+- **Shader kind 8** (`ShadeFlip` in `MN_Fx.shader`): the sprite faces the ball (round 5's fix), is turned and flipped at random (no two alike), blends two frames, adds churn from the 3D noise on top (so a big sprite is not smooth), fades at its edge and in and out.
+  The fire channel goes through the same temperature ramp as before (white core, yellow, orange, red) and greys and dims as it ages (the two-phase life: hot and dense first, murky as it cools). **The smoke is lit**: from its slope normal by the
+  Sun (read from the scene's directional light), the sky's fill and the fire's own orange glow. Depth-softened against hulls.
+- **Blasts are several simulations**: `Emitters.BlastFlips`: a main one, lobes of other variants thrown out round it at other times (the count grows with size), and a smoke that outlasts them for large ones. Small bursts (flak, hull hits,
+  debris trails and burns) use `Emitters.Puff`, one small flipbook. Fighter 52 m, bomber 96 m, parts 16 to 80 m as before.
+- **Capital death** (`CapitalDeath.FinalFlips`): internal blasts and the break-up are as in round 5 (parts blowing off one by one with their own flipbook blasts; the hull splitting along its baked cuts), then the final blast is a main simulation
+  1.9 radii wide at the hull's middle, a second big one offset along the hull, then **15 more, each a different variant, placed through the whole volume the hull filled and ignited in a chain from one end to the other over three quarters of a second**,
+  each with a spill light, three smokes that arrive late, 44 ejecta streaks (long hot streaks with white-hot heads, in jets and a thin scatter, thrown at up to about 850 m/s: `Emitters.Ejecta`), a faint shock front (`ShockFront`), 100 shards, the parts
+  and sections still on the ship flung through it, and the long ember light. Round 5's coverage-correct sparks, the cold debris and the spill tuning are kept.
+- A short fade-in on every sprite (no pop when one appears late), `Particle.Age < 0` as a delay (a sprite waits where it was put), a light with a size and a white-to-amber colour ramp.
+
+### Captures (`gauntlet/captures/juice-sandbox/r6/`, fresh build, no HUD)
+- The same 18 stills as r5 (`capital_death_cooling` is now from farther back at 2.1 s after the blast: the smoke has taken over); `capital_death.mp4`, `capital_death_strip.png` (the whole staged death), `shake.mp4`, `library/` (previews of each variant as simulated),
+  `perf/`, `perf_dogfight/`, `checks/`.
+- **Best three**: `stills/capital_death_final.png` (the opening: a hull inside a mass of billowing simulated fire, lobes along its length, ejecta streaking out), `stills/capital_death_cooling.png` (the same blast cooling: smoke turning grey with the
+  wreckage silhouetted and lit orange on its blast-facing side), `stills/blast_near_hull.png` (a simulated blast beside the corvette, the near hull lit by it).
+- **Library sheet**: `tools\juice\flip_sheet.py` makes a sheet of what is in the atlases (the preview folder has it).
+
+### Performance
+**Caveat: the numbers below were measured while the machine's desktop session was disconnected** (`quser` showed the builder's session as Disc with another user on the console): the player did not present frames, the frame-timing GPU figure read 0.03 ms
+(it read 1.7 ms in round 5) and the panel screenshots and the panel-drive check, which read the screen, came back blank (the r5 playtest build does the same now). The frame-rate figures are therefore **optimistic** and not comparable to rounds 1 to 5.
+- Capital death run (18 s, ambient battle): 1034 fps average, 1% low 187, worst frame 12.2 ms. Busiest dogfight (`ai_r1_perf_busy`, 30 s, the AI builder's plan): 360 fps average, 1% low 193, worst frame 15.0 ms (their baseline from before these
+  effects: 274 average, 171 1% low, 10.7 ms worst, measured with a live display).
+- **Estimate of the real cost** (to be checked with a live display): a simulated sprite costs four texture reads and two 3D-noise reads per pixel; round 5's raymarched ball cost 16 steps of one to three 3D reads per pixel, so a flipbook is
+  about a quarter to a third of its cost per pixel, with a similar overdraw (the biggest blasts cover under half the frame, a dozen to twenty sprites at the death's peak). The worst frame in both runs is the break-up and final-blast frame (cutting
+  and spawning, 5 and 3 ms). I expect well over 60 fps with headroom; I have not been able to prove the figure.
+
+### Honest read against the reference frames
+- The fire now has real billowing structure (the simulation's), shaded lobes, dark gaps between billows, and a core that is simulated rather than painted; the capital death is a staged, multi-source composition with ejecta and wreckage, which is what won
+  meatiness in round 2 and what the realism critic found missing in rounds 4 and 5. Not checked by a blind critic.
+- The sprites are still billboards: a hull passing through a blast is hidden or shown by depth, not by the gas wrapping it; close to the lens a sprite shows its flatness.
+- The fire's palette is still the fire ramp (white-yellow-orange-red); the Expanse's blasts are blue-white and grey-pink, which this does not produce (the plasma variant of the old fireball is not used with flipbooks).
+- The simulation frames are 36 per variant; a sprite slowed to a few seconds (the capital's) shows the blend between frames as a soft morph.
+- fire_b's end was cut by hand (its smoke clipped the simulation's box as a triangle), so it is the shortest variant. The grain left by 64 Cycles samples is hidden by the blur and the detail noise, not removed.
+- The smoke variant's grey is lit by the Sun but has no shadow cast onto it by the wreckage; the corvette's sections do not shade it.
+
+### Gotchas found
+- Mantaflow's noise upres bake produced a cache the renderer read as constant (`.vdb` noise files of 1.4 KB): the library is made without it. `bake_data` alone gives clean volumes.
+- A Cycles volume integral has a constant floor (about 0.0495) inside the domain whatever the density: it is subtracted per frame, or every frame is a grey square.
+- `numpy` is only in Blender's Python here; the repository's `python` has PIL only, so the contact-sheet tool uses PIL.
+- A texture array built at start reads `Texture.width` of a texture that was unloaded by `Resources.UnloadAsset` as a null reference: read the size first.
+- Another builder's tracked file (`Fx/Jumps.cs`, mission system) now lives in the Juice folder and needs types from Core; a worktree that is behind `main` does not compile with the copy of my folder: rebase the worktree first.
+- A disconnected desktop session (the machine's other user logged in) blanks screen-reading checks and makes frame timing meaningless; check `quser` before trusting a perf run.

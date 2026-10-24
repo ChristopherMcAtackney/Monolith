@@ -7,7 +7,7 @@ namespace Monolith.Juice
     /// <summary>The quad kinds of Resources/Juice/MN_Fx.shader.</summary>
     public enum FxKind
     {
-        Glow = 0, Fire = 1, Streak = 2, Ring = 3, Flare = 4, Scorch = 5, Beam = 7,
+        Glow = 0, Fire = 1, Streak = 2, Ring = 3, Flare = 4, Scorch = 5, Beam = 7, Flip = 8,
     }
 
     /// <summary>One vertex of an effect quad (see the layout notes at the top of MN_Fx.shader).</summary>

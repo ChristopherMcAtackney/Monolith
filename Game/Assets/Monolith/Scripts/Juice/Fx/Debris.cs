@@ -530,7 +530,8 @@ namespace Monolith.Juice
                     {
                         p.Carry -= 1f;
                         Vector3 at = p.T.TransformPoint(p.LocalCentre) + _c.Rng.OnSphere() * p.Radius * 0.6f;
-                        _fx.Fireball(at, p.Vel * 0.95f + _c.Rng.OnSphere() * 6f, p.Radius * 0.06f + 1.2f, p.Radius * 0.14f + 3f, _c.Rng.Range(0.4f, 0.8f), 1.1f, 4.0f, 0f, 1.2f, 0.9f);
+                        if (FlipLibrary.Available && p.Radius > 12f) _fx.Flipbook(FlipLibrary.Pick(_c.Rng.Chance(0.6f) ? "fire" : "smoke", _c.Rng), at, p.Vel * 0.95f + _c.Rng.OnSphere() * 6f, p.Radius * 0.12f + 3f, _c.Rng.Range(0.7f, 1.2f), 1.0f, 2.4f, 0.9f);
+                        else _fx.Puff(at, p.Vel * 0.95f + _c.Rng.OnSphere() * 6f, p.Radius * 0.06f + 1.2f, p.Radius * 0.14f + 3f, _c.Rng.Range(0.4f, 0.8f), 1.1f, 4.0f, 0f, 1.2f, 0.9f);
                         if (_c.Rng.Chance(0.5f)) _fx.Sparks(at, p.Vel, Vector3.up, 360f, 1, 12f, 55f, 0.4f, 0.9f, 0.13f, SparkStyle.Hot, 0.4f);
                     }
                 }
@@ -543,7 +544,7 @@ namespace Monolith.Juice
                     {
                         p.Carry -= 1f;
                         Vector3 at = p.T.TransformPoint(p.Burn[_c.Rng.Int(0, p.Burn.Count)]) + _c.Rng.OnSphere() * p.BurnSize * 0.35f;
-                        _fx.Fireball(at, p.Vel + _c.Rng.OnSphere() * 5f, p.BurnSize * 0.5f, p.BurnSize * 1.2f, _c.Rng.Range(0.5f, 0.9f), 1.3f * (0.55f + 0.45f * k), 4.5f, 0f, 1.2f, 0.8f);
+                        _fx.Puff(at, p.Vel + _c.Rng.OnSphere() * 5f, p.BurnSize * 0.5f, p.BurnSize * 1.2f, _c.Rng.Range(0.5f, 0.9f), 1.3f * (0.55f + 0.45f * k), 4.5f, 0f, 1.2f, 0.8f);
                         if (_c.Rng.Chance(0.4f)) _fx.Sparks(at, p.Vel, Vector3.up, 360f, 2, 15f, 70f, 0.4f, 1.0f, 0.15f, SparkStyle.Hot, 0.4f);
                     }
                 }

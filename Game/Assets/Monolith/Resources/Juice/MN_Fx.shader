@@ -18,7 +18,8 @@
 //   TEXCOORD2  half width m (a fireball: its radius), age 0..1, p1, p2
 //   TEXCOORD3  soft distance m (0 = off), near fade start m, near fade range m, palette (0 fire, 1 plasma, 0..1 mix, above 1 cool gas)
 //   TEXCOORD4  streaks: x = blur 0..1 (0 = hard saturated, 1 = soft smear).  beams: total length m, this quad's start and end fractions, core fraction
-// Kinds: 0 glow, 1 fireball (volume), 2 streak (bolt, spark, missile), 3 ring, 4 flare, 5 scorch, 7 beam.
+// Kinds: 0 glow, 1 fireball (volume), 2 streak (bolt, spark, missile), 3 ring, 4 flare, 5 scorch, 7 beam, 8 flipbook (a simulated explosion:
+// one frame pair of an atlas in a texture array; p1 = frame (whole part and blend), p2 = array slice; t4 = smoke gain, heat gain, flip sign, opacity fade).
 Shader "Hidden/Monolith/Fx"
 {
     SubShader
@@ -41,6 +42,11 @@ Shader "Hidden/Monolith/Fx"
         float4 _MN_Params;          // x nits per display unit, y focal length in pixels, z min half width of a streak in pixels, w time (s)
         TEXTURE3D(_MN_Noise3D);     // 64^3 tiling noise: r perlin-worley, g worley, b fine worley, a perlin
         SAMPLER(sampler_MN_Noise3D);
+        TEXTURE2D_ARRAY(_MN_Flip);  // the simulated explosions: R burning gas (sqrt), G smoke, B and A smoke surface slope (see Flipbooks.cs)
+        SAMPLER(sampler_MN_Flip);
+        float4 _MN_SunDir;          // xyz: world direction toward the Sun; w: 1 when there is a Sun
+        float4 _MN_SunCol;          // rgb: radiance of a white diffuse surface facing the Sun, in display units
+        float4 _MN_Fill;            // rgb: the sky's fill on a white diffuse surface, in display units
 
         // ------------------------------------------------------------------ noise
 
@@ -132,7 +138,7 @@ Shader "Hidden/Monolith/Fx"
             float2 local = corner;
             float4 ctr = float4(centre, halfW);
 
-            if ((kind > 1.5 && kind < 2.5) || kind > 6.5)
+            if ((kind > 1.5 && kind < 2.5) || (kind > 6.5 && kind < 7.5))
             {
                 // Oriented quads (bolts, sparks, trails, beams): a cylinder billboard about the axis.
                 float3 ax = a.t1.xyz;
@@ -166,7 +172,7 @@ Shader "Hidden/Monolith/Fx"
                 sincos(a.t1.w, s, c);
                 float2 rc = float2(c * corner.x - s * corner.y, s * corner.x + c * corner.y);
                 float3 bx = _MN_CamRight.xyz, by = _MN_CamUp.xyz;
-                if (kind > 0.5 && kind < 1.5)
+                if ((kind > 0.5 && kind < 1.5) || kind > 7.5)
                 {
                     // Face the ball, not the screen: off to the side of the view a ball's silhouette is an ellipse on a screen-aligned plane, and a square quad
                     // would cut it (square edges on a ball near the camera). On a plane across the line of sight it is a circle that grow covers exactly.
@@ -183,7 +189,7 @@ Shader "Hidden/Monolith/Fx"
             o.uv = float4(local, kind, a.t0.w);
             o.p = float4(a.t2.y, a.t2.z, a.t2.w, a.t3.w);
             o.q = float4(a.t3.x, a.t3.y, a.t3.z, dot(wpos, _MN_CamFwd.xyz));
-            o.r = float4(aspect, 0, 0, 0);
+            o.r = float4(aspect, a.t1.w, 0, 0);
             o.s = a.t4;
             o.ctr = ctr;
             o.ray = wpos;
@@ -311,6 +317,86 @@ Shader "Hidden/Monolith/Fx"
             float silFrac = fit / (min(fit, 3.6) * 1.03);
             float quadFade = 1.0 - smoothstep(silFrac < 0.99 ? 0.985 : 0.80, 1.0, max(qc.x, qc.y));
             return float4(sum * i.col.rgb * quadFade, A * quadFade);
+        }
+
+
+        // ------------------------------------------------------------------ the flipbook: a simulated explosion, lit
+
+        float4 FlipTap(float2 uv, float slice, float frame, float grid)
+        {
+            float f = floor(frame + 0.001);
+            float row = floor(f / grid);
+            float col = f - row * grid;
+            float2 t = clamp(uv, 0.003, 0.997);
+            float2 a = float2(col + t.x, (grid - 1.0 - row) + t.y) / grid;
+            return SAMPLE_TEXTURE2D_ARRAY_LOD(_MN_Flip, sampler_MN_Flip, a, slice, 0);
+        }
+
+        // Returns premultiplied colour (display units) and opacity. The sprite is a simulation seen from one side: the fire is emission, the smoke is a
+        // density whose slope gives it a surface the Sun, the sky's fill and the fire's own glow can light.
+        float4 ShadeFlip(FxOut i)
+        {
+            const float GRID = 6.0;
+            const float LAST = 35.0;
+            float age = i.p.x;
+            float frame = i.p.y;
+            float slice = i.p.z;
+            float smokeGain = i.s.x;
+            float heat = i.s.y;
+            float flipSign = i.s.z < 0.0 ? -1.0 : 1.0;
+            float fade = i.s.w;
+            float seed = i.uv.w;
+            float2 c = i.uv.xy;
+            float2 uv = float2(flipSign < 0.0 ? 0.5 - 0.5 * c.x : 0.5 + 0.5 * c.x, 0.5 + 0.5 * c.y);
+
+            float f0 = min(floor(frame), LAST);
+            float f1 = min(f0 + 1.0, LAST);
+            float t = saturate(frame - f0);
+            float4 s0 = FlipTap(uv, slice, f0, GRID);
+            float4 s1 = FlipTap(uv, slice, f1, GRID);
+            float fire = lerp(s0.r * s0.r, s1.r * s1.r, t);
+            float smoke = lerp(s0.g, s1.g, t);
+            float2 slope = lerp(s0.ba, s1.ba, t) - 0.5;
+            slope.x *= flipSign;
+
+            // Fine detail on top of the simulation's: churn that moves outward with the blast, so a big sprite is not smooth.
+            float2 dp = c * 2.4 + float2(seed * 7.3, seed * 3.1);
+            float dn = Tex3(float3(dp, age * 0.6 + seed * 5.0)).r;
+            float dn2 = Tex3(float3(dp * 2.7 + 11.0, age * 0.9 + seed * 2.0)).b;
+            float detail = 0.70 + 0.62 * dn + 0.35 * (dn2 - 0.5);
+            fire *= saturate(detail);
+            smoke *= 0.80 + 0.45 * dn2;
+
+            float edge = 1.0 - smoothstep(0.86, 1.0, max(abs(c.x), abs(c.y)));
+
+            // The fire: a temperature from the burning gas, then the same ramp as the raymarched fireball (white core, yellow, orange, red).
+            // As it ages it goes darker and greyer, the murk of the cooling phase.
+            float cool = smoothstep(0.25, 0.95, age);
+            float T = fire * heat;
+            float3 ramp = Incandescent(T);
+            float lum = (0.10 + T * T * 1.25) * lerp(1.0, 0.65, cool);
+            float grey = dot(ramp, float3(0.30, 0.59, 0.11));
+            ramp = lerp(ramp, float3(grey, grey * 0.94, grey * 0.88), 0.45 * cool);
+            float3 emit = ramp * lum * i.col.rgb;
+
+            // The smoke: lit by the Sun and the sky's fill from its own surface slope, and by the fire inside it (the smoke round a flame glows orange).
+            float S = smoke * smokeGain;
+            float aS = 1.0 - exp(-S * 3.2);
+            float3 N = normalize(float3(-slope.x * 26.0, -slope.y * 26.0, 1.0));
+            float sn, cs;
+            sincos(i.r.y, sn, cs);                                                      // the quad's own rotation (passed in r.y)
+            N.xy = float2(cs * N.x - sn * N.y, sn * N.x + cs * N.y);
+            float3 L = float3(dot(_MN_SunDir.xyz, _MN_CamRight.xyz), dot(_MN_SunDir.xyz, _MN_CamUp.xyz), -dot(_MN_SunDir.xyz, _MN_CamFwd.xyz));
+            float lam = saturate((dot(N, L) + 0.35) / 1.35) * _MN_SunDir.w;
+            float3 albedo = float3(0.26, 0.245, 0.23);
+            float glow = saturate(fire * heat * 1.3 + 0.25 * fire);
+            float3 litSmoke = albedo * (_MN_SunCol.rgb * lam + _MN_Fill.rgb + float3(1.0, 0.34, 0.10) * (glow * 2.2));
+
+            float aF = 1.0 - exp(-fire * lerp(7.0, 2.5, smoothstep(0.05, 0.5, age)));
+            float3 rgb = litSmoke * aS + emit * (1.0 - 0.55 * aS);
+            float a = 1.0 - (1.0 - aS) * (1.0 - aF);
+            float fadeIn = smoothstep(0.0, 0.10, age);                                  // no pop when a sprite appears (a smoke that begins mid-burn, one placed late)
+            return float4(rgb, a) * (edge * fade * fadeIn);
         }
 
         // ------------------------------------------------------------------ the other kinds
@@ -481,6 +567,13 @@ Shader "Hidden/Monolith/Fx"
                     float4 f = ShadeFire(i);
                     float nf = NearFade(i);
                     return float4(ToExposure(f.rgb * nf), saturate(f.a) * nf);
+                }
+                if (i.uv.z > 7.5 && i.uv.z < 8.5)
+                {
+                    float4 f = ShadeFlip(i);
+                    float nf = NearFade(i);
+                    float df = DepthFade(i);
+                    return float4(ToExposure(f.rgb * nf * df), saturate(f.a) * nf * df);
                 }
                 float4 s = ShadeFx(i);
                 float fade = DepthFade(i);

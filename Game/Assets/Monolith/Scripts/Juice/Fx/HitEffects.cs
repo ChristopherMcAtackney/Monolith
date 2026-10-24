@@ -115,7 +115,7 @@ namespace Monolith.Juice
             {
                 string kind = site.name.Length > 3 ? site.name.Substring(3).ToLowerInvariant() : "";
                 if (kind.StartsWith("spark")) _fx.Sparks(site.position, Vector3.zero, site.forward, 50f, _c.N(10), 14f, 70f, 0.3f, 0.9f, 0.12f, SparkStyle.Metal, 0.5f);
-                else if (kind.StartsWith("fire")) _fx.Fireball(site.position + site.forward * r * 0.4f, Vector3.zero, r * 0.5f, r * 1.2f, 1.4f, 1.7f, 4f, 0f, 1.2f, 0.5f);
+                else if (kind.StartsWith("fire")) _fx.Puff(site.position + site.forward * r * 0.4f, Vector3.zero, r * 0.5f, r * 1.2f, 1.4f, 1.7f, 4f, 0f, 1.2f, 0.5f);
                 else if (kind.StartsWith("smoke")) _fx.Gas(site.position, site.forward * 12f, r * 0.6f, r * 2.2f, 2.2f, new Vector3(0.5f, 0.55f, 0.65f), 0.3f, 2f);
                 else _fx.Vent(site.position, site.forward, r, 14f + 10f * big, 22f + 30f * big, parent);
                 return;
@@ -144,7 +144,7 @@ namespace Monolith.Juice
                 _fx.Flash(e.Position + n * 0.5f, Ap(e.Position, R * 1.0f, 0.014f), Emitters.WarmWhite * (34f * m), 0.09f, 0.75f, 2f, 1.3f, vel);
                 _fx.Flash(e.Position + n * 0.5f, Ap(e.Position, R * 3.4f, 0.04f), Emitters.Orange * (5.5f * m), 0.24f, 0.08f, 1.8f, 1.4f, vel);
                 _fx.Flare(e.Position + n * 0.5f, Ap(e.Position, R * 3.4f, 0.06f), Ap(e.Position, R * 0.22f, 0.004f), Emitters.WarmWhite * (15f * m), 0.13f);
-                _fx.Fireball(e.Position + n * R * 0.3f, vel + n * 10f, R * 0.6f, R * 1.6f, 0.4f + 0.16f * big, 2.0f, 4.5f * m, 0f, 1.2f, 0.5f);
+                _fx.Puff(e.Position + n * R * 0.3f, vel + n * 10f, R * 0.6f, R * 1.6f, 0.4f + 0.16f * big, 2.0f, 4.5f * m, 0f, 1.2f, 0.5f);
                 _fx.Sparks(e.Position + n * 0.3f, vel, n, 78f, _c.N(Mathf.RoundToInt(26 * m * (1f + big))), 22f, 150f + 90f * big, 0.3f, 1.0f + 0.5f * big, 0.11f + 0.04f * big, SparkStyle.Hot, 0.4f);
                 _fx.Sparks(e.Position + n * 0.3f, vel, n, 40f, _c.N(Mathf.RoundToInt(6 * m)), 80f, 260f, 0.12f, 0.3f, 0.1f, SparkStyle.Metal, 0.3f);
                 if (s.effects.debris)
@@ -205,8 +205,8 @@ namespace Monolith.Juice
                 _fx.Flash(e.Position, R * 0.8f, new Vector3(1f, 0.92f, 0.75f) * 7f, 0.09f, 0.95f, 2f, 1.3f);
                 _fx.Flash(e.Position, R * 3.2f, Emitters.Orange * 1.3f, 0.26f, 0.0f, 1.8f, 1.4f);
                 _fx.Flare(e.Position, R * 2.4f, R * 0.12f, Emitters.WarmWhite * 5f, 0.09f);
-                _fx.Fireball(e.Position, Vector3.zero, R * 0.55f, R * 1.35f, 0.55f, 2.0f, 4.5f, 0f, 1.2f, 0.5f);
-                _fx.Fireball(e.Position + _c.Rng.OnSphere() * R * 0.35f, Vector3.zero, R * 0.4f, R * 1.0f, 0.48f, 1.9f, 4.0f, 0f, 1.2f, 0.5f);
+                _fx.Puff(e.Position, Vector3.zero, R * 0.55f, R * 1.35f, 0.55f, 2.0f, 4.5f, 0f, 1.2f, 0.5f);
+                _fx.Puff(e.Position + _c.Rng.OnSphere() * R * 0.35f, Vector3.zero, R * 0.4f, R * 1.0f, 0.48f, 1.9f, 4.0f, 0f, 1.2f, 0.5f);
                 // Shrapnel: a fast, bright, short-lived shell of streaks.
                 _fx.SparkBurst(e.Position, Vector3.zero, _c.N(22), 70f, 260f, 0.16f, 0.5f, 0.1f, SparkStyle.Metal, 0.35f, 1.1f);
             }

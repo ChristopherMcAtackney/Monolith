@@ -71,6 +71,16 @@ namespace Monolith.Juice
             b.NearStart = Mathf.Max(4f, r1 * 0.12f); b.NearRange = Mathf.Max(12f, r1 * 0.4f);
         }
 
+        /// <summary>
+        /// A small burst of fire: a simulated explosion from the library when there is one (played in <paramref name="life"/> seconds), else the raymarched ball. Same arguments as <see cref="Fireball"/>.
+        /// </summary>
+        public void Puff(Vector3 pos, Vector3 vel, float r0, float r1, float life, float heat, float brightness, float palette = 0f, float drag = 1.2f, float erode = 0.25f)
+        {
+            var v = FlipLibrary.Available ? FlipLibrary.Pick("fire", _c.Rng) : null;
+            if (v == null) { Fireball(pos, vel, r0, r1, life, heat, brightness, palette, drag, erode); return; }
+            Flipbook(v, pos, vel, r1 * 0.85f, life * 1.5f, Mathf.Max(1.0f, heat * 0.62f), brightness * 0.70f, 0.8f, 0f, drag * 0.3f);
+        }
+
         /// <summary>A soft gas puff: dim, fast to thin out, cooler colour (venting atmosphere, escaping coolant).</summary>
         public void Gas(Vector3 pos, Vector3 vel, float r0, float r1, float life, Vector3 rgb, float heat = 0.5f, float palette = 2f)
         {
@@ -197,6 +207,43 @@ namespace Monolith.Juice
         }
 
         /// <summary>
+        /// Matter thrown out of a blast: long hot streaks (a white-hot head, an orange tail, motion-blurred along their flight) in a few jets and a thin scatter, fast,
+        /// each a different size and brightness, with little drag so they keep going and thin out with distance. These are what the show's blasts tear outward as they open.
+        /// </summary>
+        public void Ejecta(Vector3 pos, Vector3 inherit, int count, float speedMin, float speedMax, float lifeMin, float lifeMax, float width, float brightness = 1f)
+        {
+            if (count <= 0) return;
+            int jets = _c.Rng.Int(3, 6);
+            var axes = new Vector3[jets];
+            for (int j = 0; j < jets; j++) axes[j] = _c.Rng.OnSphere();
+            for (int i = 0; i < count; i++)
+            {
+                ref var s = ref _c.Particles.Add();
+                bool scatter = _c.Rng.F() < 0.30f;
+                Vector3 d = scatter ? _c.Rng.OnSphere() : _c.Rng.InCone(axes[_c.Rng.Int(0, jets)], _c.Rng.Range(7f, 26f));
+                float spd = speedMin * Mathf.Pow(speedMax / Mathf.Max(1f, speedMin), Mathf.Pow(_c.Rng.F(), 1.25f));
+                float size = width * Mathf.Exp(_c.Rng.Range(-0.9f, 0.9f));
+                float lum = Mathf.Exp(_c.Rng.Range(-1.4f, 0.5f)) * brightness;
+                bool slag = _c.Rng.F() < 0.35f;
+                s.Kind = FxKind.Streak; s.Dim = 1f; s.Pos = pos + d * _c.Rng.F() * width * 6f; s.Vel = inherit + d * spd; s.Dir = d; s.Drag = _c.Rng.Range(0.05f, 0.30f);
+                s.Life = _c.Rng.Range(lifeMin, lifeMax);
+                s.W0 = size; s.W1 = size * 0.7f; s.Stretch = _c.Rng.Range(0.05f, 0.13f); s.MinLen = size * 3f;
+                s.P1a = s.P1b = _c.Rng.Range(0.9f, 1.6f); s.Blur = _c.Rng.Range(0.1f, 0.9f);
+                s.C0 = V4((slag ? new Vector3(1f, 0.50f, 0.16f) : new Vector3(1f, 0.80f, 0.55f)) * 10f * lum, 6f);
+                s.C1 = V4(new Vector3(1f, 0.42f, 0.10f) * 6f * lum, 2f);
+                s.C2 = V4(new Vector3(0.45f, 0.06f, 0.01f) * 0.8f * lum);
+                s.FadeExp = _c.Rng.Range(0.5f, 1.1f); s.Seed = _c.Rng.F(); s.Flicker = 0.25f; s.NearStart = 4f; s.NearRange = 14f;
+            }
+        }
+
+        /// <summary>The front of a blast: a thin bright shell thrown outward faster than anything else, brightest at its edge and gone in a moment, with the dust it drives.</summary>
+        public void ShockFront(Vector3 pos, float radius, float life, float strength = 1f)
+        {
+            // Faint, thin and short-lived, and warm: a shell of driven dust catching the fire's light, not a lens artifact.
+            Ring(pos, radius * 0.30f, radius * 2.2f, life * 0.8f, new Vector3(1f, 0.70f, 0.44f) * (0.035f * strength), 0.022f, 2.8f);
+        }
+
+        /// <summary>
         /// A fine spray of tiny hot dots with barely a trail (FS2's explosions throw hundreds): they hang in the air a moment, cool from white
         /// to orange to red and wink out.
         /// </summary>
@@ -290,6 +337,43 @@ namespace Monolith.Juice
 
         public void Clear() { _vents.Clear(); }
 
+        // ------------------------------------------------------------------------------------------------ simulated explosions
+
+        /// <summary>
+        /// One simulated explosion (a flipbook from the library, see <see cref="FlipLibrary"/>) whose fireball is about <paramref name="radius"/> metres in radius at its
+        /// largest, playing over <paramref name="duration"/> seconds after <paramref name="delay"/>. <paramref name="heat"/> scales its temperature (1.2 is white-hot in the
+        /// core), <paramref name="brightness"/> its light, <paramref name="smoke"/> how thick its smoke is. Each one is turned and flipped at random, so no two look alike.
+        /// </summary>
+        public void Flipbook(FlipLibrary.Variant v, Vector3 pos, Vector3 vel, float radius, float duration, float heat = 1.2f, float brightness = 3f, float smoke = 1f, float delay = 0f, float drag = 0.35f)
+        {
+            if (v == null) return;
+            float half = v.HalfSize(radius);
+            half = Mathf.Min(half, Mathf.Max(8f, 2.2f * _c.DistanceToCamera(pos)));
+            ref var b = ref _c.Particles.Add();
+            b.Kind = FxKind.Flip; b.Pos = pos; b.Vel = vel; b.Drag = drag; b.Life = duration; b.Age = -delay;
+            b.W0 = b.W1 = half; b.Palette = v.Slice; b.Seed = _c.Rng.F(); b.Angle = _c.Rng.F() * 6.2832f; b.Spin = _c.Rng.Chance(0.5f) ? -1f : 1f;
+            b.P1a = heat; b.P1b = heat * 0.8f; b.P2a = smoke;
+            b.C0 = b.C1 = b.C2 = new Vector4(brightness, brightness, brightness, 0f);
+            b.FadeExp = 0f; b.Soft = half * 0.30f; b.NearStart = Mathf.Max(4f, half * 0.08f); b.NearRange = Mathf.Max(12f, half * 0.30f);
+        }
+
+        /// <summary>The fire and smoke of a blast: a main simulated explosion, lobes of other ones thrown out round it at other times, and a smoke that outlasts them.</summary>
+        void BlastFlips(Vector3 pos, Vector3 inherit, float R, float intensity, bool plasma)
+        {
+            float dur = Mathf.Clamp(0.75f + R * 0.011f, 0.9f, 3.6f);
+            float heat = plasma ? 0.9f : 1.0f;
+            var main = FlipLibrary.Pick("fire", _c.Rng);
+            Flipbook(main, pos, inherit, R * 1.30f, dur, heat, 2.5f * intensity, 1.0f);
+            int lobes = Mathf.Clamp(Mathf.RoundToInt(1 + R * 0.025f), 1, 6);
+            for (int i = 0; i < lobes; i++)
+            {
+                Vector3 off = _c.Rng.OnSphere() * R * _c.Rng.Range(0.30f, 0.65f);
+                Flipbook(FlipLibrary.Pick("fire", _c.Rng), pos + off, inherit + off.normalized * R * 0.25f, R * _c.Rng.Range(0.55f, 0.90f), dur * _c.Rng.Range(0.7f, 1.0f),
+                         heat * _c.Rng.Range(0.85f, 1.05f), 2.4f * intensity, _c.Rng.Range(0.8f, 1.2f), _c.Rng.Range(0.03f, 0.22f) * dur);
+            }
+            if (R > 90f) Flipbook(FlipLibrary.Pick("smoke", _c.Rng), pos, inherit * 0.9f, R * 1.0f, dur * 1.6f, 0.8f, 1.2f * intensity, 1.2f, 0.25f * dur, 0.2f);
+        }
+
         // ------------------------------------------------------------------------------------------------ a whole blast
 
         /// <summary>
@@ -309,8 +393,10 @@ namespace Monolith.Juice
             // A short, faint anamorphic streak: the lens is the one thing that makes one, and it should not outlast the flash it comes from.
             Flare(pos, R * 4.0f, R * 0.14f, Vector3.Lerp(WarmWhite, core, 0.5f) * (11f * intensity), 0.12f + R * 0.0006f, 2.2f);
 
-            // The fire: a few big turbulent volumes that overlap and swallow what is behind them, and smaller ones that fly out.
-            int balls = Mathf.Min(_c.N(Mathf.RoundToInt(3 + R * 0.12f)), 24);
+            // The fire: simulated explosions (a main one, lobes round it, a smoke after it) when there is a library; a few turbulent raymarched volumes if not.
+            bool flips = FlipLibrary.Available;
+            if (flips) BlastFlips(pos, inherit, R, intensity, plasmaFlash);
+            int balls = flips ? 0 : Mathf.Min(_c.N(Mathf.RoundToInt(3 + R * 0.12f)), 24);
             for (int i = 0; i < balls; i++)
             {
                 bool main = i < 2;
