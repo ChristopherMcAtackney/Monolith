@@ -30,7 +30,8 @@ namespace Monolith.Game
             /// (tools/ship/make_ship_plan.py solves them for a wanted Sun direction in the ship's own frame).</summary>
             public float yaw = 0f, pitch = 0f, roll = 0f;
             public float[] pos = { 0f, 0f, 0f };
-            public float shadowDistance = 3000f;
+            /// <summary>0 uses the shared render-quality profile's (6 km).</summary>
+            public float shadowDistance = 0f;
             /// <summary>-1 lets the LOD group decide; 0..n forces that level (to inspect the lower ones).</summary>
             public int forceLod = -1;
             public Fighter fighter;
@@ -65,8 +66,8 @@ namespace Monolith.Game
             world.MainCamera = cam;
             var skyOptions = new SkyOptions();
             if (opts.sky != null) JsonConvert.PopulateObject(opts.sky.ToString(), skyOptions);
+            if (opts.shadowDistance > 0f) skyOptions.ShadowDistance = opts.shadowDistance;
             var rig = SkyRig.Enable(cam, root, skyOptions);          // the Sky system: Sun, fill, exposure and the camera look (its defaults unless the plan overrides some)
-            MakeShadowVolume(root, opts.shadowDistance);
 
             var shipGo = ShipArtCatalog.Instantiate(opts.ship, root);
             shipGo.transform.SetPositionAndRotation(new Vector3(opts.pos[0], opts.pos[1], opts.pos[2]), Quaternion.Euler(opts.pitch, opts.yaw, opts.roll));
@@ -117,24 +118,5 @@ namespace Monolith.Game
             return cam;
         }
 
-        /// <summary>The same long-range shadows and contact shadows the flight playtest uses for kilometre-long hulls.</summary>
-        static void MakeShadowVolume(Transform root, float distance)
-        {
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            profile.name = "MN_ShowcaseShadows";
-            var shadows = profile.Add<HDShadowSettings>(true);
-            shadows.maxShadowDistance.Override(distance);
-            shadows.cascadeShadowSplitCount.Override(4);
-            var contact = profile.Add<ContactShadows>(true);
-            contact.enable.Override(true);
-            contact.length.Override(0.6f);
-            contact.maxDistance.Override(400f);
-            var go = new GameObject("ShowcaseShadowVolume");
-            go.transform.SetParent(root, false);
-            var volume = go.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.priority = 5f;
-            volume.sharedProfile = profile;
-        }
     }
 }

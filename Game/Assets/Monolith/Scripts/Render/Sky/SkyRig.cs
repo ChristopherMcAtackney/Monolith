@@ -31,6 +31,7 @@ namespace Monolith.Sky
         VolumeProfile _skyProfile, _lookProfile;
         Volume _skyVolume, _lookVolume;
         CameraLook _look;
+        RenderQuality.RenderQuality _quality;
         HDAdditionalCameraData _cameraData;
         HDAdditionalCameraData.ClearColorMode _previousClear;
 
@@ -60,6 +61,9 @@ namespace Monolith.Sky
             sunGo.transform.SetParent(transform, false);
             _sunData = sunGo.AddHDLight(HDLightTypeAndShape.Directional);
             Sun = sunGo.GetComponent<Light>();
+
+            // The shared render-quality profile: the Sun's cascades and shadow resolution, contact shadows, ambient occlusion, micro shadows.
+            _quality = RenderQuality.RenderQuality.Enable(transform, _sunData, options.Quality);
 
             // The sky: a volume that picks the Monolith sky and lights ships from it.
             _skyProfile = ScriptableObject.CreateInstance<VolumeProfile>();
@@ -115,6 +119,7 @@ namespace Monolith.Sky
             _sunData.SetIntensity(o.SunLux, LightUnit.Lux);
             _sunData.angularDiameter = o.SunLightAngularDiameterDeg;
             _sunData.EnableShadows(o.SunShadows);
+            if (_quality != null) _quality.Apply();
 
             float nitsPerUnit = 1.2f * Mathf.Pow(2f, o.ExposureEv100);
             float lum = Mathf.Max(0.2126f * o.SunColor.r + 0.7152f * o.SunColor.g + 0.0722f * o.SunColor.b, 1e-4f);   // the Sun point is luminance-normalised: its energy sets the brightness

@@ -48,9 +48,10 @@ namespace Monolith.Game
             self._data = data;
 
             var view = CockpitView.Create(world, root.transform);
-            // Sun, sky, ambient fill and exposure belong to the Sky system; this scene only widens the shadow range.
-            SkyRig.Enable(view.Camera, root.transform);
-            MakeShadowVolume(root.transform, data.lighting);
+            // Sun, sky, ambient fill, exposure and the shadow and occlusion quality belong to the Sky system; this scene only sets how far the shadows reach.
+            var skyOptions = new SkyOptions();
+            skyOptions.ShadowDistance = data.lighting.shadowDistance;
+            SkyRig.Enable(view.Camera, root.transform, skyOptions);
             var views = ShipViews.Create(world, root.transform);
             var mats = PlaceholderShips.MakeMaterials();
 
@@ -171,27 +172,6 @@ namespace Monolith.Game
             var list = new List<ScriptedPilot.Key>();
             foreach (var k in keys) list.Add(new ScriptedPilot.Key(k.t, k.ToInput()));
             return list;
-        }
-
-        /// <summary>Capital hulls are kilometres long: shadows out to <c>shadowDistance</c>, contact shadows for small detail.</summary>
-        static void MakeShadowVolume(Transform root, PlaytestData.Lighting l)
-        {
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            profile.name = "MN_FlightShadows";
-            var shadows = profile.Add<HDShadowSettings>(true);
-            shadows.maxShadowDistance.Override(l.shadowDistance);
-            shadows.cascadeShadowSplitCount.Override(4);
-            var contact = profile.Add<ContactShadows>(true);
-            contact.enable.Override(true);
-            contact.length.Override(0.6f);
-            contact.maxDistance.Override(400f);
-
-            var go = new GameObject("FlightShadowVolume");
-            go.transform.SetParent(root, false);
-            var volume = go.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.priority = 5f;
-            volume.sharedProfile = profile;
         }
 
         static Vector3 V3(float[] a) => a != null && a.Length == 3 ? new Vector3(a[0], a[1], a[2]) : Vector3.zero;

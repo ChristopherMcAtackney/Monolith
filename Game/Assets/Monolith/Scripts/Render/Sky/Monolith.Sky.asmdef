@@ -4,6 +4,7 @@
     "references": [
         "Monolith.Core",
         "Monolith.Look",
+        "Monolith.RenderQuality",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
     ],

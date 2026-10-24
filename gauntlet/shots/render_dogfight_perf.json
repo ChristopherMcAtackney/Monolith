@@ -1,0 +1,18 @@
+{
+  "scene": "dogfight",
+  "sceneOptions": {
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": true,
+    "stress": true
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 6.0
+  },
+  "perf": [
+    { "name": "dogfight_stress", "follow": true, "seconds": 40 }
+  ]
+}

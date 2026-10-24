@@ -11,11 +11,11 @@
   powershell -NoProfile -ExecutionPolicy Bypass -File tools\capture.ps1 -Plan gauntlet\shots\smoke.json -Kind stills
   powershell -NoProfile -ExecutionPolicy Bypass -File tools\capture.ps1 -Plan gauntlet\shots\smoke.json -Kind perf
 
-  Options: -Out <dir>  -Only a,b  -Kind stills|perf  -Width 1920 -Height 1080 (the window)  -TimeoutMin 15  -Exe <path>
+  Options: -Out <dir>  -Only a,b  -Kind stills|perf  -Width 1920 -Height 1080 (the window)  -TimeoutMin 15  -Exe <path>  -PlayerArgs "-force-d3d12 ..." (extra player arguments)
   Output: <out>\<still>.png, <out>\perf_<run>.json, capture_manifest.json, player.log
   Exit code: the player's (0 ok, 1 a shot or the core self-test failed, 2 bad plan); 3 lock timeout; 4 timed out; 5 no build.
 #>
-$Plan = $null; $Only = $null; $Kind = $null; $Out = $null; $Width = 1920; $Height = 1080; $TimeoutMin = 15; $Exe = $null
+$PlayerArgs = $null; $Plan = $null; $Only = $null; $Kind = $null; $Out = $null; $Width = 1920; $Height = 1080; $TimeoutMin = 15; $Exe = $null
 for ($i = 0; $i -lt $args.Count; $i++) {
     $a = "$($args[$i])"
     switch -regex ($a) {
@@ -27,6 +27,7 @@ for ($i = 0; $i -lt $args.Count; $i++) {
         '^-Height$'     { $i++; $Height = [int]$args[$i]; break }
         '^-TimeoutMin$' { $i++; $TimeoutMin = [int]$args[$i]; break }
         '^-Exe$'        { $i++; $Exe = "$($args[$i])"; break }
+        '^-PlayerArgs$' { $i++; $PlayerArgs = "$($args[$i])"; break }
         default         { Write-Host "capture.ps1: unknown argument '$a'" -ForegroundColor Red; exit 64 }
     }
 }
@@ -52,6 +53,7 @@ $wantsPerf = ($Kind -ne 'stills') -and (@($planObj.perf | Where-Object { $_ }).C
 $pargs = @('-screen-fullscreen', '0', '-screen-width', "$Width", '-screen-height', "$Height", '-logFile', $playerLog, '-mnCapture', $Plan, '-mnOut', $Out)
 if ($Only) { $pargs += @('-mnOnly', $Only) }
 if ($Kind) { $pargs += @('-mnKind', $Kind) }
+if ($PlayerArgs) { $pargs += @($PlayerArgs -split '\s+' | Where-Object { $_ }) }
 
 $ulock = $null; $plock = $null
 try {

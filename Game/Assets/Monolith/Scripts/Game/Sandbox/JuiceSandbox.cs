@@ -66,7 +66,6 @@ namespace Monolith.Game
 
             var view = CockpitView.Create(world, root.transform);
             SkyRig.Enable(view.Camera, root.transform);
-            MakeShadowVolume(root.transform);
             self._views = ShipViews.Create(world, root.transform);
             self._mats = PlaceholderShips.MakeMaterials();
 
@@ -118,25 +117,6 @@ namespace Monolith.Game
             int fps = CommandLine.GetInt("-mnFps", 0);
             if (fps > 0 && !CommandLine.Has("-mnCapture")) { QualitySettings.vSyncCount = 0; Application.targetFrameRate = fps; }
             return self;
-        }
-
-        static void MakeShadowVolume(Transform root)
-        {
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            profile.name = "MN_JuiceShadows";
-            var shadows = profile.Add<HDShadowSettings>(true);
-            shadows.maxShadowDistance.Override(6000f);
-            shadows.cascadeShadowSplitCount.Override(4);
-            var contact = profile.Add<ContactShadows>(true);
-            contact.enable.Override(true);
-            contact.length.Override(0.6f);
-            contact.maxDistance.Override(400f);
-            var go = new GameObject("JuiceShadowVolume");
-            go.transform.SetParent(root, false);
-            var volume = go.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.priority = 5f;
-            volume.sharedProfile = profile;
         }
 
         // ------------------------------------------------------------------------------------------------ the scene

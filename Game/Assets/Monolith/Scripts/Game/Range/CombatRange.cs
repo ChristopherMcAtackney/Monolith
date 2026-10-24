@@ -87,7 +87,6 @@ namespace Monolith.Game
             var view = CockpitView.Create(world, root.transform);
             SkyRig.Enable(view.Camera, root.transform);
             SkyWarmUp.Attach(view.Camera, root.transform);
-            MakeShadowVolume(root.transform);
             self._views = ShipViews.Create(world, root.transform);
             self._mats = PlaceholderShips.MakeMaterials();
 
@@ -137,25 +136,6 @@ namespace Monolith.Game
             if (fps > 0 && !CommandLine.Has("-mnCapture")) { QualitySettings.vSyncCount = 0; Application.targetFrameRate = fps; }
             MnLog.Info($"RANGE ready: player {self._player.ClassName}, {self._data.drones.Count} drones, {self._data.emplacements.Count} emplacements, capital {self._data.capital?.ship}");
             return self;
-        }
-
-        static void MakeShadowVolume(Transform root)
-        {
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            profile.name = "MN_RangeShadows";
-            var shadows = profile.Add<HDShadowSettings>(true);
-            shadows.maxShadowDistance.Override(6000f);
-            shadows.cascadeShadowSplitCount.Override(4);
-            var contact = profile.Add<ContactShadows>(true);
-            contact.enable.Override(true);
-            contact.length.Override(0.6f);
-            contact.maxDistance.Override(400f);
-            var go = new GameObject("RangeShadowVolume");
-            go.transform.SetParent(root, false);
-            var volume = go.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.priority = 5f;
-            volume.sharedProfile = profile;
         }
 
         static Vector3 V3(float[] a) => a != null && a.Length == 3 ? new Vector3(a[0], a[1], a[2]) : Vector3.zero;

@@ -121,5 +121,11 @@ namespace Monolith.Sky
         /// <summary>Switch the camera look on with the sky: the Sun's glare needs the Sun, so the rig feeds it. Its options (Enabled, Intensity and the rest) are here.</summary>
         public bool CameraLook = true;
         public Monolith.Look.LookOptions Look = new Monolith.Look.LookOptions();
+
+        // ---- the shared render-quality profile (sun shadows, contact shadows, ambient occlusion, micro shadows) ---------------------------------
+        /// <summary>Every scene that turns the sky on gets the same shadow and occlusion quality, built by <c>SkyRig</c>; no scene makes a shadow volume of its own. See <see cref="Monolith.RenderQuality.RenderQualityOptions"/>.</summary>
+        public Monolith.RenderQuality.RenderQualityOptions Quality = new Monolith.RenderQuality.RenderQualityOptions();
+        /// <summary>How far the Sun's shadows reach (m): <c>Quality.ShadowDistance</c>, for scenes that set it without referencing the quality assembly.</summary>
+        public float ShadowDistance { get => Quality.ShadowDistance; set => Quality.ShadowDistance = value; }
     }
 }

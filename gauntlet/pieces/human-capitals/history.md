@@ -205,3 +205,51 @@ Answers the round 2 verdict point by point. One critic per pair from now on (lea
 - All three critics, independently: the hull reads lit "flat and evenly", with no hard sunlit face against a dark crevice or terminator; detail repeats at one scale; it reads as a small model, not a huge ship. Also: low-resolution, smeared, blocky texture tiles under sharp polygon edges at close range; clean, hard-edged engine cones; one critic took the sensor dish ring and green nav light for a game marker.
 - **Lead's diagnosis:** three rounds of art changes haven't moved "flat lighting", so the cause is in rendering, not paint. **No scene enables any ambient occlusion** (no SSAO, no ray-traced AO), so crevices, recesses and the undersides of overhangs never darken. Each scene builds its own shadow volume (3000 to 6000 m, 4 cascades), so close-ups get coarse shadow maps and lose fine shadowing. Plate textures (1024 tiles) smear at close range.
 - **Round 4 is a rendering-quality round, for every scene, not just the corvette.** One shared render-quality profile in the Sky or Look system, replacing the per-scene shadow volumes in ShipShowcase, FlightPlaytest, CombatRange, JuiceSandbox and DogfightScene. It covers: ambient occlusion (SSAO, or ray-traced AO if the RTX 4070 Ti affords it at 60 fps); shadow quality for close-ups at kilometre scale (cascade splits, resolution, filtering, contact shadows, or ray-traced sun shadows if affordable); micro-shadowing and specular occlusion; texel density at close range (higher-resolution trims or detail normal maps at two scales); roughness and specular variation so lit faces aren't one flat value. Then re-judge the corvette with no art change, to isolate the effect.
+
+## Round 4 (builder, 2026-10-25): rendering quality, every scene (no art change in this part)
+
+The round 3 verdict (three critics: "flat and evenly lit", no dark crevices, a small model) was diagnosed in the pipeline, not the paint. I checked the diagnosis against HDRP 14.0.11's source and the defaults the scenes were running on; it was right and worse than stated:
+
+- **Sun shadow maps were 512 pixels per cascade.** `HDAdditionalLightData.k_DefaultShadowResolution` is 512 and `SkyRig` never changed it; the pipeline asset also capped directional maps at 2,048 and filtered at "Medium". With the scenes' 3 to 6 km range and HDRP's default splits (5, 15, 30 per cent) the first cascade ended 150 to 300 m out, so a close-up on a hull 60 m away had 30 to 60 cm texels. That is the blocky, bloated shadow in the r3 captures (a 1.7 m rib throws a staircase).
+- **Contact shadows never ran.** The five scene volumes switched them on, but HDRP also asks the light (`useContactShadow`), and the Sun's default is off.
+- **No ambient occlusion anywhere** (the SSAO override defaults to intensity 0 and nothing added it), and micro shadows were off.
+- Plate textures are 1,024 tiles on 12 m: 1.2 cm a texel, which is not the smear the critics described at 40 to 60 m (a screen pixel there is 3 cm); see "Texel density" in the next part.
+
+### What was built: one shared profile (`Monolith.RenderQuality`, `Scripts/Render/Quality/`)
+`RenderQualityOptions` (every field documented, JSON-overridable) and `RenderQuality`, a small component that `SkyRig.Enable` creates beside the Sun: one global volume (priority 6) holding the cascade layout, contact shadows, SSAO and micro shadows, plus the settings on the Sun light that a volume cannot reach. `SkyOptions.Quality` carries the options, so `sky: {"Quality": {...}}` in a showcase plan overrides any of them, and **`-mnQuality '{json}'` or `-mnQuality file.json` on any player run merges over the options of whatever scene is running** (that is how every A/B below was timed, without a rebuild). The five per-scene shadow volumes are gone: `ShipShowcase`, `FlightPlaytest`, `CombatRange` and `JuiceSandbox` lost their `MakeShadowVolume` (their old shadow distances survive as `shadowDistance` options that set `SkyOptions.ShadowDistance`), and `DogfightScene`, which the AI builder owns, lost one line (the `MakeShadowVolume(root.transform);` call: the method below it is now unused and can be deleted by them). Asset side (`Hdrp.EnsureAsset`): directional map cap 2,048 to 4,096, filter Medium to High (PCSS on directional lights), `supportRayTracing` and `supportScreenSpaceShadows` on (needed for the ray-traced options), the HDRP ray-tracing resources assigned in the global settings; the player build lists Direct3D 11 first and Direct3D 12 second (`-force-d3d12`).
+
+| Setting | Before (r3) | Now |
+|---|---|---|
+| Sun cascades | 4 x 512, splits 5 / 15 / 30 per cent of 3 to 6 km | 4 x 4,096, splits 1 / 4 / 16 per cent of 6 km (ending 60 m, 240 m, 960 m, 6 km: about 1.5 cm, 6 cm, 24 cm, 3 m a texel), 10 per cent cascade borders |
+| Shadow filter | Medium | High (PCSS) |
+| Contact shadows | requested by the scene, never ran at the light | on at the Sun: 1.2 m rays, to 500 m, fading over 100 m |
+| Ambient occlusion | none | HDRP SSAO, half resolution, 12 steps, 3 m radius, intensity 2.0, 0.9 of it applied to the Sun's light too (the fill is zero on a lit face, so AO there is only felt if it reaches the key), full specular occlusion |
+| Micro shadows | off | on, opacity 1 (the plates' own mask-map occlusion shadows the Sun across fine detail) |
+| Ray tracing | n/a | option: `RayTracedAo`, `RayTracedSunShadows` (Direct3D 12 on a DXR GPU; falls back to the above anywhere else) |
+
+### What each feature bought (looked at in the critic's 1280 px JPEG and at 1:1 crops, `gauntlet/captures/corvette/_t` scratch pairs)
+- **Shadow maps (4 x 4,096, splits, High filter): the largest change.** Cast shadows are now exact: a rib's shadow on the plate beside it is a sharp parallelogram where r3 had a bloated, stair-stepped smear, window recesses and the undersides of ribs go properly black, and the lit faces keep their light (lit-pixel p90 and p98 do not move, but more of the hull falls into real shadow: the share of the ship over luma 25 drops from 34 to 28 per cent in `raking_close`, 37 to 32 in `close_hull`).
+- **Ambient occlusion:** seams between plates, the underside of the hangar rack, the funnels between ribs and the engine collars darken. It is a modest, even effect in the sunlit areas (it only reaches the Sun's light through the 0.9 direct strength) and the largest where the fill is the only light.
+- **Contact shadows and micro shadows:** small, real, almost free: a thin dark line under every raised hatch, dome and vent where the shadow maps' bias loses it, and a slight darkening of plate texture relief toward the Sun's grazing angle. Individually hard to see; together they take the "pasted-on" look off small hardware.
+- **Specular occlusion** (with the AO): shine in crevices is no longer brighter than the crevice around it (bell collars, rack edges).
+- **Ray tracing (compared on the RTX 4070 Ti, Direct3D 12):** ray-traced AO is slightly better than SSAO where the occluder is off-screen or large (the engine block's underside, the rack) and has no screen-space halo or radius limit; ray-traced Sun shadows are not visibly different from the 4,096 maps plus contact shadows at any of the six corvette distances, and noisier in a few penumbra pixels. Neither is the default: Direct3D 12 on this machine costs 30 per cent more frame time in the corvette scene and 70 per cent in the CPU-bound dogfight (188 fps against 319), and the visible gain is small. They are options for a "cinematic" capture mode (`-force-d3d12 -mnQuality '{"RayTracedAo":true}'`; `r4/rt/` holds the six shots with both on).
+
+### Timings (RTX 4070 Ti, 1920x1080; GPU ms from `FrameTimingManager`; the machine is shared with other builders, so I took the quietest of two runs and ran before and after back to back)
+Corvette filling the frame, Direct3D 11:
+
+| Step | GPU ms | Added |
+|---|---|---|
+| r3 (4 x 512, no AO, no contact, no micro) | 1.32 | |
+| shadows 4 x 2,048 (reference) | 1.46 | +0.14 |
+| shadows 4 x 4,096 + High filter (final) | 1.78 | +0.46 |
+| + contact shadows | 1.85 | +0.07 |
+| + micro shadows | 1.86 | +0.01 |
+| + SSAO (half resolution, 12 steps; final) | 1.92 | +0.06 |
+| SSAO full resolution (reference) | 2.05 | +0.13 more |
+
+All features: 1.32 to 1.92 ms (752 to 515 fps, 1% low 459 to 344). Other scenes, before to after (average fps, 1% low fps, GPU ms): dogfight `stress` (the busiest moment: three waves, bombers, beams, the Warden; CPU bound) 319 / 172 / 1.75 to 315 / 174 / 1.93; juice capital death 477 / 220 / 1.92 to 465 / 217 / 2.02; combat range battle 408 / 233 / 1.77 to 396 / 225 / 2.01; flight playtest (kilometre hulls, the worst case for cascades) 719 / 154 / 1.23 to 578 / 89 / 1.60 (both runs contain the same 560 to 590 ms first-frame hitch, which sets the 1% low).
+Direct3D 12 (corvette): no quality features 1.82 ms; SSAO profile 2.41; ray-traced AO 3.03 (+0.6); ray-traced Sun shadows 3.76 (+1.35); both 4.2. Dogfight `stress` on Direct3D 12: 188 / 100 (r3 settings), 184 / 113 (profile), 174 / 106 (RT AO), 159 / 102 (RT AO and RT shadows): 60 fps with 1% lows holds in every case, so ray tracing would be allowed as a default by that rule; it is not, for the reasons above.
+`tools/flight.ps1`: 35 of 35 metrics on all five ships; `-mnCombatSelfTest`: 90 of 90.
+
+### Captures
+`gauntlet/captures/corvette/r4/` (gitignored): the same shots as r3, same cameras, no art change (the Art folder is the r3 commit's), HUD off, 1920x1080, `critic/` has the 1280 px JPEGs; `r4/damage/`, `r4/perf/`, and `r4/rt/` (Direct3D 12, ray-traced AO and Sun shadows). The perf JSONs in `r4/perf` were taken while other builders were running their own players and are noisy (330 to 510 fps run to run); the A/B table above is the reliable figure.
