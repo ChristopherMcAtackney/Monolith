@@ -41,6 +41,7 @@ namespace Monolith.Juice
         Shockwaves _waves;
         Emitters _fx;
         BoostFx _boost;
+        DeathFx _death;
         Feel _feel;
         FxFrame _frame;
         CustomPassVolume _volume;
@@ -58,6 +59,8 @@ namespace Monolith.Juice
         public int ActiveDeaths => _explosions.ActiveDeaths;
         /// <summary>The boost (afterburner) juice: its state for the panel and the tests.</summary>
         public BoostFx Boost => _boost;
+        /// <summary>The player's death sequence (a button in the sandbox, <c>-mnDeathTest</c>).</summary>
+        public DeathFx Death => _death;
         public int DroppedQuads => _frame.Add.Dropped + _frame.Alpha.Dropped;
 
         public static JuiceDirector Create(GameWorld world, Camera camera, Transform parent, JuiceSettings settings = null, IJuiceAudio audio = null)
@@ -95,6 +98,7 @@ namespace Monolith.Juice
             _explosions = new Explosions(c, _fx, _feel, _debris, _waves); c.Explosions = _explosions;
             _beams = new Beams(c, _fx, _feel);
             _boost = new BoostFx(c);
+            _death = new DeathFx(c); c.Death = _death;
 
             // The one custom pass that draws it all, for this camera only.
             var volGo = new GameObject("JuiceFxPass");
@@ -204,6 +208,7 @@ namespace Monolith.Juice
             c.Audio.Enabled = c.Settings.effects.sound;
             c.Audio.MasterVolume = c.Settings.levels.volume;
             c.Lights.Enabled = c.Settings.effects.lights;
+            _death.Update(c.World.Sim.OneTickPerFrame ? Sim.Dt : real);                  // before the pad is written: it adds pulses and shake
             c.Rumble.Update(real);
             c.Audio.SetTimeScale(BaseTimeScale);
             c.Audio.Update(real);
@@ -290,7 +295,7 @@ namespace Monolith.Juice
         {
             var c = Context;
             c.Particles.Clear(); _fx.Clear(); _debris.Clear(); _explosions.Clear(); _beams.Clear(); _waves.Clear(); c.Lights.Clear();
-            c.Trauma.Clear(); c.Rumble.Stop(); c.HitStop.Clear(); _boost.Clear();
+            c.Trauma.Clear(); c.Rumble.Stop(); c.HitStop.Clear(); _boost.Clear(); _death.Reset();
         }
 
         void OnApplicationFocus(bool focus)
@@ -302,6 +307,7 @@ namespace Monolith.Juice
         {
             foreach (var s in _subs) s.Dispose();
             _boost?.Dispose();
+            _death?.Dispose();
             _subs.Clear();
             if (_built) Context.Rumble.Stop();
         }

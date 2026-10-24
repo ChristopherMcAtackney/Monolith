@@ -24,6 +24,7 @@ namespace Monolith.View
         SpaceDust _dust;
         Vector3 _velocity;
         bool _kicked;
+        bool _wasDeath;
 
         public Camera Camera => _cam;
         public ViewSettings Settings => _settings;
@@ -74,6 +75,18 @@ namespace Monolith.View
 
         void Follow()
         {
+            var death = _world.Death;
+            if (death.CameraActive)
+            {
+                // The death sequence has the eye (first person throughout): its pose, its field of view, its speed for the dust.
+                transform.SetPositionAndRotation(death.Position, death.Rotation);
+                _cam.fieldOfView = death.Fov;
+                _wasDeath = true; _kicked = false;
+                _velocity = death.Velocity;
+                _dust.Update(transform.position, transform.forward, _velocity, _cam.nearClipPlane, 1f, 1f - death.Dark);
+                return;
+            }
+            if (_wasDeath) { _wasDeath = false; _cam.fieldOfView = _settings.camera.fovVertical; }
             var ship = _world.Ships.Get(_world.LocalPlayerShip);
             if (ship != null)
             {

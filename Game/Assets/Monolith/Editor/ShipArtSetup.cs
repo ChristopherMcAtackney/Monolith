@@ -392,7 +392,7 @@ namespace Monolith.EditorTools
     /// decal atlases (names with "damage") clamp and keep their alpha).</summary>
     public sealed class ShipArtImport : AssetPostprocessor
     {
-        public override uint GetVersion() => 5;
+        public override uint GetVersion() => 6;
 
         static bool InArt(string path) => path.StartsWith(ShipArtSetup.ArtRoot + "/", StringComparison.OrdinalIgnoreCase);
 
@@ -414,7 +414,7 @@ namespace Monolith.EditorTools
             m.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
             m.materialLocation = ModelImporterMaterialLocation.InPrefab;
             m.meshCompression = ModelImporterMeshCompression.Off;
-            m.isReadable = false;
+            m.isReadable = assetPath.IndexOf("/Cabin/", StringComparison.OrdinalIgnoreCase) >= 0;      // the cabin model is cut into pieces at run time (Juice/DeathFx); ships are not
             m.optimizeMeshPolygons = true;
             m.optimizeMeshVertices = true;
             m.weldVertices = true;

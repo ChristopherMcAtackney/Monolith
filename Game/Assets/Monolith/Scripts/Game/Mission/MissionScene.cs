@@ -54,6 +54,9 @@ namespace Monolith.Game
         bool _paused, _briefing, _keepLod0;
         ControlsConfig _controls;                 // the player's controls (null when the AI flies); the pause screen flips its invert switches
         string _controlsSource;
+        bool _hudWanted, _dyingShown, _deathFired;     // the HUDs stand down for the player's death sequence and come back for the failure flow
+        float _deathAt = -1f;                           // -mnDeathTest: kill the player at this sim time (sceneOptions "death": { "at", "cause" })
+        string _deathCause = "gunfire";
         int _nextLevel, _runs;
         string _pacingLog;
 
@@ -106,6 +109,11 @@ namespace Monolith.Game
             self._flightHud.ShowTarget = false;
             self._hud = CombatHud.CombatHud.Create(world, view.Camera, root.transform);
             self._flightHud.enabled = hud; self._hud.enabled = hud;
+            self._hudWanted = hud;
+            self._juice.Death.SeatedEyeShip = viewSettings.camera.Eye;
+            self._juice.Death.WreckVisual = () => PlaceholderShips.Fighter("Wreck", ShipCatalog.Load(world.Ships.Get(world.LocalPlayerShip)?.ClassId ?? "vanguard_fighter").Size, mats, root.transform).transform;
+            if (opts?["death"] is JObject dopt) { self._deathAt = (float)(dopt["at"] ?? 8f); self._deathCause = (string)dopt["cause"] ?? "gunfire"; }
+            else if (CommandLine.Has("-mnDeathTest")) { self._deathAt = CommandLine.GetFloat("-mnDeathAt", 8f); self._deathCause = CommandLine.Get("-mnDeathCause", "gunfire"); }
 
             // The cabin is on in every played mission (a pad, or a scripted cabin in a capture plan); the AI-flown runs leave it out unless the plan asks.
             self._cabinOpts = opts?["cabin"] as JObject;
@@ -149,6 +157,8 @@ namespace Monolith.Game
             _keeper = new PlayerKeeper(_world, _rig, _rt, _host.PlayerInvulnerable);
             _world.Sim.Register(_keeper);
             _rt.OnEnded += OnEnded;
+            _rt.HoldPlayerDeath = () => _world.Death.Active;
+            _deathFired = false;
             _rt.Start();
         }
 
@@ -170,6 +180,8 @@ namespace Monolith.Game
             if (_pad != null) _world.Pilots.Attach(_world.LocalPlayerShip, WrapPilot());
             _hud.Banner = null; _hud.BannerSub = null;
             _flightHud.Overlay = null;
+            _juice.Death.Reset();
+            _flightHud.enabled = _hudWanted; _hud.enabled = _hudWanted; _dyingShown = false;
         }
 
         // ------------------------------------------------------------------------------------------------ the cabin
@@ -237,7 +249,9 @@ namespace Monolith.Game
                 _host.WarmLods.Clear();
             }
             if (_file == null) { _flightHud.Overlay = new[] { "MISSION NOT LOADED", _error ?? "" }; if (Keyboard.current?.f10Key.wasPressedThisFrame == true || Gamepad.current?.buttonEast.wasPressedThisFrame == true) Application.Quit(1); return; }
+            if (_deathAt >= 0f && !_deathFired && _world.Time >= _deathAt) { _deathFired = true; KillPlayer(_deathCause); }
             UpdateInfo();
+            if (UpdateDeath()) return;                      // the player's death sequence has the screen and the buttons
             if (_pad == null) return;
             _flightHud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
             var pad = Gamepad.current; var kb = Keyboard.current;
@@ -328,6 +342,61 @@ namespace Monolith.Game
             lines.Add("L3 AFTERBURNER   X MATCH SPEED   D-PAD THROTTLE PRESETS");
             lines.Add("SOUND  F3 F4 VOICE   F5 F6 MUSIC   F7 F8 EFFECTS   - AND + MASTER   F2 SOUND OFF");
             return lines.ToArray();
+        }
+
+        // ------------------------------------------------------------------------------------------------ the player's death
+
+        /// <summary>
+        /// While the death sequence plays (Juice/DeathFx): no HUD, no banner, A or Start skips it (after a moment). When it is over the HUD comes back for the
+        /// ordinary failure flow, over a black screen. True while it is playing (the other buttons do nothing).
+        /// </summary>
+        bool UpdateDeath()
+        {
+            var death = _world.Death;
+            bool dying = death.Active;
+            if (dying != _dyingShown)
+            {
+                _dyingShown = dying;
+                _flightHud.enabled = _hudWanted && !dying; _hud.enabled = _hudWanted && !dying;
+                if (dying) { _paused = false; _briefing = false; _flightHud.Overlay = null; _hud.Banner = null; _hud.BannerSub = null; }
+            }
+            if (!dying)
+            {
+                if (death.Finished && _rt != null && _rt.Started && !_rt.Ended) _rt.End("defeat", "SHIP LOST");      // a mission that lets the player die without ending: the failure flow still follows the sequence
+                return false;
+            }
+            var pad = Gamepad.current; var kb = Keyboard.current;
+            bool skip = pad != null && (pad.buttonSouth.wasPressedThisFrame || pad.startButton.wasPressedThisFrame) || kb != null && (kb.enterKey.wasPressedThisFrame || kb.escapeKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame);
+            if (skip) _juice.Death.TrySkip();
+            return true;
+        }
+
+        /// <summary>The death test (-mnDeathTest, a plan's "death" option): the player is hit by something that kills at once, by gunfire, a blast, a beam or a collision.</summary>
+        void KillPlayer(string cause)
+        {
+            var me = _world.Ships.Get(_world.LocalPlayerShip);
+            var pc = _world.Combat.Get(_world.LocalPlayerShip);
+            if (me == null || pc == null || !pc.Alive) return;
+            pc.Invulnerable = false;
+            Vector3 fwd = me.Rotation * Vector3.forward;
+            Vector3 point = me.Position + me.Rotation * new Vector3(0.7f, 0.5f, 3.2f);
+            var req = new DamageRequest
+            {
+                Ship = me.Id, Attacker = GameWorld.NoShip, Amount = 1e6f, ShieldMult = 1f, HullMult = 1f, SubsystemMult = 1f, Point = point, Direction = fwd, Normal = -fwd, Part = -1,
+                Kind = DamageKind.Projectile, BypassShield = true, Weapon = "turret_laser",
+            };
+            switch (cause)
+            {
+                case "blast": req.Kind = DamageKind.Blast; req.Weapon = "missile_heat"; break;
+                case "beam": req.Kind = DamageKind.Beam; req.Weapon = "beam_slash"; break;
+                case "collision":
+                    req.Kind = DamageKind.Collision; req.Weapon = null;
+                    GameEvents.RaiseAt(CombatEvents.Collision, point, -fwd, null, 55f, me.Id, GameWorld.NoShip);
+                    break;
+            }
+            if (cause != "collision") GameEvents.RaiseAt(CombatEvents.HitHull, point, -fwd, req.Weapon, 400f, me.Id, GameWorld.NoShip);
+            _world.Damage.Add(req);
+            MnLog.Info($"DEATH test: the player is killed by {cause} at {_world.Time:0.0} s");
         }
 
         void UpdateInfo()

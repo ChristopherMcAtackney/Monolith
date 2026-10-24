@@ -76,6 +76,9 @@ namespace Monolith.Core
         /// degrees added to the field of view, and how many times longer and brighter the motion dust is drawn. 0, 1, 1 when not boosting.
         /// </summary>
         public float FovKick;
+
+        /// <summary>The player's death sequence (owner: Juice/DeathFx; read by the view, the cabin rig, the scenes). Never null.</summary>
+        public DeathBoard Death = new DeathBoard();
         public float DustStretch = 1f, DustBright = 1f;
     }
 }

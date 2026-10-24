@@ -17,5 +17,6 @@
     "fovHold": 12.0, "fovPunch": 8.0, "shake": 1.0, "rumble": 1.0,
     "lens": 1.0, "streaks": 1.0, "flare": 1.0, "sound": 1.0
   },
+  "death": { "enabled": true, "intensity": 1.0, "tumble": 1.0 },
   "slowMo": 0.25
 }

@@ -1,0 +1,14 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "hud": false,
+  "cabin": { "script": [] },
+  "death": { "at": 3.0, "cause": "gunfire" }
+ },
+ "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 2.5 },
+ "stills": [],
+ "perf": [
+  { "name": "death", "follow": true, "seconds": 8, "warmup": 2.5 }
+ ]
+}

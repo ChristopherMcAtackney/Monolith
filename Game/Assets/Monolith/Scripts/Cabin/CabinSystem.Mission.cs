@@ -151,6 +151,7 @@ namespace Monolith.Cabin
             var e = Cfg.exposure;
             float standEv = _effective == "blackout" ? e.blackout : _effective == "dark" ? e.dark : _effective == "emergency" ? e.emergency : _effective == "alert" ? e.alert : e.lit;
             float want = Mathf.Lerp(e.seated, standEv, Ease(Mathf.Clamp01(Board.Stand01)));
+            if (World.Death.CameraActive) { want = e.seated; _ev = e.seated; }      // the death sequence is lit for the seated eye (its flashes and fires are written for it)
             float rate = want < _ev ? 1f / Mathf.Max(0.05f, e.openSeconds) : 1f / Mathf.Max(0.05f, e.closeSeconds);
             _ev = Mathf.MoveTowards(_ev, want, Mathf.Abs(want - _ev) * Mathf.Min(1f, rate * dt * 2.2f) + 0.002f);
             Board.ExposureShift = _ev - e.seated;
@@ -159,7 +160,7 @@ namespace Monolith.Cabin
             float eyeOpen = Mathf.Pow(2f, Mathf.Min(0f, _ev - e.lit));
             float dark01 = Mathf.Clamp01((_ev - e.blackout) / Mathf.Max(0.01f, e.lit - e.blackout));
             float fill = Cfg.light.ambientScale * eyeOpen * Mathf.Lerp(Cfg.light.ambientBlackout, 1f, dark01);
-            Board.AmbientScale = Mathf.Lerp(1f, fill, Ease(Mathf.Clamp01(Board.Stand01)));
+            Board.AmbientScale = World.Death.CameraActive ? 1f : Mathf.Lerp(1f, fill, Ease(Mathf.Clamp01(Board.Stand01)));
             Board.NitsPerUnit = 1.2f * Mathf.Pow(2f, e.seated + Board.ExposureShift);
             StepAmbient(dt);
         }

@@ -125,6 +125,8 @@ namespace Monolith.Cabin
         void LateUpdate()
         {
             if (!_built) return;
+            // The death sequence has its own cabin, torn to pieces (Juice/DeathFx): this one is not drawn while it plays.
+            if (_world.Death.Active) { if (_root != null && _root.gameObject.activeSelf) _root.gameObject.SetActive(false); return; }
             var b = _cab.Board;
             var ship = _world.Ships.Get(_world.LocalPlayerShip);
             if (ship == null) { SetInteriorVisible(false); return; }

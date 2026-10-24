@@ -34,6 +34,7 @@ namespace Monolith.Game
             yield return new WaitForSeconds(1.0f);
             if (CommandLine.Has("-mnJuiceSelfTest")) SelfTest();
             if (CommandLine.Has("-mnJuiceSelfTest")) yield return BoostCheck();
+            if (CommandLine.Has("-mnJuiceSelfTest")) yield return DeathCheck();
             if (CommandLine.Has("-mnRumbleTest")) yield return RumbleTest();
             if (CommandLine.Has("-mnPanelDrive")) yield return PanelDrive();
             if (CommandLine.Has("-mnPanelShot"))
@@ -164,6 +165,64 @@ namespace Monolith.Game
             Check(!me.AfterburnerOn && me.Fuel < 40f, $"the burner is out on an empty tank (fuel {me.Fuel:0})");
 
             MnLog.Info($"JUICE boostcheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: ignition, view, dust, lens, release, off switch, dry tank");
+            if (fails > 0) Application.Quit(1);
+        }
+
+        /// <summary>
+        /// The player's death on the running sandbox: it takes the eye (first person: the pose is the player's own eye thrown out, never a camera apart), the HUD
+        /// stands down, the events come in order, it cannot be skipped in its first moments and can after, the view ends black, the ordinary destroyed-ship event
+        /// starts it too and the off switch stops that. About 8 s.
+        /// </summary>
+        IEnumerator DeathCheck()
+        {
+            int fails = 0;
+            void Check(bool ok, string what) { if (!ok) { fails++; MnLog.Error("JUICE deathcheck FAILED: " + what); } }
+            var world = GameWorld.Current;
+            var juice = _box.Juice;
+            var death = juice.Death;
+            var board = world.Death;
+            var ids = new System.Collections.Generic.List<string>();
+            var sub = GameEvents.SubscribeAll(e => { if (e.Id.StartsWith("death_", StringComparison.Ordinal)) ids.Add(e.Id); });
+            yield return new WaitForSeconds(0.5f);
+            Check(!board.Active && !board.CameraActive, "no death, the view is the flight view");
+            int tickPlays = board.Plays;
+            var me = world.Ships.Get(world.LocalPlayerShip);
+            var cam = world.MainCamera.transform;
+            Vector3 p0 = cam.position; Quaternion q0 = cam.rotation;
+            _box.Trigger("death_gunfire");
+            yield return new WaitForSeconds(0.25f);
+            Check(board.Active && board.CameraActive && !board.Finished && board.Plays == tickPlays + 1, "the sequence has the eye from the hit");
+            Check(death.Parts >= 20, $"the cabin model is in pieces to tear ({death.Parts})");
+            Check(!death.TrySkip(), "it cannot be skipped in its first moments");
+            yield return new WaitForSeconds(0.9f);
+            float away = Vector3.Distance(board.Position, me.Position);
+            Check(away > 6f, $"flung out of the ship: the eye is {away:0} m from it a second after the hit");
+            Check(Quaternion.Angle(q0, board.Rotation) > 45f, $"tumbling: the view has turned {Quaternion.Angle(q0, board.Rotation):0} degrees");
+            Check(Mathf.Abs(Vector3.Distance(cam.position, board.Position)) < 3f, "the camera is the sequence's eye (first person, no external view)");
+            Check(!_box.HudOn, "the HUD stands down");
+            yield return new WaitForSeconds(0.5f);
+            Check(death.TrySkip(), "it can be skipped after a moment");
+            yield return new WaitForSeconds(1.0f);
+            Check(!board.Active && board.Finished && board.CameraActive && juice.Context.Frame.DeathA.z > 0.99f, "skipped: over, and the screen is black");
+            string order = string.Join(" ", ids);
+            Check(ids.Count >= 6 && ids[0] == DeathEvents.Start && ids.IndexOf(DeathEvents.Decompression) > ids.IndexOf(DeathEvents.CanopyCrack) && order.Contains(DeathEvents.Skip) && ids[ids.Count - 1] == DeathEvents.End,
+                  $"the events came in order: {order}");
+            death.Reset();
+            yield return new WaitForSeconds(0.3f);
+            Check(!board.Active && !board.CameraActive && !board.Finished && !juice.Context.Frame.DeathActive, "reset: the flight view is back");
+
+            // The ordinary destroyed-ship event for the player starts it too; the off switch stops that.
+            juice.Settings.death.enabled = false;
+            GameEvents.RaiseAt(CombatEvents.ShipDestroyed, me.Position, Vector3.zero, "fighter", me.Radius, me.Id, GameWorld.NoShip);
+            yield return new WaitForSeconds(0.2f);
+            Check(!board.Active, "with the death sequence off, the destroyed ship does not start it");
+            juice.Settings.death.enabled = true;
+            GameEvents.RaiseAt(CombatEvents.ShipDestroyed, me.Position, Vector3.zero, "fighter", me.Radius, me.Id, GameWorld.NoShip);
+            yield return new WaitForSeconds(0.2f);
+            Check(board.Active, "the destroyed player ship starts it");
+            death.Reset();
+            sub.Dispose();
+            MnLog.Info($"JUICE deathcheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: the eye, the pieces, the fling, the tumble, the skip, the events, the black, the off switch");
             if (fails > 0) Application.Quit(1);
         }
 

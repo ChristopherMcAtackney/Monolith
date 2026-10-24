@@ -34,12 +34,15 @@ namespace Monolith.Game
         PlaceholderShips.Materials _mats;
         Transform _root;
         public JuiceDirector Juice { get; private set; }
+        /// <summary>The flight HUD is drawing (the checks read it).</summary>
+        public bool HudOn => _hud != null && _hud.enabled;
         public SandboxCombat Combat { get; private set; }
         JuicePanel _panel;
         ShipState _player;
         SandboxPilot _pilot;
         FlightHud _hud;
         bool _slowMo, _scripted;
+        bool _deathShown; float _deathDoneFor;
         float _dirtyAt = -1f, _savedAt = -10f;
         string _lastAction = "ready";
         SandboxShip _cruiser, _destroyer;
@@ -86,6 +89,7 @@ namespace Monolith.Game
             // A capture plan may change any setting for its run: "sceneOptions": { "juice": { "effects": { "lights": false } } }.
             if (opts != null && opts["juice"] != null) Newtonsoft.Json.JsonConvert.PopulateObject(opts["juice"].ToString(), settings);
             self.Juice = JuiceDirector.Create(world, view.Camera, root.transform, settings);
+            self.Juice.Death.SeatedEyeShip = view.Settings.camera.Eye;
             self.Juice.OwnsTimeScale = true;
             self.Combat = new SandboxCombat(world, flight, self.Juice, self._player.Id);
             world.Sim.Register(self.Combat);
@@ -304,6 +308,19 @@ namespace Monolith.Game
             boost.Add(PanelItem.Slider("Whoomph and sputter volume", () => b.sound, v => b.sound = v, 0f, 1.5f, 0.05f));
             boost.Add(PanelItem.Info(() => _world.Ships.Get(_player.Id) is ShipState me ? $"speed {me.ForwardSpeed:0} m/s   fuel {me.Fuel:0} of {me.FuelMax:0}   view +{Juice.Boost.FovKick:0.0} deg" : ""));
             _panel.Pages.Add(boost);
+
+            var death = new PanelPage("DEATH");
+            Juice.Death.WreckVisual = () => PlaceholderShips.Fighter("Wreck", ShipCatalog.Load(_player.ClassId).Size, _mats, _root).transform;
+            var dt = s.death;
+            death.Add(PanelItem.Info(() => "Your own death, first person throughout: the cabin tears apart, you are flung out, you die. A skips it after a second."));
+            death.Add(PanelItem.Button("Shot down (gunfire)", () => Trigger("death_gunfire")), PanelItem.Button("Blown up (blast)", () => Trigger("death_blast")));
+            death.Add(PanelItem.Button("Cut down (beam)", () => Trigger("death_beam")), PanelItem.Button("Collision", () => Trigger("death_collision")));
+            death.Add(PanelItem.Toggle("Death sequence", () => dt.enabled, v => dt.enabled = v), PanelItem.Button("Back to flying", () => { Juice.Death.Reset(); _deathDoneFor = 0f; }));
+            death.Add(PanelItem.Slider("Intensity (flash, shake, pad)", () => dt.intensity, v => dt.intensity = v, 0f, 2f, 0.05f));
+            death.Add(PanelItem.Slider("Tumble speed (0 = steady view)", () => dt.tumble, v => dt.tumble = v, 0f, 1.5f, 0.05f));
+            death.Add(PanelItem.Info(() => _world.Death.Active ? $"{_world.Death.Cause}  {_world.Death.Time:0.0} s  {_world.Death.Phase}" : _world.Death.Finished ? "over: the screen is black until it resets" : "ready"));
+            _panel.Pages.Add(death);
+            if (CommandLine.Has("-mnDeathTest")) Combat.Schedule(CommandLine.GetFloat("-mnDeathAt", 3f), () => Trigger("death_" + CommandLine.Get("-mnDeathCause", "gunfire")));
         }
 
         void Preset(string name)
@@ -326,9 +343,31 @@ namespace Monolith.Game
 
         // ------------------------------------------------------------------------------------------------ per frame
 
+        /// <summary>The player's death sequence in the sandbox: the HUD stands down, A skips it, and a couple of seconds after it ends the view comes back.</summary>
+        void UpdateDeath()
+        {
+            var death = _world.Death;
+            if (death.Active != _deathShown)
+            {
+                _deathShown = death.Active;
+                if (_hud != null) _hud.enabled = !death.Active;
+            }
+            if (death.Active)
+            {
+                var pad = Gamepad.current; var kb = Keyboard.current;
+                if (pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame) Juice.Death.TrySkip();
+            }
+            if (death.Finished && !death.Active && !_scripted)
+            {
+                _deathDoneFor += Time.unscaledDeltaTime;
+                if (_deathDoneFor > 2.5f) { Juice.Death.Reset(); _deathDoneFor = 0f; }
+            }
+        }
+
         void Update()
         {
             if (_dirtyAt > 0f && Time.unscaledTime >= _dirtyAt) SaveNow();
+            UpdateDeath();
             if (_scripted) return;
             var pad = Gamepad.current;
             var kb = Keyboard.current;
@@ -404,6 +443,8 @@ namespace Monolith.Game
                 case "boost": _pilot.BoostFor(4f); _lastAction = "boost for 4 s"; break;
                 case "boost_dry": _pilot.BoostFor(60f); _lastAction = "boost until the tank runs dry"; break;
                 case "wing_burn": WingBurn(5f); break;
+                case "death_gunfire": case "death_blast": case "death_beam": case "death_collision":
+                    Juice.Death.Trigger(name.Substring(6)); _lastAction = "your death: " + name.Substring(6); break;
                 default: MnLog.Warn($"JUICE sandbox: unknown event '{name}'"); return;
             }
             _lastTrigger = name;

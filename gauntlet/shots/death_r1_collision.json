@@ -1,0 +1,34 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "hud": false,
+  "cabin": { "script": [] },
+  "death": { "at": 9.0, "cause": "collision" }
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "collision_000", "follow": true, "warmup": 8.9000 },
+  { "name": "collision_001", "follow": true, "warmup": 0.1800 },
+  { "name": "collision_002", "follow": true, "warmup": 0.0500 },
+  { "name": "collision_003", "follow": true, "warmup": 0.0800 },
+  { "name": "collision_004", "follow": true, "warmup": 0.1200 },
+  { "name": "collision_005", "follow": true, "warmup": 0.1400 },
+  { "name": "collision_006", "follow": true, "warmup": 0.1000 },
+  { "name": "collision_007", "follow": true, "warmup": 0.0800 },
+  { "name": "collision_008", "follow": true, "warmup": 0.1000 },
+  { "name": "collision_009", "follow": true, "warmup": 0.1500 },
+  { "name": "collision_010", "follow": true, "warmup": 0.2000 },
+  { "name": "collision_011", "follow": true, "warmup": 0.3000 },
+  { "name": "collision_012", "follow": true, "warmup": 0.4000 },
+  { "name": "collision_013", "follow": true, "warmup": 0.4500 },
+  { "name": "collision_014", "follow": true, "warmup": 0.5000 },
+  { "name": "collision_015", "follow": true, "warmup": 0.5000 },
+  { "name": "collision_016", "follow": true, "warmup": 0.5000 },
+  { "name": "collision_017", "follow": true, "warmup": 0.5000 },
+  { "name": "collision_018", "follow": true, "warmup": 0.5000 },
+  { "name": "collision_019", "follow": true, "warmup": 0.5000 },
+  { "name": "collision_020", "follow": true, "warmup": 0.4000 },
+  { "name": "collision_021", "follow": true, "warmup": 0.5000 }
+ ]
+}

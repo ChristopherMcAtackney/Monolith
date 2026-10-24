@@ -89,6 +89,11 @@ namespace Monolith.Game
                 case JuiceCue.UiClick: return "ui_click";
                 case JuiceCue.BoostWhoomph: return "afterburner_whoomph";
                 case JuiceCue.BoostSputter: return "afterburner_sputter";
+                case JuiceCue.DeathCrack: return "death_crack";
+                case JuiceCue.DeathScream: return "death_scream";
+                case JuiceCue.DeathDecompress: return "death_decompress";
+                case JuiceCue.DeathBreath: return "death_breath";
+                case JuiceCue.DeathHeartbeat: return "death_heartbeat";
                 case JuiceCue.JumpIn: return gain >= 0.9f ? "jump_in_big" : "jump_in";
                 case JuiceCue.JumpOut: return gain >= 0.9f ? "jump_out_big" : "jump_out";
                 default: return cue.ToString().ToLowerInvariant();

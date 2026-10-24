@@ -46,6 +46,10 @@ namespace Monolith.Juice
         public Vector4 BoostZone = new Vector4(0.34f, 0.98f, 0f, 0f);
         public Vector3 BoostSafe = new Vector3(0.5f, 0.5f, 0f);
         public bool BoostActive => BoostBlur > 0.0015f || BoostChroma > 0.0003f || BoostGlow.sqrMagnitude > 1e-6f;
+
+        /// <summary>The death overlay (pass 5 of MN_Fx, see <see cref="DeathFx"/>): A = iris radius, softness, black, cracks; B = impact point (screen, y down), crack growth, seed; C = light added (rgb), red at the iris edge.</summary>
+        public bool DeathActive;
+        public Vector4 DeathA = new Vector4(2f, 0.2f, 0f, 0f), DeathB = new Vector4(0.5f, 0.4f, 0f, 1f), DeathC;
     }
 
     /// <summary>
@@ -77,6 +81,7 @@ namespace Monolith.Juice
         RTHandle _copy;                                   // the boost lens reads the picture from here
         static readonly int IdSceneCopy = Shader.PropertyToID("_MN_SceneCopy"), IdBoostA = Shader.PropertyToID("_MN_BoostA"),
             IdBoostZone = Shader.PropertyToID("_MN_BoostZone"), IdBoostSafe = Shader.PropertyToID("_MN_BoostSafe"), IdBoostGlow = Shader.PropertyToID("_MN_BoostGlow");
+        static readonly int IdDeathA = Shader.PropertyToID("_MN_DeathA"), IdDeathB = Shader.PropertyToID("_MN_DeathB"), IdDeathC = Shader.PropertyToID("_MN_DeathC");
 
         protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
         {
@@ -158,6 +163,14 @@ namespace Monolith.Juice
                 p.SetVector(IdEdgeColour, Frame.EdgeColour);
                 p.SetVector(IdEdgeParams, Frame.EdgeParams);
                 ctx.cmd.DrawProcedural(Matrix4x4.identity, _material, 3, MeshTopology.Triangles, 3, 1, p);
+            }
+
+            if (Frame.DeathActive)
+            {
+                p.SetVector(IdDeathA, Frame.DeathA);
+                p.SetVector(IdDeathB, Frame.DeathB);
+                p.SetVector(IdDeathC, Frame.DeathC);
+                ctx.cmd.DrawProcedural(Matrix4x4.identity, _material, 5, MeshTopology.Triangles, 3, 1, p);
             }
         }
 

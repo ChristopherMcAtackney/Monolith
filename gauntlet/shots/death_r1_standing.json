@@ -1,0 +1,34 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "escort",
+  "hud": false,
+  "cabin": { "script": [ { "t": 1.0, "do": "stand" }, { "do": "face", "yaw": 160, "pitch": -6 } ] },
+  "death": { "at": 7.0, "cause": "blast" }
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "standing_000", "follow": true, "warmup": 6.9000 },
+  { "name": "standing_001", "follow": true, "warmup": 0.1800 },
+  { "name": "standing_002", "follow": true, "warmup": 0.0500 },
+  { "name": "standing_003", "follow": true, "warmup": 0.0800 },
+  { "name": "standing_004", "follow": true, "warmup": 0.1200 },
+  { "name": "standing_005", "follow": true, "warmup": 0.1400 },
+  { "name": "standing_006", "follow": true, "warmup": 0.1000 },
+  { "name": "standing_007", "follow": true, "warmup": 0.0800 },
+  { "name": "standing_008", "follow": true, "warmup": 0.1000 },
+  { "name": "standing_009", "follow": true, "warmup": 0.1500 },
+  { "name": "standing_010", "follow": true, "warmup": 0.2000 },
+  { "name": "standing_011", "follow": true, "warmup": 0.3000 },
+  { "name": "standing_012", "follow": true, "warmup": 0.4000 },
+  { "name": "standing_013", "follow": true, "warmup": 0.4500 },
+  { "name": "standing_014", "follow": true, "warmup": 0.5000 },
+  { "name": "standing_015", "follow": true, "warmup": 0.5000 },
+  { "name": "standing_016", "follow": true, "warmup": 0.5000 },
+  { "name": "standing_017", "follow": true, "warmup": 0.5000 },
+  { "name": "standing_018", "follow": true, "warmup": 0.5000 },
+  { "name": "standing_019", "follow": true, "warmup": 0.5000 },
+  { "name": "standing_020", "follow": true, "warmup": 0.4000 },
+  { "name": "standing_021", "follow": true, "warmup": 0.5000 }
+ ]
+}

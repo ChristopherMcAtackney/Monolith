@@ -40,7 +40,7 @@ namespace Monolith.Cabin
         void LateUpdate()
         {
             _lines.Clear();
-            if (_cam != null && _cab != null) Draw(_cam.pixelWidth, _cam.pixelHeight);
+            if (_cam != null && _cab != null && !_world.Death.Active) Draw(_cam.pixelWidth, _cam.pixelHeight);      // nothing over the death sequence
             _lines.Commit();
         }
 

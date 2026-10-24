@@ -273,6 +273,9 @@ all but disappears and the HUD takes over. Out of the seat, the cabin is physica
 Terrifying, and first person throughout: the ship's geometry rips apart around you, you're physically
 flung out into space, and then you die. It works whether you are seated or standing. Variations by cause
 are the builder's call; the slice needs at least one strong version.
+Built (round 1): about 5.9 s from the hit, first person throughout, seated or standing: the canopy cracks and blows out, the real cabin model tears apart into pieces
+around you, you are flung through the breach tumbling while your ship breaks up and burns behind you, then the view closes, the sound collapses, a heartbeat stops and it
+is black; A or Start skips it after a moment, then the ordinary failure flow. By cause: gunfire, blast, beam, collision. See `gauntlet/pieces/death/history.md`.
 
 ### What the mission system needs for it
 - **Conditions:** player seated or standing; ship powered or dark; player detected by a scan; a

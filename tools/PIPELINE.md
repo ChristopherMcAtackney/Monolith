@@ -74,7 +74,7 @@ Juice sandbox: `-mnScene juice` (the panel is Start; settings save to `juice.jso
 `"scene": "juice"` and `"sceneOptions": { "script": [ {"t": 3.0, "do": "event", "name": "capital_death"} ] }` drives it (steps are
 documented in `Scripts/Game/Sandbox/SandboxScript.cs`); `python tools\juice\make_plan.py spec.json plan.json` turns absolute shot
 times into the plan's warm-ups, `tools\juice\sheet.py` and `clip.py` make contact sheets and clips from the stills. Check flags:
-`-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`, `-mnShakeLog file.csv`, `-mnBoostLog file.csv` (the boost's view, dust and lens numbers each frame; plans `gauntlet/shots/boost_r1_*.json`, `-mnPerfSync` for the GPU time),
+`-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`, `-mnShakeLog file.csv`, `-mnDeathTest [-mnDeathAt s] [-mnDeathCause gunfire|blast|beam|collision]` (the player is killed at that time: in a mission through the real damage path, in the sandbox the sequence just plays; a plan's `sceneOptions.death: { at, cause }` does the same), `-mnBoostLog file.csv` (the boost's view, dust and lens numbers each frame; plans `gauntlet/shots/boost_r1_*.json`, `-mnPerfSync` for the GPU time),
 `-mnJuiceHitchLog`, `-mnAudioMute`. Captures make no sound and never write `juice.json`.
 
 Combat range: `-mnScene range` (Start pauses and lists the controls; `-mnControls file`). A plan with `"scene": "range"` and

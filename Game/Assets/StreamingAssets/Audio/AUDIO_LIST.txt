@@ -60,6 +60,11 @@ EFFECTS  (sfx\<name>; "_far" files are the distant versions; _0 _1 _2 are varian
   sfx\afterburner_off                           
   sfx\afterburner_whoomph                       the boost's ignition punch (juice), over afterburner_on
   sfx\afterburner_sputter                       the empty tank: four coughs and a flameout
+  sfx\death_crack                               the canopy fractures (death)
+  sfx\death_scream                              the hull tears (death)
+  sfx\death_decompress                          the canopy blows out, the air goes (death): the loudest sound there is
+  sfx\death_breath                              your own breathing (death)
+  sfx\death_heartbeat                           one heartbeat (death)
   sfx\cabin_air                                 (loops)  
   sfx\alarm_hull                                (loops)  
   sfx\alarm_beep                                
