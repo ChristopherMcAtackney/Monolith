@@ -1,24 +1,24 @@
 {
  "lods": {
   "0": {
-   "triangles": 40838,
-   "vertices": 78888,
-   "subsystemTriangles": 36718
+   "triangles": 45078,
+   "vertices": 87368,
+   "subsystemTriangles": 39046
   },
   "1": {
-   "triangles": 5664,
-   "vertices": 12400
+   "triangles": 5668,
+   "vertices": 12408
   },
   "2": {
-   "triangles": 3568,
-   "vertices": 8418
+   "triangles": 3620,
+   "vertices": 8522
   }
  },
  "subsystems": [
   {
    "name": "SUB_engine_C",
    "kind": "engine",
-   "radius": 8.58,
+   "radius": 5.779999999999999,
    "hp": 2.0,
    "tags": [
     "propulsion"
@@ -41,6 +41,7 @@
    "parts": {
     "intact": [
      "SUB_engine_C__base",
+     "SUB_engine_C__core",
      "SUB_engine_C__plume"
     ],
     "destroyed": [
@@ -51,9 +52,9 @@
     {
      "name": "SUB_engine_C__debris_00",
      "position": [
-      5.28,
+      2.72,
       0.0,
-      13.0
+      6.6
      ],
      "velocity": [
       2.2969,
@@ -69,9 +70,9 @@
     {
      "name": "SUB_engine_C__debris_01",
      "position": [
-      -4.62,
-      1.98,
-      14.5
+      -2.38,
+      1.02,
+      7.3
      ],
      "velocity": [
       2.9,
@@ -88,7 +89,7 @@
      "name": "SUB_engine_C__debris_02",
      "position": [
       0.0,
-      -3.3,
+      -1.7,
       3.0
      ],
      "velocity": [
@@ -107,7 +108,7 @@
   {
    "name": "SUB_engine_01",
    "kind": "engine",
-   "radius": 5.9799999999999995,
+   "radius": 4.5,
    "hp": 1.2,
    "tags": [
     "propulsion"
@@ -130,6 +131,7 @@
    "parts": {
     "intact": [
      "SUB_engine_01__base",
+     "SUB_engine_01__core",
      "SUB_engine_01__plume"
     ],
     "destroyed": [
@@ -140,9 +142,9 @@
     {
      "name": "SUB_engine_01__debris_00",
      "position": [
-      3.68,
+      2.0,
       0.0,
-      9.8
+      5.16
      ],
      "velocity": [
       6.5949,
@@ -158,9 +160,9 @@
     {
      "name": "SUB_engine_01__debris_01",
      "position": [
-      -3.22,
-      1.38,
-      10.9
+      -1.75,
+      0.75,
+      5.68
      ],
      "velocity": [
       -1.2195,
@@ -177,7 +179,7 @@
      "name": "SUB_engine_01__debris_02",
      "position": [
       0.0,
-      -2.3,
+      -1.25,
       3.0
      ],
      "velocity": [
@@ -196,7 +198,7 @@
   {
    "name": "SUB_engine_02",
    "kind": "engine",
-   "radius": 5.9799999999999995,
+   "radius": 4.5,
    "hp": 1.2,
    "tags": [
     "propulsion"
@@ -219,6 +221,7 @@
    "parts": {
     "intact": [
      "SUB_engine_02__base",
+     "SUB_engine_02__core",
      "SUB_engine_02__plume"
     ],
     "destroyed": [
@@ -229,9 +232,9 @@
     {
      "name": "SUB_engine_02__debris_00",
      "position": [
-      3.68,
+      2.0,
       0.0,
-      9.8
+      5.16
      ],
      "velocity": [
       -0.8855,
@@ -247,9 +250,9 @@
     {
      "name": "SUB_engine_02__debris_01",
      "position": [
-      -3.22,
-      1.38,
-      10.9
+      -1.75,
+      0.75,
+      5.68
      ],
      "velocity": [
       -5.7057,
@@ -266,7 +269,7 @@
      "name": "SUB_engine_02__debris_02",
      "position": [
       0.0,
-      -2.3,
+      -1.25,
       3.0
      ],
      "velocity": [
@@ -285,7 +288,7 @@
   {
    "name": "SUB_engine_03",
    "kind": "engine",
-   "radius": 5.9799999999999995,
+   "radius": 4.5,
    "hp": 1.2,
    "tags": [
     "propulsion"
@@ -308,6 +311,7 @@
    "parts": {
     "intact": [
      "SUB_engine_03__base",
+     "SUB_engine_03__core",
      "SUB_engine_03__plume"
     ],
     "destroyed": [
@@ -318,9 +322,9 @@
     {
      "name": "SUB_engine_03__debris_00",
      "position": [
-      3.68,
+      2.0,
       0.0,
-      9.8
+      5.16
      ],
      "velocity": [
       3.6279,
@@ -336,9 +340,9 @@
     {
      "name": "SUB_engine_03__debris_01",
      "position": [
-      -3.22,
-      1.38,
-      10.9
+      -1.75,
+      0.75,
+      5.68
      ],
      "velocity": [
       4.3531,
@@ -355,7 +359,7 @@
      "name": "SUB_engine_03__debris_02",
      "position": [
       0.0,
-      -2.3,
+      -1.25,
       3.0
      ],
      "velocity": [
@@ -374,7 +378,7 @@
   {
    "name": "SUB_engine_04",
    "kind": "engine",
-   "radius": 5.9799999999999995,
+   "radius": 4.5,
    "hp": 1.2,
    "tags": [
     "propulsion"
@@ -397,6 +401,7 @@
    "parts": {
     "intact": [
      "SUB_engine_04__base",
+     "SUB_engine_04__core",
      "SUB_engine_04__plume"
     ],
     "destroyed": [
@@ -407,9 +412,9 @@
     {
      "name": "SUB_engine_04__debris_00",
      "position": [
-      3.68,
+      2.0,
       0.0,
-      9.8
+      5.16
      ],
      "velocity": [
       -5.8854,
@@ -425,9 +430,9 @@
     {
      "name": "SUB_engine_04__debris_01",
      "position": [
-      -3.22,
-      1.38,
-      10.9
+      -1.75,
+      0.75,
+      5.68
      ],
      "velocity": [
       -4.5587,
@@ -444,7 +449,7 @@
      "name": "SUB_engine_04__debris_02",
      "position": [
       0.0,
-      -2.3,
+      -1.25,
       3.0
      ],
      "velocity": [
@@ -4284,7 +4289,7 @@
   }
  ],
  "subsystemTriangles": {
-  "intact": 36718,
+  "intact": 39046,
   "destroyed": 15104,
   "debris": 2336
  },
@@ -4317,7 +4322,10 @@
   "mn_earth_chrome",
   "mn_earth_plate_b",
   "mn_earth_plate_c",
-  "mn_earth_plume"
+  "mn_earth_plume",
+  "mn_earth_plate_d",
+  "mn_earth_plate_e",
+  "mn_earth_wear"
  ],
  "materialSet": "Assets/Monolith/Art/EarthHull/earth_hull.materials.json",
  "damagePoints": [

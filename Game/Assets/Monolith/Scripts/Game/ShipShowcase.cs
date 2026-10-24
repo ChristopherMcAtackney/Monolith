@@ -5,6 +5,7 @@ using Monolith.Flight;
 using Monolith.ShipArt;
 using Monolith.Sky;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -34,6 +35,9 @@ namespace Monolith.Game
             public int forceLod = -1;
             public Fighter fighter;
             public Damage damage;
+            /// <summary>Any <see cref="SkyOptions"/> fields to override by name, for look development (e.g. {"AmbientNits": 2000}); the defaults are the game's.</summary>
+            public JObject sky;
+
 
             public sealed class Fighter { public float[] pos, rot; public string cls = "vanguard_fighter"; }
             public sealed class HullHit { public float[] pos, normal; public float radius = 3f, severity = 0.6f; }
@@ -59,11 +63,15 @@ namespace Monolith.Game
             root.SetParent(parent, false);
             var cam = MakeCamera(root);
             world.MainCamera = cam;
-            SkyRig.Enable(cam, root);                      // the Sky system's own defaults: Sun, fill, exposure and the camera look
+            var skyOptions = new SkyOptions();
+            if (opts.sky != null) JsonConvert.PopulateObject(opts.sky.ToString(), skyOptions);
+            var rig = SkyRig.Enable(cam, root, skyOptions);          // the Sky system: Sun, fill, exposure and the camera look (its defaults unless the plan overrides some)
             MakeShadowVolume(root, opts.shadowDistance);
 
             var shipGo = ShipArtCatalog.Instantiate(opts.ship, root);
             shipGo.transform.SetPositionAndRotation(new Vector3(opts.pos[0], opts.pos[1], opts.pos[2]), Quaternion.Euler(opts.pitch, opts.yaw, opts.roll));
+            var sunInShip = Quaternion.Inverse(shipGo.transform.rotation) * rig.SunDirection;
+            MnLog.Info($"SHOWCASE sun in the ship's frame (x starboard, y up, z bow): {sunInShip.x:0.000}, {sunInShip.y:0.000}, {sunInShip.z:0.000}");
             if (opts.forceLod >= 0) shipGo.GetComponent<LODGroup>().ForceLOD(opts.forceLod);
 
             if (opts.damage != null)

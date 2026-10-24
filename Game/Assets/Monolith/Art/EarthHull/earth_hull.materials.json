@@ -6,9 +6,9 @@
    "blender": "mn_earth_plate",
    "name": "MN_EarthPlate",
    "baseColor": [
-    0.85,
-    0.85,
-    0.87
+    1.0,
+    1.0,
+    1.0
    ],
    "baseMap": "earth_plate_albedo",
    "normalMap": "earth_plate_normal",
@@ -20,7 +20,7 @@
    ],
    "smoothnessRemap": [
     0,
-    0.75
+    0.74
    ],
    "aoRemap": [
     0,
@@ -115,7 +115,7 @@
    ],
    "smoothnessRemap": [
     0,
-    0.9
+    1.0
    ],
    "aoRemap": [
     0,
@@ -134,7 +134,7 @@
     1.0,
     1.0
    ],
-   "emissiveNits": 15000,
+   "emissiveNits": 48000,
    "noShadows": true
   },
   {
@@ -153,17 +153,17 @@
     1.0,
     1.0
    ],
-   "emissiveNits": 60000
+   "emissiveNits": 150000
   },
   {
    "blender": "mn_earth_plate_b",
-   "name": "MN_EarthPlateB",
+   "name": "MN_EarthPlateDeep",
    "baseColor": [
-    0.97,
-    0.97,
+    1.0,
+    1.0,
     1.0
    ],
-   "baseMap": "earth_plate_albedo",
+   "baseMap": "earth_plate_deep_albedo",
    "normalMap": "earth_plate_normal",
    "maskMap": "earth_plate_mask",
    "normalScale": 0.5,
@@ -173,7 +173,7 @@
    ],
    "smoothnessRemap": [
     0,
-    0.75
+    0.7
    ],
    "aoRemap": [
     0,
@@ -192,13 +192,13 @@
   },
   {
    "blender": "mn_earth_plate_c",
-   "name": "MN_EarthPlateC",
+   "name": "MN_EarthPlateMid",
    "baseColor": [
-    0.7,
-    0.7,
-    0.73
+    1.0,
+    1.0,
+    1.0
    ],
-   "baseMap": "earth_plate_albedo",
+   "baseMap": "earth_plate_mid_albedo",
    "normalMap": "earth_plate_normal",
    "maskMap": "earth_plate_mask",
    "normalScale": 0.5,
@@ -208,7 +208,7 @@
    ],
    "smoothnessRemap": [
     0,
-    0.75
+    0.7
    ],
    "aoRemap": [
     0,
@@ -224,6 +224,90 @@
    "detailNormal": 0.2,
    "detailSmoothness": 0.6,
    "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plate_d",
+   "name": "MN_EarthPlateLight",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_light_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.62
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plate_e",
+   "name": "MN_EarthPlatePale",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_pale_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.58
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_wear",
+   "name": "MN_EarthWear",
+   "shader": "HDRP/Lit",
+   "surface": "alpha",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_wear_albedo",
+   "metallic": 0.0,
+   "smoothness": 0.3
   }
  ],
  "decal": {

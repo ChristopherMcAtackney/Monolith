@@ -27,6 +27,7 @@ namespace Monolith.Sky
         Exposure _exposure;
         Tonemapping _tonemapping;
         Bloom _bloom;
+        ScreenSpaceReflection _ssr;
         VolumeProfile _skyProfile, _lookProfile;
         Volume _skyVolume, _lookVolume;
         CameraLook _look;
@@ -79,6 +80,7 @@ namespace Monolith.Sky
                 {
                     _tonemapping = _lookProfile.Add<Tonemapping>(true);
                     _bloom = _lookProfile.Add<Bloom>(true);
+                    _ssr = _lookProfile.Add<ScreenSpaceReflection>(true);
                 }
                 _lookVolume = MakeVolume("LookVolume", _lookProfile, 21f);
             }
@@ -155,6 +157,14 @@ namespace Monolith.Sky
                 }
             }
             if (_tonemapping != null) _tonemapping.mode.Override(TonemappingMode.ACES);
+            if (_ssr != null)
+            {
+                _ssr.enabled.Override(o.ScreenSpaceReflections);
+                _ssr.reflectSky.Override(true);
+                _ssr.minSmoothness = 0.5f;
+                _ssr.smoothnessFadeStart = 0.7f;
+                _ssr.depthBufferThickness.Override(0.2f);
+            }
             if (_bloom != null)
             {
                 _bloom.intensity.Override(o.BloomIntensity);

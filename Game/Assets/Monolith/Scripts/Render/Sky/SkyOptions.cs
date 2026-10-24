@@ -88,10 +88,15 @@ namespace Monolith.Sky
         /// environment lighting, so every lit surface in the scene gets it (diffuse from the ambient probe, shine from the reflection
         /// cubemap). The tonemapper's toe swallows low values, so a fill that reads as a dim blue-grey needs thousands of nits here.
         /// </summary>
-        public Color AmbientColor = new Color(0.55f, 0.62f, 0.78f);
-        public float AmbientNits = 5500f;
-        /// <summary>0 = the fill is the same all round; 0.7 makes it 1.7 times stronger facing away from the Sun and 0.3 times toward it, which gives a shadow side form.</summary>
-        public float AmbientAwayFromSun = 0.7f;
+        public Color AmbientColor = new Color(0.58f, 0.64f, 0.78f);
+        /// <summary>
+        /// Round 2 of the corvette (the critic found the key-to-fill ratio far too low: "one mid grey under a flat ambient wash"): 5,500 nits became 2,200 and the
+        /// away-from-Sun gradient 0.7 became 1.0. A face turned to the Sun gets no fill at all and a face turned away gets up to twice the base, so a sunlit plane is
+        /// about 25 times brighter than the same plane in shadow (it was about 6), and shadow sides stay dark with a faint form from the fill, never black.
+        /// </summary>
+        public float AmbientNits = 2200f;
+        /// <summary>0 = the fill is the same all round; 1.0 makes it twice as strong facing away from the Sun and nothing at all facing it, which gives a shadow side form and a lit side no wash.</summary>
+        public float AmbientAwayFromSun = 1.0f;
         /// <summary>How much of the Milky Way's own light joins the fill (1 = as drawn). The band brightens the fill on the side it lies.</summary>
         public float AmbientMilkyWay = 1f;
 
@@ -109,6 +114,8 @@ namespace Monolith.Sky
         /// <summary>Bloom starts above this (display units): lit hulls stay clean, sun glints on shiny surfaces, emissive lights and the brightest stars glow.</summary>
         public float BloomThreshold = 0.9f;
         public float BloomScatter = 0.65f;
+        /// <summary>Screen-space reflections for polished surfaces (smoothness above about 0.5): chrome shows the lit plates and lights next to it instead of one flat tone. Needs supportSSR in the HDRP asset (Hdrp.EnsureAsset sets it).</summary>
+        public bool ScreenSpaceReflections = true;
 
         // ---- the camera look (lens glare, dust, grain, graded black) ----------------------------------------------------------------
         /// <summary>Switch the camera look on with the sky: the Sun's glare needs the Sun, so the rig feeds it. Its options (Enabled, Intensity and the rest) are here.</summary>

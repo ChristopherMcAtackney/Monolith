@@ -156,52 +156,51 @@ def gun_turret(K, sb, fr, key, s=1.0, barrels=2, barrel_len=4.6, barrel_r=0.26, 
 
 # ------------------------------------------------------------------------------------------------ engines
 
-def engine_nozzle(K, sb, fr, key, throat=2.6, exit_r=6.0, length=13.0, hull_y=0.0):
-    """A recessed engine: a housing set into the hull, a bell flaring from a hot throat, ribbed chrome outside, and inside a glowing gradient
-    (white at the throat, through blue to violet at the lip) with a bright combustion disc. ``fr``: origin at the hull face, y = the way the
-    exhaust goes (out the back)."""
+def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0):
+    """A recessed engine in the show's manner: small, hard and hot. A chrome bell flaring from a throat into the hull, dark inside with an ember glow
+    near the throat, and a flat white-blue combustion disc at the throat that blooms; a short, tapering flare of nested additive shells streams out of
+    the lip (its own part, ``plume``, so a wreck loses it, and the runtime ``EngineGlow`` flickers and scales it). ``fr``: origin at the hull face,
+    y = the way the exhaust goes (out the back)."""
     if sb.lod == 2:
         sb.part().box(fr, (exit_r * 2, length, exit_r * 2), PLATE, centre=(0, length / 2, 0), chamfer=exit_r * 0.4)
         return
     if sb.lod == 1:
         return
     base = sb.part("base")
-    chrome = K.rect("chrome_brushed")
+    core = sb.part("core")
+    plume = sb.part("plume")
     inner_rect = (0.0, 1.0, 1.0, 0.52)
     disc_rect = (0.1, 0.02, 0.9, 0.48)
     N = 10
     t = np.linspace(0, 1, N)
     prof_in = [(throat + (exit_r - throat) * (tt ** 0.62), 1.0 + length * tt) for tt in t]
-    wall = 0.45
+    wall = 0.32
     prof_out = [(r + wall, y) for r, y in prof_in]
-    # outer bell (chrome) and the thick lip ring
     base.lathe(prof_out, fr, CHROME, segs=40, tile=4.0)
-    base.lathe([(prof_out[-1][0], prof_out[-1][1]), (prof_out[-1][0], prof_out[-1][1] + 0.35), (prof_in[-1][0], prof_out[-1][1] + 0.35)], fr, CHROME, segs=40, tile=4.0)
-    base.lathe([(prof_in[-1][0], prof_out[-1][1] + 0.35), (prof_in[-1][0], prof_out[-1][1])], fr, CHROME, segs=40, tile=4.0)
-    # inner bell: emissive gradient, normals toward the axis
-    base.lathe(prof_in, fr, ENGINE, segs=40, rect=inner_rect, flip=True)
-    # combustion disc, recessed at the throat, facing out
-    base.disc(fr, throat, 1.0, ENGINE, segs=32, facing=1.0, rect=disc_rect)
-    # ribs round the bell
-    for tt in (0.25, 0.5, 0.75):
+    base.lathe([(prof_out[-1][0], prof_out[-1][1]), (prof_out[-1][0], prof_out[-1][1] + 0.25), (prof_in[-1][0], prof_out[-1][1] + 0.25)], fr, CHROME, segs=40, tile=4.0)
+    base.lathe([(prof_in[-1][0], prof_out[-1][1] + 0.25), (prof_in[-1][0], prof_out[-1][1])], fr, CHROME, segs=40, tile=4.0)
+    core.lathe(prof_in, fr, ENGINE, segs=40, rect=inner_rect, flip=True)                       # the dark funnel with its ember glow
+    core.disc(fr, throat * 1.04, 1.0, ENGINE, segs=32, facing=1.0, rect=disc_rect)             # the hot disc at the throat
+    for tt in (0.3, 0.6):
         r = throat + (exit_r - throat) * (tt ** 0.62) + wall
         y = 1.0 + length * tt
-        base.lathe([(r, y - 0.18), (r + 0.3, y - 0.1), (r + 0.3, y + 0.1), (r, y + 0.18)], fr, CHROME, segs=40, tile=4.0)
-    # the housing: a chamfered black block set into the hull round the throat, with a chrome collar
-    hb = exit_r * 1.25
+        base.lathe([(r, y - 0.12), (r + 0.2, y - 0.07), (r + 0.2, y + 0.07), (r, y + 0.12)], fr, CHROME, segs=40, tile=4.0)
+    hb = exit_r * 1.3
     base.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.1, 0), chamfer=hb * 0.3, tile=6.0)
-    base.lathe([(throat + wall + 0.1, 0.9), (exit_r * 0.78, 0.9), (exit_r * 0.78, 1.4), (throat + wall + 0.1, 1.4)], fr, CHROME, segs=40, tile=4.0)
-    # the plume: three nested additive shells streaming away from the lip, faint outside and hot at the core (its own part, so a wreck loses it)
-    plume = sb.part("plume")
-    y_lip = prof_out[-1][1] + 0.35
-    plume_len = exit_r * 13.0
-    for k, (scale, ) in enumerate(((1.0,), (0.62,), (0.34,))):
+    base.lathe([(throat + wall + 0.1, 0.9), (exit_r * 0.8, 0.9), (exit_r * 0.8, 1.3), (throat + wall + 0.1, 1.3)], fr, CHROME, segs=40, tile=4.0)
+    # the flare: eight nested additive shells (two per texture column: faint violet outside, blue, blue-white, a white core), short and tapering. Many thin
+    # shells, not a few fat ones, so the flare's edge falls off in steps too small to see and it reads as light, not as a glass cone.
+    y_lip = prof_out[-1][1] + 0.1
+    radii = (1.05, 0.95, 0.84, 0.73, 0.62, 0.50, 0.39, 0.28)
+    lens = (3.9, 3.6, 3.2, 2.8, 2.4, 2.0, 1.6, 1.3)
+    for k, (r0, ln) in enumerate(zip(radii, lens)):
+        col = k // 2
         pts = []
-        for i in range(9):
-            tt = i / 8
-            pts.append((exit_r * scale * (1.0 + 0.12 * math.sin(tt * math.pi) - 0.88 * tt ** 0.8) + 0.02, y_lip + plume_len * tt))
-        plume.lathe(pts, fr, PLUME, segs=24, rect=(k / 3.0, 1.0, (k + 1) / 3.0, 0.0))
-        plume.lathe(pts, fr, PLUME, segs=24, rect=(k / 3.0, 1.0, (k + 1) / 3.0, 0.0), flip=True)
+        for i in range(6):
+            tt = i / 5
+            pts.append((max(exit_r * r0 * ((1.0 - tt ** 0.9) * (1.0 + 0.10 * math.sin(tt * math.pi))), 0.01), y_lip + exit_r * ln * tt))
+        plume.lathe(pts, fr, PLUME, segs=18, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0))
+        plume.lathe(pts, fr, PLUME, segs=18, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0), flip=True)
     # ---- wreck: the bell torn open on one side, dead and dark with a few embers; no gradient
     d = sb.variant("destroyed")
     burnt = K.rect("burnt")

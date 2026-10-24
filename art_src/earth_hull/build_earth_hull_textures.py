@@ -105,11 +105,16 @@ def vertical_gradient(L, y0, y1, c0, c1, **kw):
 
 # ------------------------------------------------------------------------------------------------ the plate tile
 
-def make_plate(size=1024, seed=11):
+PAINT_TONES = {          # name -> sRGB value of the paint: deep black, graphite (the default), mid grey, light grey, pale cool grey
+    "deep": 0.20, "graphite": 0.31, "mid": 0.45, "light": 0.60, "pale": 0.73,
+}
+
+
+def make_plate(size=1024, seed=11, tone=0.31):
     """Matte black armour paint: one satin coat, faintly different from plate to plate, with sparse fine scratches and a few chips down to
     bare steel. Albedo is the final value (dark charcoal), not a pattern to be tinted."""
     rng = rngf(seed)
-    L = Layers(size, size, albedo=(0.36, 0.365, 0.38), metal=0.0, smooth=0.42, ao=1.0)
+    L = Layers(size, size, albedo=(tone, tone * 1.01, tone * 1.045), metal=0.0, smooth=0.42, ao=1.0)
     n_big = spectral_noise(size, size, rng, beta=3.2, fmax=5)
     n_mid = spectral_noise(size, size, rng, beta=2.4, fmin=5, fmax=24)
     n_fine = spectral_noise(size, size, rng, beta=1.0, fmin=150)
@@ -134,10 +139,10 @@ def make_plate(size=1024, seed=11):
 def make_chrome(size=512, seed=71):
     """Brushed chrome that tiles every 4 m (u along the brushing): calm, polished, a little uneven, with a few hairline scratches."""
     rng = rngf(seed)
-    L = Layers(size, size, albedo=(0.86, 0.87, 0.90), metal=1.0, smooth=0.82, ao=1.0)
+    L = Layers(size, size, albedo=(0.86, 0.87, 0.90), metal=1.0, smooth=0.95, ao=1.0)
     band = spectral_noise(size, size, rng, beta=2.2, fmin=1, fmax=36, sx=0.04, sy=1.0)
     L.tint_noise(band, 0.02)
-    L.smo += 0.03 * band
+    L.smo += 0.02 * band
     L.hgt += 0.16 * spectral_noise(size, size, rng, beta=0.8, fmin=14, sx=0.03, sy=1.0)
     for _ in range(26):
         x0, y0 = rng.uniform(0, size), rng.uniform(0, size)
@@ -187,13 +192,13 @@ def piece_edge_paint(tile_m=8.0, h_m=0.25, density=PX):
     """Narrow strip for the walls and chamfers of raised plates: paint with chips of bare metal, more along the lip."""
     rng = rngf(32)
     w, h = px(tile_m, density), max(px(h_m, density), 16)
-    L = Layers(w, h, albedo=(0.28, 0.285, 0.30), metal=0.0, smooth=0.42, ao=0.8)
-    L.tint_noise(spectral_noise(h, w, rng, beta=1.4, fmin=8), 0.05)
+    L = Layers(w, h, albedo=(0.36, 0.365, 0.38), metal=0.0, smooth=0.42, ao=0.8)
+    L.tint_noise(spectral_noise(h, w, rng, beta=1.4, fmin=8), 0.06)
     L.hgt += 0.5 * spectral_noise(h, w, rng, beta=1.0, fmin=40)
     # worn lip: the upper rows are brighter bare metal in patches
     lip = np.clip(spectral_noise(h, w, rng, beta=1.0, fmin=30) * 0.5 + 0.1, 0, 1) * np.linspace(0, 1, h)[:, None] ** 1.5
     lip = smoothstep(0.25, 0.55, lip)
-    L.alb = L.alb * (1 - lip[:, :, None]) + np.array([0.62, 0.63, 0.66]) * lip[:, :, None]
+    L.alb = L.alb * (1 - lip[:, :, None]) + np.array([0.74, 0.75, 0.78]) * lip[:, :, None]
     L.met = L.met * (1 - lip) + 0.95 * lip
     L.smo = L.smo * (1 - lip) + 0.62 * lip
     return L
@@ -487,6 +492,56 @@ def piece_label_emblem(density=48):
     return L, m, m
 
 
+def piece_code(text, seed, w_m=3.2, h_m=1.1, density=48):
+    """A small stencilled panel code (A-14 ...) in cold white on the armour paint, on a slightly raised plate."""
+    rng = rngf(seed)
+    w, h = px(w_m, density), px(h_m, density)
+    L = Layers(w, h, albedo=(0.23, 0.232, 0.245), metal=0.0, smooth=0.4, ao=0.9)
+    L.tint_noise(spectral_noise(h, w, rng, beta=2.0, fmin=2), 0.05)
+    L.hgt += 0.4 * spectral_noise(h, w, rng, beta=1.0, fmin=30)
+    cell = h * 0.56 / 7
+    total = cell * (6 * len(text) - 1)
+    stencil(L, text, (w - total) / 2, (h - cell * 7) / 2, cell, color=(0.80, 0.83, 0.88), gap=max(0.8, cell * 0.08), height_add=0.5)
+    L.rect(2, 2, w - 2, 4, albedo=(0.5, 0.5, 0.54), height=1.0)
+    L.rect(2, h - 4, w - 2, h - 2, albedo=(0.5, 0.5, 0.54), height=1.0)
+    return L, w_m, h_m
+
+
+def piece_chevrons(w_m=6.0, h_m=1.2, density=48):
+    """A band of cold white chevrons on dark paint (Earth's warning band: precise, never hazard yellow)."""
+    rng = rngf(58)
+    w, h = px(w_m, density), px(h_m, density)
+    L = Layers(w, h, albedo=(0.20, 0.202, 0.215), metal=0.0, smooth=0.4, ao=0.9)
+    L.tint_noise(spectral_noise(h, w, rng, beta=2.0, fmin=2), 0.05)
+    n = int(w_m / 0.6)
+    for i in range(n):
+        x = (i + 0.5) * w / n
+        for dx0, dx1 in ((0, 0.28), (0.28, 0.0)):
+            pass
+        L.line((x - h * 0.28, h * 0.12), (x + h * 0.16, h * 0.5), 4.0, albedo=(0.78, 0.80, 0.85))
+        L.line((x + h * 0.16, h * 0.5), (x - h * 0.28, h * 0.88), 4.0, albedo=(0.78, 0.80, 0.85))
+    L.rect(0, 0, w, 3, albedo=(0.5, 0.5, 0.54)); L.rect(0, h - 3, w, h, albedo=(0.5, 0.5, 0.54))
+    return L, w_m, h_m
+
+
+def piece_panel_big(w_m=6.0, h_m=4.0, density=48):
+    """A large inset access panel: a raised frame, a recessed field with seams and bolt rows and one stencil line."""
+    rng = rngf(59)
+    w, h = px(w_m, density), px(h_m, density)
+    L = Layers(w, h, albedo=(0.26, 0.262, 0.275), metal=0.0, smooth=0.4, ao=0.8)
+    L.tint_noise(spectral_noise(h, w, rng, beta=2.0, fmin=2), 0.06)
+    L.hgt += 0.4 * spectral_noise(h, w, rng, beta=1.0, fmin=30)
+    L.bevel_rect(4, 4, w - 4, h - 4, 1.6, 5.0, albedo=(0.30, 0.302, 0.315))
+    L.bevel_rect(16, 16, w - 16, h - 16, -2.4, 4.0, albedo=(0.17, 0.172, 0.185), ao=0.8)
+    for x in np.linspace(26, w - 26, int(w_m * 2.2)):
+        for y in (10, h - 10):
+            L.rect(x - 2, y - 2, x + 2, y + 2, albedo=(0.55, 0.56, 0.6), metal=1.0, height=1.4, smooth=0.6)
+    L.rect(w * 0.5 - 1, 18, w * 0.5 + 1, h - 18, albedo=(0.08, 0.08, 0.09), height=-1.5)
+    cell = h * 0.14 / 7
+    stencil(L, "A-27", w * 0.12, h * 0.22, cell, color=(0.74, 0.77, 0.82), gap=0.6)
+    return L, w_m, h_m
+
+
 def piece_label_stripe(density=48):
     """A cold white band with a thinner one beside it, for edges of decks and the flanks of gun galleries."""
     rng = rngf(52)
@@ -648,52 +703,166 @@ def make_trim_atlas(size=2048):
     add("hatch_a", L, w_m, h_m)
     L, w_m, h_m = piece_hatch("hatch_b", 2.0, seed=48, hazard=True)
     add("hatch_b", L, w_m, h_m)
+    L, w_m, h_m = piece_vent(6.0, 3.0, 48)
+    add("vent_big", L, w_m, h_m)
+    for nm, text, sd in (("code_a", "A-14", 81), ("code_b", "D-07", 82), ("code_c", "E-23", 83), ("code_d", "T-58", 84)):
+        L, w_m, h_m = piece_code(text, sd)
+        add(nm, L, w_m, h_m)
+    L, w_m, h_m = piece_chevrons()
+    add("chevrons", L, w_m, h_m)
+    L, w_m, h_m = piece_panel_big()
+    add("panel_big", L, w_m, h_m)
     add("underlayer", piece_underlayer(), 0.5, 0.5)
     return A
+
+
+# ------------------------------------------------------------------------------------------------ wear overlays
+
+WEAR_PPM = 56
+
+
+def _wear_piece(kind, w_m, h_m, seed):
+    """-> (rgb (h,w,3), alpha (h,w)) for one overlay. Long axis along x (laid along the ship)."""
+    rng = rngf(seed)
+    w, h = int(w_m * WEAR_PPM), int(h_m * WEAR_PPM)
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    u, v = xx / w, yy / h
+    nx = spectral_noise(h, w, rng, beta=2.4, fmin=2, fmax=14)
+    nf = 0.45 * spectral_noise(h, w, rng, beta=1.8, fmin=8, fmax=60)
+    if kind in ("streak", "streak_light"):     # grime (or pale dust) streaks that run along the ship: several thin ones of different strength and length
+        a = np.zeros((h, w), np.float32)
+        for _ in range(int(rng.integers(3, 7))):
+            yc = rng.uniform(0.15, 0.85)
+            sig = rng.uniform(0.04, 0.16)
+            x0, x1 = sorted(rng.uniform(0.0, 1.0, 2))
+            x1 = max(x1, x0 + 0.35)
+            along = smoothstep(x0 - 0.05, x0 + 0.12, u) * (1 - smoothstep(x1 - 0.2, x1 + 0.05, u))
+            a += rng.uniform(0.25, 0.7) * np.exp(-((v - yc) / sig) ** 2) * along
+        a *= np.clip(0.65 + 0.45 * nx, 0, 1.2) * np.clip(0.8 + 0.4 * nf, 0, 1.2)
+        rgb = np.array([0.020, 0.020, 0.024], np.float32) if kind == "streak" else np.array([0.34, 0.35, 0.38], np.float32)
+        a = np.clip(a, 0, 0.78 if kind == "streak" else 0.55)
+    elif kind == "scorch":                     # a soft burn: dark core, ragged edge
+        r = np.sqrt(((u - 0.5) / 0.5) ** 2 + ((v - 0.5) / 0.5) ** 2) * (1.0 + 0.30 * nx)
+        a = np.clip(1 - r, 0, 1) ** 1.3 * np.clip(0.7 + 0.5 * nf, 0, 1.2)
+        rgb = np.array([0.018, 0.017, 0.018], np.float32)
+        a = np.clip(a * 0.9, 0, 0.82)
+    elif kind == "scuff":                      # paint worn off along an edge: pale scratches toward the low side of the strip
+        a = np.zeros((h, w), np.float32)
+        for _ in range(int(w_m * 16)):
+            x0 = rng.uniform(0, w); y0 = rng.uniform(0, h * 0.55); ln = rng.uniform(w * 0.02, w * 0.25)
+            y_ = int(y0)
+            xs_ = slice(int(x0), int(min(x0 + ln, w)))
+            a[y_:y_ + 1, xs_] = np.maximum(a[y_:y_ + 1, xs_], rng.uniform(0.3, 0.9))
+        a = blur(a, 0.6)
+        a *= np.clip(1.3 - v * 1.6, 0, 1) * np.clip(0.6 + 0.6 * nf, 0, 1.4)
+        a = np.clip(a * 1.3, 0, 0.9)
+        rgb = np.array([0.46, 0.47, 0.50], np.float32)
+    elif kind in ("patch_light", "patch_dark"):
+        e = np.minimum(np.minimum(u, 1 - u) * w_m, np.minimum(v, 1 - v) * h_m)
+        a = smoothstep(0.02, 0.10 + 0.04 * (nx + 1), e) * (0.55 + 0.10 * nf)
+        rgb = np.array([0.42, 0.43, 0.47], np.float32) if kind == "patch_light" else np.array([0.012, 0.012, 0.014], np.float32)
+        a = np.clip(a, 0, 0.62)
+    elif kind == "stain":                      # a coolant or oil blot, elongated along the ship, with a darker rim
+        r = np.sqrt(((u - 0.45) / 0.45) ** 2 + ((v - 0.5) / 0.5) ** 2) * (1.0 + 0.35 * nx)
+        a = np.clip(1.15 - r, 0, 1) ** 0.8 * (0.45 + 0.35 * np.clip(r, 0, 1)) * np.clip(0.7 + 0.5 * nf, 0, 1.2)
+        rgb = np.array([0.035, 0.030, 0.026], np.float32)
+        a = np.clip(a, 0, 0.7)
+    elif kind == "heat":                       # engine heat: a blued, bronzed tint fading away from the engine end (the left of the piece)
+        a = (1 - smoothstep(0.0, 1.0, u)) ** 1.2 * np.clip(0.85 + 0.25 * nx, 0.3, 1.2) * np.exp(-((v - 0.5) / 0.55) ** 2)
+        rgb = np.array([0.11, 0.09, 0.21], np.float32)
+        a = np.clip(a * 0.8, 0, 0.75)
+    else:
+        raise ValueError(kind)
+    a = blur(a.astype(np.float32), 0.9)
+    rgbf = np.broadcast_to(rgb, (h, w, 3)).copy()
+    if kind == "heat":                         # bronze in the core, blue at the edge
+        mix = np.clip(a / 0.7, 0, 1)[..., None]
+        rgbf = rgbf * (1 - mix) + np.array([0.20, 0.13, 0.08], np.float32) * mix
+    return rgbf, a
+
+
+def make_wear_atlas(size=2048):
+    pieces = [("streak_%d" % i, "streak", 9.0, 1.5, 300 + i) for i in range(6)]
+    pieces += [("streak_light_%d" % i, "streak_light", 9.0, 1.5, 370 + i) for i in range(4)]
+    pieces += [("scorch_%d" % i, "scorch", 4.0, 4.0, 310 + i) for i in range(4)]
+    pieces += [("scuff_%d" % i, "scuff", 7.0, 0.9, 320 + i) for i in range(4)]
+    pieces += [("patch_light_%d" % i, "patch_light", 5.0, 3.0, 330 + i) for i in range(3)]
+    pieces += [("patch_dark_%d" % i, "patch_dark", 5.0, 3.0, 340 + i) for i in range(3)]
+    pieces += [("stain_%d" % i, "stain", 6.0, 3.0, 350 + i) for i in range(3)]
+    pieces += [("heat_%d" % i, "heat", 10.0, 6.0, 360 + i) for i in range(2)]
+    img = np.zeros((size, size, 4), np.float32)
+    pad = 6
+    x = y = pad
+    row = 0
+    items = {}
+    for name, kind, w_m, h_m, sd in pieces:
+        rgb, a = _wear_piece(kind, w_m, h_m, sd)
+        h, w = a.shape
+        if x + w + pad > size:
+            x = pad
+            y += row + 2 * pad
+            row = 0
+        if y + h + pad > size:
+            raise RuntimeError("wear atlas full at " + name)
+        img[y:y + h, x:x + w, :3] = rgb
+        img[y:y + h, x:x + w, 3] = a
+        # replicate the edge into the pad so filtering and mips do not pull a neighbour in
+        img[y - pad:y, x:x + w] = img[y:y + 1, x:x + w]
+        img[y + h:y + h + pad, x:x + w] = img[y + h - 1:y + h, x:x + w]
+        img[y - pad:y + h + pad, x - pad:x] = img[y - pad:y + h + pad, x:x + 1]
+        img[y - pad:y + h + pad, x + w:x + w + pad] = img[y - pad:y + h + pad, x + w - 1:x + w]
+        items[name] = {"uv": [(x + 0.5) / size, 1 - (y + h - 0.5) / size, (x + w - 0.5) / size, 1 - (y + 0.5) / size], "metres": [w_m, h_m], "kind": kind}
+        x += w + 2 * pad
+        row = max(row, h)
+    rgb8 = mntex.to_u8(mntex.srgb_encode(img[:, :, :3]))
+    a8 = mntex.to_u8(img[:, :, 3:4])
+    log(f"  wear atlas: {len(pieces)} pieces, rows to y={y + row}")
+    return np.concatenate([rgb8, a8], axis=2), items
 
 
 # ------------------------------------------------------------------------------------------------ engine and lights
 
 def make_engine_emissive(size=256):
-    """The exhaust bell's inside, u around, v from the throat (v = 1, the top row, white hot) to the lip (a dim cooling violet), in the top
-    half of the sheet; in the bottom half, the combustion disc seen end-on: a small white core, a blue body and a dark edge, so the bell
-    reads as a deep funnel and not a lit plate."""
+    """Top half: the bell's inside (u around, v from the throat at row 0 to the lip): a dull bronze ember close to the throat and dark beyond, so the
+    bell reads as a deep funnel. Bottom half: the combustion disc, seen end-on: a flat hot white-blue disc with a hard edge and a saturated blue rim."""
     rng = rngf(61)
     em = np.zeros((size, size, 3), np.float32)
     half = size // 2
-    hv = np.clip((np.arange(half)[:, None] + 0.5) / half, 0, 1)                  # 0 at the throat, 1 at the lip
-    hot = np.array([1.0, 0.95, 0.88]); mid = np.array([0.30, 0.52, 1.0]); cool = np.array([0.10, 0.06, 0.30])
-    t1 = np.clip(hv / 0.18, 0, 1)
-    t2 = np.clip((hv - 0.18) / 0.82, 0, 1)
-    col = hot * (1 - t1)[..., None] + mid * t1[..., None]
-    col = col * (1 - t2)[..., None] + cool * t2[..., None]
-    fall = 1.0 * np.exp(-hv * 3.2) + 0.04
-    streak = 1.0 + 0.18 * spectral_noise(half, size, rng, beta=2.0, fmin=2, sy=0.2)
-    em[:half] = col * fall[..., None] * streak[..., None]
+    t = np.clip((np.arange(half)[:, None] + 0.5) / half, 0, 1)
+    ember = np.array([0.55, 0.22, 0.08], np.float32); blue = np.array([0.20, 0.34, 0.9], np.float32)
+    near = np.exp(-t * 9.0)
+    col = (ember * (1 - np.clip(t / 0.08, 0, 1))[..., None] + blue * np.clip(t / 0.08, 0, 1)[..., None] * 0.25)
+    streak = 1.0 + 0.35 * spectral_noise(half, size, rng, beta=2.0, fmin=2, sy=0.2)
+    em[:half] = col * (near * 0.10 + 0.004)[..., None] * streak[..., None]
     yy, xx = np.mgrid[0:half, 0:size].astype(np.float32)
     r = np.sqrt(((xx - size / 2) / (size / 2)) ** 2 + ((yy - half / 2) / (half / 2)) ** 2)
-    core = np.exp(-(r / 0.28) ** 2)
-    body = np.clip(1 - r, 0, 1) ** 1.6
-    c = hot * core[..., None] * 1.0 + mid * body[..., None] * 0.35
-    c *= (1.0 + 0.12 * spectral_noise(half, size, rng, beta=1.5, fmin=3))[..., None]
-    em[half:] = c * (r < 1.0)[..., None]
-    return mntex.to_u8(mntex.srgb_encode(em))
+    hard = 1 - smoothstep(0.80, 0.84, r)
+    rim = smoothstep(0.55, 0.80, r)
+    hot = np.array([1.0, 0.97, 0.93], np.float32)
+    disc = hot[None, None, :] * (1 - rim)[..., None] + np.array([0.35, 0.58, 1.0], np.float32)[None, None, :] * rim[..., None]
+    disc *= (1.0 + 0.10 * spectral_noise(half, size, rng, beta=1.5, fmin=3))[..., None]
+    em[half:] = disc * hard[..., None]
+    return mntex.to_u8(mntex.srgb_encode(np.clip(em, 0, 1)))
 
 
-def make_plume_emissive(w=96, h=256):
-    """The exhaust plume (three nested additive shells, one 32 px column each: faint outer, brighter middle, hot core). Row 0 is at the
-    nozzle: white-blue, falling off fast through blue to nothing; no hard edge anywhere, so an additive cone reads as light, not a solid."""
+def make_plume_emissive(w=256, h=256):
+    """Plume: four 64 px columns, each one nested additive shell (0 faint outer violet, 1 blue, 2 blue-white, 3 white core), u around the shell and v from
+    the nozzle (row 0) outward. Short and hard: it falls off fast, the core carries shock diamonds, every shell is streaked and tears at its end."""
     rng = rngf(62)
     t = (np.arange(h)[:, None] + 0.5) / h
-    hot = np.array([0.85, 0.93, 1.0]); mid = np.array([0.30, 0.52, 1.0]); cool = np.array([0.22, 0.16, 0.70])
-    a = np.clip(t / 0.25, 0, 1)
-    b = np.clip((t - 0.25) / 0.75, 0, 1)
-    col = (hot * (1 - a)[..., None] + mid * a[..., None]) * (1 - b)[..., None] + cool * b[..., None]
-    fall = np.exp(-t * 3.4) * (1 - smoothstep(0.82, 1.0, t)) + 0.0
     out = np.zeros((h, w, 3), np.float32)
-    for k, strength in enumerate((0.22, 0.5, 1.0)):
-        flicker = 1.0 + 0.10 * spectral_noise(h, 32, rng, beta=2.0, fmin=2, sy=0.3)
-        out[:, k * 32:(k + 1) * 32] = (col * fall[..., None] * strength)[:, :1, :] * flicker[..., None]
+    cols = [np.array([0.36, 0.34, 0.95]), np.array([0.30, 0.52, 1.0]), np.array([0.62, 0.80, 1.0]), np.array([1.0, 0.97, 0.94])]
+    fall_rate = (3.2, 4.2, 5.2, 6.5)
+    strength = (0.06, 0.20, 0.62, 1.0)
+    for k in range(4):
+        streak = 1.0 + 0.30 * spectral_noise(h, 64, rng, beta=2.2, fmin=2, sy=0.12)
+        tear = smoothstep(0.55 + 0.1 * spectral_noise(h, 64, rng, beta=2.0, fmin=1, fmax=6), 1.0, t)       # the end of the shell breaks up
+        fall = np.exp(-t * fall_rate[k]) * (1 - np.clip(tear, 0, 1))
+        diamonds = 1.0
+        if k >= 2:
+            diamonds = 0.62 + 0.38 * np.cos(np.pi * (t * (9 if k == 2 else 7))) ** 2 * np.exp(-t * 2.2)
+        c = cols[k][None, None, :] * (fall * strength[k] * diamonds)[..., None] * streak[..., None]
+        out[:, k * 64:(k + 1) * 64] = c
     return mntex.to_u8(mntex.srgb_encode(np.clip(out, 0, 1)))
 
 
@@ -812,9 +981,13 @@ def main():
         return not only or k in only
 
     if want("plate"):
-        plate = make_plate().finish(normal_strength=0.9)
-        for k in ("albedo", "normal", "mask"):
-            save(f"earth_plate_{k}", plate[k])
+        for name, tone in PAINT_TONES.items():
+            plate = make_plate(tone=tone).finish(normal_strength=0.9)
+            suffix = "" if name == "graphite" else "_" + name
+            save(f"earth_plate{suffix}_albedo", plate["albedo"])
+            if name == "graphite":
+                save("earth_plate_normal", plate["normal"])
+                save("earth_plate_mask", plate["mask"])
     if want("chrome"):
         ch = make_chrome().finish(normal_strength=0.6)
         for k in ("albedo", "normal", "mask"):
@@ -826,9 +999,21 @@ def main():
         out = atlas.finish(normal_strength=1.0)
         for k in ("albedo", "normal", "mask", "emissive"):
             save(f"earth_trim_{k}", out[k])
+        old = json.load(open(TRIMS_JSON)) if os.path.exists(TRIMS_JSON) else {}
+        data = {"size": [atlas.w, atlas.h], "pieces": atlas.items}
+        if "wear" in old:
+            data["wear"] = old["wear"]
         with open(TRIMS_JSON, "w") as f:
-            json.dump({"size": [atlas.w, atlas.h], "pieces": atlas.items}, f, indent=1)
+            json.dump(data, f, indent=1)
         log("wrote trims.json")
+    if want("wear"):
+        wear, items = make_wear_atlas()
+        save("earth_wear_albedo", wear)
+        wd = json.load(open(TRIMS_JSON)) if os.path.exists(TRIMS_JSON) else {"pieces": {}}
+        wd["wear"] = items
+        with open(TRIMS_JSON, "w") as f:
+            json.dump(wd, f, indent=1)
+        log("wrote wear pieces to trims.json")
     if want("engine"):
         save("earth_engine_emissive", make_engine_emissive())
     if want("plume"):
@@ -854,20 +1039,29 @@ def main():
             {"blender": "mn_earth_lights", "name": "MN_EarthLights", "baseColor": [0.02, 0.02, 0.02], "metallic": 0.0, "smoothness": 0.6,
              "emissiveMap": "earth_lights_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 150000},
             {"blender": "mn_earth_chrome", "name": "MN_EarthChrome", "baseColor": [1.0, 1.0, 1.0], "baseMap": "earth_chrome_albedo", "normalMap": "earth_chrome_normal", "maskMap": "earth_chrome_mask",
-             "normalScale": 1.0, "metallicRemap": [0, 1], "smoothnessRemap": [0, 0.9], "aoRemap": [0, 1], "specularAA": True},
+             "normalScale": 1.0, "metallicRemap": [0, 1], "smoothnessRemap": [0, 1.0], "aoRemap": [0, 1], "specularAA": True},
             {"blender": "mn_earth_plume", "name": "MN_EarthPlume", "shader": "HDRP/Unlit", "surface": "additive", "emissiveMap": "earth_plume_emissive",
-             "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 15000, "noShadows": True},
+             "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 48000, "noShadows": True},
             {"blender": "mn_earth_engine", "name": "MN_EarthEngine", "baseColor": [0.02, 0.02, 0.02], "metallic": 0.0, "smoothness": 0.4,
-             "emissiveMap": "earth_engine_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 60000},
+             "emissiveMap": "earth_engine_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 150000},
         ],
         "decal": {"name": "MN_EarthDamageDecal", "baseMap": "earth_damage_albedo", "normalMap": "earth_damage_normal", "maskMap": "earth_damage_mask",
                   "emissiveMap": "earth_damage_emissive", "emissiveNits": 14000, "affectEmission": True},
     }
     plate = materials["materials"][0]
-    for blender, name, tint in (("mn_earth_plate_b", "MN_EarthPlateB", [0.97, 0.97, 1.0]), ("mn_earth_plate_c", "MN_EarthPlateC", [0.70, 0.70, 0.73])):
+    plate["baseColor"] = [1.0, 1.0, 1.0]
+    smooth = {"mn_earth_plate": 0.74, "mn_earth_plate_b": 0.70, "mn_earth_plate_c": 0.70, "mn_earth_plate_d": 0.62, "mn_earth_plate_e": 0.58}
+    for blender, name, tex in (("mn_earth_plate_b", "MN_EarthPlateDeep", "earth_plate_deep_albedo"), ("mn_earth_plate_c", "MN_EarthPlateMid", "earth_plate_mid_albedo"),
+                               ("mn_earth_plate_d", "MN_EarthPlateLight", "earth_plate_light_albedo"), ("mn_earth_plate_e", "MN_EarthPlatePale", "earth_plate_pale_albedo")):
         v = dict(plate)
-        v.update({"blender": blender, "name": name, "baseColor": tint})
+        v.update({"blender": blender, "name": name, "baseMap": tex})
         materials["materials"].append(v)
+    plate["name"] = "MN_EarthPlate"
+    for m in materials["materials"]:
+        if m["blender"] in smooth:
+            m["smoothnessRemap"] = [0, smooth[m["blender"]]]
+    materials["materials"].append({"blender": "mn_earth_wear", "name": "MN_EarthWear", "shader": "HDRP/Lit", "surface": "alpha", "baseColor": [1.0, 1.0, 1.0],
+                                   "baseMap": "earth_wear_albedo", "metallic": 0.0, "smoothness": 0.30})
     with open(os.path.join(OUT, "earth_hull.materials.json"), "w") as f:
         json.dump(materials, f, indent=1)
     log("done")

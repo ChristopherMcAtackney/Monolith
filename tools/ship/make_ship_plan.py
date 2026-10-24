@@ -20,8 +20,8 @@ def rot(pitch, yaw, roll):
     cp, sp = math.cos(math.radians(pitch)), math.sin(math.radians(pitch))
     cy, sy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
     cr, sr = math.cos(math.radians(roll)), math.sin(math.radians(roll))
-    Rz = [[cr, -sr, 0], [sr, cr, 0], [0, 0, 1]]
-    Rx = [[1, 0, 0], [0, cp, sp], [0, -sp, cp]]
+    Rz = [[cr, -sr, 0], [sr, cr, 0], [0, 0, 1]]        # Unity applies the textbook rotation matrices to its (left-handed) axes:
+    Rx = [[1, 0, 0], [0, cp, -sp], [0, sp, cp]]       # +pitch points the nose down, +yaw turns right; verified against the log line "SHOWCASE sun in the ship's frame"
     Ry = [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]]
     def mm(A, B):
         return [[sum(A[i][k] * B[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
@@ -118,19 +118,24 @@ def project(p_world, cam, look, fov, aspect=16 / 9):
     return round(x, 2), round(y, 2)
 
 
-def corvette():
-    # The Sun in the ship's frame (x starboard, y up, z bow): from ahead, high and a little to starboard, so it rakes the starboard flank and the top deck.
-    orient, err = solve_orientation((0.30, 0.50, 0.81))
+SUN_IN_SHIP = (0.50, 0.25, 0.83)      # round 2: from ahead, low and to starboard, so it rakes the starboard flank and the decks and leaves the port side dark
+
+
+def corvette(sun=SUN_IN_SHIP, sky=None):
+    # The Sun in the ship's frame (x starboard, y up, z bow); the ship is turned to put it there (the Sun is fixed in the sky).
+    orient, err = solve_orientation(sun)
     fighter = {"pos_ship": (46.0, 12.0, 122.0), "rot": [0.0, 0.0, 0.0]}
     shots = [
         ("close_hull", (44.0, 6.0, -78.0), (14.0, 6.0, 40.0), 50),
-        ("medium_three_quarter", (150.0, 70.0, 250.0), (0.0, 10.0, -10.0), 34),
-        ("wide_sun_rake", (520.0, 55.0, 40.0), (0.0, 8.0, 0.0), 30),
-        ("shadow_side", (-140.0, 30.0, -290.0), (-6.0, 6.0, -95.0), 48),
+        ("medium_three_quarter", (215.0, 78.0, -310.0), (0.0, 8.0, -20.0), 40),
+        ("wide_sun_rake", (470.0, 120.0, -250.0), (0.0, 6.0, 5.0), 32),
+        ("shadow_side", (-150.0, 24.0, -300.0), (-6.0, 4.0, -85.0), 36),
         ("scale_fighter", (135.0, 28.0, 30.0), (18.0, 8.0, 125.0), 44),
+        ("raking_close", (47.0, 33.0, -30.0), (12.0, 22.0, 14.0), 52),
     ]
     perf_cam = ((52.0, 10.0, -130.0), (4.0, 6.0, 60.0), 62)
-    out = [shot(name, cam, look, fov, orient) for name, cam, look, fov in shots]
+    out = [shot(name, cam, look, fov, orient) for name, cam, look, fov in shots if name != "scale_fighter"]
+    scale = [shot(name, cam, look, fov, orient) for name, cam, look, fov in shots if name == "scale_fighter"]
     # the fighter flies the ship's heading, wings level, in the ship's own frame
     frot = fighter["rot"]
     plan = {
@@ -141,8 +146,14 @@ def corvette():
         "stills": out,
         "perf": [dict(shot("corvette_fills_frame", perf_cam[0], perf_cam[1], perf_cam[2], orient), seconds=12)],
     }
+    # the placeholder fighter appears only in the scale shot (its own plan), so the other frames hold nothing but the ship
+    scale_plan = json.loads(json.dumps(plan))
+    scale_plan["stills"], scale_plan["perf"] = scale, []
+    plan["sceneOptions"].pop("fighter")
+    if sky:
+        plan["sceneOptions"]["sky"] = sky
+        scale_plan["sceneOptions"]["sky"] = sky
     dmg = json.loads(json.dumps(plan))
-    dmg["sceneOptions"].pop("fighter")
     dmg["sceneOptions"]["damage"] = {
         "destroy": ["SUB_flak_S02", "SUB_flak_S04", "SUB_aaf_D04", "SUB_aaf_F03", "SUB_launcher_S01", "SUB_engine_02", "SUB_sensors_boom", "SUB_comms_main"],
         "health": {"SUB_flak_S01": 0.0, "SUB_aaf_D03": 0.0},
@@ -158,14 +169,30 @@ def corvette():
         shot("damage_flank", (62.0, 8.0, -78.0), (19.0, 4.0, -126.0), 46, orient),
     ]
     dmg["perf"] = [dict(shot("corvette_damaged_fills_frame", perf_cam[0], perf_cam[1], perf_cam[2], orient), seconds=12)]
-    return plan, dmg, fighter, shots, orient, err
+    return plan, dmg, scale_plan, fighter, shots, orient, err
+
+
+def arg(name, default=None):
+    if name in sys.argv:
+        return sys.argv[sys.argv.index(name) + 1]
+    return default
 
 
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "corvette"
-    plan, dmg, fighter, shots, orient, err = corvette()
+    sun = tuple(float(x) for x in arg("--sun").split(",")) if arg("--sun") else SUN_IN_SHIP
+    sky = json.loads(arg("--sky")) if arg("--sky") else None
+    plan, dmg, scale_plan, fighter, shots, orient, err = corvette(sun, sky)
+    only = arg("--only")
+    if only:
+        names = only.split(",")
+        plan["stills"] = [s_ for s_ in plan["stills"] if s_["name"] in names]
+        plan["perf"] = []
+        dmg["stills"] = [s_ for s_ in dmg["stills"] if s_["name"] in names]
+        dmg["perf"] = []
+        scale_plan["stills"] = [s_ for s_ in scale_plan["stills"] if s_["name"] in names]
     d = os.path.join(ROOT, "gauntlet", "shots")
-    for name, p in ((which, plan), (which + "_damage", dmg)):
+    for name, p in ((which, plan), (which + "_damage", dmg), (which + "_scale", scale_plan)):
         with open(os.path.join(d, name + ".json"), "w") as f:
             json.dump(p, f, indent=1)
         print("wrote", os.path.join(d, name + ".json"))
@@ -173,7 +200,7 @@ def main():
     print(f"ship orientation pitch/yaw/roll {orient}, solver error {err:.1f} deg; Sun in the ship's frame (x starboard, y up, z bow): ({s[0]:.2f}, {s[1]:.2f}, {s[2]:.2f})")
     if "--check" in sys.argv:
         fw = world(fighter["pos_ship"], orient)
-        for st in plan["stills"]:
+        for st in scale_plan["stills"]:
             look = [st["pos"][i] + 100 * v for i, v in enumerate(fwd_of(st["rot"]))]
             pr = project(fw, st["pos"], look, st["fov"])
             vis = pr is not None and abs(pr[0]) < 1.05 and abs(pr[1]) < 1.05

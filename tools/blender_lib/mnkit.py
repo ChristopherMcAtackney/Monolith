@@ -17,9 +17,13 @@ import numpy as np
 from . import mnmesh
 from .mnmesh import Frame, Patch, norm, cross, chamfered_rect, EDGE_NAMES
 
-PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLUME = 0, 1, 2, 3, 4, 5, 6, 7          # material slots, in the order the model script lists them
+PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLUME, PLATE_D, PLATE_E, WEAR = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10          # material slots, in the order the model script lists them
 
 # running-light palette (earth_lights_emissive.png): 8 swatches of 16 px
+# the five paint tones, darkest to lightest: deep black, graphite (the default), mid grey, light grey, pale cool grey
+TONE_MATS = (PLATE_B, PLATE, PLATE_C, PLATE_D, PLATE_E)
+TONE_DOMINANT = (0.16, 0.28, 0.28, 0.18, 0.10)
+
 LIGHT_WHITE, LIGHT_COLD, LIGHT_RED, LIGHT_GREEN, LIGHT_AMBER, LIGHT_BLUE, LIGHT_EMBER, LIGHT_VIOLET = range(8)
 LIGHT_RGB = {LIGHT_WHITE: (1, 1, 1), LIGHT_COLD: (0.8, 0.9, 1), LIGHT_RED: (1, 0.07, 0.05), LIGHT_GREEN: (0.07, 1, 0.22), LIGHT_AMBER: (1, 0.62, 0.18),
              LIGHT_BLUE: (0.25, 0.45, 1), LIGHT_EMBER: (1, 0.36, 0.08), LIGHT_VIOLET: (0.6, 0.35, 1)}
@@ -51,6 +55,7 @@ class Kit:
         self.lod = ctx.lod
         self.hull = ctx.hull
         self.trims = trims["pieces"]
+        self.trims_all = trims
         self.seed = seed
 
     # ---------------------------------------------------------------------------------------------- basics
@@ -125,6 +130,7 @@ class Kit:
         """Armour plates over a planar patch: rows along the ship, columns across, every plate its own height and its own place in the
         plate tile. ``u_range``/``v_range`` limit the region in metres. Larger plates may carry smaller ones (``sub_prob``): the layered look."""
         self.last_cells = np.zeros((0, 5))
+        self.last_tones = np.zeros(0, int)
         if self.lod >= 1:
             return 0
         mb = mb or self.hull
@@ -172,13 +178,14 @@ class Kit:
         h = rng.uniform(*height, size=m) + step * ri_
         ch = np.minimum(chamfer, h * 0.9)
         off = rng.uniform(0, 1, size=(m, 2))
-        # plate-to-plate variety: three batches of paint, a plain one, a lighter one and a darker one
-        batch = rng.choice(3, size=m, p=[0.55, 0.2, 0.25])
-        for bi, mat in enumerate((PLATE, PLATE_B, PLATE_C)):
+        # paint: every region (a hull flat about as long as the ship's segment) has a dominant tone, its plates follow it with some spread, and a few are accents
+        batch = self.tones(key, m, rng)
+        for bi, mat in enumerate(TONE_MATS):
             g = batch == bi
             if g.any():
                 mb.slabs(P[g], n[g], h[g], ch[g], mat, TRIM, tile=12.0, tile_off=off[g], edge_rect=self.rect("edge_paint"), edge_tile=8.0)
         self.last_cells = np.stack([a0, a1, b0, b1, h], axis=1)
+        self.last_tones = batch
         count = m
         if sub_prob > 0:
             big = ((a1 - a0) > sub[1] * 1.6) & ((b1 - b0) > sub[1] * 1.6) & (rng.random(m) < sub_prob)
@@ -195,15 +202,26 @@ class Kit:
                 svv = np.stack([S[:, 2], S[:, 2], S[:, 3], S[:, 3]], axis=1) / Lv
                 SP = patch.pt(suu, svv) + patch.normal() * S[:, 4][:, None, None]
                 sh = rng.uniform(*sub_height, size=len(S))
-                sb_ = rng.choice(3, size=len(S), p=[0.5, 0.3, 0.2])
+                sb_ = np.clip(batch[:len(S)] + rng.choice([-2, -1, 1, 2], size=len(S)), 0, 4)       # a plate on a plate is a different batch of paint
                 soff = rng.uniform(0, 1, size=(len(S), 2))
-                for bi, mat in enumerate((PLATE, PLATE_B, PLATE_C)):
+                for bi, mat in enumerate(TONE_MATS):
                     g = sb_ == bi
                     if g.any():
                         mb.slabs(SP[g], np.tile(patch.normal(), (int(g.sum()), 1)), sh[g], np.minimum(0.06, sh[g] * 0.9), mat, TRIM, tile=12.0,
                                  tile_off=soff[g], edge_rect=self.rect("edge_paint"), edge_tile=8.0)
                 count += len(S)
         return count
+
+    def tones(self, key, m, rng):
+        """Paint tone index (0 deep .. 4 pale) for m plates of one region: the region key is the plate key without its trailing part index."""
+        region = str(key).rsplit("-", 1)[0]
+        rr = self.rng("tone", region)
+        dom = int(rr.choice(5, p=TONE_DOMINANT))
+        w = np.exp(-np.abs(np.arange(5) - dom) * 1.15) + 0.03
+        t = rng.choice(5, size=m, p=w / w.sum())
+        accent = rng.random(m) < 0.06
+        t[accent] = rng.choice(5, size=int(accent.sum()))
+        return t
 
     # ---------------------------------------------------------------------------------------------- trim strips and decals
     def strip(self, p0, run, n, length, name, lift=0.03, scale=1.0, mb=None, flip=False):
@@ -272,7 +290,7 @@ class Kit:
         cx, cz = centre
         prof = chamfered_rect(hw, hh, c)
         fr = Frame((cx, 0, cz), (0, 1, 0), (0, 0, 1))
-        mb.extrude(prof, fr, y0 + bevel, y1 - bevel, CHROME, tile=3.0, caps=(False, False))
+        mb.extrude(prof, fr, y0 + bevel, y1 - bevel, PLATE_C, tile=8.0, caps=(False, False))      # the band is matte armour; only the lips are polished
         # lips (stepped bevel) at each end: slightly smaller prisms
         for ya, yb, s0, s1 in ((y0, y0 + bevel, (1 - bevel / hw * 1.4, 1 - bevel / hh * 1.4), (1.0, 1.0)), (y1 - bevel, y1, (1.0, 1.0), (1 - bevel / hw * 1.4, 1 - bevel / hh * 1.4))):
             mb.extrude(prof, fr, ya, yb, CHROME, s0=s0, s1=s1, tile=3.0, caps=(False, False))
@@ -423,8 +441,8 @@ class Kit:
                 mb.quad_rect(a, a + x * sw, a + x * sw + y * sh, a + y * sh, info["uv"], TRIM, flip=bool((i + j) % 2))
 
     def scatter_details(self, patch, cells, key, hatch=0.30, fasteners=0.18, min_size=(2.6, 3.4)):
-        """Hatches, vents and fastener lines on the tops of the plates just laid (cells from plate_patch), so no big plate is bare.
-        Orientation: the piece x runs along the ship."""
+        """Hatches, vents, stencilled codes, warning bands, big access panels and fastener lines on the tops of the plates just laid (cells from
+        plate_patch), so no big plate is bare. Orientation: the piece x runs along the ship."""
         if self.lod >= 1 or len(cells) == 0:
             return
         rng = self.rng("details", key)
@@ -434,20 +452,114 @@ class Kit:
         for a0, a1, b0, b1, h in cells:
             w, l = a1 - a0, b1 - b0
             r = rng.random()
-            if w >= min_size[0] and l >= min_size[1] and r < hatch:
-                name = rng.choice(["hatch_a", "hatch_a", "hatch_b", "vent"])
+            name = None
+            if w >= 4.6 and l >= 7.0 and r < 0.10:
+                name = "panel_big"
+            elif w >= 1.6 and l >= 7.0 and r < 0.17:
+                name = "chevrons"
+            elif w >= 1.5 and l >= 3.6 and r < 0.30:
+                name = str(rng.choice(["code_a", "code_b", "code_c", "code_d"]))
+            elif w >= 3.2 and l >= 6.5 and r < 0.38:
+                name = "vent_big"
+            elif w >= min_size[0] and l >= min_size[1] and r < 0.38 + hatch:
+                name = str(rng.choice(["hatch_a", "hatch_a", "hatch_b", "vent"]))
+            if name is not None:
                 pw, ph = self.trims[name]["metres"]
                 sc = float(min(1.0, (w - 0.8) / ph, (l - 0.8) / pw, 1.4))
-                if sc < 0.45:
+                if sc >= 0.45:
+                    cu = rng.uniform(a0 + ph * sc / 2 + 0.3, max(a0 + ph * sc / 2 + 0.31, a1 - ph * sc / 2 - 0.3))
+                    cv = rng.uniform(b0 + pw * sc / 2 + 0.3, max(b0 + pw * sc / 2 + 0.31, b1 - pw * sc / 2 - 0.3))
+                    c = patch.pt(cu / Lu, cv / Lv) + n * (h + 0.02)
+                    self.decal(c, run, n, name, scale=sc, lift=0.0)
                     continue
-                cu = rng.uniform(a0 + ph * sc / 2 + 0.3, max(a0 + ph * sc / 2 + 0.31, a1 - ph * sc / 2 - 0.3))
-                cv = rng.uniform(b0 + pw * sc / 2 + 0.3, max(b0 + pw * sc / 2 + 0.31, b1 - pw * sc / 2 - 0.3))
-                c = patch.pt(cu / Lu, cv / Lv) + n * (h + 0.02)
-                self.decal(c, run, n, name, scale=sc, lift=0.0)
-            elif l >= 5.0 and w >= 2.0 and r < hatch + fasteners:
+            if l >= 5.0 and w >= 2.0 and rng.random() < fasteners:
                 pu = a0 + 0.35 if rng.random() < 0.5 else a1 - 0.55
                 p0 = patch.pt(pu / Lu, (b0 + 0.4) / Lv) + n * (h + 0.015)
                 self.strip(p0, run, n, l - 0.8, "fasteners", lift=0.0, scale=0.7)
+
+    def wear(self, patch, cells, key, density=0.8, mb=None):
+        """Alpha overlays laid on plate tops (transparent WEAR material, 1 cm above the plate): grime streaks along the ship, scorch blooms, pale
+        scuffs along an edge, repainted patches (lighter or darker), coolant stains. Mid-scale variation that does not repeat with the tile."""
+        if self.lod >= 1 or len(cells) == 0 or "wear" not in self.trims_all:
+            return 0
+        mb = mb or self.hull
+        wear = self.trims_all["wear"]
+        rng = self.rng("wear", key)
+        n = patch.normal()
+        Lu, Lv = patch.lu, patch.lv
+        ev = patch.ev()
+        count = 0
+        # what shows on which paint: dark plates are marked by pale dust, pale scuffs and repainted patches; light plates by dark grime, scorch and stains
+        by_tone = {
+            "dark": (["streak_light", "scuff", "patch_light", "stain", "scorch"], [0.34, 0.30, 0.22, 0.06, 0.08]),
+            "mid": (["streak", "streak_light", "scuff", "scorch", "patch_light", "patch_dark", "stain"], [0.20, 0.14, 0.14, 0.14, 0.14, 0.12, 0.12]),
+            "light": (["streak", "scorch", "stain", "patch_dark", "streak"], [0.34, 0.20, 0.16, 0.16, 0.14]),
+        }
+        tones = getattr(self, "last_tones", np.zeros(len(cells), int))
+        for ci, (a0, a1, b0, b1, h) in enumerate(cells):
+            w, l = a1 - a0, b1 - b0
+            if rng.random() > density or w < 1.0 or l < 1.4:
+                continue
+            tone = int(tones[ci]) if ci < len(tones) else 1
+            kinds, weights = by_tone["dark" if tone <= 1 else "mid" if tone == 2 else "light"]
+            weights = np.asarray(weights) / np.sum(weights)
+            for _ in range(1 + int(rng.random() < 0.35)):
+                kind = kinds[int(rng.choice(len(kinds), p=weights))]
+                names = [k for k, v in wear.items() if v["kind"] == kind]
+                name = names[int(rng.integers(len(names)))]
+                pw, ph = wear[name]["metres"]
+                if kind in ("patch_light", "patch_dark") and (w < 2.2 or l < 2.8):
+                    continue
+                sc = float(min(rng.uniform(0.55, 1.25), (l - 0.2) / pw, (w - 0.1) / ph, 1.0 if kind in ("scorch", "stain") and min(w, l) < 4 else 9.0))
+                if sc < 0.28:
+                    continue
+                sx_, sy_ = pw * sc, ph * sc
+                if sy_ > w - 0.1:
+                    sy_ = w - 0.1
+                cu0 = rng.uniform(a0 + 0.05, max(a0 + 0.06, a1 - sy_ - 0.05))
+                cv0 = rng.uniform(b0 + 0.05, max(b0 + 0.06, b1 - sx_ - 0.05))
+                rot180 = rng.random() < 0.5
+                if kind == "scuff":                              # hug a lateral edge with the scratches toward it
+                    cu0 = a1 - 0.02 - sy_ if rot180 else a0 + 0.02
+                if not rot180:        # x along the ship, y = n x x (toward lower u): the box spans u in [cu0, cu0 + sy]
+                    x = ev * sx_
+                    y = cross(n, ev) * sy_
+                    p0 = patch.pt((cu0 + sy_) / Lu, cv0 / Lv) + n * (h + 0.012)
+                else:                 # turned half a turn: x against the ship, y toward higher u
+                    x = -ev * sx_
+                    y = cross(n, -ev) * sy_
+                    p0 = patch.pt(cu0 / Lu, (cv0 + sx_) / Lv) + n * (h + 0.012)
+                mb.quad_rect(p0, p0 + x, p0 + x + y, p0 + y, wear[name]["uv"], WEAR)
+                count += 1
+        return count
+
+    def wear_quad(self, name, centre, run, n, scale=1.0, lift=0.012, size=None, mb=None):
+        """One wear overlay at a chosen place (heat tint on the engine block, a stain below a vent). Same conventions as ``decal``."""
+        if self.lod >= 1 or "wear" not in self.trims_all:
+            return
+        mb = mb or self.hull
+        info = self.trims_all["wear"][name]
+        pw, ph = info["metres"]
+        pw, ph = (size if size is not None else (pw * scale, ph * scale))
+        x = norm(run)
+        n = norm(n)
+        y = cross(n, x)
+        c = np.asarray(centre, np.float64) + n * lift
+        a = c - x * pw / 2 - y * ph / 2
+        mb.quad_rect(a, a + x * pw, a + x * pw + y * ph, a + y * ph, info["uv"], WEAR)
+
+    def duct(self, p0, p1, normal, width=0.9, height=0.45, mb=None):
+        """A raised cable tray between two points on a surface facing ``normal``: an armoured box with a conduit strip on its top."""
+        mb = mb or self.hull
+        p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
+        d = p1 - p0
+        ln = np.linalg.norm(d)
+        n = norm(normal)
+        fr = Frame((p0 + p1) / 2 + n * height / 2, d, n)
+        mb.box(fr, (width, ln, height), PLATE, chamfer=0.08, tile=4.0)
+        run = d / ln
+        y = cross(n, run)
+        self.strip((p0 + n * (height + 0.012)) - y * (width * 0.42), run, n, ln, "conduit", lift=0.0, scale=width * 0.84 / 0.8)
 
     def frame_on(self, point, normal, forward=(0, 1, 0)):
         """A frame sitting on a surface: origin at the point, local z = the surface normal, local y = ``forward`` projected onto the surface."""

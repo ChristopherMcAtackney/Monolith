@@ -104,3 +104,57 @@ Blind critic vs The Expanse: **lost 3/3** (certain, likely, certain). Pairs: clo
 - Third: the engine plumes are long, smooth, even cones "like glowing translucent geometry", too big for the ship, which makes it read as a toy. The show's drives are small, hard, saturated blue-white discs.
 - **Conflict to resolve, lead's call:** the user's rule (2026-10-23) is that shadow sides must keep their form and never crush to pure black, which is why the sky has a cool fill. The critic wants "deep black unlit sides". Resolution: a much higher key-to-fill ratio and captures composed with the sun raking the hull. Shadow sides go dark, with only faint form from the fill and rim light, never zero; the sun side carries the structure. The user's rule stands; the fill was simply too strong relative to the key.
 - Round 2 gaps: key-to-fill ratio and raking-light composition; large, mid and small-scale paint, wear and panel variation (break up the tiling); plumes small, hot-cored and turbulent; chrome needs something to reflect (environment reflections from the sky).
+
+## Round 2 (builder, 2026-10-24): key light, surface at every scale, small hot engines, reflections
+
+Answers the round 1 verdict point by point. Correction first: round 1's plans used a wrong rotation matrix (pitch backwards), so the Sun in those captures was not at the
+(0.31, 0.50, 0.81) the notes gave and the shots sat at other angles to the ship than I thought. Fixed in `tools/ship/make_ship_plan.py`, and the showcase now logs the real Sun
+direction in the ship's frame (`SHOWCASE sun in the ship's frame`), which matches the plan (0.50, 0.25, 0.83) to 0.005.
+
+### Lighting (Sky defaults changed, every scene uses them; also recorded in `gauntlet/pieces/sky/history.md`)
+- `SkyOptions.AmbientNits` 5,500 to 2,200 and `AmbientAwayFromSun` 0.7 to 1.0. The fill is now 0 facing the Sun and up to twice the base facing away (it was 0.3x to 1.7x), so a sunlit plane
+  is about 25 times brighter than the same plane in shadow (it was about 6). `AmbientColor` (0.55, 0.62, 0.78) to (0.58, 0.64, 0.78), a little less blue so polished metal does not tint blue.
+  The user's rule holds: shadow sides read 10 to 25 of 255 with form from the fill and the rim of lit edges, never zero (`shadow_side`, median of the ship's pixels 39).
+- New `SkyOptions.ScreenSpaceReflections` (on): `SkyRig` adds an SSR override to its look volume and `Hdrp.EnsureAsset` sets `supportSSR` (the asset had it off, which is why
+  my first test showed nothing). Cost on the corvette: about 0.1 ms GPU. Nothing else in the look, exposure, bloom or Sun changed.
+- Composition: the Sun is now low (elevation 14 degrees), ahead and to starboard of the bow, so it rakes the decks and the starboard flank; the port side, the keel and everything facing aft
+  fall dark. Stills: `close_hull`, `medium_three_quarter`, `wide_sun_rake` (from the starboard quarter, more oblique than round 1), `shadow_side` (port quarter, the Sun just out of the top
+  of the frame), `scale_fighter` (own plan: the placeholder fighter is only in this shot now), and the new `raking_close` (over the decks, Sun across the plating). Damage set unchanged.
+
+### Surface at three scales
+- Large: five paint tones (deep black to pale grey); each hull flat has a dominant tone and its plates follow it with a spread plus accents, so whole stretches of plating are darker or lighter.
+- Mid: every plate is its own height; hatches, vents, big inset panels, four stencilled codes, a chevron band; alpha wear overlays chosen by tone (pale dust and scuffs on dark plates, grime, scorch
+  and stains on light ones, lighter or darker repainted patches); trenches in the top plating with pipes laid in them; window rows in broken runs of 7 to 46 m with conduit bundles between,
+  where round 1 had identical full-length rows; ribs standing 1.7 m proud so they cast real shadows; collars now matte armour with polished lips.
+- Small: unchanged (grain, chips, scratches, the tiling detail map), but calmer (the plate normal is a third of round 1's).
+- Engine block flanks and top carry a bronze and blue heat tint fading forward from the bells.
+
+### Engines
+Bells are about half the size (central: throat 1.7 m, mouth 3.4 m; the others 1.2 and 2.5 m). Inside: a dark funnel with a dull ember glow, and a flat white-blue disc with a hard edge and a saturated rim at the
+throat (150,000 nits, it blooms). The flare is short: eight thin nested additive shells (about 4 mouth radii long, white core, fainter blue and violet outside), so its edge falls off in steps too small to see.
+`EngineGlow` makes it alive: smooth two-speed noise on brightness and flare length, `Throttle` 0 to 1 (off: no flare, a dark bell). It is a runtime component the flight or effects system can drive.
+
+### Chrome
+Less of it, and smoother: collar bands are matte armour with polished lips; the remaining chrome (rails, truss, barrels, stacks, lances, bell lips) is smoothness 0.95 and picks up the Sun as hard glints
+and, through SSR, the lit plates beside it. The dish's back is dark ribbed armour with a chrome rim.
+
+### Numbers
+- Triangles: hull LOD0 45,078, LOD1 5,668, LOD2 3,620; the intact subsystem parts add 39,046 at LOD0 and LOD1 (about 84,000 on screen at full detail); wrecks 15,104, debris 2,336 only when shown. The
+  wear overlays are about 4,000 of the hull's. Collision 496. Eleven materials in use (five plate tones, trim, chrome, lights, engine, plume, wear) plus the decal; the Art folder is 29 MB of PNG (wear atlas 2048
+  adds 0.8 MB, four more albedo tiles 1024 add 3.8 MB), FBX 6.0 MB.
+- Perf (RTX 4070 Ti, 1920x1080, the corvette filling the frame, 12 s): **821 fps average, 1% low 501, worst frame 2.35 ms, p99 1.9 ms, GPU 1.21 ms**; with damage applied (8 wrecks, 49 decals, debris out) 803 fps,
+  1% low 490, GPU 1.24 ms. Round 1: 748 / 466 / 1.25 ms. (The plume geometry went up and SSR came on; the drop in cost is the smaller bells and the removal of the long plume overdraw.)
+- The juice break-up sections were re-baked (`JuiceSetup.BakeSections`: 19 section meshes from 9 hull meshes, 48,590 triangles).
+
+### My read, at the critic's 1280 px, against `capital_ship_close/expanse` 0048, 0050, 0160 and `capital_ship_wide/expanse` 0032
+- **Better:** a hard Sun now makes bright planes beside dark ones: in `raking_close` and `close_hull` the lit pixels reach p90 141 to 148 and p98 168 to 177 of 255, where the show's close frames sit at p90 145 to 179
+  and p98 176 to 193; the shadow side falls to a median of 39 with form. The panel work no longer repeats across the hull, the window rows are broken and unequal, the engines are small hot discs that
+  bloom, and chrome has stopped being the largest flat pale area. `raking_close` is the strongest frame and the one I would send first.
+- **Still behind the show:** (1) The show's lit hull is paler (median of lit pixels 86 to 128 against ours 47 to 59); Earth stays dark by design, but if the critic still picks the show on brightness the lever is the tone weights (`TONE_DOMINANT`) and
+  a harder sun, not the fill. (2) The plating is still a grid of rectangles of nicely different values: the show's big plates are irregular, with seams that wander and edges that are not parallel.
+  (3) Stencilled codes and chevrons come from four pieces and repeat; at close range you can find the same code twice. (4) `wide_sun_rake` is the weakest frame: the ship is small and the structure is only
+  readable as silhouette and lit decks; the Milky Way behind it is brown. (5) Flares seen from behind or from the side are still short cones; the shock diamonds in the core texture are invisible at this scale.
+  (6) SSR is subtle: flat polished faces facing a black sky still reflect black or the faint blue fill, so collars and the big chrome-lipped faces do not look like mirrors, only like dark metal.
+  (7) The shadow side is dark enough that the 1280 JPEG keeps only a hint of the window rows and the engine block: the critic may call it too crushed even though no pixel is zero.
+- **Not done:** reflections of the Sun and stars in the cubemap (a sky-only reflection probe), wear that follows the hull's real geometry (it is per plate), irregular plate outlines, a second ship class of paint (Earth's pale
+  command variant), and anything about the destroyer.

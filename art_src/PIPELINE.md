@@ -37,7 +37,8 @@ The plates are real geometry with a chamfer, so every edge catches the Sun and p
 
 - **Axes while building:** x starboard, y bow, z up (Blender). `mnship.to_unity` is the one place that flips to Unity's (x right, y up, z forward). FBX settings are fixed by a probe (`mnship.py` top): Blender's axes untouched, no baking, Unity's *Bake Axis Conversion* on. `ShipArtSetup` fails loudly if a subsystem's position or facing in the prefab differs from the manifest.
 - **UVs:** UV0 is metric tile coordinates for tiling materials (plate, chrome), an atlas rectangle for trim pieces. UV1 is always metric, for the detail map. Normals are explicit (flat faces own their vertices; lathes carry their own).
-- **Materials (slots in the model script's list):** plate (three batches of paint for plate-to-plate variety), trim (atlas: windows, hatches, vents, labels, edge paint, burnt metal), chrome (brushed tile), lights (palette), engine (bell gradient), plume (HDRP Unlit, additive). HDRP Lit mask map: R metallic, G occlusion, B detail mask, A smoothness. Albedo textures hold final values (matte black is about 0.075 linear), the material tint only varies batches.
+- **Materials (slots in the model script's list):** plate in five paint tones (deep black, graphite, mid, light and pale grey: five albedo tiles that share one normal and mask, so chips and scratches stay bare metal on every tone), trim (atlas: windows, hatches, vents, big panels, stencilled codes, chevrons, labels, edge paint, burnt metal), chrome (brushed tile, smoothness 0.95), lights (palette), engine (the dark funnel and the hot disc), plume (HDRP Unlit, additive), wear (HDRP Lit, alpha blended). HDRP Lit mask map: R metallic, G occlusion, B detail mask, A smoothness. Albedo textures hold final values; the tone is in the texture, not in a tint.
+- **Paint and wear at every scale (round 2):** `Kit.tones` gives each hull flat a dominant tone and its plates follow it with a spread plus a few accents (large scale: blocks of lighter and darker plating); every plate is its own height and takes its own part of the 12 m tile (mid scale); `Kit.scatter_details` puts a hatch, vent, stencilled code, chevron band or big access panel on most plates; `Kit.wear` lays alpha overlays one centimetre above a plate (grime or pale dust streaks along the ship, scorch blooms, edge scuffs, repainted patches, stains) chosen by the plate's tone (pale marks on dark paint, dark marks on pale paint); `trenches` leave channels in the plating with pipes in them; window rows are laid in broken runs with conduit between. No noise greebles.
 - **LODs:** `<id>_LOD0..2` built by the same function with `ctx.lod`: LOD0 everything; LOD1 carcass, strips and silhouette pieces without plate slabs (the subsystems keep their LOD0 meshes); LOD2 boxes. Screen heights in the manifest.
 - **Collision:** `<id>_COL`, a few hundred triangles of coarse hull boxes (the prefab makes it a `MeshCollider`).
 - **Check:** `Ship.export` refuses a mesh whose triangle winding disagrees with its normals.
@@ -55,6 +56,8 @@ SUB_<kind>_<name>                 pivot empty; +z is where it points. kinds: eng
 FX_<kind>_<NN>                    where sparks, vents, fire and smoke may be spawned (ShipFxHook), +z out of the hull
 DMG_site_<NN> (+ __breach)        a place on the hull that can be torn open (HullDamageSite); the breach mesh is hidden until hit
 ```
+
+Engines are alive: `EngineGlow` (added to every `engine` subsystem by `ShipArtSetup`) flickers the hot core and the flare with smooth noise and scales the flare with `Throttle` (0 off, 1 full); the flight or effects system sets it. The flare is a part of its own (`__plume`) so a wreck loses it.
 
 Combat calls `IShipDamage` (on the prefab root, `ShipDamage`), it needs no knowledge of the model:
 
@@ -82,7 +85,10 @@ Scorch decals come from one atlas (4 x 4: small scorches, blasts, craters, strea
 
 - Blind look-test stills must carry no HUD: the `corvette` scene builds none (no `FlightHud`, no `CockpitView`); keep it that way for any new showcase scene.
 - A heredoc with big Python in the bash tool can fail to parse: write patch scripts to a file.
-- The capture scene `"scene": "corvette"` (`ShipShowcase`) takes `sceneOptions` for any ship id: orientation (the Sun is fixed in the sky, so yaw/pitch/roll decide the light; `make_ship_plan.py` solves them), a placeholder fighter, damage. It never touches SkyRig, exposure or the look.
-- Emissive: nits at fixed EV 14 (`earth_hull.materials.json`): windows 42,000, lights 150,000, plume 15,000, decal embers 14,000. Bloom starts around 17,700 nits.
+- The capture scene `"scene": "corvette"` (`ShipShowcase`) takes `sceneOptions` for any ship id: orientation (the Sun is fixed in the sky, so yaw/pitch/roll decide the light; `make_ship_plan.py` solves them and the player logs `SHOWCASE sun in the ship's frame` so a wrong matrix shows at once), a placeholder fighter, damage, and `sky` (any `SkyOptions` field by name, for look development without a rebuild). It uses `SkyRig` as the game does and builds no HUD.
+- Unity applies the textbook rotation matrices to its axes (`Quaternion.Euler` = Ry * Rx * Rz, +pitch points the nose down): `make_ship_plan.rot` follows that. Round 1's plans had Rx backwards, so its Sun was not where its notes said.
+- `MaterialPropertyBlock.SetColor` gamma-converts a value, which turns 150,000 nits into white: set emissive nits with `SetVector` (EngineGlow does).
+- Screen-space reflections (`SkyOptions.ScreenSpaceReflections`; needs `supportSSR` in the HDRP asset, which `Hdrp.EnsureAsset` sets) are what make polished metal reflect the lit plates beside it. Changing a model changes the juice's break-up sections: run `tools/unity.ps1 Monolith.EditorTools.JuiceSetup.BakeSections` after `Setup.All`.
+- Emissive: nits at fixed EV 14 (`earth_hull.materials.json`): windows 42,000, lights 150,000, engine disc 150,000, plume 48,000 (the core column at full strength, the shells outside it a fifth to a twentieth), decal embers 14,000. Bloom starts around 17,700 nits.
 - HDRP decal emissive and DBuffer need nothing in the player settings, but the decal material must be an asset (it is: `MN_EarthDamageDecal`).
 - `_UVDetailsMappingMask` is set by the material inspector in the editor, not by `ResetMaterialKeywords`: `ShipArtSetup` sets it itself.

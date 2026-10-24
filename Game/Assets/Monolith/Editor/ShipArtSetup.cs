@@ -98,6 +98,18 @@ namespace Monolith.EditorTools
                 mat.SetColor("_EmissiveColorLDR", emCol);
                 mat.SetColor("_EmissiveColor", emCol * nits);
                 if ((bool?)m["doubleSided"] == true) { mat.SetFloat("_DoubleSidedEnable", 1f); mat.SetFloat("_DoubleSidedNormalMode", 1f); }
+                if ((string)m["surface"] == "alpha")
+                {
+                    // Overlays that lie on the plates (grime, scuffs, repainted patches): alpha-blended, no depth write, lit like the hull around them.
+                    mat.SetFloat("_SurfaceType", 1f);
+                    mat.SetFloat("_BlendMode", 0f);
+                    mat.SetFloat("_ZWrite", 0f);
+                    mat.SetFloat("_TransparentZWrite", 0f);
+                    mat.SetFloat("_EnableFogOnTransparent", 0f);
+                    mat.SetFloat("_EnableBlendModePreserveSpecularLighting", 1f);
+                    mat.SetFloat("_AlphaCutoffEnable", 0f);
+                    mat.SetFloat("_ReceivesSSR", 0f);
+                }
                 HDShaderUtils.ResetMaterialKeywords(mat);
                 EditorUtility.SetDirty(mat);
                 set.ByBlenderName[(string)m["blender"]] = mat;
@@ -262,6 +274,12 @@ namespace Monolith.EditorTools
                         pieces.Add(new DebrisPiece { Piece = dt, Origin = V3(dj["position"]), Velocity = V3(dj["velocity"]), SpinDegPerSec = V3(dj["spin"]) });
                     }
                     sub.Configure(intact, damaged, destroyed, pieces.ToArray());
+                    if (s.Kind == ShipSubsystem.Engine)
+                    {
+                        // A live engine: its glowing core and its flare flicker and follow the throttle (EngineGlow).
+                        var glow = t.gameObject.AddComponent<EngineGlow>();
+                        glow.Configure(RenderersOf(t, s.Name + "__core"), RenderersOf(t, s.Name + "__plume"));
+                    }
                     foreach (var g in intact) intactRenderers.AddRange(g.GetComponentsInChildren<Renderer>(true));
                     variants += damaged.Length + destroyed.Length;
                     debris += pieces.Count;
@@ -333,6 +351,12 @@ namespace Monolith.EditorTools
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
+        static Renderer[] RenderersOf(Transform parent, string childName)
+        {
+            var c = parent.Find(childName);
+            return c == null ? new Renderer[0] : c.GetComponentsInChildren<Renderer>(true);
+        }
+
         static int TriangleCount(Renderer r)
         {
             var mf = r.GetComponent<MeshFilter>();
@@ -348,7 +372,7 @@ namespace Monolith.EditorTools
     /// decal atlases (names with "damage") clamp and keep their alpha).</summary>
     public sealed class ShipArtImport : AssetPostprocessor
     {
-        public override uint GetVersion() => 4;
+        public override uint GetVersion() => 5;
 
         static bool InArt(string path) => path.StartsWith(ShipArtSetup.ArtRoot + "/", StringComparison.OrdinalIgnoreCase);
 
@@ -390,7 +414,7 @@ namespace Monolith.EditorTools
             t.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
             t.sRGBTexture = color;
             t.alphaSource = TextureImporterAlphaSource.FromInput;
-            t.alphaIsTransparency = decal && name.EndsWith("_albedo");
+            t.alphaIsTransparency = (decal || name.Contains("wear")) && name.EndsWith("_albedo");
             t.mipmapEnabled = true;
             t.streamingMipmaps = false;
             t.filterMode = FilterMode.Trilinear;

@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 
-from .mnkit import PLATE, TRIM, LIGHTS, ENGINE, CHROME
+from .mnkit import PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B
 from .mnmesh import Frame, norm, cross, chamfered_rect
 from .mnparts import wreck_stump, debris_set, torn_plate, _ember
 
@@ -21,7 +21,11 @@ def sensor_dish(K, sb, fr, key, r=6.0):
     base.box(fr, (3.4, 3.4, 3.0), PLATE, centre=(0, -1.0, -1.5), chamfer=0.7)
     for sx in (-1, 1):
         base.box(fr, (0.7, 1.2, r * 1.15), PLATE, centre=(sx * r * 0.62, -0.7, 0.0), chamfer=0.2, tile=5.0)
-    head.lathe([(0.9, -2.2), (r * 0.5, -1.7), (r * 0.92, -0.7), (r, -0.1), (r, 0.35)], fr, CHROME, segs=36, tile=3.0)
+    head.lathe([(0.9, -2.2), (r * 0.5, -1.7), (r * 0.92, -0.7)], fr, PLATE_B, segs=36, tile=6.0)          # the dish's back: dark ribbed armour
+    for k in range(3):                                                                                       # ribs on the back, centre to rim
+        rr = r * (0.35 + 0.22 * k)
+        head.lathe([(rr, -1.9 + 0.55 * k), (rr + 0.25, -1.75 + 0.55 * k), (rr + 0.25, -1.55 + 0.55 * k), (rr, -1.4 + 0.55 * k)], fr, CHROME, segs=36, tile=3.0)
+    head.lathe([(r * 0.92, -0.7), (r, -0.1), (r, 0.35)], fr, CHROME, segs=36, tile=3.0)
     head.lathe([(r, 0.35), (r * 0.94, 0.45)], fr, CHROME, segs=36, tile=3.0)
     head.disc(fr, r * 0.94, 0.45, TRIM, segs=36, facing=1.0, rect=K.rect("sensor_grid"))
     head.box(fr, (0.9, 3.0, 0.9), PLATE, centre=(0, 1.6, 0), chamfer=0.2)

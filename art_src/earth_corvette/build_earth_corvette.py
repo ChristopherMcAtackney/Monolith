@@ -18,7 +18,7 @@ import sys
 import numpy as np
 
 from blender_lib import mnmesh, mnship, mnkit, mnparts, mnsystems, mnpreview
-from blender_lib.mnkit import Kit, station, complement, PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C
+from blender_lib.mnkit import Kit, station, complement, PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLATE_D, PLATE_E, WEAR
 from blender_lib.mnkit import LIGHT_WHITE, LIGHT_COLD, LIGHT_RED, LIGHT_GREEN, LIGHT_AMBER, LIGHT_BLUE
 from blender_lib.mnmesh import Frame, norm, cross, chamfered_rect, regular_poly
 
@@ -88,11 +88,13 @@ def pt_at(patch, z=None, y=None):
 
 
 def flank_strips(K, patch, rows, margin=3.0):
-    """Window rows on a flank flat; returns the u-intervals (metres from the top edge) the strips occupy, for the plating to leave free."""
+    """Window rows on a flank flat, laid in broken runs (7 to 46 m long, with gaps) so no two rows repeat; the gaps hold conduit bundles. Returns the
+    u-intervals (metres from the top edge) the rows occupy, for the plating to leave free."""
     gaps = []
     n = patch.normal()
     run = norm(cross(ZHAT, n))
     top = patch.p00[2]
+    rng = K.rng("win", tuple(np.round(patch.p00, 1)))
     for zc, name in rows:
         ph = K.piece_m(name)[1]
         zb = zc - ph / 2
@@ -101,12 +103,46 @@ def flank_strips(K, patch, rows, margin=3.0):
         ya, yb = patch.p00[1] + margin, patch.p01[1] - margin
         if yb - ya < 6:
             continue
-        pa, pb = pt_at(patch, zb, ya), pt_at(patch, zb, yb)
-        if np.dot(pb - pa, run) < 0:
-            pa, pb = pb, pa
-        K.strip(pa, run, n, float(np.linalg.norm(pb - pa)), name, lift=0.03)
+        runs = []
+        y = ya + rng.uniform(0.0, 6.0)
+        while y < yb - 5.0:
+            ln = min(rng.uniform(7.0, 46.0), yb - y)
+            if ln >= 5.0:
+                runs.append((y, y + ln))
+            y += ln + rng.uniform(3.0, 16.0)
+        if len(runs) > 2 and rng.random() < 0.3:
+            runs.pop(int(rng.integers(len(runs))))
+        def lay(y0, y1, piece, scale=1.0):
+            pa, pb = pt_at(patch, zb, y0), pt_at(patch, zb, y1)
+            if np.dot(pb - pa, run) < 0:
+                pa, pb = pb, pa
+            K.strip(pa, run, n, float(np.linalg.norm(pb - pa)), piece, lift=0.03, scale=scale)
+        for y0, y1 in runs:
+            lay(y0, y1, name)
+        for y0, y1 in complement(ya, yb, runs, 1.5):                          # between the windows: pipe bundles in the same channel
+            lay(y0, y1, "conduit", ph / 0.8)
         gaps.append((top - (zb + ph) - 0.45, top - zb + 0.45))
     return gaps
+
+
+TRENCH_AT = {"t": (0.30, 0.70), "b": ()}          # fractions of a top flat's width where a trench runs along the hull
+
+
+def trenches(K, patch, key, width=2.0):
+    """Channels in the plating: the plates stop either side and the dark carcass shows, with two pipes laid along the floor. Returns the u-gaps."""
+    if K.lod >= 1:
+        return []
+    out = []
+    n = patch.normal()
+    run = norm(patch.ev())
+    for f in TRENCH_AT.get(key, ()):
+        if patch.lu < 14.0:
+            continue
+        u0 = f * patch.lu - width / 2
+        out.append((u0, u0 + width))
+        for k in range(2):
+            K.strip(patch.pt((u0 + width - 0.15 - 0.9 * k) / patch.lu, 1.5 / patch.lv), run, n, patch.lv - 3.0, "conduit", lift=0.03, scale=1.0)
+    return out
 
 
 def plate_bands(K, bands, key, windows=None, styles=None, skip=(), detail=True):
@@ -117,11 +153,14 @@ def plate_bands(K, bands, key, windows=None, styles=None, skip=(), detail=True):
             gaps = []
             if windows and en in ("r", "l"):
                 gaps = flank_strips(K, patch, windows)
+            if en == "t":
+                gaps = gaps + trenches(K, patch, "t")
             style = (styles or PLATING).get(en, {})
             for gi, (a, b) in enumerate(complement(0.0, patch.lu, gaps, 1.5)):
                 K.plate_patch(patch, f"{key}-{bi}-{en}-{gi}", u_range=(a, b), **style)
                 if detail and K.lod == 0:
                     K.scatter_details(patch, K.last_cells, f"{key}-{bi}-{en}-{gi}")
+                    K.wear(patch, K.last_cells, f"{key}-{bi}-{en}-{gi}")
 
 
 def rails(K, stations, radius=0.3):
@@ -164,14 +203,12 @@ def build(ctx):
         if lod <= 1:
             rails(K, sts)
 
-    # --- armour ribs: matte frames round the reactor, main and forward hulls every dozen metres, so the long flanks have a rhythm ---
+    # --- armour ribs: matte frames standing proud round the reactor, main and forward hulls, so the long flanks have a rhythm and cast real shadows ---
     if lod <= 1:
-        for name, y_lo, y_hi, pitch in (("reactor", -144.0, -108.0, 12.0), ("main", -90.0, 8.0, 14.0), ("fwd", 44.0, 118.0, 14.0)):
-            y = y_lo
-            while y < y_hi:
-                s0 = seg_at(name, y)
-                K.ring(y, y + 1.0, (s0["hw"] + 1.0, s0["hh"] + 1.0, s0["c"] + 0.6), inner=(s0["hw"], s0["hh"], s0["c"]), plate=True)
-                y += pitch
+        rib_at = [("reactor", y) for y in (-134.0, -122.0)] + [("main", y) for y in np.arange(-90.0, 8.0, 14.0)] + [("fwd", y) for y in np.arange(44.0, 118.0, 14.0)]
+        for name, y in rib_at:
+            s0 = seg_at(name, y)
+            K.ring(y, y + 1.8, (s0["hw"] + 1.7, s0["hh"] + 1.7, s0["c"] + 0.9), inner=(s0["hw"], s0["hh"], s0["c"]), plate=True)
 
     # --- chrome collars where the segments join ---
     K.ring(-104, -96, (22.0, 15.2, 5.2), inner=(16.5, 11, 4))
@@ -283,16 +320,22 @@ def build(ctx):
     # --- the engine block's aft face: a heat-tiled plate with the five bells set into it ---
     if lod == 0:
         K.tile_piece("heat_tiles", (21.5, -186.05, -14.0), -XHAT, ZHAT, 43.0, 28.0)
+    if lod == 0:
+        # engine heat: bronzed, blued tint fading forward from the aft end on the block's flanks and top
+        for hx, nrm in ((22.05, XHAT), (-22.05, -XHAT)):
+            K.wear_quad("heat_0", (hx, -178.5, 0.0), YHAT, nrm, lift=0.02, size=(14.0, 18.0))
+            K.wear_quad("heat_1", (hx, -164.5, 1.0), YHAT, nrm, lift=0.02, size=(10.0, 12.0))
+        K.wear_quad("heat_1", (0.0, -177.0, 15.05), YHAT, ZHAT, lift=0.02, size=(16.0, 30.0))
     if lod <= 1:
         # cross-braces over the aft face between the five bells
         ctx.hull.box(Frame((0, -187.2, 0), YHAT, ZHAT), (44.5, 2.2, 1.6), CHROME, tile=3.0, chamfer=0.4)
         ctx.hull.box(Frame((0, -187.2, 0), YHAT, ZHAT), (1.6, 2.2, 30.5), CHROME, tile=3.0, chamfer=0.4)
 
     # ============================================================================================ subsystems
-    engines = [("C", 0.0, 0.0, 3.4, 6.6, 15.0)] + [(f"{i + 1:02d}", x, z, 2.4, 4.6, 11.0) for i, (x, z) in enumerate([(-14.5, 8.5), (14.5, 8.5), (-14.5, -8.5), (14.5, -8.5)])]
+    engines = [("C", 0.0, 0.0, 1.7, 3.4, 7.0)] + [(f"{i + 1:02d}", x, z, 1.2, 2.5, 5.2) for i, (x, z) in enumerate([(-14.5, 8.5), (14.5, 8.5), (-14.5, -8.5), (14.5, -8.5)])]
     for nm, x, z, th, ex, ln in engines:
         fr = Frame((x, -186.0, z), (0, -1, 0), ZHAT)
-        with ctx.subsystem(nm, "engine", fr, radius=ex * 1.3, hp=2.0 if nm == "C" else 1.2, tags=["propulsion"]) as sb:
+        with ctx.subsystem(nm, "engine", fr, radius=max(ex * 1.7, 4.5), hp=2.0 if nm == "C" else 1.2, tags=["propulsion"]) as sb:
             mnparts.engine_nozzle(K, sb, fr, f"eng{nm}", throat=th, exit_r=ex, length=ln)
 
     # flak batteries along the reactor flanks; anti-fighter guns on the decks, the keel and the forward hull
@@ -448,7 +491,7 @@ def damage_points(count=72):
 
 def main():
     preview = "--preview" in sys.argv
-    ship = mnship.Ship(SHIP_ID, "Warden-class corvette", ART, ["mn_earth_plate", "mn_earth_trim", "mn_earth_lights", "mn_earth_engine", "mn_earth_chrome", "mn_earth_plate_b", "mn_earth_plate_c", "mn_earth_plume"], seed=SEED,
+    ship = mnship.Ship(SHIP_ID, "Warden-class corvette", ART, ["mn_earth_plate", "mn_earth_trim", "mn_earth_lights", "mn_earth_engine", "mn_earth_chrome", "mn_earth_plate_b", "mn_earth_plate_c", "mn_earth_plume", "mn_earth_plate_d", "mn_earth_plate_e", "mn_earth_wear"], seed=SEED,
                        manifest_dir=RES, material_set=MATERIAL_SET)
     for lod in (0, 1, 2):
         ship.build_lod(lod, build)

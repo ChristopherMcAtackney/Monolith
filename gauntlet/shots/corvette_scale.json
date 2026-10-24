@@ -1,0 +1,44 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_corvette",
+  "pitch": -2,
+  "yaw": 174,
+  "roll": -20,
+  "fighter": {
+   "pos": [
+    -34.31,
+    -0.196,
+    -126.36
+   ],
+   "rot": [
+    -2,
+    174,
+    -20
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "scale_fighter",
+   "pos": [
+    -132.481,
+    -18.802,
+    -44.768
+   ],
+   "rot": [
+    -9.283,
+    122.891,
+    -11.003
+   ],
+   "fov": 44
+  }
+ ],
+ "perf": []
+}

@@ -31,6 +31,8 @@ namespace Monolith.EditorTools
             // Trim what a space game does not use (fewer shader variants, faster builds); everything else stays at HDRP's defaults.
             Set(so, "m_RenderPipelineSettings.supportSubsurfaceScattering", false);
             Set(so, "m_RenderPipelineSettings.supportVolumetrics", false);
+            // Screen-space reflections: polished metal (the corvette's chrome) reflects the lit plates next to it. Used through a volume override (SkyRig).
+            Set(so, "m_RenderPipelineSettings.supportSSR", true);
             // Full float colour: dark gradients and bright bloom are the whole picture here, so no 11-bit shortcut.
             Set(so, "m_RenderPipelineSettings.colorBufferFormat", (int)RenderPipelineSettings.ColorBufferFormat.R16G16B16A16);
             so.ApplyModifiedPropertiesWithoutUndo();
