@@ -65,6 +65,10 @@ namespace Monolith.AI
 
         Mode _mode = Mode.Fight;
         float _now, _modeAt, _modeFor;
+        /// <summary>This evasion is an afterburner escape (rolled once per evasion, by evasion).</summary>
+        bool _evadeBurn; float _evadeBurnFor = -1f;
+        /// <summary>When this brain first flew (a ship just out of a bay or a jump does not light its burner at once).</summary>
+        float _bornAt = -1f;
         int _target = GameWorld.NoShip, _targetPart = -1;
         float _retargetAt, _targetAt, _lastMyHit = -999f, _inRangeSince = -1f, _holdSince = -1f;
         float _lastDamageSeen = -999f, _lastEvadeRoll = -999f, _decoyRollAt, _missileWarnAt = -999f;
@@ -201,11 +205,12 @@ namespace Monolith.AI
         void Afterburner(ShipState me, bool want, ref ControlInput input)
         {
             bool press = false;
-            if (want && me.FuelMax > 0f)
+            if (_bornAt < 0f) _bornAt = _now;
+            if (want && me.FuelMax > 0f && _now - _bornAt >= 1.5f)
             {
                 // The flight model lights it on a press: holding a dead burner needs a release first.
                 if (me.AfterburnerOn) press = me.Fuel > me.FuelMax * 0.04f;
-                else if (me.Fuel > me.FuelMax * 0.3f) press = !_abHeld;
+                else if (me.Fuel > me.FuelMax * _ai.Data.Tuning.AbReserve) press = !_abHeld;
             }
             if (press) input.Buttons |= ControlButtons.Afterburner;
             _abHeld = press;
@@ -389,6 +394,17 @@ namespace Monolith.AI
             int player = _ai.World.LocalPlayerShip;
             Consider(_ai.Small);
             Consider(_ai.Big);
+            if (best != GameWorld.NoShip || capped == GameWorld.NoShip) return best;
+            // The player is capped and nothing else is in sensor range: the nearest other enemy anywhere before one too many on the player.
+            float far = float.MaxValue;
+            foreach (var list in new[] { _ai.Small, _ai.Big })
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var c = list[i];
+                    if (c.Id == Ship || c.Id == capped || !c.Alive || !Teams.Hostile(me.Team, c.Ship.Team)) continue;
+                    float d = Vector3.Distance(c.Ship.Position, me.Position);
+                    if (d < far) { far = d; best = c.Id; }
+                }
             return best != GameWorld.NoShip ? best : capped;
 
             void Consider(System.Collections.Generic.IReadOnlyList<ShipCombat> list)
@@ -475,7 +491,7 @@ namespace Monolith.AI
             if (!Alive(_target, out var t, out var tc))
             {
                 if (Goal.Kind == GoalKind.Guard && Alive(Goal.Target, out var g, out _)) { Escort(me, g, ref goal, ref throttle, ref ab, ref up, ref bank); return; }
-                Idle(me, ref goal, ref throttle);
+                Idle(me, ref goal, ref throttle, ref ab);
                 return;
             }
             // A guard keeps to its charge: it lets a threat go if it is dragged too far away.
@@ -485,14 +501,16 @@ namespace Monolith.AI
             else Fight(me, mc, t, tc, ref input, ref goal, ref throttle, ref ab);
         }
 
-        void Idle(ShipState me, ref Vector3 goal, ref float throttle)
+        void Idle(ShipState me, ref Vector3 goal, ref float throttle, ref bool ab)
         {
-            // Nothing to do: drift towards the nearest friendly capital at a gentle pace, or fly on.
+            // Nothing to do: back towards the nearest friendly capital (on the burner from far off, as FS2's AI covers a long way), or fly on.
             ShipCombat home = null; float bd = float.MaxValue;
             foreach (var b in _ai.Big)
                 if (b.Ship.Team == me.Team) { float d = (b.Ship.Position - me.Position).sqrMagnitude; if (d < bd) { bd = d; home = b; } }
             if (home != null && bd > 900f * 900f) goal = AiSteer.Dir(me, home.Ship.Position + home.Ship.Rotation * new Vector3(0f, 250f, 0f));
-            throttle = 0.6f;
+            bool far = home != null && bd > _ai.Data.Tuning.AbChaseFar * _ai.Data.Tuning.AbChaseFar * 4f;
+            throttle = far ? 1f : 0.6f;
+            ab = far;
         }
 
         // ------------------------------------------------------------------------------------------------ dogfighting
@@ -550,6 +568,9 @@ namespace Monolith.AI
                 float maxClose = Mathf.Lerp(45f, 15f, Skill.Patience) + Mathf.Max(0f, dist - 250f) * 0.12f;
                 if (closingNow > maxClose) throttle = Mathf.Min(throttle, Mathf.Max(0.3f, AiSteer.ThrottleFor(me, Mathf.Max(0f, t.ForwardSpeed) + maxClose * 0.6f)));
             }
+
+            // FS2's afterburner in a chase: run a target down when it is ahead but out of reach or pulling away (a boosting player).
+            if (ChaseBurn(me, t, u, dist, dotTo)) { throttle = 1f; ab = true; }
 
             // Head-on and about to meet: keep shooting but pass to one side, then turn after it (FS2 avoids the collision and fights on).
             float closing = Vector3.Dot(me.Velocity - t.Velocity, u);
@@ -739,6 +760,8 @@ namespace Monolith.AI
                 if (_ai.HomersOn(t.Id) >= Skill.MaxPlayerHomers) return;
                 if (t.Target != Ship && ((((int)(_now / 10f)) ^ t.Id ^ 1) & 0x7FFFFFFF) % (_ai.Data.Difficulty.Count + 2) > Skill.MissileChanceOnPlayer) return;
             }
+            // Only what can reach: a missile slower than a target running from it (a boosting player) is held for a better moment.
+            if (!Geo.SolveIntercept(me.Position, me.Velocity, t.Position, t.Velocity, def.Speed, out _, out float reachTime, out _) || reachTime > def.Life * 0.8f) return;
             bool fire;
             if (def.NeedsLock) fire = mc.Lock == LockPhase.Locked && mc.LockTarget == t.Id && dist < def.Range * 0.75f && dist > 150f;
             else fire = mc.Lock == LockPhase.Locked && mc.LockTarget == t.Id && dist < 900f && dist > 120f && dotTo > Mathf.Lerp(0.8f, 0.95f, Skill.Patience);
@@ -760,8 +783,42 @@ namespace Monolith.AI
 
         // ------------------------------------------------------------------------------------------------ evading
 
+        /// <summary>
+        /// FS2's chase afterburner (aicode.cpp ai_chase): lit for a target ahead that is out of reach or getting away (opening the range, or on its
+        /// own burner), kept lit until close, off the nose or about to overshoot. The flight model refuses it under its minimum fuel and the
+        /// pilot keeps a reserve (<see cref="Afterburner"/>).
+        /// </summary>
+        bool ChaseBurn(ShipState me, ShipState t, Vector3 u, float dist, float dotTo)
+        {
+            var tu = _ai.Data.Tuning;
+            float opening = Vector3.Dot(t.Velocity - me.Velocity, u);
+            if (me.AfterburnerOn)
+                return dotTo > 0.5f && dist > tu.AbChaseStop && !(opening < -tu.AbOvershootClosing && dist < tu.AbChaseFar * 0.5f);
+            return dotTo > tu.AbChaseCone && dist > tu.AbChaseMin && (dist > tu.AbChaseFar || opening > tu.AbChaseOpening || t.AfterburnerOn);
+        }
+
         void Evade(ShipState me, ref Vector3 goal, ref float throttle, ref bool ab)
         {
+            // FS2's evade with the afterburner: with the attacker close on its tail, an evasive pilot may burn away jinking instead of turning
+            // (rolled once per evasion).
+            if (_evadeBurnFor != _modeAt) { _evadeBurnFor = _modeAt; _evadeBurn = Rand() < _ai.Data.Tuning.AbEscapeChance * Skill.Evasion; }
+            var foe = _ai.World.Ships.Get(_evadeFrom);
+            if (_evadeBurn && foe != null && me.FuelMax > 0f)
+            {
+                Vector3 to = foe.Position - me.Position;
+                if (to.magnitude < 700f && Vector3.Dot(to.normalized, me.Forward) < -0.3f)
+                {
+                    if (_now >= _jinkNext)
+                    {
+                        _jinkNext = _now + Mathf.Lerp(0.8f, 0.35f, Skill.Evasion) * (0.7f + 0.6f * Rand());
+                        _jinkFlip = (Rand() < 0.5f ? -1f : 1f) * (0.3f + 0.7f * Skill.Evasion);
+                    }
+                    Vector3 side = me.Rotation * Vector3.right * _breakSide, liftDir = me.Rotation * Vector3.up;
+                    goal = (me.Forward + side * 0.35f + liftDir * _jinkFlip * 0.45f).normalized;
+                    throttle = 1f; ab = true;
+                    return;
+                }
+            }
             // FS2's evade: a hard break turn towards the attacker's side (it must turn harder to stay with you, or overshoot), slowed to tighten
             // it, with jinks up and down that spoil its lead (sooner and harder for a better evader). Then the pilot turns on the attacker.
             var attacker = _ai.World.Ships.Get(_evadeFrom);

@@ -51,7 +51,7 @@
   "partKinds": {
     "flak": { "hpPercent": 0.833, "weapon": "flak_gun" },
     "aaf": { "hpPercent": 0.833, "weapon": "turret_laser" },
-    "turret": { "hpPercent": 1.5, "weapon": "beam_slash" },
+    "turret": { "hpPercent": 10.0, "weapon": "beam_slash", "hpWhy": "ours: the two beam lances are the Mercy's only answer to a capital ship and sit exposed on its centreline, so they are armoured past an engine's share (FS2's Deimos gives a beam turret 0.833%, engines 5%): at 1.5% one torpedo blast near the hull's middle (6,800 x 0.85, a third to each part in reach) or one slash beam crossing it destroyed a lance, the Mercy lost its beams by 2:34 in the dogfight and the Warden then died to guns alone after a long quiet; at 10% (8,000 hp) a lance outlasts four torpedo blasts or slashes (the Censer wing carries six torpedoes)" },
     "engine": { "hpPercent": 5 },
     "bridge": { "hpPercent": 2 },
     "reactor": { "hpPercent": 2 },

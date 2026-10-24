@@ -34,6 +34,8 @@
     { "name": "Vespers",  "ships": [ { "class": "earth_fighter", "profile": "drone", "count": 3 }, { "class": "earth_interceptor", "profile": "drone", "count": 2 } ] },
     { "name": "Requiem",  "ships": [ { "class": "earth_interceptor", "profile": "drone", "count": 4 }, { "class": "earth_fighter", "profile": "drone", "count": 2 } ] }
   ],
+  "lastGuard": { "name": "Compline", "class": "earth_interceptor", "profile": "drone", "count": 2, "waves": 20, "delay": 10, "waveDelay": 15, "distance": 1800,
+    "why": "ours, FS2's wing waves: while the Warden lives Earth keeps a pair coming once the six waves and the bombers are spent and no Earth fighter is within 2.5 km of the player (the first ten seconds after that, each next fifteen seconds after the pair before it is destroyed: a breath, never a lull), jumping in 1.8 km off the player and going for it. Without it the fight ended in a long quiet whenever the Warden outlived the last wave (94 s on Medium, up to five minutes on Very easy). The same wing and event are in dogfight.mission.json" },
   "bombers": {
     "name": "Censer", "withWave": 2, "delay": 20, "pos": [-3300, 300, -900],
     "bomber": { "class": "earth_bomber", "profile": "drone_bomber", "count": 3, "torpedoes": 2 },

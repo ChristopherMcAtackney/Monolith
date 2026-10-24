@@ -21,6 +21,7 @@ namespace Monolith.Game
         public string arrivalsWhy;
         public List<Wave> waves = new List<Wave>();
         public BomberWing bombers = new BomberWing();
+        public LastGuard lastGuard;
 
         public sealed class Pilot
         {
@@ -91,6 +92,18 @@ namespace Monolith.Game
             public float delay = 20f;
             public float[] pos;
             public Group bomber = new Group(), escort = new Group();
+        }
+
+        /// <summary>
+        /// Earth's last guard (FS2's wing waves): once every wave is in, the bombers sent, no Earth fighter left and the Warden still alive,
+        /// a <see cref="count"/>-ship wave jumps in <see cref="distance"/> m off the player <see cref="delay"/> s later and goes for it; each next wave
+        /// <see cref="waveDelay"/> s after the last one is destroyed, up to <see cref="waves"/>. Mirrors the mission file's wing of that name.
+        /// </summary>
+        public sealed class LastGuard
+        {
+            public string name = "Compline", @class = "earth_interceptor", profile = "drone", why;
+            public int count = 2, waves = 20;
+            public float delay = 10f, waveDelay = 15f, distance = 1800f;
         }
 
         public static DogfightData Load()

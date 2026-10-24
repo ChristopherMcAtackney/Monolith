@@ -23,9 +23,29 @@ namespace Monolith.Game
         /// <summary>The Warden runs (<see cref="WardenRun"/>) start through the soak's flag too: <c>-mnDogfightSoak 0 -mnWardenRun n</c>.</summary>
         public static bool Requested => CommandLine.Has(Flag);
 
+        static int EarthFighters(AiLab lab)
+        {
+            int n = 0;
+            foreach (var c in lab.W.Combat.All) if (c.Alive && c.Ship != null && c.Ship.Team == DogfightBattle.Earth && !AiDirector.IsBig(c)) n++;
+            return n;
+        }
+
+        static string EarthList(AiLab lab, ShipState player)
+        {
+            var sb = new StringBuilder();
+            foreach (var c in lab.W.Combat.All)
+            {
+                if (!c.Alive || c.Ship == null || c.Ship.Team != DogfightBattle.Earth || AiDirector.IsBig(c)) continue;
+                var p = lab.Ai.PilotOf(c.Id);
+                sb.Append($"{c.Ship.Callsign} {Vector3.Distance(c.Ship.Position, player.Position):0}m {p?.ModeName}/{p?.Goal.Kind}->{lab.W.Ships.Get(c.Ship.Target)?.Callsign ?? "-"} {c.Ship.Velocity.magnitude:0}m/s; ");
+            }
+            return sb.ToString();
+        }
+
         public static int RunFromCommandLine()
         {
             if (WardenRun.Requested) return WardenRun.RunFromCommandLine();
+            if (ChaseTest.Requested) return ChaseTest.RunFromCommandLine();
             float seconds = CommandLine.GetFloat(Flag, 1200f);
             string outDir = CommandLine.Get("-mnOut", "soak_out");
             Directory.CreateDirectory(outDir);
@@ -65,6 +85,17 @@ namespace Monolith.Game
                     MnLog.Info("SOAK " + line);
                     restartAt = lab.W.Time + 5f;
                 };
+                var beamSub = !CommandLine.Has("-mnBeamTrace") ? null : GameEvents.Subscribe(CombatEvents.BeamFire, e =>
+                {
+                    if (battle.Loop < CommandLine.GetFloat("-mnBeamTrace", 1f)) return;
+                    var src = lab.W.Ships.Get(e.Entity);
+                    MnLog.Info($"BEAMTRACE L{battle.Loop} t={lab.W.Time - battle.StartedAt:0} {src?.Callsign} fires at {lab.W.Ships.Get(e.Other)?.Callsign}");
+                });
+                var partSub = !CommandLine.Has("-mnBeamTrace") ? null : GameEvents.Subscribe(CombatEvents.SubsystemDestroyed, e =>
+                {
+                    if (battle.Loop < CommandLine.GetFloat("-mnBeamTrace", 1f) || (e.Entity != battle.FriendlyId && e.Entity != battle.CorvetteId)) return;
+                    MnLog.Info($"BEAMTRACE L{battle.Loop} t={lab.W.Time - battle.StartedAt:0} {lab.W.Ships.Get(e.Entity)?.Callsign} lost {e.Subject} to {lab.W.Ships.Get(e.Other)?.Callsign ?? "-"}");
+                });
                 var wingSub = GameEvents.Subscribe(CombatEvents.ShipDestroyed, e =>
                 {
                     if (firstWingLoss < 0f && battle.Wingmen.Exists(w => w.Ship == e.Entity)) firstWingLoss = lab.W.Time - battle.StartedAt;
@@ -76,11 +107,24 @@ namespace Monolith.Game
                 int nan = 0; string nanShip = null;
                 bool trace = CommandLine.Has("-mnSoakTrace");
                 bool wingTrace = CommandLine.Has("-mnWingTrace");
+                float beamTrace = CommandLine.Has("-mnBeamTrace") ? CommandLine.GetFloat("-mnBeamTrace", 1f) : 0f;
                 int maxShips = 0;
                 for (int i = 0; i < steps; i++)
                 {
                     lab.W.Sim.StepOnce();
                     if (restartAt >= 0f && lab.W.Time >= restartAt) { restartAt = -1f; battle.Restart(); ledger.Reset(); firstWingLoss = -1f; onWingSum = onPlayerSum = onMercySum = 0f; wingSamples = playerSamples = mercyKills = 0; }
+                    if (beamTrace > 0f && battle.Loop >= beamTrace && i % (10 * Sim.Hz) == 0 && battle.Outcome == DogfightBattle.State.Fighting)
+                    {
+                        var mc = lab.W.Combat.Get(battle.FriendlyId); var wc = lab.W.Combat.Get(battle.CorvetteId);
+                        if (mc != null && wc != null && mc.Alive && wc.Alive)
+                        {
+                            string lances = "";
+                            foreach (var p in mc.Parts) if (p.Kind == "turret") lances += $"{p.Name}:{p.Health01:0.00} ";
+                            var cap = lab.Ai.CapitalPilots; bool hold = false; foreach (var cp in cap) if (cp.Ship == battle.FriendlyId) hold = cp.Orders.HoldBeams;
+                            var ap = lab.Ai.PilotOf(battle.Player.Id);
+                            MnLog.Info($"BEAMTRACE L{battle.Loop} t={lab.W.Time - battle.StartedAt:0} status: mercy-warden {Vector3.Distance(mc.Ship.Position, wc.Ship.Position):0} m, hold {hold}, lances {lances}warden {wc.Hull01:0.00}, player {ap?.ModeName}/{ap?.Goal.Kind} at {Vector3.Distance(battle.Player.Position, wc.Ship.Position):0} m from the Warden, earth fighters {EarthFighters(lab)}: {EarthList(lab, battle.Player)}");
+                        }
+                    }
                     if (wingTrace && i % (2 * Sim.Hz) == 0 && battle.Wingmen.Count > 0 && battle.Loop == 1)
                     {
                         var wp = battle.Wingmen[0]; var wc = lab.W.Combat.Get(wp.Ship);
@@ -153,7 +197,7 @@ namespace Monolith.Game
                 };
                 File.WriteAllText(Path.Combine(outDir, "soak.json"), json.ToString());
                 foreach (var l in report.Split('\n')) if (l.Trim().Length > 0) MnLog.Info("SOAK " + l.TrimEnd());
-                wingSub.Dispose();
+                wingSub.Dispose(); beamSub?.Dispose(); partSub?.Dispose();
                 battle.Dispose();
                 return ok ? 0 : 1;
             }

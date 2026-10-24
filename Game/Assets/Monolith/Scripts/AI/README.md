@@ -23,6 +23,11 @@ Profiles hold accuracy (0..1) and evasion, courage, patience (0..100) per diffic
   (`0.90 + accuracy/10 - radius/distance`).
 - **Evasion**: the chance to break when hit with the shield down, or when someone sits on its tail (a hard break turn towards the attacker with
   jinks, then the pilot turns on it); how soon and how hard it jinks; reacting to missile warnings; with FS2's per-level countermeasure chance, decoys.
+- **The afterburner** (FS2's `ai_chase` and evade): lit to run down a target ahead that is out of reach or getting away (opening the range,
+  or on its own burner: a boosting player), out when close, off the nose or about to overshoot (`abChase*`, `abOvershootClosing`); an evasion
+  with the attacker close on the tail may be a burn away (`abEscapeChance` x evasion); an extend and a pull-out burn away; a pilot with nothing
+  to do burns home from far off; a pilot lights it only with `abReserve` of the tank, and not in its first 1.5 s (out of a bay or a jump). A missile that cannot reach a target running from it is
+  held. When the player is at its attacker cap and nothing else is in sensor range, a pilot takes the nearest other enemy anywhere first.
 - **Courage**: how hurt a pilot gets before it pulls out to mend (`peelHullNoCourage` 50% hull at 0 to `peelHullFullCourage` 15% at 100). A
   `fearless` profile (Earth's drones, courage zero by design) never pulls out.
 - **Patience**: how long a firing line is held before shooting and how far the firing cone narrows to the target's size; leading only from
@@ -68,10 +73,12 @@ Remove a dead ship with `ai.Remove(id)` (the dogfight does it from the reaper). 
 
 ## Checks
 
-`Monolith.exe -batchmode -nographics -mnAiSelfTest` (37 checks: data, steering, a dogfight to the kill, capital hulls never touched, missiles,
+`Monolith.exe -batchmode -nographics -mnAiSelfTest` (39 checks: data, steering, a dogfight to the kill, capital hulls never touched, missiles,
 evasion and decoys, peeling off and drones not, a bomber's runs, turrets and silenced turrets, the turret rules (the cap on the player, the rest on
-a wingman, a stripped face silent, the blind lane off the bow, lasers on a capital, flak punishing loitering), beams and silenced beams, every
+a wingman, a stripped face silent, the blind lane off the bow, lasers on a capital, flak punishing loitering), the chase (a drone burns after a boosting player, the interceptor keeps up), beams and silenced beams, every
 wing order); `-mnAiArena gauntlet/shots/ai_arena.json -mnOut dir` (AI against AI, knob sweeps); `-mnDogfightSoak 3600 -mnOut dir [-mnSoakMortal]`
-(the dogfight bare, for an hour: stuck ships, hull collisions, errors, pacing, wins and losses, what hurt the Mercy and the wingmen);
+(the dogfight bare, for an hour: stuck ships, hull collisions, errors, pacing, wins and losses, what hurt the Mercy and the wingmen;
+`-mnBeamTrace n`: from loop n, every capital beam, capital part lost and a ten-second status line); `-mnDogfightSoak 0 -mnChaseTest 10
+[-mnChaseClass earth_interceptor]` (the player's ship flees flat out on the burner from three drones: range kept, time in gun range, damage);
 `-mnDogfightSoak 0 -mnWardenRun 10 -mnOut dir [-mnNoFighters] [-mnWingOrder cover|attack|none]` (a mortal AI-flown player stripping the
 Warden's turrets: time alive, time within 1 km, turrets destroyed, turrets and shots on it, as stripping thins the fire).

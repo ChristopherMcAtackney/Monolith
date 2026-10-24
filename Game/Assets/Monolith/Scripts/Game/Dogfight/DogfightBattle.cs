@@ -78,10 +78,14 @@ namespace Monolith.Game
         readonly Queue<(int wave, DogfightData.Group g, int k, string name)> _queue = new Queue<(int, DogfightData.Group, int, string)>();
         int[] _waveTotal, _waveDead;
         int _wave = -1;
-        float _nextWaveAt = -1f, _bombersAt = -1f, _mercyRadioAt = -1f;
+        float _nextWaveAt = -1f, _bombersAt = -1f, _bombersDelay, _mercyRadioAt = -1f;
         bool _bombersSent, _saidHurt, _saidBeams, _saidBeamThreat;
         int _kills;
         Vector3 _playerStartPos; Quaternion _playerStartRot;
+        // Earth's last guard: waves sent, the first wave's due time, the next wave's due time, the current wave's ships, ships named so far.
+        const int GuardWave = -2;
+        int _guardWaves, _guardPending; float _guardDueAt = -1f, _guardNextAt = -1f;
+        readonly List<int> _guardShips = new List<int>();
 
         public int Kills => _kills;
 
@@ -115,6 +119,7 @@ namespace Monolith.Game
             StartedAt = _w.Time;
             _wave = -1; _nextWaveAt = StartedAt + Data.firstWaveAt.At(Level); _bombersAt = -1f; _bombersSent = false; _saidHurt = false; _saidBeams = false; _saidBeamThreat = false;
             _mercyRadioAt = -1f; _kills = 0; _stressed = false;
+            _guardWaves = 0; _guardPending = 0; _guardDueAt = -1f; _guardNextAt = -1f; _guardShips.Clear();
             _waveTotal = new int[Data.waves.Count]; _waveDead = new int[Data.waves.Count];
             for (int i = 0; i < Data.waves.Count; i++) _waveTotal[i] = Data.waves[i].Count;
             _queue.Clear(); _waveOf.Clear();
@@ -322,6 +327,7 @@ namespace Monolith.Game
             while (_queue.Count > 0 && EarthFightersAlive() < cap)
             {
                 var (wave, g, k, name) = _queue.Dequeue();
+                if (wave == GuardWave) { SpawnGuardShip(k, name); continue; }
                 Vector3 anchor = DogfightData.V3(Data.arrivals[wave % Data.arrivals.Count]);
                 Vector3 toward = (_w.Ships.Get(FriendlyId)?.Position ?? Player.Position) - anchor;
                 var rot = Quaternion.LookRotation(toward.normalized, Vector3.up);
@@ -384,21 +390,24 @@ namespace Monolith.Game
                     _stressed = true;
                     for (int i = 0; i < Mathf.Min(3, Data.waves.Count); i++) { _wave = i; QueueWave(i); }
                     _nextWaveAt = -1f;
-                    _bombersAt = now + 1f;
+                    _bombersAt = now; _bombersDelay = 1f;
                 }
                 if (!Stress && !NoFighters && _nextWaveAt >= 0f && now >= _nextWaveAt && _wave + 1 < Data.waves.Count)
                 {
                     _wave++;
                     _nextWaveAt = -1f;
                     QueueWave(_wave);
-                    if (_wave == Data.bombers.withWave && !_bombersSent) _bombersAt = now + Data.bombers.delay;
+                    if (_wave == Data.bombers.withWave && !_bombersSent) { _bombersAt = now; _bombersDelay = Data.bombers.delay; }
                 }
                 SpawnQueued(cap);
                 // FS2's rule: the next wave when this one is two-thirds destroyed (and all of it has arrived).
                 if (!Stress && _wave >= 0 && _nextWaveAt < 0f && _wave + 1 < Data.waves.Count && QueuedFor(_wave) == 0
                     && _waveDead[_wave] >= Mathf.CeilToInt(Data.nextWaveAt.At(Level) * _waveTotal[_wave] - 1e-3f))
                     _nextWaveAt = now + Data.waveDelay.At(Level);
-                if (_bombersAt >= 0f && now >= _bombersAt && !_bombersSent) SendBombers();
+                // The call time plus the delay, compared as the mission system compares an event's delay (now >= fired + delay): the same float
+                // arithmetic, so both send the bombers on the same tick.
+                if (_bombersAt >= 0f && now >= _bombersAt + _bombersDelay && !_bombersSent) SendBombers();
+                if (!Stress && !NoFighters) LastGuard(now, cap);
                 if (_mercyRadioAt >= 0f && now >= _mercyRadioAt) { _mercyRadioAt = -1f; Ai.Radio.Say("bombers", FriendlyId, null, null, true); }
                 Radio();
                 if (Autopilot && AutopilotStripsTurrets && now >= _objectiveAt) { _objectiveAt = now + 1f; StripTurrets(); }
@@ -419,14 +428,20 @@ namespace Monolith.Game
             var ap = Ai.PilotOf(Player.Id);
             var warden = _w.Combat.Get(CorvetteId);
             if (ap == null) return;
+            var mercy = _w.Combat.Get(FriendlyId);
             bool fightersNear = false;
             foreach (var c in _w.Combat.All)
-                if (c.Alive && c.Ship != null && c.Ship.Team == Earth && !AiDirector.IsBig(c) && Vector3.Distance(c.Ship.Position, Player.Position) < 1500f) { fightersNear = true; break; }
+            {
+                if (!c.Alive || c.Ship == null || c.Ship.Team != Earth || AiDirector.IsBig(c)) continue;
+                if (Vector3.Distance(c.Ship.Position, Player.Position) < 2500f || (mercy != null && mercy.Alive && Vector3.Distance(c.Ship.Position, mercy.Ship.Position) < 2500f)
+                    || Wingmen.Exists(w => { var wc = _w.Combat.Get(w.Ship); return wc != null && wc.Alive && Vector3.Distance(c.Ship.Position, wc.Ship.Position) < 2500f; })) { fightersNear = true; break; }
+            }
             int part = -1;
             if (warden != null && warden.Alive)
                 foreach (var name in Data.corvette.orders.weapons.Keys) { var p = warden.FindPart(name); if (p != null && !p.Destroyed) { part = p.Index; break; } }
             // The beam turrets first, whatever else is about (they are what kills the Mercy); the Warden's hull only between waves.
-            if (warden == null || !warden.Alive || (part < 0 && fightersNear))
+            // Once Earth's last guard is called the Warden comes first whatever is about (killing it is what stops them).
+            if (warden == null || !warden.Alive || (part < 0 && fightersNear && _guardWaves == 0))
             {
                 if (ap.Goal.Kind != GoalKind.Engage) ap.SetGoal(new AiGoal { Kind = GoalKind.Engage, Target = GameWorld.NoShip, Part = -1 });
                 return;
@@ -467,6 +482,70 @@ namespace Monolith.Game
         }
 
         int QueuedFor(int wave) { int n = 0; foreach (var q in _queue) if (q.wave == wave) n++; return n; }
+
+        /// <summary>
+        /// Earth's last guard (the mission file's "Compline" wing and its "Compline in" event, step for step): with every wave in, the bombers
+        /// sent, no Earth fighter left and the Warden alive, the first wave comes <c>delay</c> s later; then FS2's wing waves, each next wave
+        /// <c>waveDelay</c> s after the last is destroyed. The dogfight keeps its pressure until the Warden dies.
+        /// </summary>
+        void LastGuard(float now, int cap)
+        {
+            var g = Data.lastGuard;
+            if (g == null || g.count <= 0) return;
+            if (_guardWaves > 0 && _guardWaves < g.waves)
+            {
+                if (_guardNextAt < 0f && _guardPending == 0 && GuardAlive() <= 0) _guardNextAt = now + g.waveDelay;
+                if (_guardNextAt >= 0f && now >= _guardNextAt) { _guardNextAt = -1f; SendGuard(cap); }
+            }
+            if (_guardWaves > 0) return;
+            if (_guardDueAt < 0f)
+            {
+                var warden = _w.Combat.Get(CorvetteId);
+                bool allIn = _wave == Data.waves.Count - 1 && QueuedFor(_wave) == 0;
+                if (allIn && _bombersSent && warden != null && warden.Alive && !EarthNear(Player.Position, 2500f)) _guardDueAt = now + g.delay;
+            }
+            else if (now >= _guardDueAt) SendGuard(cap);
+        }
+
+        int GuardAlive() { int n = 0; foreach (int id in _guardShips) { var c = _w.Combat.Get(id); if (c != null && c.Alive) n++; } return n; }
+
+        /// <summary>An Earth fighter within <paramref name="range"/> m (the mission's hostilesNear).</summary>
+        bool EarthNear(Vector3 p, float range)
+        {
+            foreach (var c in _w.Combat.All)
+                if (c.Alive && c.Ship != null && c.Ship.Team == Earth && !AiDirector.IsBig(c) && Vector3.Distance(c.Ship.Position, p) < range) return true;
+            return false;
+        }
+
+        /// <summary>A guard wave is called: its ships join the arrival queue (the cap holds them back as it does the waves, oldest first).</summary>
+        void SendGuard(int cap)
+        {
+            var g = Data.lastGuard;
+            int wave = _guardWaves++;
+            _guardShips.Clear();
+            for (int k = 0; k < g.count; k++) { _queue.Enqueue((GuardWave, null, k, $"{g.name} {wave * g.count + k + 1}")); _guardPending++; }
+            MnLog.Info($"DOGFIGHT last guard wave {_guardWaves} ({g.count} {g.@class}) at t={_w.Time - StartedAt:0.0}s");
+            Log.Event(_w.Time, $"last guard {_guardWaves}");
+            SpawnQueued(cap);
+        }
+
+        /// <summary>One guard ship comes in: FS2's "near ship", a set distance off the player in a direction fixed by the wing's name (as the
+        /// mission system places it, when it arrives), in a V, and goes for the player.</summary>
+        void SpawnGuardShip(int k, string callsign)
+        {
+            var g = Data.lastGuard;
+            _guardPending--;
+            uint h = 2166136261u; foreach (char ch in g.name) h = (h ^ ch) * 16777619u;
+            float yaw = (h & 0xFFFF) / 65535f * 360f, pitch = ((h >> 16) & 0xFF) / 255f * 50f - 25f;
+            Vector3 anchor = Player.Position + Quaternion.Euler(pitch, yaw, 0f) * Vector3.forward * Mathf.Max(g.distance, 100f);
+            var rot = Quaternion.LookRotation((Player.Position - anchor).normalized, Vector3.up);
+            int rank = (k + 1) / 2; float side = k % 2 == 0 ? 1f : -1f;
+            Vector3 pos = anchor + rot * new Vector3(side * rank * 45f, rank * 8f, -rank * 40f);
+            var st = SpawnFighter(g.@class, callsign, Earth, pos, rot, 0.9f, g.profile ?? "drone", AiRole.Fighter, null);
+            _waveOf[st.Id] = Data.waves.Count;          // counts against the arrival cap, as the mission's capped wing does
+            Ai.PilotOf(st.Id).SetGoal(new AiGoal { Kind = GoalKind.Attack, Target = Player.Id, Part = -1 });
+            _guardShips.Add(st.Id);
+        }
 
         void Radio()
         {

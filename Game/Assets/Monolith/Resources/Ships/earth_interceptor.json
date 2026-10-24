@@ -49,14 +49,14 @@
       "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Afterburner"
     },
     "afterburnerSpeed": {
-      "value": 150,
+      "value": 210,
       "unit": "m/s",
-      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Max Vel (z)"
+      "source": "ours (AI round 3, after the user's boost override on the player's fighter, 235 m/s): Earth's interceptor is the one Earth fighter built to run a diaspora fighter down, so its burner is 3 x its cruise instead of FS2's 2.1 x (GTF Ulysses +Aburn Max Vel (z) = 150, FS2 retail ships.tbl, Root_fs2.vp, sha256 60266906...315ca). Still 25 m/s short of the player's boost: a player who burns away gains on it, slowly, and loses the gain when the tank runs dry. Earth's fighter, heavy and bomber keep FS2's numbers"
     },
     "afterburnerAccel": {
-      "value": 0.7,
+      "value": 0.5,
       "unit": "s (afterburner speed-up time constant)",
-      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn For accel"
+      "source": "ours (same note): a quicker ramp than FS2's 0.7 s (GTF Ulysses +Aburn For accel) so the interceptor answers a boost in about the time the player's 0.4 s ramp takes"
     },
     "afterburnerFuel": {
       "value": 300,

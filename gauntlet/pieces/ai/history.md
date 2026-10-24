@@ -188,3 +188,86 @@ mission files are in its Missions folder; BALANCE.txt says what changed and what
   the levers.
 - The wingmen's mercy is ours, not FS2's (FS2 spares only the player).
 - The escort mission was only auto-played.
+
+## Round 3 (builder, 2026-10-24): the dogfight's late lull, and drones on the burner
+
+Two problems on main after the real models and the boost: the dogfight's auto-play failed its pacing gate (a 94 s stretch with no threat,
+the 30 s limit), and every Earth drone was outrun by the player's 235 m/s boost.
+
+### The late lull: the cause, and the fix
+- **The cause** (found by the Oort mission builder, confirmed here with `-mnBeamTrace`): the real Small Mercy's two beam lances
+  (`SUB_turret_fore`, `SUB_turret_aft`, exposed on the centreline, 1.5% of hull each) die early, in the dogfight to the Censer wing's
+  torpedoes at about 2:30 (one torpedo blast near the hull's middle takes a third of 6,800 x 0.85 to every part in reach; seven parts went at
+  once), in the Oort mission to the destroyer's slashes. Without its beams the Mercy cannot finish the Warden, which outlives the last wave and
+  dies to the player's guns alone: a long quiet with only the Warden left. Not one seed: the soak (12,000 s per level, invulnerable autopilot)
+  had a stretch over 30 s in 11 of 11 loops on Very easy, 13 of 16 on Easy, 14 of 15 on Medium (median 131 s, worst 392 s).
+- **The lances**: `diaspora_cruiser.json` partKinds `turret` 1.5% -> 10% of hull (8,000 hp: four torpedo blasts or slashes; at 6% the Censer
+  wing's six torpedoes still took both). No model change needed. With them the Mercy finishes the Warden, and in the Oort mission the Archon
+  (the intended climax is back: "Archon down" at 8:45, then the Patience).
+- **Pressure until the end, whatever the seed**: Earth's last guard, "Compline" (FS2's wing waves), in both the mission file and the hand-written
+  dogfight (`dogfight.json` lastGuard): once all six waves are in, the bombers sent, no Earth fighter within 2.5 km of the player and the
+  Warden alive, a pair of interceptors jumps in 1.8 km off the player 10 s later and goes for it; each next pair 15 s after the last is
+  destroyed, up to 20; it ends with the Warden. The arrivals go through the arrival cap like the waves.
+- **The autopilot plays it as a player would** (both the mission's "Autopilot" event and `DogfightBattle.Objectives`): the Warden's hull only
+  when no Earth fighter is within 2.5 km of it, the Mercy or a wingman (it goes to their help), and the Warden first whatever is about once the
+  last guard is called; with nothing to do it burns back to the Mercy instead of drifting (it sat 8 to 20 km from the fight after the Warden died).
+- **The port check stays the same to the bit**, now at all five levels for 1,500 s each, with the last guard arriving on Very easy and Easy.
+  On the way: the hand-written dogfight's bomber delay was one float addition away from the mission's (`now >= calledAt + delay`, as the
+  mission compares an event's delay) and drifted by one tick on Easy.
+
+| Longest quiet per loop (soaks, 12,000 s each) | before: loops over 30 s / median / worst | after |
+|---|---|---|
+| Very easy (invulnerable / mortal) | 11 of 11, 283 s, 385 s / 11 of 11 | 0 of 18, 8 s, 22 s / 0 of 20 |
+| Easy | 13 of 16, 136 s, 325 s / 15 of 16 | 0 of 29, 5 s, 22 s / 0 of 29 |
+| Medium | 14 of 15, 131 s, 392 s / 15 of 17 | 0 of 23, 6 s, 19 s / 0 of 26 (worst 23 s) |
+| Hard | 3 of 8, 22 s, 238 s / 4 of 34 | 1 of 19, 6 s, 38 s / 0 of 80 |
+| Insane | 0 of 6, 4 s, 12 s / 0 of 458 | 2 of 5, 8 s, 51 s / 0 of 445 |
+
+Dogfight auto-play (the gate, Medium): longest quiet 94 s, FAIL -> 7 s, PASS (victory at 412 s). At the other levels: Very easy 291 s FAIL ->
+10 s PASS; Easy 325 s FAIL -> 10 s PASS; Hard: no end in 1,500 s and a 61 s quiet, FAIL -> the Mercy lost at 477 s with a 5 s longest quiet,
+failing only "at most 4 on the player" (Hard's FS2 cap is 5; the expectations are Medium's); Insane: the Mercy lost at 1,365 s, PASS -> the
+invulnerable autopilot still at wave 2 after 1,500 s (it kills two Insane drones in 25 minutes and the Mercy, with its lances, now holds),
+longest quiet 4 s, failing only on having no result.
+
+Wins (invulnerable / mortal autopilot): Very easy 11/11, 11/11 -> 18/18, 20/20; Easy 16/16, 15/16 -> 29/29, 28/29; Medium 14/15, 15/17 ->
+23/23, 19/26; Hard 1/8, 0/34 -> 0/19, 0/80; Insane 0/6, 0/458 -> 0/5, 0/445. The mortal Medium loops are harder (drones on the burner).
+
+### Drones on the burner
+- **AI** (`AiPilot`, data in `ai.json` tuning `ab*`): FS2's chase afterburner (lit for a target ahead beyond 350 m that opens the range or burns
+  itself, or beyond 1.1 km; out under 250 m, off the nose or closing fast enough to overshoot); an evasion with the attacker on the tail may
+  burn away jinking (0.5 x evasion); an idle pilot burns home from over 2.2 km; the burner is lit only with 30% of the tank. A missile that
+  cannot reach a target running from it is held. When the player is at its attacker cap and nothing else is in sensor range, a drone takes the
+  nearest other enemy anywhere (Oort's opening had five on the player for two seconds). A pilot does not light its burner in its first
+  1.5 s (a ship just out of a bay or a jump: the mission self-test's bay launch drifted past its 120 m with the quicker interceptor).
+- **Earth's interceptor** (`earth_interceptor.json`, ours): burner 150 -> 210 m/s, ramp 0.7 -> 0.5 s. Still 25 m/s short of the player's
+  235: a boost gains on it slowly and the gain goes when the tank is dry. Earth's fighter, heavy and bomber keep FS2's numbers.
+
+| Chase (`-mnChaseTest`, 10 runs: the player's ship flat out on the burner for 60 s from three drones 500-700 m behind) | before | after |
+|---|---|---|
+| Interceptors, Medium: contact lost (over 2.5 km at the end) / time a drone is within 800 m / damage | 7 of 10 / 2 s / 0 | 0 of 10 / 47 s / 5 hp |
+| Interceptors, Hard | 7 of 10 / 2 s / 1 hp | 0 of 10 / 54 s / 107 hp |
+| Fighters (FS2's Myrmidon numbers), Medium | 8 of 10 / 2 s / 0 | 7 of 10 / 3 s / 0 |
+
+Fleeing is still possible: the fighters and heavies are outrun, and on Medium the interceptors keep station on the player's tail but barely
+hit it while it boosts and weaves (FS2's Medium pilots aim from a picture 1.33 s old, and the boost changes the speed under them). It is not
+safe: they are there when the burner runs dry or the player turns, and on Hard they hurt.
+
+### Checks (my build, main + this round)
+On main as of cc6a54b (the Oort models): AI self-test 39 of 39 (+2: a drone burns after a boosting player; the interceptor keeps up); combat
+98/98; cabin 75/75; HUD 90/90; audio PASS (144 checks); mission self-test 76/76; `tools\mission.ps1`: cabin, dogfight, escort and oort auto-plays
+PASS (oort at 10:40 with the Mercy finishing the Archon); the port check SAME at every level; flight.ps1 35/35 on the four FS2 classes (the player's fighter, info only, 31/35: its boost is the user's override); the pad drive
+42/42 (one run in four 41/42 on a brake step, as on main); the juice self-test's settings, boost and brake checks OK, its death check failing
+two checks (the fling, the camera) in most runs, exactly as it does on main at cc6a54b without this work (not the AI's).
+The Warden runs (round 2's check) hold: Medium with the waves, alive 150 s, 7.5 turrets destroyed, died 0 of 10 (round 2: 194 s, 6.4, 1).
+
+### Playtest
+`Playtest\Monolith_2026-10-24_ai3\`: `Play.bat dogfight` (or escort, oort, cabin), `[window] [veryeasy|easy|medium|hard|insane]`.
+
+### Known gaps
+- Hard and Insane: the invulnerable soak's autopilot still cannot clear the drones (the Mercy dies of attrition on Hard; on Insane the run
+  sits at wave 2); a few such loops have a 38 to 51 s lull.
+- On Hard the Oort mission's Archon escapes and its auto-play sees five on the player (Hard's cap); the expectations are Medium's.
+- Interceptors keep up with a fleeing player but on Medium rarely hit it while it boosts; if fleeing should cost more on Medium, the levers
+  are the interceptor's burner, Earth's missile chance on the player and FS2's predict delay.
+- The torpedo blast's part damage reaches every part within 270 m at a third each (the combat README says "three at most"); FS2 spends the
+  damage on the nearest parts first. Not changed here (the combat builder's); it is why one torpedo strips seven parts.

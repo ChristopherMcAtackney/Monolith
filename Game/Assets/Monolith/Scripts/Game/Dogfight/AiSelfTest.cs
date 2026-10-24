@@ -34,7 +34,7 @@ namespace Monolith.Game
             var tests = new (string, Action)[]
             {
                 ("data", Data), ("steering", Steering), ("dogfight", Dogfight), ("hull", HullAvoidance), ("missiles", Missiles),
-                ("evade", Evade), ("peel", Peel), ("bomber", Bomber), ("turrets", Turrets), ("turret rules", TurretRules), ("beams", Beams), ("orders", Orders),
+                ("evade", Evade), ("peel", Peel), ("bomber", Bomber), ("turrets", Turrets), ("turret rules", TurretRules), ("chase", Chase), ("beams", Beams), ("orders", Orders),
             };
             foreach (var (name, t) in tests)
             {
@@ -340,6 +340,33 @@ namespace Monolith.Game
                 foreach (var s in subs) s.Dispose();
                 float settle = lab.Ai.Data.Difficulty.TurretSettleSeconds[2];
                 Check(late / 8f > 1.5f * (early / 4f) && late > 0f, $"flak punishes loitering: a fighter sitting in the flak's arc takes {F(early / 4f)} hp/s in its first 4 s there and {F(late / 8f)} hp/s from 8 to 16 s (the aim settles over {F(settle)} s at Medium)");
+            }
+        }
+
+        /// <summary>FS2's chase afterburner: a drone lights its burner after a player boosting away, and Earth's interceptor keeps up.</summary>
+        static void Chase()
+        {
+            using (var lab = new AiLab(2))
+            {
+                var prey = lab.Fighter("vanguard_fighter", 0, Vector3.zero, Quaternion.identity, 0.9f, null, AiRole.Fighter, "Prey");
+                lab.W.LocalPlayerShip = prey.Id;
+                lab.W.Combat.Get(prey.Id).Invulnerable = true;
+                // Flat out, the burner pressed each time it will light.
+                lab.W.Pilots.Attach(prey.Id, new ScriptedPilot(new[] { new ScriptedPilot.Key(0f, new ControlInput { Throttle = 1f, Buttons = ControlButtons.Afterburner }),
+                    new ScriptedPilot.Key(6.5f, new ControlInput { Throttle = 1f }), new ScriptedPilot.Key(14f, new ControlInput { Throttle = 1f, Buttons = ControlButtons.Afterburner }),
+                    new ScriptedPilot.Key(20f, new ControlInput { Throttle = 1f }) }));
+                var d = lab.Fighter("earth_interceptor", 1, new Vector3(0f, 0f, -600f), Quaternion.identity, 0.9f, "drone", AiRole.Fighter, "Seraph");
+                lab.Ai.PilotOf(d.Id).SetGoal(new AiGoal { Kind = GoalKind.Attack, Target = prey.Id, Part = -1 });
+                float burned = 0f, worst = 0f;
+                for (int i = 0; i < 30 * Sim.Hz; i++)
+                {
+                    lab.W.Sim.StepOnce();
+                    if (d.AfterburnerOn) burned += Sim.Dt;
+                    worst = Mathf.Max(worst, Vector3.Distance(d.Position, prey.Position));
+                }
+                float end = Vector3.Distance(d.Position, prey.Position);
+                Check(burned > 3f, $"a drone lights its afterburner to run down a target boosting away (on the burner {F(burned)} s of 30)");
+                Check(end < 1200f, $"Earth's interceptor keeps up with the player's boost: {F(end)} m behind after 30 s, never more than {F(worst)} m");
             }
         }
 

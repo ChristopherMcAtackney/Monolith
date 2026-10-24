@@ -51,6 +51,12 @@ namespace Monolith.AI
         public float TailRange, TailNoseDegrees, TailAspectDegrees;
         public float AvoidMargin, AvoidLookAheadMin, AvoidLookAheadMax;
         public float GunRangeFraction, SensorRange, FlakEnvelope;
+        /// <summary>The afterburner in a chase (FS2's ai_chase): lit for a target ahead (dot over <see cref="AbChaseCone"/>) beyond
+        /// <see cref="AbChaseMin"/> m that opens the range faster than <see cref="AbChaseOpening"/> m/s or burns itself, or beyond
+        /// <see cref="AbChaseFar"/>; out under <see cref="AbChaseStop"/> m or when closing faster than <see cref="AbOvershootClosing"/> nearby.
+        /// <see cref="AbEscapeChance"/> x evasion: an evasion with the attacker on the tail is a burn away. <see cref="AbReserve"/>: the
+        /// share of the tank a pilot keeps before it lights the burner for a chase.</summary>
+        public float AbChaseCone, AbChaseMin, AbChaseFar, AbChaseOpening, AbChaseStop, AbOvershootClosing, AbEscapeChance, AbReserve;
         /// <summary>FS2's AI classes in ai.tbl (for the secondary-reload autoscale by class).</summary>
         public int Fs2AiClasses;
         /// <summary>Capital-ship turrets: each turret's field of fire, degrees off the turret's up (FS2's turret fov), by kind.</summary>
@@ -233,6 +239,14 @@ namespace Monolith.AI
                 SensorRange = tj.Float("sensorRange", 100f, 100000f),
                 FlakEnvelope = tj.Float("flakEnvelope", 0f, 10000f),
                 Fs2AiClasses = Mathf.RoundToInt(tj.Float("fs2AiClasses", 1f, 100f)),
+                AbChaseCone = tj.Float("abChaseCone", -1f, 1f),
+                AbChaseMin = tj.Float("abChaseMin", 0f, 10000f),
+                AbChaseFar = tj.Float("abChaseFar", 0f, 10000f),
+                AbChaseOpening = tj.Float("abChaseOpening", -100f, 1000f),
+                AbChaseStop = tj.Float("abChaseStop", 0f, 10000f),
+                AbOvershootClosing = tj.Float("abOvershootClosing", 0f, 1000f),
+                AbEscapeChance = tj.Float("abEscapeChance", 0f, 1f),
+                AbReserve = tj.Float("abReserve", 0f, 1f),
                 TurretArcGun = tj.Float("turretArcGun", 1f, 180f),
                 TurretArcFlak = tj.Float("turretArcFlak", 1f, 180f),
                 TurretArcBeam = tj.Float("turretArcBeam", 1f, 180f),
