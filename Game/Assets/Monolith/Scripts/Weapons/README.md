@@ -25,8 +25,9 @@ same tick and raises the events the juice listens for. Nothing is drawn here: `h
 
 Against a shield, `damage x shieldMult` comes off the shield; what is left goes to the hull as `x hullMult` and, near the impact, to the nearest part
 (or the part the shot struck) as `x subsystemMult`. A shield bubble is the FS2 shield total times `shieldBubbleScale` (0.5: FS2 splits it over four
-quadrants and fire lands mostly on one). Blasts (missiles, flak, torpedoes) fall off linearly from the inner to the outer radius and share their
-part damage among the parts they reach (three at most). Flak bursts at the range its turret set (or on a direct strike; `flakProximity` 0, as
+quadrants and fire lands mostly on one). Blasts (missiles, flak, torpedoes) fall off linearly from the inner to the outer radius and spend their
+part damage on the nearest parts only, FS2's way (the three nearest to the burst, by surface distance, each falling off with its own distance and
+sharing the damage evenly; the rest of the parts within the radius take none), while the hull takes its damage as ever. Flak bursts at the range its turret set (or on a direct strike; `flakProximity` 0, as
 FS2's flak), and a burst hurts hostile torpedoes near it as a bolt would, so flak turrets shoot bombs down. The difficulty spares the player's
 ship (`GameWorld.PlayerDamageScale`) and, through `ShipCombat.DamageTakenScale`, its wingmen. Collisions bypass the shield: `0.5 x reduced mass x closing^2 x (1 - e^2)` times
 `collisionEnergyToDamage`, shared by mass, plus a knock through `GameWorld.Knocks` (flight loosens its damping for up to 2 s).
@@ -80,7 +81,7 @@ events, and `ShipArtVisual` then leaves those two to it.
 
 ## Checks
 
-`Monolith.exe -batchmode -nographics -mnCombatSelfTest` (90 checks on the real sim: fire rates, speeds, damage maths, no tunnelling, lead,
-shield recharge, power, engines and sensors and mounts, healing, locks, missiles, decoys, torpedoes shot down, blasts, collisions, targeting, deaths);
-`-mnScene range -mnPadDrive` presses a virtual pad (18 checks); `python -I tools/combat/check_weapons.py` compares every number copied from FS2 with
+`Monolith.exe -batchmode -nographics -mnCombatSelfTest` (115 checks on the real sim: fire rates, speeds, damage maths, no tunnelling, lead,
+shield recharge, power, engines and sensors and mounts, healing, locks, missiles, decoys, torpedoes shot down, blasts and the three nearest parts, collisions, targeting, deaths);
+`-mnScene range -mnPadDrive` presses a virtual pad (42 checks, on a range with no emplacements or turrets: their fire would shove the ship mid-step); `python -I tools/combat/check_weapons.py` compares every number copied from FS2 with
 FS2's own tables (104 of 104). The range scene: `-mnScene range`; capture plans `"scene": "range"` (steps in `Game/Range/RangeScript.cs`).

@@ -83,8 +83,8 @@ Combat range: `-mnScene range` (Start pauses and lists the controls; `-mnControl
 power, menu, damage, log, expect, summary; documented in `Scripts/Game/Range/RangeScript.cs`; `trace` logs the key events). Other sceneOptions:
 `noEmplacements`, `emplacements: ["Rack 1"]`, `noTurrets`, `noRespawn`, `hullScale`, `hud: false`, `juice: {...}`. `python tools\juice\make_plan.py spec plan`
 turns absolute times into warm-ups for this scene too (specs in `gauntlet\shots\specs\combat_r1_*.json`). Checks:
-`Monolith.exe -batchmode -nographics -mnCombatSelfTest` (the combat systems on the real sim, 90 checks), `-mnScene range -mnPadDrive` (a virtual pad
-presses every combat control, 18 checks), `python -I tools\combat\check_weapons.py [--out file]` (every number copied from FS2 against FS2's own tables).
+`Monolith.exe -batchmode -nographics -mnCombatSelfTest` (the combat systems on the real sim, 115 checks), `-mnScene range -mnPadDrive` (a virtual pad
+presses every combat control and the brake and boost, 42 checks, on a range with no emplacements or turrets: nothing may shove the ship during a step), `python -I tools\combat\check_weapons.py [--out file]` (every number copied from FS2 against FS2's own tables).
 The weapons, damage and AI contract are in `Scripts/Weapons/README.md`.
 
 Dogfight: `-mnScene dogfight` (`Play.bat` in a playtest folder passes it; `-mnDifficulty "Very easy"|Easy|Medium|Hard|Insane` or 0..4, `-mnAutopilot`
