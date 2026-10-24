@@ -10,6 +10,11 @@ import mathutils
 DEFAULT_COLOURS = {"mn_earth_plate": (0.16, 0.16, 0.18, 1), "mn_earth_trim": (0.5, 0.5, 0.55, 1), "mn_earth_lights": (1.0, 0.95, 0.8, 1), "mn_earth_engine": (1.0, 0.5, 0.2, 1),
                    "mn_earth_plate_b": (0.09, 0.09, 0.10, 1), "mn_earth_plate_c": (0.26, 0.26, 0.28, 1), "mn_earth_plate_d": (0.40, 0.40, 0.42, 1), "mn_earth_plate_e": (0.55, 0.55, 0.58, 1),
                    "mn_earth_chrome": (0.62, 0.64, 0.68, 1), "mn_earth_plume": (0.5, 0.65, 1.0, 1), "mn_earth_wear": (0.16, 0.16, 0.18, 1), "mn_earth_paint": (0.16, 0.16, 0.18, 1)}
+# the diaspora's set: warm bone and olive paint, rust, bare steel, faded teal; dark ribbed graft; teal glyph light
+DEFAULT_COLOURS.update({"mn_dia_plate": (0.43, 0.41, 0.31, 1), "mn_dia_trim": (0.5, 0.45, 0.35, 1), "mn_dia_lights": (1.0, 0.9, 0.7, 1), "mn_dia_engine": (1.0, 0.5, 0.2, 1),
+                        "mn_dia_chrome": (0.58, 0.58, 0.56, 1), "mn_dia_plate_b": (0.30, 0.15, 0.085, 1), "mn_dia_plate_c": (0.285, 0.30, 0.20, 1), "mn_dia_plume": (1.0, 0.6, 0.2, 1),
+                        "mn_dia_plate_d": (0.56, 0.57, 0.57, 1), "mn_dia_plate_e": (0.205, 0.31, 0.32, 1), "mn_dia_wear": (0.4, 0.38, 0.3, 1), "mn_dia_paint": (0.7, 0.55, 0.2, 1),
+                        "mn_dia_bio": (0.045, 0.05, 0.055, 1), "mn_dia_glyph": (0.2, 0.9, 0.75, 1), "mn_dia_glass": (0.03, 0.045, 0.06, 1)})
 
 
 def render_views(out_dir, views, size=(1280, 720), sun=(0.4, 0.55, -0.75), colours=None, lens=50.0, hide=("_COL",), only_lod=0, show=(), clip=(0.5, 5000.0)):

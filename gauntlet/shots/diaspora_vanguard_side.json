@@ -1,0 +1,46 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "vanguard_fighter",
+  "pitch": 1,
+  "yaw": 133,
+  "roll": -16
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "side_silhouette",
+   "pos": [
+    -16.497,
+    -6.356,
+    -17.528
+   ],
+   "rot": [
+    -14.792,
+    43.264,
+    -1.034
+   ],
+   "fov": 30
+  },
+  {
+   "name": "top_silhouette",
+   "pos": [
+    -4.374,
+    23.922,
+    -5.302
+   ],
+   "rot": [
+    73.969,
+    39.522,
+    -80.448
+   ],
+   "fov": 30
+  }
+ ],
+ "perf": []
+}

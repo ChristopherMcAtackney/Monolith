@@ -1,0 +1,88 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Small Mercy",
+   "offset": [
+    160.0,
+    70.0,
+    -230.0
+   ],
+   "look": "ship"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "mercy_00",
+   "follow": true,
+   "fov": 46,
+   "warmup": 60.0
+  },
+  {
+   "name": "mercy_01",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_02",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_03",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_04",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_05",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_06",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_07",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_08",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  },
+  {
+   "name": "mercy_09",
+   "follow": true,
+   "fov": 46,
+   "warmup": 8.0
+  }
+ ],
+ "perf": []
+}

@@ -1,0 +1,46 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "vanguard_fighter",
+  "pitch": 12,
+  "yaw": 106,
+  "roll": -11
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "raking",
+   "pos": [
+    6.572,
+    2.168,
+    -10.334
+   ],
+   "rot": [
+    8.154,
+    -36.138,
+    1.596
+   ],
+   "fov": 34
+  },
+  {
+   "name": "raking_close",
+   "pos": [
+    2.535,
+    0.769,
+    -6.33
+   ],
+   "rot": [
+    1.895,
+    -34.301,
+    0.991
+   ],
+   "fov": 40
+  }
+ ],
+ "perf": []
+}

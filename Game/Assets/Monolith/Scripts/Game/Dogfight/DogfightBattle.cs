@@ -239,7 +239,26 @@ namespace Monolith.Game
             var cls = ShipCatalog.Load(f.ship);
             var st = _flight.Spawn(cls, DogfightData.V3(f.pos), Quaternion.Euler(DogfightData.V3(f.rot)), f.orders.throttle * cls.TopSpeed, f.orders.throttle, 0, f.callsign);
             // A capital ship does not mend: the diaspora's living tech is a fighter's (at a capital's size it would out-heal any beam).
-            if (Visual)
+            if (ShipArtCatalog.Exists(f.ship))
+            {
+                // The diaspora's cruiser has a model: the same calls, in the same order, as the mission host makes, so the two stay tick for tick the same.
+                var go = ShipArtCatalog.Instantiate(f.ship, _root);
+                var damage = go.GetComponent<ShipDamage>();
+                var parts = damage != null ? ShipArtVisual.Parts(damage) : null;
+                if (Visual)
+                {
+                    var lod = go.GetComponent<LODGroup>();
+                    if (lod != null) { lod.ForceLOD(0); WarmLods.Add(lod); }
+                    _views.Register(st.Id, go.transform);
+                    _rig.Spawn(st, f.ship, damage != null ? new ShipArtVisual(_w, st.Id, damage, juiceShowsWrecksAndHits: true) : null, go.transform, _juice, parts, f.hullScale, false, damage != null ? new ShipArtJuiceDamage(go) : null);
+                }
+                else
+                {
+                    _rig.Spawn(st, f.ship, null, null, null, parts, f.hullScale, false);
+                    UnityEngine.Object.Destroy(go);
+                }
+            }
+            else if (Visual)
             {
                 var h = f.hull ?? new DogfightData.HullShape();
                 var go = PlaceholderShips.Hull(f.callsign, h.length, h.width, h.height, h.seed, _mats, _root);

@@ -1,0 +1,173 @@
+{
+  "format": "monolith-mission/1",
+  "id": "dogfight",
+  "name": "The Dogfight",
+  "about": "The dogfight (-mnScene dogfight, the hand-written DogfightBattle) re-expressed as a mission file: the same ships in the same places, Earth's six waves on FS2's two-thirds rule under the same cap, the bomber wing twenty seconds after the third wave, the Warden's beam turrets and the Mercy's beam-lock, the plain win or loss, and the AI-flown player's plan for soaks and checks. -mnDogfightPortCheck runs both and compares every ship's state to the bit once a second. New on top (they read the fight and change nothing in it): objectives, directives, the briefing and debrief, the music state.",
+  "difficulty": "Medium",
+  "player": "Sable 1",
+  "teams": ["diaspora", "earth"],
+  "arrivalCap": { "team": "earth", "value": [3, 4, 6, 8, 10], "valueWhy": "ours: at most this many of Earth's wave fighters alive at once per level (design section 7: a small cap per difficulty); the bombers and their escort come on top (their wings are not capped)" },
+  "music": { "start": "ambient", "auto": true },
+  "pacing": { "hulls": ["Small Mercy", "Warden"] },
+  "briefing": {
+    "title": "The Dogfight",
+    "stages": [
+      "Sable flight, you are the Small Mercy's screen. Earth's corvette, the Warden, holds three kilometres ahead: flak, guns, and two beam turrets forward on top.",
+      "Earth will send its drones in waves, from every side. With the third, a bomber wing comes for the Mercy."
+    ],
+    "questions": [
+      { "q": "What are the objectives", "a": "Keep the Mercy flying. Take the Warden apart. Stop the bombers." },
+      { "q": "What opposition will there be", "a": "Six waves of drones, three Censer bombers with two Vigil escorts, and the Warden's guns. Its beams are the ones that kill the Mercy." }
+    ]
+  },
+  "debriefing": [
+    { "when": { "and": [ { "objective": "warden" }, { "not": { "objective": "mercy", "is": "failed" } } ] }, "text": "Warden's gone and the Mercy's still flying. Not bad, Sable." },
+    { "when": { "objective": "mercy", "is": "failed" }, "text": "We lost the Mercy. Sit with that. Then get some sleep." },
+    { "when": { "objective": "bombers" }, "text": "None of the Censers went home." }
+  ],
+
+  "ships": [
+    { "name": "Sable 1", "class": "vanguard_fighter", "team": "diaspora",
+      "arrival": { "at": [-120, 60, 350], "rot": [0, 12, 0], "speed": 0.5, "throttle": 0.6 } },
+    { "name": "Small Mercy", "class": "diaspora_cruiser", "team": "diaspora", "selfHeal": false, "hull": 2,
+      "selfHealWhy": "a capital ship does not mend: the diaspora's living tech is a fighter's (at a capital's size it would out-heal any beam)",
+      "capital": { "standoff": 2900, "band": 400, "bearing": 70, "throttle": 0.3, "turretProfile": "diaspora_turret", "turretWaitScale": 1.3, "beamWaitScale": 2.0, "holdBeams": true,
+                   "holdBeamsWhy": "ours, FS2's beam-lock: the Mercy's beams stay quiet until the player has silenced the Warden's two beam turrets; then they come free and finish it" },
+      "look": { "hull": { "length": 460, "width": 110, "height": 90, "seed": 23 } },
+      "arrival": { "at": [0, -80, 0], "rot": [0, 0, 0], "speed": 0.3 } },
+    { "name": "Warden", "class": "earth_corvette", "team": "earth", "hullScale": 0.5,
+      "hullScaleWhy": "ours: 40,000 of the Deimos' 80,000, so the player's two torpedoes, the heavy gun on its parts and the Mercy's beams can finish it inside the loop",
+      "capital": { "standoff": 2700, "band": 400, "bearing": 65, "throttle": 0.3, "turretProfile": "earth_turret", "turretWaitScale": 1.5, "beamWaitScale": 4.0,
+                   "weapons": { "SUB_aaf_F01": "beam_slash", "SUB_aaf_F03": "beam_slash" },
+                   "weaponsWhy": "the model's two forward dorsal anti-fighter turrets are its beam cannons (FS2's Deimos carries two slash beams): destroy them and the Warden's beams go quiet" },
+      "arrival": { "at": [900, 60, 3000], "rot": [0, -115, 0], "speed": 0.3 } },
+    { "name": "Sable 2", "class": "vanguard_fighter", "team": "diaspora", "ai": "wingman", "wingman": true,
+      "ammo": { "missile_heat": 4, "missile_lock": 2, "torpedo_heavy": 0 }, "ammoWhy": "ours: a wingman's rack is a Myrmidon's (4 heat-seekers, 2 lock-ons), not the player's test-everything load",
+      "goal": { "order": "engage" }, "fallback": { "order": "guard", "target": "Sable 1" },
+      "goalWhy": "they start free to engage; cover me or form up from the quick menu puts them back on the player, and they go back to covering when an order is done",
+      "arrival": { "near": "Sable 1", "offset": [-32, 5, -30], "speed": 0.5 } },
+    { "name": "Sable 3", "class": "vanguard_fighter", "team": "diaspora", "ai": "wingman", "wingman": true,
+      "ammo": { "missile_heat": 4, "missile_lock": 2, "torpedo_heavy": 0 },
+      "goal": { "order": "engage" }, "fallback": { "order": "guard", "target": "Sable 1" },
+      "arrival": { "near": "Sable 1", "offset": [32, -5, -30], "speed": 0.5 } }
+  ],
+
+  "wings": [
+    { "name": "Choir", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 } ],
+      "arrival": { "cue": false, "at": [-2400, 300, 2600], "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 },
+      "arrivalWhy": "ours: Earth's waves jump in round the fight, from the flanks and behind as well as past the Warden, so the dogfight comes to the player and the Mercy" },
+    { "name": "Psalm", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 },
+                 { "class": "earth_interceptor", "ai": "drone", "count": 1, "goal": { "order": "attack", "target": "Small Mercy" } } ],
+      "arrival": { "cue": false, "at": [2900, -200, 1000], "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 } },
+    { "name": "Canticle", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 }, { "class": "earth_fighter", "ai": "drone", "count": 1 } ],
+      "arrival": { "cue": false, "at": [-1900, 500, -1700], "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 } },
+    { "name": "Litany", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 },
+                 { "class": "earth_fighter", "ai": "drone", "count": 2, "goal": { "order": "attack", "target": "Small Mercy" } } ],
+      "arrival": { "cue": false, "at": [2300, 400, 4200], "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 } },
+    { "name": "Vespers", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_fighter", "ai": "drone", "count": 3 }, { "class": "earth_interceptor", "ai": "drone", "count": 2 } ],
+      "arrival": { "cue": false, "at": [-3100, -100, 700], "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 } },
+    { "name": "Requiem", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 4 }, { "class": "earth_fighter", "ai": "drone", "count": 2 } ],
+      "arrival": { "cue": false, "at": [600, -600, 4600], "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 } },
+    { "name": "Censer", "team": "earth",
+      "ships": [ { "class": "earth_bomber", "ai": "drone_bomber", "role": "bomber", "count": 3, "ammo": { "torpedo_heavy": 2 },
+                   "ammoWhy": "ours: two torpedoes each (FS2's Artemis carries more); three bombers' worth is two thirds of the Mercy's hull if every one lands" } ],
+      "goal": { "order": "bomb", "target": "Small Mercy" },
+      "arrival": { "cue": false, "at": [-3300, 300, -900], "facing": "Small Mercy", "formation": "line", "spacing": [60, 0, 30], "speed": 0.9 } },
+    { "name": "Vigil", "team": "earth",
+      "ships": [ { "class": "earth_heavy", "ai": "drone_heavy", "count": 2 } ],
+      "goal": { "order": "guard", "target": "Censer" },
+      "arrival": { "cue": false, "at": [-3300, 300, -900], "facing": "Small Mercy", "offsets": [[-150, 60, -120], [150, 60, -120]], "speed": 0.9 } }
+  ],
+
+  "objectives": [
+    { "id": "mercy", "kind": "primary", "text": "Keep the Small Mercy flying", "fail": { "destroyed": "Small Mercy" }, "complete": { "event": "Area clear" } },
+    { "id": "warden", "kind": "primary", "text": "Destroy the Warden", "complete": { "destroyed": "Warden" } },
+    { "id": "bombers", "kind": "secondary", "text": "Stop the bombers", "complete": { "destroyed": "Censer" } },
+    { "id": "wingmen", "kind": "bonus", "text": "Bring both wingmen home", "hidden": true,
+      "complete": { "and": [ { "event": "Area clear" }, { "not": { "destroyed": ["Sable 2"] } }, { "not": { "destroyed": "Sable 3" } } ] },
+      "fail": { "or": [ { "destroyed": "Sable 2" }, { "destroyed": "Sable 3" } ] } }
+  ],
+
+  "messages": [
+    { "id": "opening", "from": "Small Mercy", "text": "Sable flight, Warden's three klicks out. Keep the drones off us and we'll all get home.", "priority": "normal" },
+    { "id": "earth_wave_1", "from": "Warden", "fallbackFrom": "#EARTH", "text": "Biologics. You were us, once." },
+    { "id": "earth_wave_2", "from": "Warden", "fallbackFrom": "#EARTH", "text": "The fallen return to be unmade." },
+    { "id": "earth_wave_3", "from": "Warden", "fallbackFrom": "#EARTH", "text": "Kneel, remnant. Or burn where you are." },
+    { "id": "earth_wave_4", "from": "Warden", "fallbackFrom": "#EARTH", "text": "Your blood remembers Earth. Earth does not remember you." },
+    { "id": "earth_wave_5", "from": "Warden", "fallbackFrom": "#EARTH", "text": "The dark between the stars was ours before you crawled into it." },
+    { "id": "earth_wave_6", "from": "Warden", "fallbackFrom": "#EARTH", "text": "This is the last of your kind's courage. Spend it." },
+    { "id": "earth_bombers", "from": "Warden", "fallbackFrom": "#EARTH", "text": "The Mercy will be cleansed.", "priority": "high" },
+    { "id": "bombers", "from": "Small Mercy", "text": "Bombers inbound on the Mercy. Somebody deal with them.", "priority": "high" },
+    { "id": "beams_threat", "from": "Small Mercy", "text": "Mercy here. The Warden's charging beams at us. Its two beam turrets, forward, on top. Take them out.", "priority": "high" },
+    { "id": "capital_hurt", "from": "Small Mercy", "text": "Mercy here. Hull's going. Any time now.", "priority": "high" },
+    { "id": "beams_down", "from": "Small Mercy", "text": "Warden's beams are quiet. Ours are free. Thank you.", "priority": "high" },
+    { "id": "sable2_lost", "from": "<any wingman>", "text": "Sable 2 is gone.", "priority": "high" },
+    { "id": "sable3_lost", "from": "<any wingman>", "text": "Lost Sable 3. Keep flying.", "priority": "high" },
+    { "id": "lost_capital", "from": "<any wingman>", "text": "Mercy's gone.", "priority": "high" },
+    { "id": "won", "from": "<any wingman>", "text": "That's the lot. Warden's gone.", "priority": "high" }
+  ],
+
+  "events": [
+    { "name": "Choir in", "when": { "time": 4 }, "whenWhy": "ours: a short breath before the first wave",
+      "do": [ { "do": "arrive", "ship": "Choir" }, { "do": "radio", "message": "earth_wave_1" } ] },
+    { "name": "Psalm in", "when": { "and": [ { "arrived": "Choir" }, { "destroyedPercent": "Choir", "atLeast": 66 } ] }, "delay": 5,
+      "whenWhy": "FS2's campaign: most enemy wings arrive when the previous wing is 66% destroyed (design appendix, 'Slaying Ravana'); the delay is ours (FS2's relays come 6 to 18 s after)",
+      "do": [ { "do": "arrive", "ship": "Psalm" }, { "do": "radio", "message": "earth_wave_2" } ] },
+    { "name": "Canticle in", "when": { "and": [ { "arrived": "Psalm" }, { "destroyedPercent": "Psalm", "atLeast": 66 } ] }, "delay": 5,
+      "do": [ { "do": "arrive", "ship": "Canticle" }, { "do": "radio", "message": "earth_wave_3" } ] },
+    { "name": "Litany in", "when": { "and": [ { "arrived": "Canticle" }, { "destroyedPercent": "Canticle", "atLeast": 66 } ] }, "delay": 5,
+      "do": [ { "do": "arrive", "ship": "Litany" }, { "do": "radio", "message": "earth_wave_4" } ] },
+    { "name": "Vespers in", "when": { "and": [ { "arrived": "Litany" }, { "destroyedPercent": "Litany", "atLeast": 66 } ] }, "delay": 5,
+      "do": [ { "do": "arrive", "ship": "Vespers" }, { "do": "radio", "message": "earth_wave_5" } ] },
+    { "name": "Requiem in", "when": { "and": [ { "arrived": "Vespers" }, { "destroyedPercent": "Vespers", "atLeast": 66 } ] }, "delay": 5,
+      "do": [ { "do": "arrive", "ship": "Requiem" }, { "do": "radio", "message": "earth_wave_6" } ] },
+    { "name": "Bombers in", "when": { "event": "Canticle in", "delay": 20 }, "whenWhy": "the bomber wing comes twenty seconds after the third wave is called",
+      "do": [ { "do": "arrive", "ship": "Censer" }, { "do": "arrive", "ship": "Vigil" }, { "do": "radio", "message": "earth_bombers" } ] },
+    { "name": "Bombers called", "when": { "event": "Bombers in", "delay": 3.5 }, "do": [ { "do": "radio", "message": "bombers" } ] },
+    { "name": "Beam threat", "when": { "beaming": "Warden" }, "do": [ { "do": "radio", "message": "beams_threat" } ] },
+    { "name": "Mercy hurt", "when": { "hull": "Small Mercy", "below": 50 }, "do": [ { "do": "radio", "message": "capital_hurt" } ] },
+    { "name": "Beams down", "when": { "and": [ { "not": { "destroyed": "Warden" } }, { "subsystem": "Warden", "parts": ["SUB_aaf_F01", "SUB_aaf_F03"], "destroyed": true } ] },
+      "whenWhy": "FS2's beam-free: with the Warden's beams gone the Mercy's own come off their lock",
+      "directive": { "text": "Destroy the Warden's beam turrets", "show": { "event": "Beam threat" } },
+      "do": [ { "do": "radio", "message": "beams_down" }, { "do": "beams", "ship": "Small Mercy", "free": true } ] },
+    { "name": "Sable 2 lost", "when": { "destroyed": "Sable 2" }, "do": [ { "do": "radio", "message": "sable2_lost" } ] },
+    { "name": "Sable 3 lost", "when": { "destroyed": "Sable 3" }, "do": [ { "do": "radio", "message": "sable3_lost" } ] },
+    { "name": "Autopilot", "when": { "autopilot": true }, "repeat": -1, "interval": 5, "log": false,
+      "about": "Only when the AI flies the player's ship (soaks, checks, captures): it plays the objective as a player would. The beam turrets first, whatever else is about (they are what kills the Mercy); the Warden's hull only when no Earth fighter is within 1.5 km; otherwise it fights.",
+      "do": [ { "do": "cond", "cases": [
+        { "if": { "or": [ { "destroyed": "Warden" }, { "and": [ { "subsystem": "Warden", "parts": ["SUB_aaf_F01", "SUB_aaf_F03"], "destroyed": true }, { "hostilesNear": "<player>", "within": 1500 } ] } ] },
+          "then": [ { "do": "order", "ship": "<player>", "order": "engage" } ] },
+        { "else": [ { "do": "order", "ship": "<player>", "order": "attack", "target": "Warden", "part": ["SUB_aaf_F01", "SUB_aaf_F03"] } ] } ] } ] },
+    { "name": "Mercy lost", "when": { "destroyed": "Small Mercy" },
+      "do": [ { "do": "radio", "message": "lost_capital" }, { "do": "end", "result": "defeat", "text": "SMALL MERCY LOST" } ] },
+    { "name": "Area clear", "when": { "and": [ { "destroyed": "Warden" }, { "event": "Requiem in" }, { "arrived": "Requiem" }, { "event": "Bombers in" }, { "teamAlive": "earth", "atMost": 0 } ] },
+      "whenWhy": "the Warden destroyed and every wave cleared, bombers and escort included",
+      "do": [ { "do": "radio", "message": "won" }, { "do": "end", "result": "victory", "text": "AREA CLEAR" } ] },
+
+    { "name": "Opening", "when": { "time": 1 }, "do": [ { "do": "radio", "message": "opening" } ] },
+    { "name": "Choir down", "when": { "destroyed": "Choir" }, "directive": { "text": "Destroy Choir", "show": { "arrived": "Choir", "any": true } } },
+    { "name": "Psalm down", "when": { "destroyed": "Psalm" }, "directive": { "text": "Destroy Psalm", "show": { "arrived": "Psalm", "any": true } } },
+    { "name": "Canticle down", "when": { "destroyed": "Canticle" }, "directive": { "text": "Destroy Canticle", "show": { "arrived": "Canticle", "any": true } } },
+    { "name": "Litany down", "when": { "destroyed": "Litany" }, "directive": { "text": "Destroy Litany", "show": { "arrived": "Litany", "any": true } } },
+    { "name": "Vespers down", "when": { "destroyed": "Vespers" }, "directive": { "text": "Destroy Vespers", "show": { "arrived": "Vespers", "any": true } } },
+    { "name": "Requiem down", "when": { "destroyed": "Requiem" }, "directive": { "text": "Destroy Requiem", "show": { "arrived": "Requiem", "any": true } } },
+    { "name": "Censer down", "when": { "destroyed": "Censer" }, "directive": { "text": "Stop the bombers", "show": { "arrived": "Censer", "any": true } } },
+    { "name": "Warden down", "when": { "destroyed": "Warden" }, "directive": { "text": "Destroy the Warden", "show": { "or": [ { "event": "Beams down" }, { "event": "Requiem in" } ] } } }
+  ],
+
+  "autoplay": {
+    "seconds": 1500, "difficulty": "Medium", "invulnerable": true,
+    "expect": {
+      "result": ["victory", "defeat"],
+      "fired": ["Choir in", "Psalm in", "Canticle in", "Bombers in", "Bombers called"],
+      "order": ["Choir in", "Psalm in", "Canticle in", "Litany in", "Vespers in", "Requiem in"],
+      "longestQuietMax": 30, "maxEngagingMax": 4, "threatsAvgMin": 2
+    }
+  }
+}

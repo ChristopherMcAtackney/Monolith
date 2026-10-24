@@ -1,9 +1,9 @@
 {
   "format": "monolith-combat-ship/1",
   "id": "diaspora_cruiser",
-  "name": "Diaspora cruiser (placeholder)",
+  "name": "Small Mercy (diaspora cruiser)",
   "sizeClass": "capital",
-  "note": "Our side's capital ship in the dogfight (the bombers' target). A placeholder hull (Game/PlaceholderShips.Hull 460 x 110 x 90 m) with no part models: its turrets, beams, engines and bridge are combat parts placed on the hull boxes. Hull and turret shares are the GTCv Deimos' (ships.tbl): about eight minutes of the Warden's beams on Medium, or twelve torpedo hits. The rest ours.",
+  "note": "Our side's capital ship in the dogfight (the bombers' target). Its model is art_src/diaspora/build_diaspora_cruiser.py (350 m) and the hull boxes below follow it. Hull and turret shares are the GTCv Deimos' (ships.tbl): about eight minutes of the Warden's beams on Medium, or twelve torpedo hits. The rest ours.",
   "defense": {
     "hull":        { "value": 80000, "unit": "hp", "fs2": "ships:GTCv Deimos|$Hitpoints" },
     "shield":      { "value": 0, "unit": "hp", "source": "FS2 design appendix: capital ships have no shield" },
@@ -12,14 +12,19 @@
     "decoys":      { "value": 0, "unit": "decoys", "fs2": "ships:GTCv Deimos|$Countermeasures" }
   },
   "geometry": {
-    "about": "Boxes round the placeholder hull: engine block, the plated body, the blunt nose, the dorsal spine. Unity axes, nose +z.",
+    "about": "Boxes round the model (Unity axes, nose +z): the tail, the reactor block, the main hull, the hangars and decks, the forward hull, the prow and the two nacelles.",
     "boxes": [
-      { "centre": [0, 0, -209], "half": [44, 32, 21] },
-      { "centre": [0, 0, -20],  "half": [52, 40, 168] },
-      { "centre": [0, 0, 189],  "half": [37, 30, 41] },
-      { "centre": [0, 50, -30], "half": [6, 12, 150] }
+      { "centre": [0, 0, -135], "half": [19, 14, 15] },
+      { "centre": [0, 0, -93], "half": [27, 19, 23] },
+      { "centre": [0, 0, 1], "half": [36, 24, 49] },
+      { "centre": [0, 0, 1], "half": [47, 12, 36] },
+      { "centre": [5, 27, -5], "half": [29, 4, 38] },
+      { "centre": [0, 0, 92], "half": [28, 19, 26] },
+      { "centre": [0, 0, 147], "half": [15.5, 11, 18] },
+      { "centre": [35, 0, -150], "half": [12, 12, 24] },
+      { "centre": [-35, 0, -150], "half": [12, 12, 24] }
     ],
-    "boundRadius": 240
+    "boundRadius": 200
   },
   "arms": { "missiles": {}, "decoys": 0 },
   "partsSource": "hpPercent: turrets 0.833% of hull each (ships.tbl GTCv Deimos $Subsystem turretNN 0.833); engines and sensors 5% (Deimos engineNN/sensors 5); bridge and reactor ours",
@@ -41,5 +46,15 @@
     { "name": "bridge",          "kind": "bridge", "pos": [0, 32, 150],   "forward": [0, 0, 1],  "radius": 12, "hpPercent": 2 },
     { "name": "reactor",         "kind": "reactor","pos": [0, 30, -150],  "forward": [0, 1, 0],  "radius": 10, "hpPercent": 2 },
     { "name": "sensors",         "kind": "sensors","pos": [0, 62, 40],    "forward": [0, 1, 0],  "radius": 8,  "hpPercent": 5 }
-  ]
+  ],
+  "partKindsSource": "Parts come from the model (Resources/ShipArt/diaspora_cruiser.ship.json): four flak batteries, six anti-fighter guns, two beam lances, two engines, the bridge, the reactor and the sensor crest, each at the share of the hull the stand-in parts above had (the Deimos' ships.tbl shares). The four hangar bays are decorative: they burn and break for the show and are not combat parts. The stand-ins are for a headless lab without a model.",
+  "partKinds": {
+    "flak": { "hpPercent": 0.833, "weapon": "flak_gun" },
+    "aaf": { "hpPercent": 0.833, "weapon": "turret_laser" },
+    "turret": { "hpPercent": 1.5, "weapon": "beam_slash" },
+    "engine": { "hpPercent": 5 },
+    "bridge": { "hpPercent": 2 },
+    "reactor": { "hpPercent": 2 },
+    "sensors": { "hpPercent": 5 }
+  }
 }

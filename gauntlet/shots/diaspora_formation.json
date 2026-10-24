@@ -1,0 +1,114 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "vanguard_fighter",
+  "pitch": -20,
+  "yaw": 87,
+  "roll": -22,
+  "ships": [
+   {
+    "ship": "vanguard_fighter",
+    "pos": [
+     -18.949,
+     -0.172,
+     17.098
+    ],
+    "rot": [
+     -20,
+     87,
+     -22
+    ]
+   },
+   {
+    "ship": "vanguard_fighter",
+    "pos": [
+     -16.474,
+     -13.351,
+     -19.808
+    ],
+    "rot": [
+     -20,
+     87,
+     -22
+    ]
+   },
+   {
+    "ship": "vanguard_fighter",
+    "pos": [
+     -39.746,
+     -1.114,
+     34.136
+    ],
+    "rot": [
+     -20,
+     87,
+     -22
+    ]
+   },
+   {
+    "ship": "diaspora_cruiser",
+    "pos": [
+     -358.011,
+     -237.991,
+     -53.745
+    ],
+    "rot": [
+     -20,
+     87,
+     -22
+    ]
+   }
+  ]
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "formation_aft",
+   "pos": [
+    -57.493,
+    -20.906,
+    -18.262
+   ],
+   "rot": [
+    -20.002,
+    66.385,
+    -13.904
+   ],
+   "fov": 40
+  },
+  {
+   "name": "formation_side",
+   "pos": [
+    0.721,
+    -30.204,
+    -88.381
+   ],
+   "rot": [
+    -16.345,
+    -9.127,
+    20.881
+   ],
+   "fov": 40
+  },
+  {
+   "name": "formation_front",
+   "pos": [
+    54.874,
+    17.305,
+    -28.729
+   ],
+   "rot": [
+    13.895,
+    -62.986,
+    29.13
+   ],
+   "fov": 46
+  }
+ ],
+ "perf": []
+}

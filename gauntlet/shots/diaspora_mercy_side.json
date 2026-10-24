@@ -1,0 +1,46 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "diaspora_cruiser",
+  "pitch": 1,
+  "yaw": 133,
+  "roll": -16
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "side_silhouette",
+   "pos": [
+    -370.149,
+    -148.567,
+    -393.133
+   ],
+   "rot": [
+    -15.793,
+    43.283,
+    -1.039
+   ],
+   "fov": 34
+  },
+  {
+   "name": "top_silhouette",
+   "pos": [
+    -98.4,
+    538.225,
+    -119.297
+   ],
+   "rot": [
+    73.97,
+    39.517,
+    100.533
+   ],
+   "fov": 34
+  }
+ ],
+ "perf": []
+}

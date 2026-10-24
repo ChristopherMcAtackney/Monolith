@@ -1,0 +1,88 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Sable 3",
+   "offset": [
+    -8.0,
+    3.0,
+    -24.0
+   ],
+   "look": "target"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "wing3_00",
+   "follow": true,
+   "fov": 55,
+   "warmup": 12.0
+  },
+  {
+   "name": "wing3_01",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_02",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_03",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_04",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_05",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_06",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_07",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_08",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  },
+  {
+   "name": "wing3_09",
+   "follow": true,
+   "fov": 55,
+   "warmup": 2.0
+  }
+ ],
+ "perf": []
+}

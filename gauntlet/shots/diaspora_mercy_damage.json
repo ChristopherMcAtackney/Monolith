@@ -1,0 +1,136 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "diaspora_cruiser",
+  "pitch": 9,
+  "yaw": 149,
+  "roll": -30,
+  "damage": {
+   "destroy": [
+    "SUB_hangar_S1",
+    "SUB_flak_P04",
+    "SUB_aaf_D02",
+    "SUB_aaf_V01",
+    "SUB_engine_S",
+    "SUB_sensors_crest",
+    "SUB_turret_fore"
+   ],
+   "health": {
+    "SUB_flak_S01": 0.0,
+    "SUB_aaf_D03": 0.0,
+    "SUB_hangar_P2": 0.3
+   },
+   "debrisAge": 0.8,
+   "hull": 0.7,
+   "hits": [
+    {
+     "pos": [
+      -48.054,
+      -3.019,
+      7.119
+     ],
+     "normal": [
+      -0.783,
+      -0.494,
+      -0.379
+     ],
+     "radius": 5.0,
+     "severity": 0.9
+    },
+    {
+     "pos": [
+      -23.335,
+      13.719,
+      -22.462
+     ],
+     "normal": [
+      -0.359,
+      0.855,
+      -0.374
+     ],
+     "radius": 4.0,
+     "severity": 0.8
+    },
+    {
+     "pos": [
+      40.657,
+      9.616,
+      -0.971
+     ],
+     "normal": [
+      0.783,
+      0.494,
+      0.379
+     ],
+     "radius": 5.0,
+     "severity": 0.9
+    },
+    {
+     "pos": [
+      30.292,
+      -5.464,
+      -87.095
+     ],
+     "normal": [
+      -0.359,
+      0.855,
+      -0.374
+     ],
+     "radius": 3.5,
+     "severity": 0.8
+    },
+    {
+     "pos": [
+      -72.294,
+      5.37,
+      73.687
+     ],
+     "normal": [
+      -0.783,
+      -0.494,
+      -0.379
+     ],
+     "radius": 4.0,
+     "severity": 0.7
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "damage_three_quarter",
+   "pos": [
+    -397.61,
+    9.422,
+    149.139
+   ],
+   "rot": [
+    0.376,
+    110.108,
+    -29.044
+   ],
+   "fov": 40
+  },
+  {
+   "name": "damage_close",
+   "pos": [
+    -130.962,
+    -10.722,
+    -5.838
+   ],
+   "rot": [
+    -4.73,
+    80.301,
+    -19.144
+   ],
+   "fov": 50
+  }
+ ],
+ "perf": []
+}
