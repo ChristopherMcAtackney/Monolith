@@ -380,3 +380,15 @@ as many particles and far fewer fireballs in a death.
 
 ### Gotchas found
 - The fire quad is a camera-facing square: a ball bigger than the screen section it covers is cut by the quad's edge as a straight line unless its density fades before the edge (`quadFade`).
+
+## Round 4 verdicts (lead, 2026-10-25): one critic per pair
+**Realism vs The Expanse: 1/3, the first realism pair won.** All three calls were "likely".
+- r4a capital_death_final vs explosion_capital/expanse/7_ATYOm3nNc_0174: **WON.** The critic took ours for the real frame and the show's blue flare wash for "a single procedural radial glow".
+- r4b capital_death_cooling vs explosion_capital/expanse/7_ATYOm3nNc_0176: lost. A clean orange-white blob with a smooth gradient and a soft smoky rim; "it isn't lighting anything" (no light on nearby hull fragments); tiny uniform orange dots across the starfield.
+- r4c fighter_kill_fireball vs explosion_small/expanse/7_ATYOm3nNc_0172: lost. "The orange sparks": tiny, near-identical crisp dots and streaks scattered evenly over the whole frame, into the far corners, with no falloff from the blast. A puffy sprite-style fireball with a soft cutout silhouette.
+- Lead's note: the spark count went down a lot, yet two critics still see an even field of tiny orange dots reaching the corners. Find out what those dots are. The likeliest suspects are the 380 fine specks flung far from the blast, or space dust or stars picking up the blast colour. Whatever they are, they must not reach the frame corners as an even field.
+
+**Meatiness check, capital death vs FS2 big_battle_comparison_0083: lost** (likely). Ours is "one smooth, soft-edged beige blob" with a hard white core. FS2 has churning orange-red fire layers, dark smoky contrast and billowing lobes. Round 4 fixed the opaque opening, but its colour is beige.
+- Meat bar status: still won (two winning rounds running already); this check guards against regression.
+
+**Gap for round 5:** the dense opening phase should be churning orange-red layers with dark smoky pockets and lobes (not beige); pale and murky only in the cooling phase. Blast light that visibly lights nearby hull fragments in the cooling stills. Kill the far-flung even field of tiny orange dots. Fireball silhouettes that don't read as soft cutouts.
