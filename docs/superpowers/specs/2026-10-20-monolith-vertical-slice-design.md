@@ -242,9 +242,8 @@ all but disappears and the HUD takes over. Out of the seat, the cabin is physica
   view rises out of the seat and the HUD collapses into the cabin's own displays; sitting reverses it.
 - **While you're up, nobody is flying.** The ship holds its last heading and speed. In a fight, getting up
   is a gamble.
-- **Your own hands are visible**: human, but noticeably changed by the diaspora's divergence (call),
-  doing physical things. Seeing them
-  work tells the player who they are without a word of story.
+- **No first-person hands** (user, 2026-10-24: "unnecessary and awful looking"). Interactions animate the
+  lever, panel, module or rack on their own.
 - **Interactions are short physical actions** (pull, hold, turn, push; a few seconds) on one context
   button, with minimal prompts in the rough tech style. No puzzles, no inventory, no minigames, and they
   don't pause the game.
@@ -351,6 +350,8 @@ Missions are data files (one file per mission), not C#. A future mission editor 
     with at most a faint suggestion of canopy frame at the edges (call). No TF-style cockpit dashboard.
   - **Standing:** first person in the cabin, walking under artificial gravity (user).
   - **Death:** first person throughout, no external death camera (user; section 6).
+- **Inverted look by default (user, 2026-10-24),** for flying and for the cabin: push up or forward and the
+  nose or the view goes down. A separate toggle for each.
 - **Cabin controls on the pad (call):** left stick walks, right stick looks, one context button; hold a
   button to stand or sit.
 
