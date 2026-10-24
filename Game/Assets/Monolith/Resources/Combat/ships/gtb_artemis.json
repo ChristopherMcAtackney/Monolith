@@ -1,0 +1,151 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "gtb_artemis",
+  "name": "GTB Artemis",
+  "sizeClass": "bomber",
+  "note": "FS2 reference class; a bomber with torpedoes for capital ships.",
+  "defense": {
+    "hull": {
+      "value": 275,
+      "unit": "hp",
+      "fs2": "ships:GTB Artemis|$Hitpoints"
+    },
+    "shield": {
+      "value": 700,
+      "unit": "hp (FS2 total over four quadrants; the bubble gets shieldBubbleScale of it)",
+      "fs2": "ships:GTB Artemis|$Shields"
+    },
+    "powerOutput": {
+      "value": 4.0,
+      "unit": "FS2 power output",
+      "fs2": "ships:GTB Artemis|$Power Output"
+    },
+    "weaponEnergy": {
+      "value": 100,
+      "unit": "energy",
+      "fs2": "ships:GTB Artemis|$Max Weapon Eng"
+    },
+    "decoys": {
+      "value": 35,
+      "unit": "decoys",
+      "fs2": "ships:GTB Artemis|$Countermeasures"
+    }
+  },
+  "geometry": {
+    "about": "One box about the hull (wings included); the shield bubble is derived from it like the juice's.",
+    "boxes": [
+      {
+        "centre": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          7.56,
+          2.7,
+          10.08
+        ]
+      }
+    ],
+    "boundRadius": 15.3
+  },
+  "arms": {
+    "primary": "needle",
+    "primaryHardpoints": [
+      [
+        -5.22,
+        -0.35,
+        6.24
+      ],
+      [
+        5.22,
+        -0.35,
+        6.24
+      ]
+    ],
+    "missiles": {
+      "torpedo_heavy": 4,
+      "missile_heat": 2
+    },
+    "decoys": 35
+  },
+  "partsSource": "hpPercent: a share of the hull, FS2's way (ships.tbl GTB Artemis $Subsystem: engines 15, weapons 20, sensors 10); two engine pods split the engines' share, each gun mount takes the weapons' share",
+  "parts": [
+    {
+      "name": "engine_port",
+      "kind": "engine",
+      "pos": [
+        -3.06,
+        0,
+        -9.6
+      ],
+      "radius": 2.64,
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "hpPercent": 7.5
+    },
+    {
+      "name": "engine_starboard",
+      "kind": "engine",
+      "pos": [
+        3.06,
+        0,
+        -9.6
+      ],
+      "radius": 2.64,
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "hpPercent": 7.5
+    },
+    {
+      "name": "mount_needle",
+      "kind": "mount",
+      "gun": "primary",
+      "pos": [
+        0,
+        -0.54,
+        5.28
+      ],
+      "radius": 3.24,
+      "hpPercent": 20
+    },
+    {
+      "name": "sensors",
+      "kind": "sensors",
+      "pos": [
+        0,
+        2.1,
+        2.88
+      ],
+      "radius": 2.34,
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "hpPercent": 10
+    },
+    {
+      "name": "comms",
+      "kind": "comms",
+      "pos": [
+        0,
+        1.8,
+        -4.8
+      ],
+      "radius": 1.8,
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "hpPercent": 10
+    }
+  ]
+}

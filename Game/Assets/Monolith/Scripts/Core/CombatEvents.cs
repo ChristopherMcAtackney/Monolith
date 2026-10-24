@@ -20,6 +20,25 @@ namespace Monolith.Core
     ///   beam_fire           source ship   target       muzzle / aim                                  duration seconds    beam id
     ///   beam_aim            source ship   target       muzzle / aim, once per tick while firing      -                   beam id   (optional: without it the beam sweeps the target by itself)
     ///   beam_end            source ship   -            -                                             -                   beam id
+    ///   missile_track       launcher      its target   missile position / its velocity (m/s, not a unit vector)   missile id (stable per missile)   weapon id: missile_*, torpedo_*
+    /// </code>
+    /// <c>missile_track</c> is raised every tick by the weapons system for each guided missile in flight. The juice draws the missile where
+    /// the simulation says it is (its first event is the launch: muzzle flash and sound), so a missile that is decoyed or shot down looks
+    /// right; when the events stop the missile is gone (a hit or explosion event close by shows why).
+    ///
+    /// Informational events the combat systems raise (the HUD and the mission system listen; the juice ignores them):
+    /// <code>
+    ///   target_changed   ship that chose   new target (or NoShip)   -                          part index + 1 (0 = whole ship)   -
+    ///   lock_acquired    launcher          locked target            -                          -                                 weapon id
+    ///   lock_lost        launcher          target                   -                          -                                 weapon id
+    ///   missile_warning  ship tracked      launcher                 -                          distance m                        weapon id
+    ///   decoy_launched   ship              -                        -                          -                                 -
+    ///   decoy_success    ship saved        missile owner            where the missile blew      -                                 weapon id
+    ///   power_changed    ship              -                        -                          mode (0 balanced, 1 shields, 2 guns, 3 engines)   mode name
+    ///   part_damaged     ship              attacker                 part position              health 0..1                       part name
+    ///   shield_down      ship              attacker                 -                          -                                 -
+    ///   collision        ship              other ship               contact point / normal     closing speed m/s                 -
+    ///   shot_down        owner of weapon   who shot it down         where                      -                                 weapon id
     /// </code>
     /// A ship that wants to break up on screen registers its visual with the juice director; nothing else about it is needed.
     /// </summary>
@@ -37,11 +56,25 @@ namespace Monolith.Core
         public const string BeamFire = "beam_fire";
         public const string BeamAim = "beam_aim";
         public const string BeamEnd = "beam_end";
+        public const string MissileTrack = "missile_track";
+
+        // Informational (see the table above).
+        public const string TargetChanged = "target_changed";
+        public const string LockAcquired = "lock_acquired";
+        public const string LockLost = "lock_lost";
+        public const string MissileWarning = "missile_warning";
+        public const string DecoyLaunched = "decoy_launched";
+        public const string DecoySuccess = "decoy_success";
+        public const string PowerChanged = "power_changed";
+        public const string PartDamaged = "part_damaged";
+        public const string ShieldDown = "shield_down";
+        public const string Collision = "collision";
+        public const string ShotDown = "shot_down";
 
         public static readonly string[] All =
         {
             WeaponFired, HitShield, HitHull, NearMiss, ShipDestroyed, SubsystemDestroyed, Explosion, FlakBurst,
-            BeamCharge, BeamFire, BeamAim, BeamEnd,
+            BeamCharge, BeamFire, BeamAim, BeamEnd, MissileTrack,
         };
 
         /// <summary>Size classes for <see cref="ShipDestroyed"/>'s subject.</summary>

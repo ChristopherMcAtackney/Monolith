@@ -1,0 +1,78 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "range_turret_flak",
+  "name": "Flak emplacement",
+  "sizeClass": "fighter",
+  "note": "Range emplacement: flak that bursts in the player's path.",
+  "defense": {
+    "hull": {
+      "value": 250,
+      "unit": "hp",
+      "fs2": "ships:GTSG Alastor|$Hitpoints"
+    },
+    "shield": {
+      "value": 0,
+      "unit": "hp",
+      "source": "a sentry gun has no shield"
+    },
+    "powerOutput": {
+      "value": 2.0,
+      "unit": "power",
+      "source": "ours: enough to keep a turret's energy full"
+    },
+    "weaponEnergy": {
+      "value": 100,
+      "unit": "energy",
+      "source": "ours: turrets do not spend weapon energy"
+    },
+    "decoys": {
+      "value": 0,
+      "unit": "decoys",
+      "source": "none"
+    }
+  },
+  "geometry": {
+    "boxes": [
+      {
+        "centre": [
+          0,
+          0.6,
+          0
+        ],
+        "half": [
+          3.4,
+          2.6,
+          3.4
+        ]
+      }
+    ],
+    "boundRadius": 5.5
+  },
+  "arms": {
+    "primary": "flak_gun",
+    "primaryHardpoints": [
+      [
+        0,
+        1.4,
+        3.6
+      ]
+    ],
+    "missiles": {},
+    "decoys": 0
+  },
+  "partsSource": "range emplacements have one part, the gun itself; destroying the mount silences it (a gun offline)",
+  "parts": [
+    {
+      "name": "mount_gun",
+      "kind": "mount",
+      "gun": "primary",
+      "pos": [
+        0,
+        1.4,
+        2.4
+      ],
+      "radius": 2.2,
+      "hpPercent": 40
+    }
+  ]
+}

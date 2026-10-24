@@ -46,6 +46,8 @@ namespace Monolith.Flight
         public bool AfterburnerOn;
         /// <summary>Seconds this ship has been simulated.</summary>
         public float Time;
+        /// <summary>Multiplies the top and afterburner speed goals: damaged engines cap the ship, the engines-favoured power choice adds a little. 1 normally.</summary>
+        public float SpeedScale = 1f;
 
         float _lastAfterburnerStart = -1e9f;
         float _knockLeft, _shockLeft, _shockStrength;
@@ -118,7 +120,7 @@ namespace Monolith.Flight
             float goalSpeed, speedUp;
             if (AfterburnerOn) { goalSpeed = forward * Class.AfterburnerSpeed; speedUp = Class.AfterburnerAccel; }
             else { goalSpeed = forward * Class.TopSpeed; speedUp = Class.ForwardAccel; }
-            goalSpeed = Math.Max(goalSpeed, -Class.ReverseSpeed);
+            goalSpeed = Math.Max(goalSpeed * SpeedScale, -Class.ReverseSpeed);
             RampSpeed = Ramp(RampSpeed, goalSpeed, goalSpeed >= RampSpeed ? speedUp : Class.ForwardDecel, dt);
 
             // 3a. Velocity, in the frame the ship had at the start of the tick.

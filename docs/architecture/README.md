@@ -29,7 +29,11 @@ auto-bank, slip, afterburner fuel, match speed, knocks), and publishes `ShipStat
 **Input** (`Monolith.Input`) is the local player's pad and keyboard as an `IPilotSource` (`PlayerPilot`), with mappings,
 dead zones and response curves in `Resources/Input/controls.json` (or `-mnControls file`).
 
-**Targeting** (`Monolith.Targeting`) sets `ShipState.Target` from the target-ahead and next-target buttons. Minimal for now.
+**Targeting** (`Monolith.Targeting`) sets `ShipState.Target` and `TargetPart` from the pad's buttons or an AI's `ControlInput.TargetShip` (cycle hostiles nearest first, nearest attacker, the ship in the reticle, a target's parts nearest the nose first), and publishes the lead point and distance the HUD aims with.
+
+**Weapons** (`Monolith.Weapons`) fires from every ship's `ControlInput` buttons (the pad, an AI and a script are the same to it) and from turret `FireRequest`s, and flies every projectile on the tick with swept hit tests: two guns, flak, three missiles (a heat-seeker, a lock-on with a lock tone, a heavy torpedo that can be shot down) and decoys. Weapon numbers are `Resources/Combat/weapons.json`, each copied from FS2's table (checked by `tools/combat/check_weapons.py`) or marked as ours. **Damage** (`Monolith.Damage`) resolves every hit: the shield bubble and its recharge from the power choice, hull, named parts and what losing each one does, self-healing on the player's side, deaths (`ship_destroyed` for the juice). **Collision** (`Monolith.Collision`) bumps ship against ship and against capital hulls through the flight model's knock hook and hurts by speed and mass. Their shared data (`ShipCombat`, `WeaponDef`, ship definitions, hit shapes, the damage and fire queues, the `IShipVisual` the art side implements) lives in Core's `Combat` folder; the AI contract and the details are in `Scripts/Weapons/README.md`.
+
+**CombatHud** (`Monolith.CombatHud`) is the plain playtest combat HUD (lead pip, target box and readout, lock, missile warning, shield, hull and energy, power, ammunition, damage you feel, the quick menu) and the lock and warning tones. It reads `GameWorld` only and is kept small so the rough alien-tech HUD can replace it.
 
 **View** (`Monolith.View`) is the player's first-person camera at the interpolated ship pose, FS2-style motion dust and
 `ShipViews` (every other ship's visual at its interpolated pose). Settings in `Resources/View/view.json`. No external camera.
@@ -54,7 +58,7 @@ through `GameWorld.Knocks`. Sounds are placeholders built in code behind `IJuice
 (`SmokeWorld`: camera, sun, sphere and box) and, with `-mnScene flight` or a plan's `"scene": "flight"`, the flight
 playtest (`FlightPlaytest`: the Sky, placeholder ships from `PlaceholderShips`, layout in `Resources/Flight/playtest.json`) or,
 with `-mnScene juice`, the juice sandbox (`Sandbox/JuiceSandbox`: the fighter, targets, two Earth corvettes as the capital ships, stand-in weapons and
-the panel; `"hud": false` in a plan's `sceneOptions` or `-mnNoHud` leaves the HUD out of look captures). It is the only assembly allowed to reference the others.
+the panel; `"hud": false` in a plan's `sceneOptions` or `-mnNoHud` leaves the HUD out of look captures) or, with `-mnScene range`, the combat range (`Range/CombatRange`: the real weapons, damage and HUD against drones, emplacements and the real corvette). `Combat/CombatRig` builds the combat systems for every scene and `Combat/CombatSelfTest` checks them. It is the only assembly allowed to reference the others.
 
 **Editor** (`Monolith.Editor`, namespace `Monolith.EditorTools`, editor only) is scripted project set-up and building:
 `Batch.Run` wrapper, `Setup.Project` (HDRP asset and global settings, colour space, Input System, player settings, the

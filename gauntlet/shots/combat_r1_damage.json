@@ -1,0 +1,230 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "trace",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     640
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.3,
+    "throttle": 0.3
+   },
+   {
+    "t": 0.2,
+    "do": "target",
+    "name": "Laser 1"
+   },
+   {
+    "t": 3.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 6.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 9.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 9.2,
+    "do": "damage",
+    "ship": "Player",
+    "part": "sensors",
+    "amount": 200,
+    "shieldMult": 0,
+    "hullMult": 0,
+    "subsystemMult": 1,
+    "bypassShield": true
+   },
+   {
+    "t": 9.3,
+    "do": "damage",
+    "ship": "Player",
+    "part": "engine_port",
+    "amount": 200,
+    "shieldMult": 0,
+    "hullMult": 0,
+    "subsystemMult": 1,
+    "bypassShield": true
+   },
+   {
+    "t": 9.4,
+    "do": "damage",
+    "ship": "Player",
+    "part": "mount_needle",
+    "amount": 200,
+    "shieldMult": 0,
+    "hullMult": 0,
+    "subsystemMult": 1,
+    "bypassShield": true
+   },
+   {
+    "t": 9.6,
+    "do": "expect",
+    "what": "flag",
+    "ship": "player",
+    "flag": "SensorsDown"
+   },
+   {
+    "t": 9.6,
+    "do": "expect",
+    "what": "flag",
+    "ship": "player",
+    "flag": "PrimaryOffline"
+   },
+   {
+    "t": 9.6,
+    "do": "expect",
+    "what": "speedScaleBelow",
+    "ship": "player",
+    "value": 0.8
+   },
+   {
+    "t": 9.6,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 11.5,
+    "do": "menu",
+    "on": true
+   },
+   {
+    "t": 12.2,
+    "do": "power",
+    "mode": "guns"
+   },
+   {
+    "t": 12.8,
+    "do": "menu",
+    "on": false
+   },
+   {
+    "t": 13.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     -2600
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.3,
+    "throttle": 0.3
+   },
+   {
+    "t": 13.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 19.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 24.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 29.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 29.0,
+    "do": "expect",
+    "what": "hullAbove",
+    "ship": "player",
+    "value": 0.04
+   },
+   {
+    "t": 29.0,
+    "do": "expect",
+    "what": "partDestroyed",
+    "ship": "player",
+    "part": "engine_port"
+   },
+   {
+    "t": 29.5,
+    "do": "summary"
+   }
+  ],
+  "pilot": "scripted"
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "01_under_fire",
+   "follow": true,
+   "warmup": 3.5668
+  },
+  {
+   "name": "02_shield_gone",
+   "follow": true,
+   "warmup": 3.4001
+  },
+  {
+   "name": "03_hull_and_parts",
+   "follow": true,
+   "warmup": 2.0001
+  },
+  {
+   "name": "04_parts_lost",
+   "follow": true,
+   "warmup": 1.5001
+  },
+  {
+   "name": "05_quick_menu",
+   "follow": true,
+   "warmup": 1.8001
+  },
+  {
+   "name": "06_clear_of_fire",
+   "follow": true,
+   "warmup": 3.7001
+  },
+  {
+   "name": "07_mending",
+   "follow": true,
+   "warmup": 11.0001
+  },
+  {
+   "name": "08_mended",
+   "follow": true,
+   "warmup": 2.5001
+  }
+ ]
+}

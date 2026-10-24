@@ -1,0 +1,43 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": { "pilot": "scripted" },
+ "script": [
+  { "t": 0.0, "do": "invulnerable", "on": true },
+  { "t": 0.0, "do": "trace", "on": true },
+  { "t": 0.0, "do": "place", "pos": [0, 0, 640], "rot": [0, 0, 0], "speed": 0.3, "throttle": 0.3 },
+  { "t": 0.2, "do": "target", "name": "Laser 1" },
+  { "t": 3.0, "do": "log", "ship": "player" },
+  { "t": 6.0, "do": "log", "ship": "player" },
+  { "t": 9.0, "do": "log", "ship": "player" },
+  { "t": 9.2, "do": "damage", "ship": "Player", "part": "sensors", "amount": 200, "shieldMult": 0, "hullMult": 0, "subsystemMult": 1, "bypassShield": true },
+  { "t": 9.3, "do": "damage", "ship": "Player", "part": "engine_port", "amount": 200, "shieldMult": 0, "hullMult": 0, "subsystemMult": 1, "bypassShield": true },
+  { "t": 9.4, "do": "damage", "ship": "Player", "part": "mount_needle", "amount": 200, "shieldMult": 0, "hullMult": 0, "subsystemMult": 1, "bypassShield": true },
+  { "t": 9.6, "do": "expect", "what": "flag", "ship": "player", "flag": "SensorsDown" },
+  { "t": 9.6, "do": "expect", "what": "flag", "ship": "player", "flag": "PrimaryOffline" },
+  { "t": 9.6, "do": "expect", "what": "speedScaleBelow", "ship": "player", "value": 0.8 },
+  { "t": 9.6, "do": "log", "ship": "player" },
+  { "t": 11.5, "do": "menu", "on": true },
+  { "t": 12.2, "do": "power", "mode": "guns" },
+  { "t": 12.8, "do": "menu", "on": false },
+  { "t": 13.0, "do": "place", "pos": [0, 0, -2600], "rot": [0, 0, 0], "speed": 0.3, "throttle": 0.3 },
+  { "t": 13.0, "do": "log", "ship": "player" },
+  { "t": 19.0, "do": "log", "ship": "player" },
+  { "t": 24.0, "do": "log", "ship": "player" },
+  { "t": 29.0, "do": "log", "ship": "player" },
+  { "t": 29.0, "do": "expect", "what": "hullAbove", "ship": "player", "value": 0.04 },
+  { "t": 29.0, "do": "expect", "what": "partDestroyed", "ship": "player", "part": "engine_port" },
+  { "t": 29.5, "do": "summary" }
+ ],
+ "at": [
+  { "name": "01_under_fire", "t": 3.6 },
+  { "name": "02_shield_gone", "t": 7.0 },
+  { "name": "03_hull_and_parts", "t": 9.0 },
+  { "name": "04_parts_lost", "t": 10.5 },
+  { "name": "05_quick_menu", "t": 12.3 },
+  { "name": "06_clear_of_fire", "t": 16.0 },
+  { "name": "07_mending", "t": 27.0 },
+  { "name": "08_mended", "t": 29.5 }
+ ]
+}

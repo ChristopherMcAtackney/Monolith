@@ -106,6 +106,7 @@ namespace Monolith.Juice
             if (camera.GetComponent<AudioListener>() == null && FindObjectOfType<AudioListener>() == null) camera.gameObject.AddComponent<AudioListener>();
 
             Sub(CombatEvents.WeaponFired, e => _projectiles.OnFired(e));
+            Sub(CombatEvents.MissileTrack, e => _projectiles.OnTrack(e));
             Sub(CombatEvents.HitShield, e => _hits.OnShieldHit(e));
             Sub(CombatEvents.HitHull, e => _hits.OnHullHit(e));
             Sub(CombatEvents.NearMiss, e => _hits.OnNearMiss(e));

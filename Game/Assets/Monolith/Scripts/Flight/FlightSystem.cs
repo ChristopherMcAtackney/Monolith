@@ -102,6 +102,7 @@ namespace Monolith.Flight
                 }
                 s.PreviousPosition = e.Model.Position;
                 s.PreviousRotation = e.Model.Rotation;
+                e.Model.SpeedScale = s.SpeedScale;                // damaged engines and the power choice (Damage owns it)
                 e.Model.Step(pilots.Current(s.Id), pilots.Previous(s.Id), targetSpeed, frame.Dt);
                 Publish(e, false);
             }

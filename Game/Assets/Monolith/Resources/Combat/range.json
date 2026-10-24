@@ -1,0 +1,207 @@
+{
+  "format": "monolith-combat-range/1",
+  "about": "The combat range (-mnScene range): the player's fighter, target drones flying scripted loops through the real flight model, a capital hull with destructible parts and a few emplacements that shoot back in a simple way. No AI: that is the next builder. Positions are metres; the player starts at the origin looking down +z.",
+  "player": {
+    "ship": "vanguard_fighter",
+    "pos": [
+      0,
+      0,
+      0
+    ],
+    "rot": [
+      0,
+      0,
+      0
+    ],
+    "speedFraction": 0.4,
+    "throttle": 0.4
+  },
+  "respawnSeconds": 7.0,
+  "capitalRespawnSeconds": 30.0,
+  "capital": {
+    "ship": "earth_corvette",
+    "callsign": "Warden",
+    "team": 1,
+    "pos": [
+      0,
+      30,
+      2100
+    ],
+    "rot": [
+      0,
+      96,
+      0
+    ],
+    "hullScale": 0.15,
+    "hullScaleWhy": "range only: the corvette's 80,000 hull (FS2 GTCv Deimos) is scaled to 12,000 so the two torpedoes in the rack can kill it and the staged capital death can be seen; its parts are a share of the hull so they scale with it"
+  },
+  "drones": [
+    {
+      "class": "gtf_ulysses",
+      "callsign": "Reaper 1",
+      "pos": [
+        -150,
+        30,
+        560
+      ],
+      "rot": [
+        0,
+        10,
+        0
+      ],
+      "speedFraction": 0.7,
+      "throttle": 0.7,
+      "loop": 0,
+      "keys": [
+        {
+          "t": 0,
+          "pitch": 0.13,
+          "throttle": 0.7
+        }
+      ]
+    },
+    {
+      "class": "gtf_myrmidon",
+      "callsign": "Reaper 2",
+      "pos": [
+        210,
+        -40,
+        760
+      ],
+      "rot": [
+        0,
+        200,
+        90
+      ],
+      "speedFraction": 0.7,
+      "throttle": 0.7,
+      "loop": 0,
+      "keys": [
+        {
+          "t": 0,
+          "pitch": 0.15,
+          "throttle": 0.7
+        }
+      ]
+    },
+    {
+      "class": "gtf_ulysses",
+      "callsign": "Reaper 3",
+      "pos": [
+        -40,
+        90,
+        1000
+      ],
+      "rot": [
+        0,
+        170,
+        0
+      ],
+      "speedFraction": 0.75,
+      "throttle": 0.75,
+      "loop": 14,
+      "keys": [
+        {
+          "t": 0,
+          "yaw": 0.3,
+          "pitch": 0.06,
+          "throttle": 0.75
+        },
+        {
+          "t": 7,
+          "yaw": -0.3,
+          "pitch": 0.06,
+          "throttle": 0.75
+        }
+      ]
+    },
+    {
+      "class": "gtb_artemis",
+      "callsign": "Hammer 1",
+      "pos": [
+        -330,
+        70,
+        900
+      ],
+      "rot": [
+        0,
+        60,
+        0
+      ],
+      "speedFraction": 0.6,
+      "throttle": 0.6,
+      "loop": 0,
+      "keys": [
+        {
+          "t": 0,
+          "yaw": 0.1,
+          "throttle": 0.6
+        }
+      ]
+    },
+    {
+      "class": "gtf_hercules",
+      "callsign": "Reaper 4",
+      "pos": [
+        420,
+        110,
+        1150
+      ],
+      "rot": [
+        0,
+        250,
+        0
+      ],
+      "speedFraction": 0.8,
+      "throttle": 0.8,
+      "loop": 0,
+      "keys": [
+        {
+          "t": 0,
+          "yaw": 0.1,
+          "pitch": 0.05,
+          "throttle": 0.8
+        }
+      ]
+    }
+  ],
+  "emplacements": [
+    {
+      "def": "range_turret_laser",
+      "callsign": "Laser 1",
+      "pos": [
+        -500,
+        -40,
+        1250
+      ],
+      "range": 1100,
+      "scatter": 5,
+      "waitScale": 1.6
+    },
+    {
+      "def": "range_turret_flak",
+      "callsign": "Flak 1",
+      "pos": [
+        450,
+        80,
+        1300
+      ],
+      "range": 1000,
+      "scatter": 55,
+      "waitScale": 2.8
+    },
+    {
+      "def": "range_turret_missile",
+      "callsign": "Rack 1",
+      "pos": [
+        0,
+        -160,
+        1450
+      ],
+      "range": 1500,
+      "scatter": 6,
+      "missileEvery": 16,
+      "waitScale": 2.4
+    }
+  ]
+}

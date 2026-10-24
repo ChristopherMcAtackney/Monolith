@@ -1,0 +1,193 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "earth_corvette",
+  "name": "Warden-class corvette",
+  "sizeClass": "corvette",
+  "note": "Parts come from the model (Resources/ShipArt/earth_corvette.ship.json) through the visual adapter; partKinds says what each kind is worth. Hit boxes follow the hull stations in art_src/earth_corvette/build_earth_corvette.py (SEG), as the model's own collision proxy is not readable at run time.",
+  "defense": {
+    "hull": {
+      "value": 80000,
+      "unit": "hp",
+      "fs2": "ships:GTCv Deimos|$Hitpoints"
+    },
+    "shield": {
+      "value": 0,
+      "unit": "hp",
+      "fs2": "ships:GTCv Deimos|$Shields"
+    },
+    "powerOutput": {
+      "value": 100,
+      "unit": "power",
+      "fs2": "ships:GTCv Deimos|$Power Output"
+    },
+    "weaponEnergy": {
+      "value": 100,
+      "unit": "energy",
+      "fs2": "ships:GTCv Deimos|$Max Weapon Eng"
+    },
+    "decoys": {
+      "value": 0,
+      "unit": "decoys",
+      "fs2": "ships:GTCv Deimos|$Countermeasures"
+    }
+  },
+  "geometry": {
+    "about": "Unity axes: x right, y up, z forward (bow). Stations from SEG in build_earth_corvette.py: engine, reactor, neck, main, neck, forward, prow, plus the bridge tower and the sensor boom.",
+    "boxes": [
+      {
+        "centre": [
+          0,
+          0,
+          -168
+        ],
+        "half": [
+          22,
+          15,
+          18
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          -127
+        ],
+        "half": [
+          19.5,
+          13.5,
+          23
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          -100
+        ],
+        "half": [
+          16.5,
+          11,
+          4.5
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          -41
+        ],
+        "half": [
+          28,
+          19,
+          55
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          24
+        ],
+        "half": [
+          14,
+          10.5,
+          10
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          79
+        ],
+        "half": [
+          21,
+          15,
+          45
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          137
+        ],
+        "half": [
+          12,
+          8.5,
+          13
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          166
+        ],
+        "half": [
+          7,
+          6,
+          20
+        ]
+      },
+      {
+        "centre": [
+          0,
+          30,
+          -40
+        ],
+        "half": [
+          12,
+          12,
+          16
+        ]
+      },
+      {
+        "centre": [
+          30,
+          -1.5,
+          56
+        ],
+        "half": [
+          8,
+          4,
+          12
+        ]
+      }
+    ],
+    "boundRadius": 190
+  },
+  "arms": {
+    "missiles": {},
+    "decoys": 0
+  },
+  "partKindsSource": "hpPercent is the share of the hull per unit of the model's relative hp (ShipSubsystem.Hp): turrets 0.833% of hull each (ships.tbl GTCv Deimos $Subsystem turretNN 0.833), engines, sensors, comms 5% each (Deimos engineNN/sensors/communications 5); bridge, reactor, launchers are ours",
+  "partKinds": {
+    "flak": {
+      "hpPercent": 0.833,
+      "weapon": "flak_gun"
+    },
+    "aaf": {
+      "hpPercent": 0.52,
+      "weapon": "turret_laser"
+    },
+    "engine": {
+      "hpPercent": 2.2
+    },
+    "sensors": {
+      "hpPercent": 5.0
+    },
+    "comms": {
+      "hpPercent": 5.0
+    },
+    "launcher": {
+      "hpPercent": 1.5
+    },
+    "bridge": {
+      "hpPercent": 2.0
+    },
+    "reactor": {
+      "hpPercent": 2.0
+    }
+  }
+}

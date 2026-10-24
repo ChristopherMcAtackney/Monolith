@@ -34,6 +34,14 @@ namespace Monolith.Game
                 return;
             }
 
+            // Combat self-test: the real sim, flight model, weapons, damage and data, headless; log lines say what passed. Then quit.
+            if (CombatSelfTest.Requested)
+            {
+                bool ok = CombatSelfTest.Run();
+                Application.Quit(ok ? 0 : 1);
+                return;
+            }
+
             GameEvents.Reset();
             World = new GameWorld(new Sim());
             GameWorld.SetCurrent(World);
@@ -46,6 +54,8 @@ namespace Monolith.Game
             var flight = new FlightSystem(World);
             Sim.Register(new TargetingSystem(World));
             Sim.Register(flight);
+            // The combat systems (weapons, collisions, damage, aim) run in every scene; a scene gives them ships with CombatRig.Spawn.
+            var combat = CombatRig.Create(World, flight);
 
             // A capture plan may ask for a particular test scene ("scene": "sky", "flight"); else -mnScene; else the smoke world.
             string scene = null, sceneOptions = null;
@@ -53,6 +63,7 @@ namespace Monolith.Game
             scene ??= CommandLine.Get("-mnScene");
             if (string.Equals(scene, FlightPlaytest.SceneName, StringComparison.OrdinalIgnoreCase)) FlightPlaytest.Build(World, flight, transform, sceneOptions);
             else if (string.Equals(scene, JuiceSandbox.SceneName, StringComparison.OrdinalIgnoreCase)) JuiceSandbox.Build(World, flight, transform, sceneOptions);
+            else if (string.Equals(scene, CombatRange.SceneName, StringComparison.OrdinalIgnoreCase)) CombatRange.Build(World, flight, combat, transform, sceneOptions);
             else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
             if (CommandLine.Has("-mnCapture"))

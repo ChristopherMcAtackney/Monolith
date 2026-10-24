@@ -42,6 +42,8 @@ namespace Monolith.Juice
             Add(new WeaponLook { Id = "laser_enemy", Colour = red * 3.8f, Core = 13f, Speed = 520f, Life = 3.0f, Length = 85f, HalfWidth = 0.9f, TailSharp = 1.0f, TailBright = 0.10f, HeadGlow = 3.2f, HeadStrength = 1.1f, MuzzleSize = 2.6f, Cue = JuiceCue.LaserEnemy });
             Add(new WeaponLook { Id = "laser_heavy", Colour = teal * 4.2f, Core = 16f, Speed = 340f, Life = 9f, Length = 230f, HalfWidth = 4.2f, TailSharp = 0.9f, TailBright = 0.12f, HeadGlow = 3.0f, HeadStrength = 1.1f, MuzzleSize = 11f, Cue = JuiceCue.LaserHeavy });
             Add(new WeaponLook { Id = "laser_heavy_enemy", Colour = hotRed * 4.6f, Core = 15f, Speed = 300f, Life = 9f, Length = 240f, HalfWidth = 4.4f, TailSharp = 0.9f, TailBright = 0.12f, HeadGlow = 3.0f, HeadStrength = 1.1f, MuzzleSize = 12f, Cue = JuiceCue.LaserHeavy });
+            Add(new WeaponLook { Id = "hammer", Colour = green * 3.9f, Core = 12f, Speed = 650f, Life = 2.0f, Length = 62f, HalfWidth = 2.1f, TailBright = 0.55f, HeadGlow = 2.0f, MuzzleSize = 4.6f, Cue = JuiceCue.LaserHeavy });
+            Add(new WeaponLook { Id = "hammer_enemy", Colour = red * 4.2f, Core = 11f, Speed = 600f, Life = 2.0f, Length = 62f, HalfWidth = 2.1f, TailBright = 0.55f, HeadGlow = 2.0f, MuzzleSize = 4.8f, Cue = JuiceCue.LaserHeavy });
             Add(new WeaponLook { Id = "flak_shell", Colour = amber * 3.4f, Core = 7f, Speed = 720f, Life = 3.2f, Length = 22f, HalfWidth = 0.9f, MuzzleSize = 3.5f, Cue = JuiceCue.FlakShell });
             Add(new WeaponLook { Id = "missile_heat", Kind = ProjectileKind.Missile, Colour = amber * 3.2f, Core = 8f, Speed = 190f, Life = 11f, Length = 9f, HalfWidth = 0.55f, MuzzleSize = 4f, Cue = JuiceCue.MissileLaunch, TurnRate = 1.5f, AccelTime = 0.7f });
             Add(new WeaponLook { Id = "missile_lock", Kind = ProjectileKind.Missile, Colour = new Vector3(0.45f, 0.75f, 1f) * 3.4f, Core = 8f, Speed = 250f, Life = 12f, Length = 9f, HalfWidth = 0.55f, MuzzleSize = 4f, Cue = JuiceCue.MissileLaunch, TurnRate = 2.2f, AccelTime = 0.5f });
@@ -52,8 +54,10 @@ namespace Monolith.Juice
 
         public static WeaponLook Get(string id, int team)
         {
+            if (id == "hammer" && team != 0) return Table["hammer_enemy"];
             if (!string.IsNullOrEmpty(id) && Table.TryGetValue(id, out var l)) return l;
             id = id ?? "";
+            if (id.StartsWith("hammer")) return team == 0 ? Table["hammer"] : Table["hammer_enemy"];
             if (id.StartsWith("flak")) return Table["flak_shell"];
             if (id.StartsWith("torpedo") || id.StartsWith("bomb")) return Table["torpedo"];
             if (id.StartsWith("missile")) return id.Contains("lock") ? Table["missile_lock"] : Table["missile_heat"];
@@ -81,10 +85,15 @@ namespace Monolith.Juice
             public Vector3 Pos, Vel;
             public float Age;
             public bool Dead;
+            // Missiles flown by the weapons system: it raises missile_track every tick with the true position and velocity.
+            public bool Tracked;
+            public int TrackId, LastTrackTick;
+            public Vector3 TrackPos, TrackVel;
         }
 
         readonly JuiceContext _c;
         readonly List<Proj> _list = new List<Proj>(256);
+        readonly Dictionary<int, Proj> _tracked = new Dictionary<int, Proj>();
         int _seq;
 
         public int Count => _list.Count;
@@ -112,15 +121,50 @@ namespace Monolith.Juice
                 _list.Add(p);
             }
 
-            if (s.effects.muzzleFlash) MuzzleFlash(e.Position, dir, look, player);
+            LaunchEffects(e.Position, dir, look, player, dist);
+        }
+
+        /// <summary>The bang of a shot leaving: muzzle flash, launch sound, and the pad and shake when the player fired.</summary>
+        void LaunchEffects(Vector3 position, Vector3 dir, WeaponLook look, bool player, float dist)
+        {
+            if (_c.Settings.effects.muzzleFlash) MuzzleFlash(position, dir, look, player);
 
             float gain = player ? 0.7f : Mathf.Lerp(0.6f, 0.12f, Mathf.Clamp01(dist / 2500f));
-            _c.Audio.Play(look.Cue, e.Position, gain, dist);
+            _c.Audio.Play(look.Cue, position, gain, dist);
             if (player)
             {
                 if (look.Kind == ProjectileKind.Bolt) _c.Rumble.Pulse(0.05f, 0.30f, 0.085f);
                 else { _c.Rumble.Pulse(0.55f, 0.35f, 0.25f); _c.Trauma.Add(0.10f); }
             }
+        }
+
+        /// <summary>
+        /// A missile the weapons system is flying reports where it is (every tick): the first report is its launch, the rest move it, and
+        /// when the reports stop it is gone. A subject containing "decoy" is drawn as a slow hot streak without a launch bang.
+        /// </summary>
+        public void OnTrack(in GameEvent e)
+        {
+            int id = Mathf.RoundToInt(e.Value);
+            if (!_tracked.TryGetValue(id, out var p) || p.Dead)
+            {
+                if (!_c.Settings.effects.bolts || _list.Count >= 700) return;
+                var shooter = _c.World.Ships.Get(e.Entity);
+                int team = shooter != null ? shooter.Team : 0;
+                var look = WeaponLooks.Get(e.Subject, team);
+                Vector3 v = e.Direction;
+                Vector3 dir = v.sqrMagnitude > 1e-4f ? v.normalized : Vector3.forward;
+                bool player = _c.IsPlayer(e.Entity);
+                p = new Proj
+                {
+                    Look = look, Origin = e.Position, Dir = dir, Speed = v.magnitude, T0 = (e.Tick + 1) * Sim.Dt, Seed = (++_seq) * 0.173f % 1f,
+                    Shooter = e.Entity, Target = e.Other, Player = player, Pos = e.Position, Vel = v, Tracked = true, TrackId = id,
+                };
+                _list.Add(p);
+                _tracked[id] = p;
+                bool decoy = e.Subject != null && e.Subject.Contains("decoy");
+                if (!decoy) LaunchEffects(e.Position, dir, look, player, _c.DistanceToCamera(e.Position));
+            }
+            p.TrackPos = e.Position; p.TrackVel = e.Direction; p.LastTrackTick = e.Tick;
         }
 
         void MuzzleFlash(Vector3 pos, Vector3 dir, WeaponLook look, bool player)
@@ -191,7 +235,7 @@ namespace Monolith.Juice
                 if (p.Look.Kind == ProjectileKind.Missile)
                 {
                     StepMissile(p, dt);
-                    if (p.Dead) _list.RemoveAt(i);
+                    if (p.Dead) { if (p.Tracked) _tracked.Remove(p.TrackId); _list.RemoveAt(i); }
                     continue;
                 }
                 if (now - p.T0 > p.Look.Life) _list.RemoveAt(i);
@@ -200,28 +244,41 @@ namespace Monolith.Juice
 
         void StepMissile(Proj p, float dt)
         {
+            Vector3 trackedFrom = default;
+            if (p.Tracked && !p.Dead)
+            {
+                // The weapons system flies it; draw it where the simulation puts it at this moment between ticks (as ships are drawn).
+                if (_c.World.Tick - p.LastTrackTick > 3) { p.Dead = true; return; }
+                trackedFrom = p.Pos;
+                p.Pos = p.TrackPos - p.TrackVel * ((1f - _c.World.Alpha) * Sim.Dt);
+                p.Vel = p.TrackVel;
+                p.Age += dt;
+            }
             if (!p.Dead)
             {
-                p.Age += dt;
+                if (!p.Tracked) p.Age += dt;
                 // Accelerate along the nose, steer toward the target.
                 var look = p.Look;
                 Vector3 fwd = p.Vel.sqrMagnitude > 1f ? p.Vel.normalized : p.Dir;
-                var target = _c.World.Ships.Get(p.Target);
-                if (target != null)
+                if (!p.Tracked)
                 {
-                    Vector3 to = target.Position - p.Pos;
-                    float turn = look.TurnRate * dt;
-                    fwd = Vector3.RotateTowards(fwd, to.normalized, turn, 0f);
+                    var target = _c.World.Ships.Get(p.Target);
+                    if (target != null)
+                    {
+                        Vector3 to = target.Position - p.Pos;
+                        float turn = look.TurnRate * dt;
+                        fwd = Vector3.RotateTowards(fwd, to.normalized, turn, 0f);
+                    }
+                    float speed = Mathf.Lerp(p.Vel.magnitude, p.Speed, 1f - Mathf.Exp(-dt / Mathf.Max(0.05f, look.AccelTime)));
+                    p.Vel = fwd * speed;
+                    p.Pos += p.Vel * dt;
+                    if (p.Age > look.Life) p.Dead = true;
                 }
-                float speed = Mathf.Lerp(p.Vel.magnitude, p.Speed, 1f - Mathf.Exp(-dt / Mathf.Max(0.05f, look.AccelTime)));
-                p.Vel = fwd * speed;
-                p.Pos += p.Vel * dt;
-                if (p.Age > look.Life) p.Dead = true;
 
                 // Exhaust: hot glows laid along the path flown this frame (no gaps at any speed) that drift back and cool, plus a few fire puffs.
                 if (_c.Settings.effects.missileTrails)
                 {
-                    Vector3 from = p.Pos - p.Vel * dt;
+                    Vector3 from = p.Tracked ? trackedFrom : p.Pos - p.Vel * dt;
                     float stepLen = Mathf.Max(1.2f, look.HalfWidth * 2.2f);
                     int n = Mathf.Clamp(Mathf.CeilToInt(p.Vel.magnitude * dt / stepLen), 1, 12);
                     for (int k = 0; k < n; k++)

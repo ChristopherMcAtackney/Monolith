@@ -1,0 +1,117 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "trace",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     -140,
+     520
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.0,
+    "throttle": 0.0
+   },
+   {
+    "t": 0.2,
+    "do": "target",
+    "name": "Rack 1"
+   },
+   {
+    "t": 7.0,
+    "do": "expect",
+    "what": "incoming",
+    "ship": "player"
+   },
+   {
+    "t": 10.4,
+    "do": "decoy",
+    "on": true
+   },
+   {
+    "t": 10.9,
+    "do": "decoy",
+    "on": false
+   },
+   {
+    "t": 10.35,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 10.55,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 12.5,
+    "do": "expect",
+    "what": "saw",
+    "event": "decoy_success"
+   },
+   {
+    "t": 12.5,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 13.0,
+    "do": "summary"
+   }
+  ],
+  "pilot": "scripted",
+  "emplacements": [
+   "Rack 1"
+  ],
+  "noTurrets": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "01_missile_warning",
+   "follow": true,
+   "warmup": 7.0668
+  },
+  {
+   "name": "02_missile_closing",
+   "follow": true,
+   "warmup": 2.1001
+  },
+  {
+   "name": "03_decoy_released",
+   "follow": true,
+   "warmup": 1.4001
+  },
+  {
+   "name": "04_decoy_takes_it",
+   "follow": true,
+   "warmup": 0.6001
+  },
+  {
+   "name": "05_clear",
+   "follow": true,
+   "warmup": 1.4001
+  }
+ ]
+}

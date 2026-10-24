@@ -1,0 +1,153 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "noEmplacements": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "trace",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    0,
+    900
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.4,
+   "throttle": 0.4
+  },
+  {
+   "t": 0.3,
+   "do": "facePart",
+   "name": "Warden",
+   "part": "SUB_flak_S02",
+   "distance": 520,
+   "from": [
+    -0.15,
+    0.2,
+    -1
+   ],
+   "speed": 0.0,
+   "throttle": 0.0
+  },
+  {
+   "t": 0.4,
+   "do": "target",
+   "name": "Warden",
+   "part": "SUB_flak_S02"
+  },
+  {
+   "t": 0.5,
+   "do": "aim",
+   "at": "target",
+   "gain": 3.5
+  },
+  {
+   "t": 0.5,
+   "do": "expect",
+   "what": "partIntact",
+   "ship": "Warden",
+   "part": "SUB_flak_S02"
+  },
+  {
+   "t": 1.5,
+   "do": "heavy",
+   "on": true
+  },
+  {
+   "t": 6.0,
+   "do": "expect",
+   "what": "partDestroyed",
+   "ship": "Warden",
+   "part": "SUB_flak_S02"
+  },
+  {
+   "t": 6.1,
+   "do": "log",
+   "ship": "Warden"
+  },
+  {
+   "t": 6.5,
+   "do": "target",
+   "name": "Warden",
+   "part": "SUB_flak_S03"
+  },
+  {
+   "t": 11.2,
+   "do": "expect",
+   "what": "partDestroyed",
+   "ship": "Warden",
+   "part": "SUB_flak_S03"
+  },
+  {
+   "t": 11.3,
+   "do": "heavy",
+   "on": false
+  },
+  {
+   "t": 11.3,
+   "do": "aim",
+   "at": "off"
+  },
+  {
+   "t": 12.0,
+   "do": "summary"
+  },
+  {
+   "t": 11.4,
+   "do": "log",
+   "ship": "Warden"
+  }
+ ],
+ "at": [
+  {
+   "name": "01_part_targeted",
+   "t": 1.3
+  },
+  {
+   "name": "02_firing",
+   "t": 2.5
+  },
+  {
+   "name": "03_part_hurt",
+   "t": 3.5
+  },
+  {
+   "name": "04_part_destroyed",
+   "t": 5.3
+  },
+  {
+   "name": "05_wreck_and_debris",
+   "t": 6.3
+  },
+  {
+   "name": "06_next_part",
+   "t": 7.5
+  },
+  {
+   "name": "07_second_destroyed",
+   "t": 10.8
+  },
+  {
+   "name": "08_two_silenced",
+   "t": 12.2
+  }
+ ]
+}

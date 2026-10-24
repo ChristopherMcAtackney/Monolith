@@ -1,0 +1,210 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "trace",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     300
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.5,
+    "throttle": 0.5
+   },
+   {
+    "t": 0.4,
+    "do": "face",
+    "name": "Reaper 3",
+    "distance": 520,
+    "from": [
+     0.1,
+     0.05,
+     -1
+    ],
+    "speed": 0.75,
+    "throttle": 0.75
+   },
+   {
+    "t": 0.5,
+    "do": "target",
+    "name": "Reaper 3"
+   },
+   {
+    "t": 0.6,
+    "do": "select",
+    "slot": 1
+   },
+   {
+    "t": 0.7,
+    "do": "aim",
+    "at": "target",
+    "gain": 3.5,
+    "holdRange": 380
+   },
+   {
+    "t": 0.9,
+    "do": "missile",
+    "on": true
+   },
+   {
+    "t": 1.5,
+    "do": "expect",
+    "what": "acquiring",
+    "ship": "player"
+   },
+   {
+    "t": 2.7,
+    "do": "expect",
+    "what": "lock",
+    "ship": "player"
+   },
+   {
+    "t": 3.1,
+    "do": "missile",
+    "on": false
+   },
+   {
+    "t": 3.2,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 5.0,
+    "do": "select",
+    "slot": 0
+   },
+   {
+    "t": 5.0,
+    "do": "aim",
+    "at": "lead",
+    "autoFire": true,
+    "gain": 3.5,
+    "fireRange": 700,
+    "holdRange": 380
+   },
+   {
+    "t": 5.0,
+    "do": "log",
+    "ship": "Reaper 3"
+   },
+   {
+    "t": 9.0,
+    "do": "log",
+    "ship": "Reaper 3"
+   },
+   {
+    "t": 13.0,
+    "do": "log",
+    "ship": "Reaper 3"
+   },
+   {
+    "t": 14.5,
+    "do": "expect",
+    "what": "dead",
+    "ship": "Reaper 3"
+   },
+   {
+    "t": 14.5,
+    "do": "fire",
+    "on": false
+   },
+   {
+    "t": 14.5,
+    "do": "aim",
+    "at": "off"
+   },
+   {
+    "t": 15.0,
+    "do": "summary"
+   }
+  ],
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "01_lock_building",
+   "follow": true,
+   "warmup": 1.6668
+  },
+  {
+   "name": "02_lock_made",
+   "follow": true,
+   "warmup": 1.1001
+  },
+  {
+   "name": "03_missile_away",
+   "follow": true,
+   "warmup": 0.6001
+  },
+  {
+   "name": "04_missile_hit",
+   "follow": true,
+   "warmup": 1.0501
+  },
+  {
+   "name": "05_gun_on_shield",
+   "follow": true,
+   "warmup": 2.1501
+  },
+  {
+   "name": "06_shield_down",
+   "follow": true,
+   "warmup": 1.8501
+  },
+  {
+   "name": "07_part_damaged",
+   "follow": true,
+   "warmup": 3.3501
+  },
+  {
+   "name": "08_hull_critical",
+   "follow": true,
+   "warmup": 1.1001
+  },
+  {
+   "name": "09_kill_flash",
+   "follow": true,
+   "warmup": 0.5001
+  },
+  {
+   "name": "10_kill_fireball",
+   "follow": true,
+   "warmup": 0.3001
+  },
+  {
+   "name": "11_kill_pieces",
+   "follow": true,
+   "warmup": 0.6001
+  },
+  {
+   "name": "12_end",
+   "follow": true,
+   "warmup": 1.0001
+  }
+ ]
+}

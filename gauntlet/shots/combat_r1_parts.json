@@ -1,0 +1,165 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "trace",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     900
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.4,
+    "throttle": 0.4
+   },
+   {
+    "t": 0.3,
+    "do": "facePart",
+    "name": "Warden",
+    "part": "SUB_flak_S02",
+    "distance": 520,
+    "from": [
+     -0.15,
+     0.2,
+     -1
+    ],
+    "speed": 0.0,
+    "throttle": 0.0
+   },
+   {
+    "t": 0.4,
+    "do": "target",
+    "name": "Warden",
+    "part": "SUB_flak_S02"
+   },
+   {
+    "t": 0.5,
+    "do": "aim",
+    "at": "target",
+    "gain": 3.5
+   },
+   {
+    "t": 0.5,
+    "do": "expect",
+    "what": "partIntact",
+    "ship": "Warden",
+    "part": "SUB_flak_S02"
+   },
+   {
+    "t": 1.5,
+    "do": "heavy",
+    "on": true
+   },
+   {
+    "t": 6.0,
+    "do": "expect",
+    "what": "partDestroyed",
+    "ship": "Warden",
+    "part": "SUB_flak_S02"
+   },
+   {
+    "t": 6.1,
+    "do": "log",
+    "ship": "Warden"
+   },
+   {
+    "t": 6.5,
+    "do": "target",
+    "name": "Warden",
+    "part": "SUB_flak_S03"
+   },
+   {
+    "t": 11.2,
+    "do": "expect",
+    "what": "partDestroyed",
+    "ship": "Warden",
+    "part": "SUB_flak_S03"
+   },
+   {
+    "t": 11.3,
+    "do": "heavy",
+    "on": false
+   },
+   {
+    "t": 11.3,
+    "do": "aim",
+    "at": "off"
+   },
+   {
+    "t": 12.0,
+    "do": "summary"
+   },
+   {
+    "t": 11.4,
+    "do": "log",
+    "ship": "Warden"
+   }
+  ],
+  "pilot": "scripted",
+  "noEmplacements": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "01_part_targeted",
+   "follow": true,
+   "warmup": 1.2668
+  },
+  {
+   "name": "02_firing",
+   "follow": true,
+   "warmup": 1.2001
+  },
+  {
+   "name": "03_part_hurt",
+   "follow": true,
+   "warmup": 1.0001
+  },
+  {
+   "name": "04_part_destroyed",
+   "follow": true,
+   "warmup": 1.8001
+  },
+  {
+   "name": "05_wreck_and_debris",
+   "follow": true,
+   "warmup": 1.0001
+  },
+  {
+   "name": "06_next_part",
+   "follow": true,
+   "warmup": 1.2001
+  },
+  {
+   "name": "07_second_destroyed",
+   "follow": true,
+   "warmup": 3.3001
+  },
+  {
+   "name": "08_two_silenced",
+   "follow": true,
+   "warmup": 1.4001
+  }
+ ]
+}

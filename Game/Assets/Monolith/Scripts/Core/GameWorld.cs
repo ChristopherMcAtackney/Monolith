@@ -22,6 +22,9 @@ namespace Monolith.Core
             Pilots = new Pilots();
             Ships = new ShipRegistry();
             Knocks = new KnockQueue();
+            Combat = new CombatRegistry();
+            Damage = new DamageQueue();
+            Fire = new FireQueue();
         }
 
         /// <summary>The fixed-rate clock (owner: Game/GameRoot).</summary>
@@ -35,6 +38,15 @@ namespace Monolith.Core
 
         /// <summary>Shoves waiting to be applied to ships (owner: anyone adds; Flight drains each tick).</summary>
         public KnockQueue Knocks { get; }
+
+        /// <summary>Every ship's combat state: shield, hull, parts, ammo, lock, warnings, lead (owners are named on <see cref="ShipCombat"/>'s fields).</summary>
+        public CombatRegistry Combat { get; }
+
+        /// <summary>Damage waiting to be resolved this tick (owner: weapons and collisions add; Damage drains).</summary>
+        public DamageQueue Damage { get; }
+
+        /// <summary>Turret and mount fire requests (owner: AI, scripts and turret controllers add; Weapons drains).</summary>
+        public FireQueue Fire { get; }
 
         public int Tick => Sim.Tick;
         public float Time => Sim.Time;

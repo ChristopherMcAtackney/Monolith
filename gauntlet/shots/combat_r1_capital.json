@@ -1,0 +1,181 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "trace",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     1000
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.3,
+    "throttle": 0.3
+   },
+   {
+    "t": 0.3,
+    "do": "face",
+    "name": "Warden",
+    "distance": 620,
+    "from": [
+     -0.35,
+     0.12,
+     -1
+    ],
+    "speed": 0.0,
+    "throttle": 0.0
+   },
+   {
+    "t": 0.4,
+    "do": "target",
+    "name": "Warden"
+   },
+   {
+    "t": 0.5,
+    "do": "select",
+    "slot": 2
+   },
+   {
+    "t": 0.6,
+    "do": "aim",
+    "at": "target",
+    "gain": 3.5
+   },
+   {
+    "t": 0.8,
+    "do": "missile",
+    "on": true
+   },
+   {
+    "t": 3.0,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 6.5,
+    "do": "log",
+    "ship": "player"
+   },
+   {
+    "t": 7.0,
+    "do": "log",
+    "ship": "Warden"
+   },
+   {
+    "t": 19.5,
+    "do": "missile",
+    "on": false
+   },
+   {
+    "t": 40.0,
+    "do": "summary"
+   },
+   {
+    "t": 21.0,
+    "do": "log",
+    "ship": "Warden"
+   },
+   {
+    "t": 36.0,
+    "do": "summary"
+   }
+  ],
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "01_locking",
+   "follow": true,
+   "warmup": 2.9668
+  },
+  {
+   "name": "02_locked",
+   "follow": true,
+   "warmup": 2.8001
+  },
+  {
+   "name": "03_torpedo_away",
+   "follow": true,
+   "warmup": 1.2001
+  },
+  {
+   "name": "04_torpedo_closing",
+   "follow": true,
+   "warmup": 6.0001
+  },
+  {
+   "name": "05_first_hit",
+   "follow": true,
+   "warmup": 2.0001
+  },
+  {
+   "name": "06_turrets_gone",
+   "follow": true,
+   "warmup": 1.0001
+  },
+  {
+   "name": "07_second_hit",
+   "follow": true,
+   "warmup": 4.6001
+  },
+  {
+   "name": "08_death_1",
+   "follow": true,
+   "warmup": 0.6001
+  },
+  {
+   "name": "09_death_2",
+   "follow": true,
+   "warmup": 1.4001
+  },
+  {
+   "name": "10_death_3",
+   "follow": true,
+   "warmup": 1.9001
+  },
+  {
+   "name": "11_death_4",
+   "follow": true,
+   "warmup": 2.0001
+  },
+  {
+   "name": "12_death_5",
+   "follow": true,
+   "warmup": 2.5001
+  },
+  {
+   "name": "13_death_6",
+   "follow": true,
+   "warmup": 3.0001
+  },
+  {
+   "name": "14_death_7",
+   "follow": true,
+   "warmup": 3.0001
+  }
+ ]
+}

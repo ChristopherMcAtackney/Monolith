@@ -27,6 +27,12 @@ namespace Monolith.Input
         int _abLatchTicks;
         bool _prevAbButton, _prevFull, _prevZero, _prevThird, _prevTwoThirds;
         bool _prevKbZero, _prevKbThird, _prevKbTwoThirds, _prevKbFull;
+        // The quick menu: hold the orders button to open it, tap it for the next subsystem.
+        bool _menuHeld, _menuOpen, _tapPulse;
+        int _menuTicks;
+
+        /// <summary>The quick menu (power picks, wingman orders) is open: the HUD draws it.</summary>
+        public bool QuickMenuOpen => _menuOpen;
 
         public PlayerPilot(GameWorld world, int shipId, ControlsConfig config)
         {
@@ -73,21 +79,52 @@ namespace Monolith.Input
                     p.throttle.exponent) * p.throttle.ratePerSecond;
 
                 var b = p.buttons;
+                // Y: a tap is "next subsystem"; held, it opens the quick menu and the buttons it names change meaning.
+                bool menuButton = Pressed(pad, b.orders);
+                if (menuButton)
+                {
+                    _menuTicks++;
+                    if (!_menuOpen && _menuTicks * frame.Dt >= p.quickMenuHoldSeconds) _menuOpen = true;
+                }
+                else
+                {
+                    if (_menuHeld && !_menuOpen) _tapPulse = true;
+                    _menuTicks = 0; _menuOpen = false;
+                }
+                _menuHeld = menuButton;
+                bool menu = _menuOpen;
+                if (menu)
+                {
+                    buttons |= ControlButtons.Orders;
+                    if (Pressed(pad, b.menuPowerGuns)) buttons |= ControlButtons.PowerGuns;
+                    if (Pressed(pad, b.menuPowerShields)) buttons |= ControlButtons.PowerShields;
+                    if (Pressed(pad, b.menuPowerEngines)) buttons |= ControlButtons.PowerEngines;
+                    if (Pressed(pad, b.menuPowerBalanced)) buttons |= ControlButtons.PowerBalanced;
+                    if (Pressed(pad, b.menuOrderAttack)) buttons |= ControlButtons.OrderAttack;
+                    if (Pressed(pad, b.menuOrderDisable)) buttons |= ControlButtons.OrderDisable;
+                    if (Pressed(pad, b.menuOrderCover)) buttons |= ControlButtons.OrderCover;
+                    if (Pressed(pad, b.menuOrderForm)) buttons |= ControlButtons.OrderForm;
+                }
+                if (_tapPulse) { buttons |= ControlButtons.SubsystemNext; _tapPulse = false; }
                 if (Pressed(pad, b.primaryFire)) buttons |= ControlButtons.PrimaryFire;
-                if (Pressed(pad, b.secondaryFire)) buttons |= ControlButtons.SecondaryFire;
+                if (!menu)
+                {
+                    if (Pressed(pad, b.secondaryFire)) buttons |= ControlButtons.SecondaryFire;
+                    if (Pressed(pad, b.countermeasure)) buttons |= ControlButtons.Countermeasure;
+                    if (Pressed(pad, b.matchSpeed)) buttons |= ControlButtons.MatchSpeed;
+                    if (Pressed(pad, b.targetNext)) buttons |= ControlButtons.TargetNext;
+                }
                 if (Pressed(pad, b.missileFire)) buttons |= ControlButtons.MissileFire;
-                if (Pressed(pad, b.countermeasure)) buttons |= ControlButtons.Countermeasure;
-                if (Pressed(pad, b.matchSpeed)) buttons |= ControlButtons.MatchSpeed;
-                if (Pressed(pad, b.targetNext)) buttons |= ControlButtons.TargetNext;
                 if (Pressed(pad, b.targetAhead)) buttons |= ControlButtons.TargetReticle;
-                if (Pressed(pad, b.orders)) buttons |= ControlButtons.Orders;
+                if (Pressed(pad, b.cycleMissile)) buttons |= ControlButtons.CycleMissile;
+                if (Pressed(pad, b.targetAttacker)) buttons |= ControlButtons.TargetAttacker;
                 abButton = Pressed(pad, b.afterburner);
                 if (!p.afterburnerToggle) abHeld |= abButton;
 
-                Preset(Pressed(pad, b.throttleFull), ref _prevFull, 1f);
-                Preset(Pressed(pad, b.throttleZero), ref _prevZero, 0f);
-                Preset(Pressed(pad, b.throttleThird), ref _prevThird, 1f / 3f);
-                Preset(Pressed(pad, b.throttleTwoThirds), ref _prevTwoThirds, 2f / 3f);
+                Preset(!menu && Pressed(pad, b.throttleFull), ref _prevFull, 1f);
+                Preset(!menu && Pressed(pad, b.throttleZero), ref _prevZero, 0f);
+                Preset(!menu && Pressed(pad, b.throttleThird), ref _prevThird, 1f / 3f);
+                Preset(!menu && Pressed(pad, b.throttleTwoThirds), ref _prevTwoThirds, 2f / 3f);
             }
 
             if (kb != null)
@@ -97,6 +134,16 @@ namespace Monolith.Input
                 roll += Key(kb, k.rollRight) - Key(kb, k.rollLeft);
                 throttleRate += (Key(kb, k.throttleUp) - Key(kb, k.throttleDown)) * k.throttleRatePerSecond;
                 if (Key(kb, k.primaryFire) > 0f) buttons |= ControlButtons.PrimaryFire;
+                if (Key(kb, k.secondaryFire) > 0f) buttons |= ControlButtons.SecondaryFire;
+                if (Key(kb, k.missileFire) > 0f) buttons |= ControlButtons.MissileFire;
+                if (Key(kb, k.countermeasure) > 0f) buttons |= ControlButtons.Countermeasure;
+                if (Key(kb, k.cycleMissile) > 0f) buttons |= ControlButtons.CycleMissile;
+                if (Key(kb, k.subsystemNext) > 0f) buttons |= ControlButtons.SubsystemNext;
+                if (Key(kb, k.targetAttacker) > 0f) buttons |= ControlButtons.TargetAttacker;
+                if (Key(kb, k.powerGuns) > 0f) buttons |= ControlButtons.PowerGuns;
+                if (Key(kb, k.powerShields) > 0f) buttons |= ControlButtons.PowerShields;
+                if (Key(kb, k.powerEngines) > 0f) buttons |= ControlButtons.PowerEngines;
+                if (Key(kb, k.powerBalanced) > 0f) buttons |= ControlButtons.PowerBalanced;
                 if (Key(kb, k.matchSpeed) > 0f) buttons |= ControlButtons.MatchSpeed;
                 if (Key(kb, k.targetNext) > 0f) buttons |= ControlButtons.TargetNext;
                 if (Key(kb, k.targetAhead) > 0f) buttons |= ControlButtons.TargetReticle;

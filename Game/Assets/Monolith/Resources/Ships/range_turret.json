@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "range_turret",
+  "name": "Range emplacement",
+  "role": "Combat range target: a stationary gun emplacement that turns to face the player (a stand-in for the turrets the AI builder will drive).",
+  "flight": {
+    "topSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "rotationTime": {
+      "value": [
+        5.0,
+        4.0,
+        20.0
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "rotDamp": {
+      "value": 0.25,
+      "unit": "s (turn-rate time constant)",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "sideDamp": {
+      "value": 0.1,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "forwardAccel": {
+      "value": 1.0,
+      "unit": "s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "forwardDecel": {
+      "value": 1.0,
+      "unit": "s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "afterburner": {
+      "value": false,
+      "unit": "bool",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "afterburnerSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "afterburnerAccel": {
+      "value": 0.7,
+      "unit": "s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "afterburnerFuel": {
+      "value": 0,
+      "unit": "fuel units",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "afterburnerBurnRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "afterburnerRechargeRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "mass": {
+      "value": 50000,
+      "unit": "kg",
+      "source": "Ours: a fixed emplacement for the combat range."
+    },
+    "size": {
+      "value": [
+        7,
+        5,
+        7
+      ],
+      "unit": "m (width, height, length)",
+      "source": "Ours: a fixed emplacement for the combat range."
+    }
+  }
+}

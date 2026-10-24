@@ -41,6 +41,13 @@ namespace Monolith.Core
         public float Knock;
         /// <summary>The ship this one has targeted, or <see cref="GameWorld.NoShip"/> (owner: Targeting).</summary>
         public int Target = GameWorld.NoShip;
+        /// <summary>The index of the targeted part on the target's <see cref="ShipCombat.Parts"/>, or -1 for the whole ship (owner: Targeting).</summary>
+        public int TargetPart = -1;
+        /// <summary>
+        /// Speed multiplier from damaged engines and the power choice (owner: Damage; Flight reads it): 1 is normal, below 1 caps the top
+        /// and afterburner speed, a little above 1 is the engines-favoured bonus.
+        /// </summary>
+        public float SpeedScale = 1f;
 
         public Vector3 Forward => Rotation * Vector3.forward;
         public Vector3 RenderPosition(float alpha) => Vector3.LerpUnclamped(PreviousPosition, Position, alpha);

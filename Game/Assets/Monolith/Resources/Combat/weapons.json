@@ -1,0 +1,156 @@
+{
+  "format": "monolith-weapons/1",
+  "about": "The weapons table, in FS2's shape (design section 5 and the appendix). Every number is { value, unit, fs2 } or { value, unit, source }. 'fs2' is \"<FS2 weapon>|<field>\" in data/tables/weapons.tbl (Root_fs2.vp, read in place): tools/combat/check_weapons.py opens the table and compares each one, so the copied numbers are checked, not trusted. 'source' says in words why a number is ours. Names are ours; FS2 names appear only in fs2Weapon and the fs2 fields. Damage maths: against a shield damage x shieldMult comes off the shield, the rest goes to the hull as x hullMult and, near the impact, to a part as x subsystemMult.",
+  "weapons": {
+    "needle": {
+      "name": "Needle",
+      "kind": "gun",
+      "role": "fast-firing anti-fighter gun: strong against shields, light on parts",
+      "fs2Weapon": "Mekhu HL-7",
+      "fields": {
+        "speed":         { "value": 485,  "unit": "m/s", "fs2": "Mekhu HL-7|$Velocity" },
+        "fireWait":      { "value": 0.15, "unit": "s",   "fs2": "Mekhu HL-7|$Fire Wait" },
+        "damage":        { "value": 12,   "unit": "hp",  "fs2": "Mekhu HL-7|$Damage" },
+        "shieldMult":    { "value": 0.8,  "unit": "x",   "fs2": "Mekhu HL-7|$Shield Factor" },
+        "hullMult":      { "value": 0.9,  "unit": "x",   "fs2": "Mekhu HL-7|$Armor Factor" },
+        "subsystemMult": { "value": 0.3,  "unit": "x",   "fs2": "Mekhu HL-7|$Subsystem Factor" },
+        "life":          { "value": 2.0,  "unit": "s",   "fs2": "Mekhu HL-7|$Lifetime" },
+        "energy":        { "value": 0.2,  "unit": "energy per shot", "fs2": "Mekhu HL-7|$Energy Consumed" }
+      }
+    },
+    "hammer": {
+      "name": "Hammer",
+      "kind": "gun",
+      "role": "slow heavy gun for hulls and parts: poor against shields, best against plating and subsystems",
+      "fs2Weapon": "UD-8 Kayser / Maxim / Prometheus R / Akheton SDG (a blend, see each field)",
+      "note": "A mass-driver feel: a hull and subsystem biased round at a slow rate. Ours blends four FS2 guns, each number says which; damage and shield factor are ours, inside the appendix ranges (damage 7-45, fire every 0.15-0.45 s, 450-750 m/s, energy 0.2-3).",
+      "fields": {
+        "speed":         { "value": 650,  "unit": "m/s", "fs2": "UD-8 Kayser|$Velocity" },
+        "fireWait":      { "value": 0.45, "unit": "s",   "fs2": "Prometheus R|$Fire Wait" },
+        "damage":        { "value": 40,   "unit": "hp",  "source": "ours: a slow heavy round, between Kayser 28 and Circe 45 (appendix range 7-45)" },
+        "shieldMult":    { "value": 0.3,  "unit": "x",   "source": "ours: heavy rounds barely trouble a shield (Maxim 0.2, Akheton SDG 0.5)" },
+        "hullMult":      { "value": 1.3,  "unit": "x",   "fs2": "Maxim|$Armor Factor" },
+        "subsystemMult": { "value": 1.0,  "unit": "x",   "fs2": "Maxim|$Subsystem Factor" },
+        "life":          { "value": 2.0,  "unit": "s",   "fs2": "Maxim|$Lifetime" },
+        "energy":        { "value": 1.6,  "unit": "energy per shot", "fs2": "Akheton SDG|$Energy Consumed" }
+      }
+    },
+    "turret_laser": {
+      "name": "Turret laser",
+      "kind": "gun",
+      "role": "capital-ship and emplacement turret: slow, heavy, dodgeable bolts",
+      "fs2Weapon": "Terran Turret",
+      "fields": {
+        "speed":         { "value": 275,  "unit": "m/s", "fs2": "Terran Turret|$Velocity" },
+        "fireWait":      { "value": 1.0,  "unit": "s",   "fs2": "Terran Turret|$Fire Wait" },
+        "damage":        { "value": 35,   "unit": "hp",  "fs2": "Terran Turret|$Damage" },
+        "shieldMult":    { "value": 0.85, "unit": "x",   "fs2": "Terran Turret|$Shield Factor" },
+        "hullMult":      { "value": 1.25, "unit": "x",   "fs2": "Terran Turret|$Armor Factor" },
+        "subsystemMult": { "value": 0.75, "unit": "x",   "fs2": "Terran Turret|$Subsystem Factor" },
+        "life":          { "value": 5.0,  "unit": "s",   "fs2": "Terran Turret|$Lifetime" }
+      }
+    },
+    "flak_gun": {
+      "name": "Flak",
+      "kind": "flak",
+      "role": "anti-fighter flak: the shell bursts at the target's range and hurts everything near the burst",
+      "fs2Weapon": "Heavy Flak",
+      "fields": {
+        "speed":         { "value": 750,  "unit": "m/s", "fs2": "Heavy Flak|$Velocity" },
+        "fireWait":      { "value": 1.5,  "unit": "s",   "fs2": "Heavy Flak|$Fire Wait" },
+        "damage":        { "value": 50,   "unit": "hp",  "fs2": "Heavy Flak|$Damage" },
+        "shieldMult":    { "value": 1.0,  "unit": "x",   "fs2": "Heavy Flak|$Shield Factor" },
+        "hullMult":      { "value": 1.0,  "unit": "x",   "fs2": "Heavy Flak|$Armor Factor" },
+        "subsystemMult": { "value": 0.4,  "unit": "x",   "fs2": "Heavy Flak|$Subsystem Factor" },
+        "life":          { "value": 1.5,  "unit": "s",   "fs2": "Heavy Flak|$Lifetime" },
+        "blastInner":    { "value": 30,   "unit": "m",   "fs2": "Heavy Flak|$Inner Radius" },
+        "blastOuter":    { "value": 60,   "unit": "m",   "fs2": "Heavy Flak|$Outer Radius" },
+        "blastForce":    { "value": 70,   "unit": "kN s", "fs2": "Heavy Flak|$Blast Force" }
+      }
+    },
+    "missile_heat": {
+      "name": "Ember",
+      "kind": "heat",
+      "role": "heat-seeker: fire and forget, needs no lock, easy to decoy",
+      "fs2Weapon": "Rockeye",
+      "fields": {
+        "speed":         { "value": 190,  "unit": "m/s", "fs2": "Rockeye|$Velocity" },
+        "fireWait":      { "value": 0.5,  "unit": "s",   "fs2": "Rockeye|$Fire Wait" },
+        "damage":        { "value": 45,   "unit": "hp",  "fs2": "Rockeye|$Damage" },
+        "shieldMult":    { "value": 0.8,  "unit": "x",   "fs2": "Rockeye|$Shield Factor" },
+        "hullMult":      { "value": 1.0,  "unit": "x",   "fs2": "Rockeye|$Armor Factor" },
+        "subsystemMult": { "value": 0.8,  "unit": "x",   "fs2": "Rockeye|$Subsystem Factor" },
+        "life":          { "value": 10,   "unit": "s",   "fs2": "Rockeye|$Lifetime" },
+        "blastInner":    { "value": 20,   "unit": "m",   "fs2": "Rockeye|$Inner Radius" },
+        "blastOuter":    { "value": 40,   "unit": "m",   "fs2": "Rockeye|$Outer Radius" },
+        "blastForce":    { "value": 200,  "unit": "kN s", "fs2": "Rockeye|$Blast Force" },
+        "turnTime":      { "value": 0.85, "unit": "s per 360 deg", "fs2": "Rockeye|+Turn Time" },
+        "viewCone":      { "value": 100,  "unit": "deg (full angle)", "fs2": "Rockeye|+View Cone" },
+        "accelTime":     { "value": 0.7,  "unit": "s",   "source": "ours: matches the juice's missile exhaust ramp" },
+        "decoyChance":   { "value": 0.85, "unit": "0..1", "source": "ours: heat seekers are easiest to spoof (design section 5); FS2 does not give a number" }
+      }
+    },
+    "missile_lock": {
+      "name": "Lance",
+      "kind": "lock",
+      "role": "lock-on missile: needs time on the target (lock tone), then homes hard",
+      "fs2Weapon": "Harpoon",
+      "fields": {
+        "speed":         { "value": 250,  "unit": "m/s", "fs2": "Harpoon|$Velocity" },
+        "fireWait":      { "value": 2.0,  "unit": "s",   "fs2": "Harpoon|$Fire Wait" },
+        "damage":        { "value": 100,  "unit": "hp",  "fs2": "Harpoon|$Damage" },
+        "shieldMult":    { "value": 0.8,  "unit": "x",   "fs2": "Harpoon|$Shield Factor" },
+        "hullMult":      { "value": 1.0,  "unit": "x",   "fs2": "Harpoon|$Armor Factor" },
+        "subsystemMult": { "value": 0.5,  "unit": "x",   "fs2": "Harpoon|$Subsystem Factor" },
+        "life":          { "value": 5.0,  "unit": "s",   "fs2": "Harpoon|$Lifetime" },
+        "blastInner":    { "value": 20,   "unit": "m",   "fs2": "Harpoon|$Inner Radius" },
+        "blastOuter":    { "value": 40,   "unit": "m",   "fs2": "Harpoon|$Outer Radius" },
+        "blastForce":    { "value": 60,   "unit": "kN s", "fs2": "Harpoon|$Blast Force" },
+        "turnTime":      { "value": 1.0,  "unit": "s per 360 deg", "fs2": "Harpoon|+Turn Time" },
+        "lockTime":      { "value": 2.0,  "unit": "s",   "fs2": "Harpoon|+Min Lock Time" },
+        "lockCone":      { "value": 12,   "unit": "deg (half angle)", "source": "ours: FS2 builds the lock from screen-pixel drift; we ask the target to stay within 12 degrees of the nose" },
+        "accelTime":     { "value": 0.5,  "unit": "s",   "source": "ours: matches the juice's missile exhaust ramp" },
+        "decoyChance":   { "value": 0.45, "unit": "0..1", "source": "ours: lock-on missiles are harder to spoof than heat seekers" }
+      }
+    },
+    "torpedo_heavy": {
+      "name": "Anvil",
+      "kind": "torpedo",
+      "role": "heavy torpedo for capital ships: slow, huge against hulls, about 2% against shields; it can be shot down",
+      "fs2Weapon": "Helios (lock time and reload from Cyclops and our own call)",
+      "fields": {
+        "speed":         { "value": 65,   "unit": "m/s", "fs2": "Helios|$Velocity" },
+        "fireWait":      { "value": 6.0,  "unit": "s",   "source": "ours: FS2 waits 30 s (Helios); with two torpedoes in the rack the ammo is the limit, not the wait" },
+        "damage":        { "value": 6800, "unit": "hp",  "fs2": "Helios|$Damage" },
+        "shieldMult":    { "value": 0.02, "unit": "x",   "fs2": "Helios|$Shield Factor" },
+        "hullMult":      { "value": 1.0,  "unit": "x",   "fs2": "Helios|$Armor Factor" },
+        "subsystemMult": { "value": 0.85, "unit": "x",   "fs2": "Helios|$Subsystem Factor" },
+        "life":          { "value": 30,   "unit": "s",   "fs2": "Helios|$Lifetime" },
+        "blastInner":    { "value": 100,  "unit": "m",   "fs2": "Helios|$Inner Radius" },
+        "blastOuter":    { "value": 270,  "unit": "m",   "fs2": "Helios|$Outer Radius" },
+        "shockwave":     { "value": 75,   "unit": "m/s", "fs2": "Helios|$Shockwave Speed" },
+        "blastForce":    { "value": 1000, "unit": "kN s", "fs2": "Helios|$Blast Force" },
+        "turnTime":      { "value": 1.5,  "unit": "s per 360 deg", "fs2": "Helios|+Turn Time" },
+        "lockTime":      { "value": 5.0,  "unit": "s",   "fs2": "Cyclops|+Min Lock Time" },
+        "lockCone":      { "value": 15,   "unit": "deg (half angle)", "source": "ours: capital ships are big; a little wider than the lock-on missile's cone" },
+        "accelTime":     { "value": 2.2,  "unit": "s",   "source": "ours: matches the juice's torpedo ramp" },
+        "hp":            { "value": 40,   "unit": "hp",  "source": "ours: a torpedo can be shot down (design section 5); a few Needle hits or one Hammer round" },
+        "decoyChance":   { "value": 0.1,  "unit": "0..1", "source": "ours: a torpedo's seeker barely listens to decoys" }
+      }
+    },
+    "decoy": {
+      "name": "Decoy",
+      "kind": "decoy",
+      "role": "countermeasure: a hot decoy thrown out behind the ship that spoofs missiles homing on it",
+      "fs2Weapon": "Type One",
+      "fields": {
+        "speed":         { "value": 30,   "unit": "m/s relative to the ship, rearwards", "fs2": "Type One|$Velocity" },
+        "fireWait":      { "value": 0.5,  "unit": "s",   "fs2": "Type One|$Fire Wait" },
+        "damage":        { "value": 0,    "unit": "hp",  "source": "a decoy does no damage" },
+        "life":          { "value": 1.0,  "unit": "s",   "fs2": "Type One|$Lifetime Min" },
+        "lifeMax":       { "value": 2.0,  "unit": "s",   "fs2": "Type One|$Lifetime Max" },
+        "decoyRange":    { "value": 350,  "unit": "m",   "source": "ours: missiles closer than this when it is released may be fooled (each missile rolls once per decoy)" }
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "trace",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     700
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.5,
+    "throttle": 0.5
+   },
+   {
+    "t": 0.5,
+    "do": "target",
+    "name": "Reaper 1"
+   },
+   {
+    "t": 0.6,
+    "do": "face",
+    "name": "Reaper 1",
+    "distance": 450,
+    "from": [
+     0.1,
+     0.05,
+     -1
+    ],
+    "speed": 0.7,
+    "throttle": 0.7
+   },
+   {
+    "t": 0.8,
+    "do": "aim",
+    "at": "lead",
+    "autoFire": true,
+    "gain": 3.5,
+    "fireRange": 700,
+    "holdRange": 330
+   },
+   {
+    "t": 1.0,
+    "do": "select",
+    "slot": 0
+   },
+   {
+    "t": 1.2,
+    "do": "missile",
+    "on": true
+   },
+   {
+    "t": 6.0,
+    "do": "target",
+    "name": "Reaper 3"
+   },
+   {
+    "t": 6.2,
+    "do": "select",
+    "slot": 1
+   },
+   {
+    "t": 12.0,
+    "do": "target",
+    "name": "Reaper 2"
+   },
+   {
+    "t": 14.0,
+    "do": "decoy",
+    "on": true
+   },
+   {
+    "t": 14.6,
+    "do": "decoy",
+    "on": false
+   },
+   {
+    "t": 18.0,
+    "do": "target",
+    "name": "Hammer 1"
+   },
+   {
+    "t": 18.2,
+    "do": "heavy",
+    "on": true
+   },
+   {
+    "t": 24.0,
+    "do": "target",
+    "name": "Reaper 4"
+   },
+   {
+    "t": 24.2,
+    "do": "heavy",
+    "on": false
+   },
+   {
+    "t": 0.5,
+    "do": "target",
+    "name": "Reaper 1"
+   },
+   {
+    "t": 40.0,
+    "do": "summary"
+   }
+  ],
+  "pilot": "scripted"
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [],
+ "perf": [
+  {
+   "name": "battle",
+   "seconds": 22,
+   "follow": true
+  }
+ ]
+}

@@ -39,6 +39,11 @@ namespace Monolith.Input
         {
             public string afterburner, primaryFire, targetAhead, targetNext, countermeasure, matchSpeed, orders,
                 secondaryFire, missileFire, throttleFull, throttleZero, throttleThird, throttleTwoThirds;
+            /// <summary>Combat: step to the next missile type, target the nearest attacker.</summary>
+            public string cycleMissile, targetAttacker;
+            /// <summary>The quick menu (hold <see cref="orders"/>): power picks, then wingman orders (reserved for the AI builder).</summary>
+            public string menuPowerGuns, menuPowerShields, menuPowerEngines, menuPowerBalanced,
+                menuOrderAttack, menuOrderDisable, menuOrderCover, menuOrderForm;
         }
 
         public sealed class SystemButtons
@@ -54,6 +59,9 @@ namespace Monolith.Input
             public PadButtons buttons = new PadButtons();
             public bool afterburnerToggle = true;
             public string afterburnerToggleWhy;
+            /// <summary>Hold the <c>orders</c> button this long and the quick menu opens; a shorter press is a tap (next subsystem).</summary>
+            public float quickMenuHoldSeconds = 0.25f;
+            public string combatWhy;
             public SystemButtons system = new SystemButtons();
         }
 
@@ -63,6 +71,8 @@ namespace Monolith.Input
             public float throttleRatePerSecond = 0.8f;
             public string throttleZero, throttleThird, throttleTwoThirds, throttleFull, afterburner, matchSpeed,
                 targetNext, targetAhead, primaryFire, why;
+            public string secondaryFire, missileFire, countermeasure, cycleMissile, subsystemNext, targetAttacker,
+                powerGuns, powerShields, powerEngines, powerBalanced;
             public SystemButtons system = new SystemButtons();
         }
 

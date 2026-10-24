@@ -29,6 +29,8 @@ namespace Monolith.Hud
         public string[] Overlay;
         /// <summary>A short line at the bottom (device warnings, debug notes).</summary>
         public string Footer;
+        /// <summary>Draw the target bracket and its range (off when the combat HUD draws the target itself).</summary>
+        public bool ShowTarget = true;
 
         public static FlightHud Create(GameWorld world, Camera camera, Transform parent)
         {
@@ -114,7 +116,7 @@ namespace Monolith.Hud
                 L.Text("AB", new Vector2(rx + barW * 0.5f, y1 + 12f * s), 12f * s, lw * 0.75f, dim, TextAlign.Center);
                 if (ship.AfterburnerOn) L.Text("BURN", new Vector2(rx + barW * 0.5f, y0 - 28f * s), 14f * s, lw, ink, TextAlign.Center);
 
-                DrawTarget(ship, c, s, lw, ink, dim);
+                if (ShowTarget) DrawTarget(ship, c, s, lw, ink, dim);
                 L.Text(ship.ClassName, new Vector2(24f * s, 24f * s), 12f * s, lw * 0.75f, dim);
             }
 

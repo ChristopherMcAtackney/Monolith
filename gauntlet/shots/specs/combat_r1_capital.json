@@ -1,0 +1,163 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "trace",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    0,
+    1000
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.3,
+   "throttle": 0.3
+  },
+  {
+   "t": 0.3,
+   "do": "face",
+   "name": "Warden",
+   "distance": 620,
+   "from": [
+    -0.35,
+    0.12,
+    -1
+   ],
+   "speed": 0.0,
+   "throttle": 0.0
+  },
+  {
+   "t": 0.4,
+   "do": "target",
+   "name": "Warden"
+  },
+  {
+   "t": 0.5,
+   "do": "select",
+   "slot": 2
+  },
+  {
+   "t": 0.6,
+   "do": "aim",
+   "at": "target",
+   "gain": 3.5
+  },
+  {
+   "t": 0.8,
+   "do": "missile",
+   "on": true
+  },
+  {
+   "t": 3.0,
+   "do": "log",
+   "ship": "player"
+  },
+  {
+   "t": 6.5,
+   "do": "log",
+   "ship": "player"
+  },
+  {
+   "t": 7.0,
+   "do": "log",
+   "ship": "Warden"
+  },
+  {
+   "t": 19.5,
+   "do": "missile",
+   "on": false
+  },
+  {
+   "t": 40.0,
+   "do": "summary"
+  },
+  {
+   "t": 21.0,
+   "do": "log",
+   "ship": "Warden"
+  },
+  {
+   "t": 36.0,
+   "do": "summary"
+  }
+ ],
+ "at": [
+  {
+   "name": "01_locking",
+   "t": 3.0
+  },
+  {
+   "name": "02_locked",
+   "t": 5.8
+  },
+  {
+   "name": "03_torpedo_away",
+   "t": 7.0
+  },
+  {
+   "name": "04_torpedo_closing",
+   "t": 13.0
+  },
+  {
+   "name": "05_first_hit",
+   "t": 15.0
+  },
+  {
+   "name": "06_turrets_gone",
+   "t": 16.0
+  },
+  {
+   "name": "07_second_hit",
+   "t": 20.6
+  },
+  {
+   "name": "08_death_1",
+   "t": 21.2
+  },
+  {
+   "name": "09_death_2",
+   "t": 22.6
+  },
+  {
+   "name": "10_death_3",
+   "t": 24.5
+  },
+  {
+   "name": "11_death_4",
+   "t": 26.5
+  },
+  {
+   "name": "12_death_5",
+   "t": 29.0
+  },
+  {
+   "name": "13_death_6",
+   "t": 32.0
+  },
+  {
+   "name": "14_death_7",
+   "t": 35.0
+  }
+ ]
+}
