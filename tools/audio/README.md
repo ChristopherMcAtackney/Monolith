@@ -12,6 +12,7 @@ To keep a long render from locking the build output, copy `bin/Release/net9.0` s
 | Command | What |
 |---|---|
 | `music [cue ...\|all] [--wav-only] [--solo track] [--mute track]` | Render the score from `audio_src/midi/*.mid` as mixed by `audio_src/music.json`: loops are rendered two passes round and the second kept (tails wrap, the seam is perfect), levelled to their LUFS, limited, encoded to OGG, and `music/music.json` (the runtime catalog) is written |
+| `ship` | Copy the tracks that are not rendered here (`"shipped"` in `audio_src/music.json`: the user's Monolith_Epic_1 as `music/fight.mp3`) into the game and write them into the runtime catalog with how they play (start, loop body, seam cross-fade, level, swell per intensity); `music --ship-only` does the same. `python tools/audio/analyse_track.py file.mp3` finds a track's tempo, bars and good loop points |
 | `stems cue ...` | Every track of a cue alone: loudness and a 10-band spectrum. `python audio_src/compose/mixfit.py stems.log --apply` sets the track levels in `music.json` from role targets |
 | `sfx [id ...\|all] [--wav-only]` | Synthesise every effect (`Sfx/*.cs`), peak-normalise, make the distant versions, encode, write `sfx/sfx.json` (levels, distances, ducking, variants) |
 | `voice [--only voice] [--wav-only]` | Radio-filter the raw text-to-speech clips (`audio_src/voice/raw`) per voice class, level to LUFS, encode to `vo/`, write `vo/index.json` (text to clip) |
