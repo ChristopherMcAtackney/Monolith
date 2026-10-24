@@ -96,3 +96,11 @@ sampled luma on those (pixels above 25/255: mean, median) against ours.
 3. Designed mid-scale structure (cable trays, trench runs, gun housings with shadows).
 4. Damage: finer decal cells (1024 px each, or two sizes), emissive flicker driven by the effects system, and the hooks hooked up to the juice effects.
 5. The destroyer, then the Earth fighters, through the same kit; first thing to reuse is `mnparts.gun_turret` and `mnsystems.*`.
+
+## Corvette round 1 verdict (lead, 2026-10-24)
+Blind critic vs The Expanse: **lost 3/3** (certain, likely, certain). Pairs: close_hull vs capital_ship_close/expanse/7_ATYOm3nNc_0050; shadow_side vs capital_ship_wide/expanse/7wFt319UB2o_0032; medium_three_quarter vs capital_ship_close/expanse/7_ATYOm3nNc_0048.
+- Main giveaway: no key-light structure. The hull reads as one mid grey under a flat ambient wash, with the same fine noise everywhere, and its only contrast comes from emissives (edge strip, truss, identical window rows). The show has one hard sun: bright planes next to deep dark ones, sharp terminators.
+- Second: the surface works at one scale. A tiled window-dot pattern and uniform grey, where the show has large-, mid- and small-scale paint and wear variation.
+- Third: the engine plumes are long, smooth, even cones "like glowing translucent geometry", too big for the ship, which makes it read as a toy. The show's drives are small, hard, saturated blue-white discs.
+- **Conflict to resolve, lead's call:** the user's rule (2026-10-23) is that shadow sides must keep their form and never crush to pure black, which is why the sky has a cool fill. The critic wants "deep black unlit sides". Resolution: a much higher key-to-fill ratio and captures composed with the sun raking the hull. Shadow sides go dark, with only faint form from the fill and rim light, never zero; the sun side carries the structure. The user's rule stands; the fill was simply too strong relative to the key.
+- Round 2 gaps: key-to-fill ratio and raking-light composition; large, mid and small-scale paint, wear and panel variation (break up the tiling); plumes small, hot-cored and turbulent; chrome needs something to reflect (environment reflections from the sky).
