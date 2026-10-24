@@ -52,6 +52,13 @@ namespace Monolith.Game
         /// turrets, then the Warden itself, between waves.
         /// </summary>
         public bool AutopilotObjectives = true;
+        /// <summary>
+        /// The Warden runs: the autopilot goes for the Warden's turrets from the start and keeps at it whatever else is about (the beam
+        /// turrets first, then the living turret nearest to it), as a player stripping the corvette would.
+        /// </summary>
+        public bool AutopilotStripsTurrets;
+        /// <summary>The Warden runs: no Earth fighters or bombers at all (the Warden's guns alone).</summary>
+        public bool NoFighters;
         float _objectiveAt;
         /// <summary>Perf runs: the first three waves and the bomber wing all at once, no cap (the busiest the loop gets, and then some).</summary>
         public bool Stress;
@@ -340,7 +347,7 @@ namespace Monolith.Game
                     _nextWaveAt = -1f;
                     _bombersAt = now + 1f;
                 }
-                if (!Stress && _nextWaveAt >= 0f && now >= _nextWaveAt && _wave + 1 < Data.waves.Count)
+                if (!Stress && !NoFighters && _nextWaveAt >= 0f && now >= _nextWaveAt && _wave + 1 < Data.waves.Count)
                 {
                     _wave++;
                     _nextWaveAt = -1f;
@@ -355,7 +362,8 @@ namespace Monolith.Game
                 if (_bombersAt >= 0f && now >= _bombersAt && !_bombersSent) SendBombers();
                 if (_mercyRadioAt >= 0f && now >= _mercyRadioAt) { _mercyRadioAt = -1f; Ai.Radio.Say("bombers", FriendlyId, null, null, true); }
                 Radio();
-                if (Autopilot && AutopilotObjectives && now >= _objectiveAt) { _objectiveAt = now + 5f; Objectives(); }
+                if (Autopilot && AutopilotStripsTurrets && now >= _objectiveAt) { _objectiveAt = now + 1f; StripTurrets(); }
+                else if (Autopilot && AutopilotObjectives && now >= _objectiveAt) { _objectiveAt = now + 5f; Objectives(); }
                 // A test harness's invulnerable player keeps its parts too (destroyed engines would leave it crawling under the guns).
                 if (PlayerInvulnerable && frame.Tick % (5 * Sim.Hz) == 0)
                 {
@@ -383,6 +391,37 @@ namespace Monolith.Game
             {
                 if (ap.Goal.Kind != GoalKind.Engage) ap.SetGoal(new AiGoal { Kind = GoalKind.Engage, Target = GameWorld.NoShip, Part = -1 });
                 return;
+            }
+            if (ap.Goal.Kind != GoalKind.Attack || ap.Goal.Target != CorvetteId || ap.Goal.Part != part)
+                ap.SetGoal(new AiGoal { Kind = GoalKind.Attack, Target = CorvetteId, Part = part });
+        }
+
+        void StripTurrets()
+        {
+            var ap = Ai.PilotOf(Player.Id);
+            var warden = _w.Combat.Get(CorvetteId);
+            if (ap == null) return;
+            // A decent player shakes off fighters on its tail before it goes back to the turrets.
+            int onMe = 0;
+            foreach (var c in _w.Combat.All)
+                if (c.Alive && c.Ship != null && c.Ship.Team == Earth && !AiDirector.IsBig(c) && c.Ship.Target == Player.Id
+                    && Vector3.Distance(c.Ship.Position, Player.Position) < 1200f) onMe++;
+            if (warden == null || !warden.Alive || onMe >= 2)
+            {
+                if (ap.Goal.Kind != GoalKind.Engage) ap.SetGoal(new AiGoal { Kind = GoalKind.Engage, Target = GameWorld.NoShip, Part = -1 });
+                return;
+            }
+            int part = -1;
+            foreach (var name in Data.corvette.orders.weapons.Keys) { var p = warden.FindPart(name); if (p != null && !p.Destroyed) { part = p.Index; break; } }
+            if (part < 0)
+            {
+                float best = float.MaxValue;
+                foreach (var p in warden.Parts)
+                {
+                    if (!p.IsTurret || p.Destroyed) continue;
+                    float d = (p.WorldPosition(warden.Ship) - Player.Position).sqrMagnitude;
+                    if (d < best) { best = d; part = p.Index; }
+                }
             }
             if (ap.Goal.Kind != GoalKind.Attack || ap.Goal.Target != CorvetteId || ap.Goal.Part != part)
                 ap.SetGoal(new AiGoal { Kind = GoalKind.Attack, Target = CorvetteId, Part = part });

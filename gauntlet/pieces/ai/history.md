@@ -111,3 +111,80 @@ Warden's sunlit side while the player's ship attacks its beam turrets: its guns 
 ### Next
 The user's playtest; then tune from it (the Mercy's survival, wingman survival, how many drones sit on the player), aces in a mission, the
 mission system driving the AI's goals (`SetGoal`, `CapitalOrders.HoldBeams`) from events.
+
+## Round 2 (builder, 2026-10-24): the Warden's guns
+
+The user's playtest: "as soon as I go near it, it fires 50 million lasers - no chance at all". The fix is FS2's capital-ship feel, dangerous
+but beatable by taking the turrets out one by one, and the balance round around it (the Mercy lost in two Medium runs of three, the wingmen
+gone by the middle of a run, four drones on the player). Studied: fs2open `aiturret.cpp` (turret target choice, ownage caps, fov test, aim
+update, recheck time), `aicode.cpp` (`set_secondary_fire_delay`, `check_ok_to_fire`), `modelread.cpp` (turret fov default), FS2's weapons.tbl
+(Terran Turret, Terran Huge Turret, Standard and Heavy Flak, AAAf, TerSlash) and the Deimos' loadout in ships.tbl. Behaviour only, no code.
+
+### What changed
+- **Turret gunnery** (`CapitalAi.TurretGunnery`) on FS2's rules. Every turret has a field of fire off its own up (`turretArcGun` 80 deg,
+  `turretArcFlak` 70, `turretArcBeam` 100; FS2's test with its radius slack) and fires only where its own hull is clear: the corvette keeps lanes
+  no gun covers and a stripped face goes quiet. Targets: torpedoes at our side's capitals first (guns and now flak), then the nearest enemy in
+  the arc with FS2's tenth per turret already on it, never more of one ship's turrets on one target than `turretsOnTarget` (FS2's 3 + skill
+  squared) or, on the player, `turretsOnPlayer` (2, 2, 3, 5, 8, ours); lasers fire on an enemy capital in reach; FS2's two-second recheck.
+  Aim: a picture of the target refreshed at random up to `turretAimUpdate` (1.5 to 0.2 s by level) and led from in between, the error 3x on a
+  target just come into the arc and settling over `turretSettleSeconds` (6 to 1.5 s) while it stays: weaving and passing through are spared,
+  loitering is not. Flak never bursts where it would hurt its own side. Our side's gunners get the best level's aim. Bolts stay FS2's Terran
+  Turret (275 m/s, every 1 s x the level's fire delay x the scene's 1.5); beams keep their 3 s charge.
+- **Flak**: bursts at its fused range or on a direct strike, as FS2's (`rules.json flakProximity` 25 m -> 0: with it, badly aimed flak hit as
+  hard as settled flak), and its bursts hurt hostile torpedoes (FS2's flak is the answer to bombs).
+- **The autopilot's attack runs on parts** (also wingmen told to attack a part): it steered at where the part was, so its bolts landed 15 to
+  18 m behind it on the hull (the Warden moves) and in 284 s and 56 hits it never touched a turret. It now flies the nose onto the lead and
+  fires in a cone the part's size.
+- **Wingmen**: `wingDamageScale` (ours, the player's mercy shared with the wing it commands, through `ShipCombat.DamageTakenScale`), and
+  `peelMaxSeconds` 30 -> 60 so a wingman that pulls out comes back mended (it came back at 40% hull and died in the next fight).
+- **Missiles**: FS2's reload autoscale by AI class (+0.5 s per class below General: a Captain drone waits 2.5 s more) and FS2's chance to fire
+  homing missiles at the player (`missileChanceOnPlayer`, 1 to 5 of every 7 ten-second windows by level, always if the player targets it).
+- **Measuring**: `-mnWardenRun` (`WardenRun.cs`: a mortal AI-flown player strips the Warden's turrets, beam turrets first, fighting off any
+  two on its tail; the wing told to cover it), `DamageLedger` (damage by source), and the soak now reports wins and losses, what hurt the
+  Mercy, the wingmen and the player, hostiles on each, the Mercy's kills and when the first wingman fell. Six new self-test checks.
+
+dogfight.json and dogfight.mission.json are untouched (the tuning is ai.json and rules.json), so the port check holds as it was.
+
+### Numbers, before (main at eb09e7e) and after; 10 Warden runs per row, soaks 12,000 s of sim each
+| Warden runs, mortal AI player stripping turrets | before | after |
+|---|---|---|
+| Medium, waves on: alive (mean) / within 1 km / turrets by the player | 40 s / 16 s / 0.0 (died 10 of 10) | 194 s / 125 s / 6.4 (died 1 of 10; 3+ in 10 of 10) |
+| Medium, waves on: turrets on it at once (most / mean close), turret shots a second close | 10 / 5.9, 2.9 | 3 / 1.4, 0.7 |
+| Medium, no fighters | 138 s, 0.0 turrets, died 10 of 10 | 181 s, 9.1 turrets, died 0 of 10 |
+| Hard, waves on | 29 s, 0.0 turrets, died 10 of 10 | 80 s, 2.8 turrets, died 10 of 10 |
+| Easy, waves on | 183 s, 0.0 turrets, died 6 of 10 | 183 s, 9.1 turrets, died 0 of 10 |
+
+Stripping thins the fire (Medium, waves on): 1.10 turret shots a second at the player within 1 km with 0-2 of the Warden's turrets down,
+0.57 with 6 or more down (Hard 2.63 -> 1.02, Easy 0.49 -> 0.37). Told "attack my target" instead of "cover me", the wing joins the turret
+runs and leaves the fighters to the player: died 7 of 10, 2.6 turrets.
+
+| Soak (loops won / the Mercy lost / the player's ship lost) | before | after |
+|---|---|---|
+| Medium, invulnerable autopilot | 7 of 12 / 5 / - | 17 of 17 / 0 / - |
+| Medium, mortal autopilot (charges the beam turrets whatever is about) | 0 of 306 / 0 / 306 (dead at about 30 s) | 11 of 23 (48%) / 0 / 12 |
+| Easy, invulnerable / mortal | 13 of 13 / 0 of 71 (70 ship lost) | 24 of 24 / 24 of 24 |
+| Very easy, invulnerable / mortal | - | 18 of 18 / 18 of 18 |
+| Hard, invulnerable / mortal | 2 of 2 / 0 of 373 | 1 of 4 (Mercy lost 3) / 0 of 108 |
+| Insane, invulnerable / mortal | - | 0 of 4 (Mercy lost 4) / 0 of 398 |
+| Medium: wingmen alive at the end / first wingman lost | 0.0 / 19 to 292 s (median 130) | 1.1 / 144 to 451 s, none lost in 6 loops of 17 |
+
+The Mercy's damage on Medium is now nearly all Earth's fighters' guns (about 90%; beams the rest); torpedoes are shot down. The player's on
+Medium is fighters (guns 50-70%, missiles 20-50%); the Warden's turrets and flak are under 10% of it.
+
+### Checks
+AI self-test 37 of 37 (31 + the turret rules: the cap on the player, the rest on a wingman, a stripped face silent, the blind lane off the bow,
+lasers on a capital in reach, flak punishing loitering 20 -> 37 hp/s over 16 s); combat 90 of 90; mission 59 of 59 (its port check SAME over
+240 s); `-mnDogfightPortCheck 900`: SAME at all 900 samples, both won at 879.4 s, identical timelines; auto-plays: dogfight victory at 879.4 s,
+escort victory at 283.1 s, every assertion passes; flight.ps1 35 of 35 for every class and the player's fighter.
+
+### Playtest
+`Playtest\Monolith_2026-10-24_balance\`: `Play.bat dogfight` or `Play.bat escort` (`[window] [veryeasy|easy|medium|hard|insane]`); the
+mission files are in its Missions folder; BALANCE.txt says what changed and what to look for.
+
+### Known gaps
+- Nothing here is tested by hand; the numbers are an AI pilot's. A human weaves (the turrets' aim is built to miss that) but loiters more.
+- Hard and Insane soaks stall: the invulnerable autopilot cannot clear Hard drones (6.8% of the time on a tail), a wave lasts an hour and the
+  Mercy dies of attrition. A human on Hard dies first (mortal: 0 of 108). Hard may now be too hard; `turretsOnPlayer` and the drones' tables are
+  the levers.
+- The wingmen's mercy is ours, not FS2's (FS2 spares only the player).
+- The escort mission was only auto-played.

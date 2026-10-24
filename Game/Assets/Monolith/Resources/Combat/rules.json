@@ -29,6 +29,6 @@
     "missileMinArmTime": { "value": 0.25, "unit": "s", "source": "ours: a missile cannot detonate on its own launcher in its first moments" },
     "missileTrackLoseSeconds": { "value": 0.1, "unit": "s", "source": "ours: a heat seeker whose target leaves its view cone flies straight after this long (dodging works)" },
     "gunConvergenceRange": { "value": 600, "unit": "m", "source": "ours: with no target the guns converge here" },
-    "flakProximity": { "value": 25, "unit": "m", "source": "ours: a flak shell bursts when it passes this near a hostile hull" }
+    "flakProximity": { "value": 0, "unit": "m", "source": "FS2's flak bursts at the range its turret set when it fired (flak.cpp flak_pick_range) or on a direct strike, never by proximity, so a gunner's aim error is what spares a fighter; 0 turns the proximity burst off (it was 25 m, which made fresh, badly aimed flak as deadly as settled flak and walled the corvette off)" }
   }
 }

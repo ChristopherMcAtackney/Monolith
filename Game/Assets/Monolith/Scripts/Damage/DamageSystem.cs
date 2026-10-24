@@ -143,6 +143,7 @@ namespace Monolith.Damage
                 amount *= _world.PlayerDamageScale;
                 partScale = _world.PlayerPartDamageScale;
             }
+            else if (r.Kind != DamageKind.Collision && r.Kind != DamageKind.Debug) amount *= c.DamageTakenScale;
             float remaining = amount;
 
             if (r.Attacker != GameWorld.NoShip && r.Attacker != c.Id) { c.LastAttacker = r.Attacker; c.LastAttackerTime = _now; }

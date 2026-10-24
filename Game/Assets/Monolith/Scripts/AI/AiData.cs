@@ -21,6 +21,8 @@ namespace Monolith.AI
         /// Earth's side turns and fires slower on the easier levels, as FS2's do.
         /// </summary>
         public bool Unhandicapped;
+        /// <summary>The FS2 AI class it stands for (ai.tbl's index: 0 Coward .. 6 General); FS2 adds more to a lower class's missile reload.</summary>
+        public int AiClass;
     }
 
     /// <summary>What changes with the difficulty level (FS2's five skill levels and the tables its code keeps per level).</summary>
@@ -29,8 +31,14 @@ namespace Monolith.AI
         public string[] Levels;
         public int Default = 2;
         public float[] TurnTimeScale, AimingError, InRangeTime, RetargetSeconds, CmeasureChance, HostileFireDelay, FriendlyFireDelay;
-        public float[] PredictDelay, PlayerDamageScale, PlayerPartDamageScale;
+        public float[] PredictDelay, PlayerDamageScale, PlayerPartDamageScale, WingDamageScale;
         public int[] MaxPlayerAttackers, MaxPlayerHomers;
+        /// <summary>FS2's chance an Earth pilot may fire homing missiles at the player: of seven ten-second windows, this many plus one allow it.</summary>
+        public int[] MissileChanceOnPlayer;
+        /// <summary>Capital-ship turrets: how many of one ship's turrets may have the player (or any other one target) as their target at once.</summary>
+        public int[] TurretsOnPlayer, TurretsOnTarget;
+        /// <summary>Capital-ship turrets: the longest a gunner's picture of its target goes unrefreshed, and how long a target must stay in a turret's arc before its aim is at its best.</summary>
+        public float[] TurretAimUpdate, TurretSettleSeconds;
         public int Count => Levels.Length;
     }
 
@@ -43,6 +51,12 @@ namespace Monolith.AI
         public float TailRange, TailNoseDegrees, TailAspectDegrees;
         public float AvoidMargin, AvoidLookAheadMin, AvoidLookAheadMax;
         public float GunRangeFraction, SensorRange, FlakEnvelope;
+        /// <summary>FS2's AI classes in ai.tbl (for the secondary-reload autoscale by class).</summary>
+        public int Fs2AiClasses;
+        /// <summary>Capital-ship turrets: each turret's field of fire, degrees off the turret's up (FS2's turret fov), by kind.</summary>
+        public float TurretArcGun, TurretArcFlak, TurretArcBeam;
+        /// <summary>Capital-ship turrets: aim error (x) on a target that has only just come into the turret's arc; seconds between target choices.</summary>
+        public float TurretFreshError, TurretRetargetSeconds;
     }
 
     /// <summary>
@@ -60,7 +74,12 @@ namespace Monolith.AI
         public float AimingError, InRangeTime, RetargetSeconds, CmeasureChance, FireDelay;
         /// <summary>Seconds the pilot's picture of its target is out of date (FS2's Skill_level_delay; Earth's side only, never an unhandicapped ace).</summary>
         public float PredictDelay;
-        public int MaxPlayerAttackers, MaxPlayerHomers;
+        /// <summary>Seconds FS2 adds to every missile reload for the pilot's AI class (lower classes wait longer).</summary>
+        public float SecondaryClassDelay;
+        public int MaxPlayerAttackers, MaxPlayerHomers, MissileChanceOnPlayer;
+        /// <summary>Turret gunners: turrets of one ship on the player / on any other target at once; seconds between fresh looks at the target; seconds to settle the aim.</summary>
+        public int TurretsOnPlayer, TurretsOnTarget;
+        public float TurretAimUpdate, TurretSettle;
     }
 
     /// <summary>Resources/AI/ai.json (format "monolith-ai/1"): difficulty tables, the AI's tuning and the pilot profiles.</summary>
@@ -124,10 +143,19 @@ namespace Monolith.AI
                 CmeasureChance = d.CmeasureChance[level],
                 FireDelay = p.Unhandicapped ? 1f : hostile ? d.HostileFireDelay[level] : d.FriendlyFireDelay[level],
                 PredictDelay = hostile && !p.Unhandicapped ? d.PredictDelay[level] : 0f,
+                SecondaryClassDelay = (Tuning.Fs2AiClasses - p.AiClass + 1) * 0.5f,
                 MaxPlayerAttackers = d.MaxPlayerAttackers[level],
                 MaxPlayerHomers = d.MaxPlayerHomers[level],
+                MissileChanceOnPlayer = d.MissileChanceOnPlayer[level],
+                TurretsOnPlayer = d.TurretsOnPlayer[level],
+                TurretsOnTarget = d.TurretsOnTarget[level],
+                // Our side's gunners are not handicapped by the level (FS2's handicaps are mercy on the player): they look and settle as the best.
+                TurretAimUpdate = hostile && !p.Unhandicapped ? d.TurretAimUpdate[level] : Min(d.TurretAimUpdate),
+                TurretSettle = hostile && !p.Unhandicapped ? d.TurretSettleSeconds[level] : Min(d.TurretSettleSeconds),
             };
         }
+
+        static float Min(float[] a) { float m = float.MaxValue; foreach (var x in a) m = Mathf.Min(m, x); return m; }
 
         /// <summary>The same skill with one knob forced (the arena's knob sweeps).</summary>
         public static Skill WithKnob(Skill s, string knob, float value)
@@ -171,9 +199,15 @@ namespace Monolith.AI
                 FriendlyFireDelay = t.Floats("friendlyFireDelay", 0.1f, 20f),
                 MaxPlayerAttackers = Array.ConvertAll(t.Floats("maxPlayerAttackers", 1f, 999f), f => Mathf.RoundToInt(f)),
                 MaxPlayerHomers = Array.ConvertAll(t.Floats("maxPlayerHomers", 0f, 999f), f => Mathf.RoundToInt(f)),
+                MissileChanceOnPlayer = Array.ConvertAll(t.Floats("missileChanceOnPlayer", 0f, 99f), f => Mathf.RoundToInt(f)),
                 PredictDelay = t.Floats("predictDelay", 0f, 10f),
                 PlayerDamageScale = t.Floats("playerDamageScale", 0f, 10f),
                 PlayerPartDamageScale = t.Floats("playerPartDamageScale", 0f, 10f),
+                WingDamageScale = t.Floats("wingDamageScale", 0f, 10f),
+                TurretsOnPlayer = Array.ConvertAll(t.Floats("turretsOnPlayer", 1f, 999f), f => Mathf.RoundToInt(f)),
+                TurretsOnTarget = Array.ConvertAll(t.Floats("turretsOnTarget", 1f, 999f), f => Mathf.RoundToInt(f)),
+                TurretAimUpdate = t.Floats("turretAimUpdate", 0f, 10f),
+                TurretSettleSeconds = t.Floats("turretSettleSeconds", 0f, 60f),
             };
             t.RejectUnknown();
 
@@ -198,6 +232,12 @@ namespace Monolith.AI
                 GunRangeFraction = tj.Float("gunRangeFraction", 0.1f, 1.5f),
                 SensorRange = tj.Float("sensorRange", 100f, 100000f),
                 FlakEnvelope = tj.Float("flakEnvelope", 0f, 10000f),
+                Fs2AiClasses = Mathf.RoundToInt(tj.Float("fs2AiClasses", 1f, 100f)),
+                TurretArcGun = tj.Float("turretArcGun", 1f, 180f),
+                TurretArcFlak = tj.Float("turretArcFlak", 1f, 180f),
+                TurretArcBeam = tj.Float("turretArcBeam", 1f, 180f),
+                TurretFreshError = tj.Float("turretFreshError", 1f, 20f),
+                TurretRetargetSeconds = tj.Float("turretRetargetSeconds", 0.1f, 30f),
             };
             tj.RejectUnknown();
 
@@ -216,6 +256,7 @@ namespace Monolith.AI
                     Evasion = pt.Floats("evasion", 0f, 100f),
                     Courage = pt.Floats("courage", 0f, 100f),
                     Patience = pt.Floats("patience", 0f, 100f),
+                    AiClass = Mathf.RoundToInt(pt.Float("aiClass", 0f, data.Tuning.Fs2AiClasses - 1)),
                 };
                 pt.RejectUnknown();
                 data.Profiles[p.Id] = p;

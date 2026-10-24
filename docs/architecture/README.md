@@ -39,7 +39,9 @@ dead zones and response curves in `Resources/Input/controls.json` (or `-mnContro
 `FireRequest`s, after FS2's AI: fighters and bombers (`AiPilot`: get on the tail with lead, guns and missiles, evade, break off and re-engage,
 peel off by courage, strafe and bomb capital ships, guard, form up), capital helms and turret gunnery (`CapitalAi`), the player's wing and the
 quick-menu orders (`Wing`), measurements (`AiStats`). FS2's four skill knobs per profile and its five difficulty levels are data
-(`Resources/AI/ai.json`); the difficulty also sets `GameWorld.PlayerDamageScale`, which Damage applies. Detail: `Scripts/AI/README.md`.
+(`Resources/AI/ai.json`); the difficulty also sets `GameWorld.PlayerDamageScale` and the wingmen's `ShipCombat.DamageTakenScale`, which Damage
+applies. Capital turrets follow FS2's turret rules (fields of fire, a cap on the guns on the player, targets spread, aim that settles while a target
+loiters). Detail: `Scripts/AI/README.md`.
 
 **Mission** (`Monolith.Mission`) runs a mission file (`Resources/Missions/<name>.mission.json`, one per mission; or `Missions/` beside the
 game, read first) on the sim at order `Mission`: ships and wings that arrive on cues and wave rules (with a jump flash: the juice's

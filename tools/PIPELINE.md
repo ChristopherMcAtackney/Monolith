@@ -92,10 +92,13 @@ the AI flies your ship, `-mnInvulnerable`, `-mnPacingLog file.csv` writes the pa
 `sceneOptions` `pilot: "ai"`, `difficulty`, `invulnerable`, `hud`, `dust` (false: no cockpit motion dust, for look shots), `stress` (the first three
 waves and the bomber wing at once, uncapped: the perf run), `lod0`, `juice`, and `spectate: { "ship": callsign, "offset": [x,y,z], "world": false, "look":
 "target"|"ship"|callsign }` (a capture-only camera riding another ship, used with `"follow": true` shots; never the player's ship). Plans:
-`gauntlet/shots/ai_r1_*.json`. AI checks: `Monolith.exe -batchmode -nographics -mnAiSelfTest` (31 checks), `-mnAiArena gauntlet/shots/ai_arena.json
+`gauntlet/shots/ai_r1_*.json`. AI checks: `Monolith.exe -batchmode -nographics -mnAiSelfTest` (37 checks), `-mnAiArena gauntlet/shots/ai_arena.json
 -mnOut dir [-mnArenaTrace dir]` (AI against AI: wins, kills, time on tail, hit rates by skill, knob sweeps; arena.txt and arena.json),
 `-mnDogfightSoak seconds -mnOut dir [-mnDifficulty x] [-mnSoakMortal] [-mnSoakTrace]` (the dogfight bare, the AI flying an invulnerable player
-ship, loops back to back: stuck ships, hull collisions, errors, pacing per loop; exit 0 on pass). Capture stills with `pos`/`rot`/`lookAt` are now
+ship, loops back to back: stuck ships, hull collisions, errors, pacing per loop, what hurt the Mercy and the wingmen; exit 0 on pass),
+`-mnDogfightSoak 0 -mnWardenRun n -mnOut dir [-mnDifficulty x] [-mnNoFighters] [-mnWingOrder cover|attack|none] [-mnRunSeconds 300]` (the
+capital-ship balance check: a mortal AI-flown player strips the Warden's turrets; time alive, time within 1 km, turrets destroyed, turrets and
+shots on it as the turrets go; warden_runs.txt and .json). Capture stills with `pos`/`rot`/`lookAt` are now
 pinned after every LateUpdate as well as before rendering (HDRP takes the camera's matrices before `beginCameraRendering`, so in scenes with the
 cockpit camera those shots used to come out from the cockpit).
 

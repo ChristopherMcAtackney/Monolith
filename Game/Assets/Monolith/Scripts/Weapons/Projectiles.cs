@@ -256,6 +256,17 @@ namespace Monolith.Weapons
         {
             var def = m.Def;
             if (def.BlastOuter <= 0f || def.Damage <= 0f) return;
+            // FS2's flak is the capital ships' answer to bombs: a burst near a hostile torpedo hurts it as a bolt would, and may shoot it down.
+            if (m.Kind == ProjectileKind.Flak)
+                for (int i = 0; i < _torpedoes.Count; i++)
+                {
+                    var t = _torpedoes[i];
+                    if (!t.Alive || !Teams.Hostile(m.Team, t.Team)) continue;
+                    float td = Vector3.Distance(t.Pos, point);
+                    if (td >= def.BlastOuter) continue;
+                    t.Hp -= def.Damage * def.HullMult * (td <= def.BlastInner ? 1f : 1f - (td - def.BlastInner) / Mathf.Max(0.01f, def.BlastOuter - def.BlastInner));
+                    if (t.Hp <= 0f) ShootDown(t, m.Owner);
+                }
             var all = _world.Combat.All;
             for (int i = 0; i < all.Count; i++)
             {

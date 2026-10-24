@@ -10,7 +10,8 @@ namespace Monolith.Game
     /// <summary>
     /// Headless checks of the AI on the real sim, flight model, weapons and damage: <c>Monolith.exe -batchmode -nographics -mnAiSelfTest</c>.
     /// Each line logs <c>AI PASS</c> or <c>AI FAIL</c> with the numbers: the data, steering, a dogfight to the kill, keeping off a capital hull,
-    /// missiles, evading, peeling off (and drones not), a bomber's torpedo run, turrets (and silenced turrets), heavy beams, the wingman orders.
+    /// missiles, evading, peeling off (and drones not), a bomber's torpedo run, turrets (and silenced turrets), FS2's turret rules (the cap on the
+    /// player, fields of fire, a stripped face silent, flak punishing loitering), heavy beams, the wingman orders.
     /// </summary>
     public static class AiSelfTest
     {
@@ -33,7 +34,7 @@ namespace Monolith.Game
             var tests = new (string, Action)[]
             {
                 ("data", Data), ("steering", Steering), ("dogfight", Dogfight), ("hull", HullAvoidance), ("missiles", Missiles),
-                ("evade", Evade), ("peel", Peel), ("bomber", Bomber), ("turrets", Turrets), ("beams", Beams), ("orders", Orders),
+                ("evade", Evade), ("peel", Peel), ("bomber", Bomber), ("turrets", Turrets), ("turret rules", TurretRules), ("beams", Beams), ("orders", Orders),
             };
             foreach (var (name, t) in tests)
             {
@@ -252,6 +253,93 @@ namespace Monolith.Game
                 int after = shots.TryGetValue(0, out int a0) ? a0 : 0;
                 sub.Dispose();
                 Check((cc.Flags & CombatFlags.TurretsSilenced) != 0 && after == mid, $"destroyed turrets go silent ({after - mid} shots after every turret was destroyed)");
+            }
+        }
+
+        /// <summary>FS2's turret rules on the corvette: a cap on the player, the rest of the guns on others, fields of fire with blind lanes, stripping a face silences it.</summary>
+        static void TurretRules()
+        {
+            ShipState Hover(AiLab lab, string name, Vector3 pos)
+            {
+                var f = lab.Fighter("vanguard_fighter", 0, pos, Quaternion.identity, 0f, null, AiRole.Fighter, name);
+                lab.W.Pilots.Attach(f.Id, new ScriptedPilot(new[] { new ScriptedPilot.Key(0f, new ControlInput { Throttle = 0f }) }));
+                lab.W.Combat.Get(f.Id).Invulnerable = true;
+                return f;
+            }
+            int Shots(AiLab lab, int id) => lab.Guns.ShotsAt.TryGetValue(id, out int n) ? n : 0;
+            using (var lab = new AiLab(2))
+            {
+                var cap = SpawnCorvette(lab, 1, Vector3.zero, Quaternion.identity, true);
+                // The player and a wingman hover over the deck, where every dorsal gun bears.
+                var player = Hover(lab, "Player", new Vector3(0f, 500f, 0f));
+                lab.W.LocalPlayerShip = player.Id;
+                var wing = Hover(lab, "Wingman", new Vector3(80f, 520f, 60f));
+                int capN = lab.Ai.Data.Difficulty.TurretsOnPlayer[2], most = 0, onWing = 0;
+                for (int i = 0; i < 10 * Sim.Hz; i++)
+                {
+                    lab.W.Sim.StepOnce();
+                    most = Mathf.Max(most, lab.Guns.TurretsOn(cap.Id, player.Id));
+                    onWing = Mathf.Max(onWing, lab.Guns.TurretsOn(cap.Id, wing.Id));
+                }
+                int atPlayer = Shots(lab, player.Id), atWing = Shots(lab, wing.Id);
+                Check(most >= 1 && most <= capN, $"at Medium no more than {capN} of the corvette's turrets are on the player at once (most {most}; {atPlayer} shots at it in 10 s)");
+                Check(onWing > 0 && atWing > 0, $"the rest of the guns that bear turn on the wingman beside it ({onWing} turrets, {atWing} shots)");
+
+                // Stripping the face the player is over silences the fire from that side.
+                var cc = lab.W.Combat.Get(cap.Id);
+                foreach (var part in cc.Parts)
+                    if (part.IsTurret && TurretGunnery.OutwardNormal(cc, part.LocalPosition).y > 0.5f)
+                        lab.W.Damage.Add(new DamageRequest { Ship = cap.Id, Amount = part.MaxHp * 10f, SubsystemMult = 1f, Part = part.Index, BypassShield = true, Kind = DamageKind.Debug, Point = part.WorldPosition(cap) });
+                lab.Run(1f);
+                int p0 = Shots(lab, player.Id);
+                lab.Run(10f);
+                int p1 = Shots(lab, player.Id);
+                Check(atPlayer > 0 && p1 == p0, $"with the dorsal turrets destroyed nothing fires at the player over the deck ({p1 - p0} shots in 10 s, {atPlayer} before)");
+            }
+            using (var lab = new AiLab(2))
+            {
+                var cap = SpawnCorvette(lab, 1, Vector3.zero, Quaternion.identity, true);
+                // Dead ahead on the bow's axis, level with the deck: outside every turret's field of fire.
+                var player = Hover(lab, "Player", new Vector3(0f, 5f, 900f));
+                lab.W.LocalPlayerShip = player.Id;
+                lab.Run(10f);
+                int ahead = Shots(lab, player.Id);
+                lab.Flight.Place(player.Id, new Vector3(0f, 600f, 500f), Quaternion.identity, 0f, 0f);
+                lab.Run(10f);
+                int above = Shots(lab, player.Id) - ahead;
+                Check(ahead == 0 && above > 0, $"every turret has its own field of fire: none bears dead ahead along the bow ({ahead} shots in 10 s), the dorsal guns do above it ({above})");
+            }
+            using (var lab = new AiLab(2))
+            {
+                var cap = SpawnCorvette(lab, 1, Vector3.zero, Quaternion.identity, true);
+                var cls = Monolith.Flight.ShipCatalog.Load("diaspora_cruiser");
+                var mercy = lab.Flight.Spawn(cls, new Vector3(800f, 700f, 0f), Quaternion.identity, 0f, 0f, 0, "Mercy");
+                lab.Rig.Spawn(mercy, "diaspora_cruiser", null, null, null, null, 1f, false);
+                lab.Run(10f);
+                int at = Shots(lab, mercy.Id);
+                Check(at > 0, $"with no fighter about the corvette's lasers fire on an enemy capital ship in reach ({at} shots in 10 s)");
+            }
+            using (var lab = new AiLab(2))
+            {
+                // Loitering in the flak's arc: off the port flank, level with the flak, where only the port flak bears. Its aim settles over the
+                // level's settle time, so the damage per second grows the longer the target stays.
+                var cap = SpawnCorvette(lab, 1, Vector3.zero, Quaternion.identity, true);
+                var player = Hover(lab, "Player", new Vector3(-550f, 3f, -120f));
+                lab.W.LocalPlayerShip = player.Id;
+                float early = 0f, late = 0f;
+                var subs = new List<IDisposable>();
+                void OnHit(GameEvent e)
+                {
+                    if (e.Entity != player.Id || WeaponCatalog.Get(e.Subject)?.Kind != WeaponKind.Flak) return;
+                    float t = lab.W.Time;
+                    if (t < 4f) early += e.Value; else if (t >= 8f && t < 16f) late += e.Value;
+                }
+                subs.Add(GameEvents.Subscribe(CombatEvents.HitShield, OnHit));
+                subs.Add(GameEvents.Subscribe(CombatEvents.HitHull, OnHit));
+                lab.Run(16f);
+                foreach (var s in subs) s.Dispose();
+                float settle = lab.Ai.Data.Difficulty.TurretSettleSeconds[2];
+                Check(late / 8f > 1.5f * (early / 4f) && late > 0f, $"flak punishes loitering: a fighter sitting in the flak's arc takes {F(early / 4f)} hp/s in its first 4 s there and {F(late / 8f)} hp/s from 8 to 16 s (the aim settles over {F(settle)} s at Medium)");
             }
         }
 

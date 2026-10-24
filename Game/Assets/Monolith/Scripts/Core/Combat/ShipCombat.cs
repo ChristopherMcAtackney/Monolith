@@ -99,6 +99,8 @@ namespace Monolith.Core
         public bool Alive = true;
         /// <summary>Debug / mission flag: damage is taken and shown but never kills.</summary>
         public bool Invulnerable;
+        /// <summary>The difficulty's mercy on this ship (x every weapon hit it takes; 1 for most ships). The AI sets it for the player's wingmen.</summary>
+        public float DamageTakenScale = 1f;
         public float Hull, HullMax, Shield, ShieldMax;
         /// <summary>Seconds since the ship last took damage (self-healing waits on this).</summary>
         public float TimeSinceDamage = 999f;

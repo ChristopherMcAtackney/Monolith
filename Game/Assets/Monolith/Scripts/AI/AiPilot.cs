@@ -672,10 +672,12 @@ namespace Monolith.AI
             bool inRange = tof < gun.Life * _ai.Data.Tuning.GunRangeFraction;
             if (!inRange) _inRangeSince = -1f;
             // FS2's firing cone (0.90 + accuracy/10 - radius/distance), narrowed towards the target's own size by patience.
-            float radius = AiDirector.IsBig(tc) ? 25f : Mathf.Max(3f, tc.Shape.HasBubble ? tc.Shape.ShieldRadii.magnitude * 0.5f : t.Radius * 0.6f);
+            // A part is a small target on a big one: the cone is the part's own size (a shot that misses it lands on the hull, not on it).
+            bool onPart = big && _targetPart >= 0 && _targetPart < tc.Parts.Count && !tc.Parts[_targetPart].Destroyed;
+            float radius = onPart ? Mathf.Max(3f, tc.Parts[_targetPart].Radius * 1.5f) : big ? 25f : Mathf.Max(3f, tc.Shape.HasBubble ? tc.Shape.ShieldRadii.magnitude * 0.5f : t.Radius * 0.6f);
             float fs2 = Mathf.Max(0.5f, 0.90f + Skill.Accuracy * 0.1f - radius / Mathf.Max(1f, dist));
             float tight = Mathf.Cos(Mathf.Atan2(radius + 1.5f, Mathf.Max(1f, dist)));
-            float cone = Mathf.Lerp(fs2, Mathf.Max(fs2, tight), Skill.Patience * _ai.Data.Tuning.PatienceConeBlend);
+            float cone = onPart ? Mathf.Max(fs2, tight) : Mathf.Lerp(fs2, Mathf.Max(fs2, tight), Skill.Patience * _ai.Data.Tuning.PatienceConeBlend);
             bool lined = Vector3.Dot(me.Forward, dir) >= cone;
             if (lined && inRange) { if (_holdSince < 0f) _holdSince = _now; }
             else { _holdSince = -1f; return; }
@@ -730,15 +732,21 @@ namespace Monolith.AI
             var slot = mc.Missiles[_missileSlot];
             var def = WeaponCatalog.Get(slot.Weapon);
             if (def == null || _now < slot.ReadyAt) return;
-            // Do not swamp the player (FS2 caps the homers on the player per level).
-            if (t.Id == _ai.World.LocalPlayerShip && _ai.IsHostileSide(me.Team) && _ai.HomersOn(t.Id) >= Skill.MaxPlayerHomers) return;
+            // Do not swamp the player (FS2 caps the homers on the player per level), and on easier levels hold homing missiles for the player in
+            // most ten-second windows unless it is targeting this ship (FS2's check_ok_to_fire: window ^ target ^ 1, mod 7, against the level's chance).
+            if (t.Id == _ai.World.LocalPlayerShip && _ai.IsHostileSide(me.Team))
+            {
+                if (_ai.HomersOn(t.Id) >= Skill.MaxPlayerHomers) return;
+                if (t.Target != Ship && ((((int)(_now / 10f)) ^ t.Id ^ 1) & 0x7FFFFFFF) % (_ai.Data.Difficulty.Count + 2) > Skill.MissileChanceOnPlayer) return;
+            }
             bool fire;
             if (def.NeedsLock) fire = mc.Lock == LockPhase.Locked && mc.LockTarget == t.Id && dist < def.Range * 0.75f && dist > 150f;
             else fire = mc.Lock == LockPhase.Locked && mc.LockTarget == t.Id && dist < 900f && dist > 120f && dotTo > Mathf.Lerp(0.8f, 0.95f, Skill.Patience);
             if (!fire) return;
             input.Buttons |= ControlButtons.MissileFire;
-            // FS2's secondary reload: the weapon's wait scaled by the level, varied, and short waits often doubled.
-            float wait = def.FireWait * Skill.FireDelay * (0.8f + 0.4f * Rand());
+            // FS2's secondary reload (aicode.cpp set_secondary_fire_delay): the weapon's wait scaled by the level, plus half a second for every
+            // AI class below the top (a Captain waits 2.5 s more than its rack needs), varied, and short waits often doubled.
+            float wait = (def.FireWait * Skill.FireDelay + Skill.SecondaryClassDelay) * (0.8f + 0.4f * Rand());
             if (wait < 5f && Rand() < 0.5f) wait = wait * 2f + 2f;
             _nextMissileAt = _now + wait;
         }
@@ -884,6 +892,14 @@ namespace Monolith.AI
                     ab = Vector3.Distance(me.Position, setup) > 900f;
                     return;
                 }
+            }
+            // In gun reach, fly the nose onto the lead for the point (the capital ship moves on while the bolts fly: aimed at where a part is
+            // now, they land behind it on the hull).
+            float gunSpeed = GunSpeed(mc);
+            if (gunSpeed > 1f && hull < 1300f && AiAim.Lead(me.Position, me.Velocity, t, aimAt, gunSpeed, 1f, out var leadDir, out _, out _))
+            {
+                goal = leadDir;
+                TrackLead(t.Id, leadDir);
             }
             float breakAt = 200f + Mathf.Max(0f, me.ForwardSpeed) * 1.6f;
             if (hull < breakAt)

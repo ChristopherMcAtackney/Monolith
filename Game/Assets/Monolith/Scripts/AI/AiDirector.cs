@@ -87,6 +87,7 @@ namespace Monolith.AI
             Level = Data.ClampLevel(level);
             ApplyLevelToWorld();
             foreach (var p in _pilots) p.Reskill();
+            foreach (var m in PlayerWing.Members) PlayerWing.ApplyLevel(m);
         }
 
         /// <summary>FS2's mercy on the player by level: how much of a weapon hit the player's ship takes (the damage system reads it).</summary>

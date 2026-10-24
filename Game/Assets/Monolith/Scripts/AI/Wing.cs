@@ -30,6 +30,14 @@ namespace Monolith.AI
             if (_members.Contains(p)) return;
             p.WingSlot = _members.Count;
             _members.Add(p);
+            ApplyLevel(p);
+        }
+
+        /// <summary>The level's mercy on the player's wingmen (ours: FS2 spares only the player; the wing it commands is spared alike).</summary>
+        public void ApplyLevel(AiPilot p)
+        {
+            var c = _ai.World.Combat.Get(p.Ship);
+            if (c != null) c.DamageTakenScale = _ai.Data.Difficulty.WingDamageScale[_ai.Level];
         }
 
         public void Remove(int ship) => _members.RemoveAll(m => m.Ship == ship);
