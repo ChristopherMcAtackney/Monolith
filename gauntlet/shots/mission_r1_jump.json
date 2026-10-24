@@ -1,0 +1,11 @@
+{
+  "scene": "mission",
+  "sceneOptions": { "mission": "dogfight", "pilot": "ai", "invulnerable": true, "hud": false, "dust": false },
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0 },
+  "stills": [
+    { "name": "jump_choir_t4_02", "pos": [-2200, 380, 2380], "lookAt": [-2400, 300, 2600], "fov": 40, "warmup": 4.02 },
+    { "name": "jump_choir_t4_08", "pos": [-2200, 380, 2380], "lookAt": [-2400, 300, 2600], "fov": 40, "warmup": 0.06 },
+    { "name": "jump_choir_t4_25", "pos": [-2200, 380, 2380], "lookAt": [-2400, 300, 2600], "fov": 40, "warmup": 0.17 },
+    { "name": "jump_choir_t4_60", "pos": [-2200, 380, 2380], "lookAt": [-2400, 300, 2600], "fov": 40, "warmup": 0.35 }
+  ]
+}

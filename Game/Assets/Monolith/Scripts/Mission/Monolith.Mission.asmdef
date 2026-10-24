@@ -1,0 +1,16 @@
+{
+    "name": "Monolith.Mission",
+    "rootNamespace": "Monolith.Mission",
+    "references": [
+        "Monolith.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

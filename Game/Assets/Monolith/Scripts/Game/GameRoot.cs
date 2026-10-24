@@ -46,6 +46,10 @@ namespace Monolith.Game
             if (AiSelfTest.Requested) { bool ok = AiSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
             if (AiArena.Requested) { Application.Quit(AiArena.RunFromCommandLine()); return; }
             if (DogfightSoak.Requested) { Application.Quit(DogfightSoak.RunFromCommandLine()); return; }
+            // Mission checks: the self-test, a mission auto-played by the AI against its expected event log, the dogfight's port against the original.
+            if (MissionSelfTest.Requested) { bool ok = MissionSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
+            if (MissionAutoPlay.Requested) { Application.Quit(MissionAutoPlay.RunFromCommandLine()); return; }
+            if (DogfightPortCheck.Requested) { Application.Quit(DogfightPortCheck.RunFromCommandLine()); return; }
 
             GameEvents.Reset();
             World = new GameWorld(new Sim());
@@ -66,10 +70,12 @@ namespace Monolith.Game
             string scene = null, sceneOptions = null;
             if (CommandLine.Has("-mnCapture")) CapturePlan.PeekScene(CommandLine.Get("-mnCapture"), out scene, out sceneOptions);
             scene ??= CommandLine.Get("-mnScene");
+            if (scene == null && CommandLine.Has("-mnMission")) scene = MissionScene.SceneName;
             if (string.Equals(scene, FlightPlaytest.SceneName, StringComparison.OrdinalIgnoreCase)) FlightPlaytest.Build(World, flight, transform, sceneOptions);
             else if (string.Equals(scene, JuiceSandbox.SceneName, StringComparison.OrdinalIgnoreCase)) JuiceSandbox.Build(World, flight, transform, sceneOptions);
             else if (string.Equals(scene, CombatRange.SceneName, StringComparison.OrdinalIgnoreCase)) CombatRange.Build(World, flight, combat, transform, sceneOptions);
             else if (string.Equals(scene, DogfightScene.SceneName, StringComparison.OrdinalIgnoreCase)) DogfightScene.Build(World, flight, combat, transform, sceneOptions);
+            else if (string.Equals(scene, MissionScene.SceneName, StringComparison.OrdinalIgnoreCase)) MissionScene.Build(World, flight, combat, transform, sceneOptions);
             else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
             if (CommandLine.Has("-mnCapture"))

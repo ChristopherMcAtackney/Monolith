@@ -64,5 +64,8 @@ namespace Monolith.Core
         /// Skill_level_player_damage_scale and Skill_level_subsys_damage_scale; owner: AI, from the difficulty level; Damage reads them).
         /// </summary>
         public float PlayerDamageScale = 1f, PlayerPartDamageScale = 1f;
+
+        /// <summary>The running mission's directives, objectives, music state and result, or null (owner: Mission; the HUD reads it).</summary>
+        public MissionBoard Mission;
     }
 }

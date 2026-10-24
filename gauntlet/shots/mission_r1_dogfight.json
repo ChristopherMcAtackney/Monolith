@@ -1,0 +1,44 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "dogfight",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": true
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "hud_t02_opening_radio",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "hud_t08_directive",
+      "follow": true,
+      "warmup": 6.0
+    },
+    {
+      "name": "hud_t20_fight",
+      "follow": true,
+      "warmup": 12.0
+    },
+    {
+      "name": "hud_t45_psalm",
+      "follow": true,
+      "warmup": 25.0
+    }
+  ],
+  "perf": [
+    {
+      "name": "mission_dogfight_opening",
+      "seconds": 15,
+      "follow": true
+    }
+  ]
+}

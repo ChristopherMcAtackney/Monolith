@@ -186,6 +186,7 @@ namespace Monolith.CombatHud
             DrawNotices(L, s, lw, ink, alert);
             DrawRadio(L, c, s, lw, ink);
             DrawInfo(L, s, lw, dim);
+            DrawMission(L, c, s, lw, ink, dim, alert, blink);
             DrawBanner(L, c, s, lw, ink, dim);
             if (_damageFlash > 0.01f) DrawEdge(L, w, h, s, new Color(alert.r, alert.g, alert.b, 0.5f * _damageFlash), _damageFlash);
         }
@@ -526,6 +527,28 @@ namespace Monolith.CombatHud
                 L.Text(line ?? "", new Vector2(24f * s, y), 11f * s, lw * 0.7f, dim);
                 y += 18f * s;
             }
+        }
+
+        /// <summary>The running mission's directives (what to do now: done ones dim, failed ones in alert) and the cabin's call out of the seat.</summary>
+        void DrawMission(HudLines L, Vector2 c, float s, float lw, Color ink, Color dim, Color alert, float blink)
+        {
+            var m = _world.Mission;
+            if (m == null) return;
+            float y = 320f * s;
+            if (m.Directives.Count > 0 && !m.Ended)
+            {
+                L.Text("DIRECTIVES", new Vector2(24f * s, y), 11f * s, lw * 0.7f, dim);
+                y += 20f * s;
+                foreach (var d in m.Directives)
+                {
+                    string text = (d.Text ?? "").ToUpperInvariant() + (d.State == MissionBoard.State.Done ? "  DONE" : d.State == MissionBoard.State.Failed ? "  FAILED" : "");
+                    var col = d.State == MissionBoard.State.Done ? dim : d.State == MissionBoard.State.Failed ? alert : ink;
+                    L.Text(text, new Vector2(24f * s, y), 13f * s, lw * 0.85f, col);
+                    y += 21f * s;
+                }
+            }
+            if (!string.IsNullOrEmpty(m.Prompt))
+                L.Text("[ " + m.Prompt.ToUpperInvariant() + " ]", new Vector2(c.x, c.y + 170f * s), 15f * s, lw, new Color(ink.r, ink.g, ink.b, ink.a * (0.45f + 0.55f * blink)), TextAlign.Center);
         }
 
         void DrawBanner(HudLines L, Vector2 c, float s, float lw, Color ink, Color dim)

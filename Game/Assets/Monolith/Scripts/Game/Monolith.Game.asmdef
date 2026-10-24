@@ -17,6 +17,7 @@
         "Monolith.Juice",
         "Monolith.ShipArt",
         "Monolith.AI",
+        "Monolith.Mission",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"
