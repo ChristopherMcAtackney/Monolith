@@ -52,7 +52,7 @@ with `"layoutYaw"` (degrees) to put the Sun behind or in front of the action; hu
 
 ## Checks (player command line)
 
-`-mnScene juice -mnJuiceSelfTest` settings round trip (the boost section too), presets, trauma, hit-stop, then the boost on the running sandbox (ignition, view, dust, lens, release, the off switch, running the tank dry; about 15 s), then the brake (the lurch, the view, a stop in two seconds, letting go, the off switch; about 13 s). `-mnPanelDrive` drives the panel, the pad shortcuts and the mouse
+`-mnScene juice -mnJuiceSelfTest` settings round trip (the boost section too), presets, trauma, hit-stop, then the boost on the running sandbox (ignition, view, dust, lens, release, the off switch, running the tank dry; about 15 s), then the brake (the lurch, the view, a stop in two seconds, letting go, the off switch; about 13 s), then the player's death (the eye flung out, the tumble, the camera on the eye, the skip, the black, the events in order, the off switch; about 8 s: it waits for each moment on the sequence's own clock, not on seconds, because that clock runs on frame times cut to 0.1 s and a slow frame, such as the 0.5 to 0.7 s one when a windowed run first draws the breach, puts it behind the wall clock). `-mnPanelDrive` drives the panel, the pad shortcuts and the mouse
 with virtual devices. `-mnRumbleTest` pulses both pad motors. `-mnDumpSounds dir` writes every placeholder sound as a WAV and logs its levels.
 `-mnPanelShot file.png [-mnPanelPage n]` saves a screenshot with the panel open. Captures never write `juice.json` and make no sound (`-mnAudio` to hear them).
 

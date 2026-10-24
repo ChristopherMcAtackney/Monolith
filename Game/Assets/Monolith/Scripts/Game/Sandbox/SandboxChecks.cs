@@ -19,6 +19,12 @@ namespace Monolith.Game
     {
         JuiceSandbox _box;
         JuicePanel _panel;
+        /// <summary>The exit code the run ends with (a failed check in the middle must not be lost when the last line quits with 0).</summary>
+        int _exit;
+        /// <summary>The longest frame since it was last zeroed (the death check reports it: a hitch is what the old waits could not stand).</summary>
+        float _worstFrame;
+
+        void Update() { _worstFrame = Mathf.Max(_worstFrame, Time.unscaledDeltaTime); }
 
         public static void Attach(JuiceSandbox box, JuicePanel panel, Transform parent)
         {
@@ -56,7 +62,7 @@ namespace Monolith.Game
                 yield return new WaitForSeconds(1.0f);
                 MnLog.Info($"PANELSHOT {path}");
             }
-            Application.Quit(0);
+            Application.Quit(_exit);
         }
 
         void SelfTest()
@@ -219,10 +225,25 @@ namespace Monolith.Game
             if (fails > 0) Application.Quit(1);
         }
 
+        /// <summary>Wait, frame by frame, until a condition holds; gives up after <paramref name="limit"/> seconds of real time (the check then reports what it sees).</summary>
+        static IEnumerator Until(Func<bool> condition, float limit = 8f)
+        {
+            float t0 = Time.realtimeSinceStartup;
+            while (!condition() && Time.realtimeSinceStartup - t0 < limit) yield return null;
+        }
+
         /// <summary>
         /// The player's death on the running sandbox: it takes the eye (first person: the pose is the player's own eye thrown out, never a camera apart), the HUD
         /// stands down, the events come in order, it cannot be skipped in its first moments and can after, the view ends black, the ordinary destroyed-ship event
         /// starts it too and the off switch stops that. About 8 s.
+        /// <para>
+        /// The sequence runs on a clock of its own: the frame time, cut to 0.1 s a frame (<see cref="DeathFx.Update"/>), so a slow frame (the first time a
+        /// breach's fire and debris are drawn took 0.7 s in a windowed run) leaves it behind the wall clock, and a sub-millisecond headless frame runs it ahead.
+        /// So every moment here is waited for on the sequence's own time, not on a number of seconds (the old waits sampled it 0.3 s early after a hitch, or
+        /// 0.25 s late in a fast headless run, and the camera was read in the very frame the hitch ended in). Distances are measured from where the wreck is: the
+        /// ship's pose at the hit carried on at its velocity at the hit, as the sequence's wreck drifts, because the sandbox's ship is not destroyed and goes on
+        /// accelerating under its pilot (the brake check just before leaves it speeding up).
+        /// </para>
         /// </summary>
         IEnumerator DeathCheck()
         {
@@ -239,21 +260,29 @@ namespace Monolith.Game
             int tickPlays = board.Plays;
             var me = world.Ships.Get(world.LocalPlayerShip);
             var cam = world.MainCamera.transform;
-            Vector3 p0 = cam.position; Quaternion q0 = cam.rotation;
+            Quaternion q0 = cam.rotation;
+            Vector3 shipAtHit = me.Position, shipVelocityAtHit = me.Velocity;
+            _worstFrame = 0f;
             _box.Trigger("death_gunfire");
-            yield return new WaitForSeconds(0.25f);
+            yield return Until(() => board.Time >= 0.25f);
             Check(board.Active && board.CameraActive && !board.Finished && board.Plays == tickPlays + 1, "the sequence has the eye from the hit");
             Check(death.Parts >= 20, $"the cabin model is in pieces to tear ({death.Parts})");
             Check(!death.TrySkip(), "it cannot be skipped in its first moments");
-            yield return new WaitForSeconds(0.9f);
-            float away = Vector3.Distance(board.Position, me.Position);
-            Check(away > 6f, $"flung out of the ship: the eye is {away:0} m from it a second after the hit");
+            yield return Until(() => board.Time >= 1.15f);
+            float seqT = board.Time;
+            float away = Vector3.Distance(board.Position, shipAtHit + shipVelocityAtHit * seqT);
+            Check(away > 6f, $"flung out of the ship: the eye is {away:0} m from the wreck {seqT:0.00} s into the sequence");
             Check(Quaternion.Angle(q0, board.Rotation) > 45f, $"tumbling: the view has turned {Quaternion.Angle(q0, board.Rotation):0} degrees");
-            Check(Mathf.Abs(Vector3.Distance(cam.position, board.Position)) < 3f, "the camera is the sequence's eye (first person, no external view)");
+            // The camera takes the sequence's pose in the frame's late update, after this step: so the pose the board has now is the one the camera has next frame.
+            Vector3 eyeNow = board.Position;
+            yield return null;
+            float camOff = Vector3.Distance(cam.position, eyeNow);
+            Check(Mathf.Abs(camOff) < 3f, $"the camera is the sequence's eye (first person, no external view): {camOff:0.00} m off");
             Check(!_box.HudOn, "the HUD stands down");
-            yield return new WaitForSeconds(0.5f);
+            yield return Until(() => board.Time >= DeathFx.SkippableAt + 0.1f);
             Check(death.TrySkip(), "it can be skipped after a moment");
-            yield return new WaitForSeconds(1.0f);
+            yield return Until(() => board.Finished);
+            yield return null;
             Check(!board.Active && board.Finished && board.CameraActive && juice.Context.Frame.DeathA.z > 0.99f, "skipped: over, and the screen is black");
             string order = string.Join(" ", ids);
             Check(ids.Count >= 6 && ids[0] == DeathEvents.Start && ids.IndexOf(DeathEvents.Decompression) > ids.IndexOf(DeathEvents.CanopyCrack) && order.Contains(DeathEvents.Skip) && ids[ids.Count - 1] == DeathEvents.End,
@@ -273,8 +302,10 @@ namespace Monolith.Game
             Check(board.Active, "the destroyed player ship starts it");
             death.Reset();
             sub.Dispose();
+            float worst = _worstFrame;
+            MnLog.Info($"JUICE deathcheck measured: the eye {away:0.0} m from the wreck at {seqT:0.00} s, the camera {camOff:0.00} m off the eye, the worst frame since the hit {worst * 1000f:0} ms");
             MnLog.Info($"JUICE deathcheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: the eye, the pieces, the fling, the tumble, the skip, the events, the black, the off switch");
-            if (fails > 0) Application.Quit(1);
+            if (fails > 0) { _exit = 1; Application.Quit(1); }
         }
 
         static IEnumerator Tap(Gamepad pad, params GamepadButton[] buttons)
