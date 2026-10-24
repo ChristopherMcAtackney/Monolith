@@ -261,3 +261,11 @@ collections; throwing them whole fixed it (worst frame 75 ms to 14 ms).
 - Reparenting a model's parts out of its root before the root is destroyed keeps them; `ShipDamage` lives on the root and is gone a frame after `ship_destroyed`, so everything that
   needs it (the hull-damage ramp) must be done in that frame.
 - Three captures ran at once by mistake (a backgrounded script that kept running after its tool call returned) and corrupted each other's output folder; run each capture script once, in the foreground.
+
+## Round 2 verdicts (lead, 2026-10-24)
+**Meatiness vs FS2: WON 3/3** (all likely). The critic picked ours as meatier in every pair: beam_strike vs heavy_beam_fire/fs2/big_battle_comparison_0220; laser_exchange vs gunfire_and_tracers/fs2/clash_of_titans_ii_0096; capital_death_final vs explosion_capital/fs2/big_battle_comparison_0099. What FS2 lacked, in its words: beams that never hit anything, bolts with no impact flash, and a fireball with no hot core or structure. One more win against fresh FS2 frames completes the meatiness bar.
+
+**Realism vs The Expanse: lost 3/3** (all certain). Pairs: capital_death_final vs explosion_capital/expanse/7_ATYOm3nNc_0147 (2:1); fighter_kill_fireball vs explosion_small/expanse/7_ATYOm3nNc_0141 (2:1); laser_exchange vs gunfire_and_tracers/expanse/7_ATYOm3nNc_0112.
+- Giveaways: fireballs are opaque, hard-edged "cauliflower" silhouettes sitting on dead black, where the show's fire is translucent, motion-blurred and edgeless; still almost no warm spill on nearby hulls from a blast that big; sparks sprayed evenly over the whole frame; debris reads as small round grey blobs.
+- **Lead's call on the conflict:** the realism critic also marked our bolts down as "fat green capsules" against the show's small, dotted tracers. The user's bar is "The Expanse with FS2's big, meaty lasers everywhere", and the meatiness critic preferred our thick bolts. So bolts stay thick and bright, and realism is judged on everything else.
+- Gap for round 3: fireball edges that are translucent, soft and motion-blurred, with no hard silhouette; blast spill light that visibly warms nearby hulls (rim and cast); spark distribution concentrated and varied, not an even spray; debris with real shapes; check CameraLook (graded blacks, haze) is on in the juice scene.
