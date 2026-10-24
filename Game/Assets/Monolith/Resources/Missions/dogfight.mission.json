@@ -130,12 +130,12 @@
     { "name": "Bombers in", "when": { "event": "Canticle in", "delay": 20 }, "whenWhy": "the bomber wing comes twenty seconds after the third wave is called",
       "do": [ { "do": "arrive", "ship": "Censer" }, { "do": "arrive", "ship": "Vigil" }, { "do": "radio", "message": "earth_bombers" } ] },
     { "name": "Bombers called", "when": { "event": "Bombers in", "delay": 3.5 }, "do": [ { "do": "radio", "message": "bombers" } ] },
-    { "name": "Beam threat", "when": { "beaming": "Warden" }, "do": [ { "do": "radio", "message": "beams_threat" } ] },
+    { "name": "Beam threat", "when": { "beaming": "Warden" }, "do": [ { "do": "radio", "message": "beams_threat" }, { "do": "theme", "name": "destroyer" } ] },
     { "name": "Mercy hurt", "when": { "hull": "Small Mercy", "below": 50 }, "do": [ { "do": "radio", "message": "capital_hurt" } ] },
     { "name": "Beams down", "when": { "and": [ { "not": { "destroyed": "Warden" } }, { "subsystem": "Warden", "parts": ["SUB_aaf_F01", "SUB_aaf_F03"], "destroyed": true } ] },
       "whenWhy": "FS2's beam-free: with the Warden's beams gone the Mercy's own come off their lock",
       "directive": { "text": "Destroy the Warden's beam turrets", "show": { "event": "Beam threat" } },
-      "do": [ { "do": "radio", "message": "beams_down" }, { "do": "beams", "ship": "Small Mercy", "free": true } ] },
+      "do": [ { "do": "radio", "message": "beams_down" }, { "do": "beams", "ship": "Small Mercy", "free": true }, { "do": "theme", "name": "destroyer", "on": false } ] },
     { "name": "Sable 2 lost", "when": { "destroyed": "Sable 2" }, "do": [ { "do": "radio", "message": "sable2_lost" } ] },
     { "name": "Sable 3 lost", "when": { "destroyed": "Sable 3" }, "do": [ { "do": "radio", "message": "sable3_lost" } ] },
     { "name": "Autopilot", "when": { "autopilot": true }, "repeat": -1, "interval": 5, "log": false,
@@ -158,7 +158,8 @@
     { "name": "Vespers down", "when": { "destroyed": "Vespers" }, "directive": { "text": "Destroy Vespers", "show": { "arrived": "Vespers", "any": true } } },
     { "name": "Requiem down", "when": { "destroyed": "Requiem" }, "directive": { "text": "Destroy Requiem", "show": { "arrived": "Requiem", "any": true } } },
     { "name": "Censer down", "when": { "destroyed": "Censer" }, "directive": { "text": "Stop the bombers", "show": { "arrived": "Censer", "any": true } } },
-    { "name": "Warden down", "when": { "destroyed": "Warden" }, "directive": { "text": "Destroy the Warden", "show": { "or": [ { "event": "Beams down" }, { "event": "Requiem in" } ] } } }
+    { "name": "Warden down", "when": { "destroyed": "Warden" }, "directive": { "text": "Destroy the Warden", "show": { "or": [ { "event": "Beams down" }, { "event": "Requiem in" } ] } },
+      "do": [ { "do": "theme", "name": "destroyer", "on": false } ] }
   ],
 
   "autoplay": {

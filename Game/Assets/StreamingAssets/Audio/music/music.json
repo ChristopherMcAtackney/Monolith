@@ -15,6 +15,14 @@
     "sting_friendly": { "file": "music/sting_friendly.ogg", "loop": false, "seconds": 8.320, "bpm": 112, "bars": 0, "lufs": -21.0, "truePeakDb": -8.6 },
     "sting_friendly_battle": { "file": "music/sting_friendly_battle.ogg", "loop": false, "seconds": 7.820, "bpm": 112, "bars": 0, "lufs": -19.0, "truePeakDb": -5.1 },
     "sting_goal": { "file": "music/sting_goal.ogg", "loop": false, "seconds": 7.286, "bpm": 112, "bars": 0, "lufs": -22.0, "truePeakDb": -11.4 },
+    "theme_destroyer": { "file": "music/theme_destroyer.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -21.0, "truePeakDb": -4.3 },
+    "theme_lector": { "file": "music/theme_lector.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -24.0, "truePeakDb": -6.4 },
+    "theme_outpost": { "file": "music/theme_outpost.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -27.0, "truePeakDb": -11.5 },
     "victory": { "file": "music/victory.ogg", "loop": false, "seconds": 29.200, "bpm": 104, "bars": 0, "lufs": -21.0, "truePeakDb": -6.7 }
+  },
+  "themes": {
+    "destroyer": { "track": "theme_destroyer", "fadeIn": 5, "fadeOut": 8, "priority": 20, "mode": "duck", "duckDb": -14, "volumeDb": 0 },
+    "lector": { "track": "theme_lector", "fadeIn": 4, "fadeOut": 6, "priority": 10, "mode": "duck", "duckDb": -9, "volumeDb": 0 },
+    "outpost": { "track": "theme_outpost", "fadeIn": 6, "fadeOut": 8, "priority": 5, "mode": "duck", "duckDb": -7, "volumeDb": 0 }
   }
 }

@@ -112,7 +112,7 @@ namespace Monolith.Mission
 
         public MissionMusic(MissionRuntime rt, Dictionary<string, string> tracks) { _rt = rt; _tracks = tracks; }
 
-        public void Start(string state, bool auto) { State = null; _auto = auto; _final = false; _forcedUntil = -1f; Set(state); }
+        public void Start(string state, bool auto) { State = null; _auto = auto; _final = false; _forcedUntil = -1f; GameEvents.Raise(MissionEvents.Theme, ThemeEvent.StopAll, 0f); Set(state); }
 
         public void SetAuto(bool auto) { _auto = auto; _forcedUntil = -1f; _rt.Note("music", "auto " + (auto ? "on" : "off")); }
 
@@ -121,6 +121,15 @@ namespace Monolith.Mission
         {
             if (hold > 0f) _forcedUntil = _rt.Now + hold; else _auto = false;
             Set(state);
+        }
+
+        /// <summary>A theme track over the base score on or off (the <c>theme</c> action). The audio fades it in or out; the base score carries on underneath.</summary>
+        public void Theme(ThemeEvent t)
+        {
+            if (_final && t.On) return;
+            t.Mission = _rt.File.Id;
+            GameEvents.Raise(MissionEvents.Theme, t.Format(), t.On ? 1f : 0f);
+            _rt.Note("music", $"theme {t.Name} {(t.On ? "on" : "off")}");
         }
 
         public void Sting(string sting)

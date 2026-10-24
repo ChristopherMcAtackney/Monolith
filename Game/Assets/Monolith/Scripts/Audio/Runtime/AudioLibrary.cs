@@ -65,7 +65,7 @@ namespace Monolith.Audio
     /// MP3 for us); the Audio folder is watched, so a saved file is picked up within a couple of seconds and a deleted one gives the built-in
     /// sound back.
     /// </summary>
-    public sealed class AudioLibrary
+    public sealed partial class AudioLibrary
     {
         public readonly Dictionary<string, SfxCue> Sfx = new Dictionary<string, SfxCue>();
         public readonly Dictionary<string, MusicTrackInfo> Music = new Dictionary<string, MusicTrackInfo>();
@@ -111,6 +111,7 @@ namespace Monolith.Audio
             {
                 var j = JObject.Parse(File.ReadAllText(mj));
                 Bpm = (float?)j["bpm"] ?? 112f; BeatsPerBar = (int?)j["beatsPerBar"] ?? 4; LoopSeconds = (float?)j["loopSeconds"] ?? LoopSeconds;
+                ReadThemeCatalog(j);
                 foreach (var p in ((JObject)j["tracks"]).Properties())
                 {
                     var t = new MusicTrackInfo
@@ -124,6 +125,7 @@ namespace Monolith.Audio
                 }
             }
             else Problems.Add("music/music.json is missing");
+            LoadUserMusicConfig();
 
             // effects
             string sj = Path.Combine(root, "sfx", "sfx.json");
@@ -199,6 +201,7 @@ namespace Monolith.Audio
                 catch (Exception e) { Problems.Add("catalogs: " + e.Message); MnLog.Error("AUDIO catalogs: " + e); }
                 FilesTotal = _assets.Count;
                 foreach (var a in _assets.ToArray()) RunNow(LoadAsset(a, () => { }));
+                PreloadUserMusic(null);
                 Ready = true;
                 MnLog.Info($"AUDIO library (blocking): {Music.Count} music tracks, {Sfx.Count} effects, {Voices.Count} radio clips; {FilesLoaded - FilesFailed}/{FilesTotal} files in {sw.ElapsedMilliseconds} ms, {Overrides} overrides, {FilesFailed} failed");
                 foreach (var p in Problems) MnLog.Warn("AUDIO " + p);
@@ -238,6 +241,7 @@ namespace Monolith.Audio
                 yield return null;
             }
             Ready = true;
+            PreloadUserMusic(host);
             MnLog.Info($"AUDIO library: {Music.Count} music tracks, {Sfx.Count} effects, {Voices.Count} radio clips; {FilesLoaded - FilesFailed}/{FilesTotal} files in {sw.ElapsedMilliseconds} ms, {Overrides} overrides, {FilesFailed} failed");
             foreach (var p in Problems) MnLog.Warn("AUDIO " + p);
         }
@@ -334,6 +338,7 @@ namespace Monolith.Audio
         {
             if (!Ready || realTime < _nextPoll) return;
             _nextPoll = realTime + 2f;
+            try { PollMusicConfig(host); } catch (Exception e) { MnLog.Warn("AUDIO music.json watch: " + e.Message); }
             try
             {
                 string user = AudioPaths.User;

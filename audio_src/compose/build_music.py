@@ -530,6 +530,10 @@ CUES = {
 }
 
 
+from themes import THEMES  # noqa: E402  (the theme tracks: themes.py)
+CUES.update(THEMES)
+
+
 def main(argv):
     os.makedirs(OUT, exist_ok=True)
     names = argv or list(CUES)

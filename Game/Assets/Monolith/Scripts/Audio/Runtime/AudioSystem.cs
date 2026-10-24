@@ -94,7 +94,7 @@ namespace Monolith.Audio
             Prefs = options.SavePrefs ? AudioPrefs.Load() : new AudioPrefs();
             ApplyPrefs();
             Lib = options.Library ?? new AudioLibrary();
-            Music = new MusicConductor(Mixer, Lib, this);
+            Music = new MusicConductor(Mixer, Lib, this) { MissionOf = () => World != null && World.Mission != null ? World.Mission.Id : null };
             Radio = new RadioDirector(Mixer, Lib, this) { Mood = CrewMood };
             if (!options.Offline)
             {
@@ -455,6 +455,7 @@ namespace Monolith.Audio
         {
             Sub(MissionEvents.MusicState, e => Music.OnState(e.Subject, World.Mission != null && World.Mission.Music == e.Subject ? World.Mission.MusicTrack : null, _now));
             Sub(MissionEvents.MusicSting, e => Music.OnSting(e.Subject));
+            Sub(MissionEvents.Theme, e => Music.OnTheme(ThemeEvent.Parse(e.Subject, e.Value), _now));       // a mission's theme track on or off over the base score
             Sub(CombatEvents.RadioLine, e => Radio.OnLine(e));
             Sub(MissionEvents.RadioVoice, e => Radio.OnVoiceSlot(e));
 

@@ -70,6 +70,8 @@ namespace Monolith.Core
         public const string ObjectiveChanged = "objective_changed";
         public const string MusicState = "music_state";
         public const string MusicSting = "music_sting";
+        /// <summary>A theme track on or off (the mission's <c>theme</c> action): the Subject is a <see cref="ThemeEvent"/>, the Value 1 for on and 0 for off.</summary>
+        public const string Theme = "music_theme";
         public const string RadioVoice = "radio_voice";
         public const string MissionEnd = "mission_end";
         public const string CabinScan = "cabin_scan";

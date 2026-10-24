@@ -70,6 +70,8 @@ namespace Monolith.Game
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 Application.logMessageReceived += OnLog;
+                // the checks hear the built-in sound: not whatever a player has put in the Audio folder or a music.json beside the game
+                if (!CommandLine.Has("-mnAudioUser")) { string empty = Path.Combine(Application.temporaryCachePath, "audio_selftest_empty"); Directory.CreateDirectory(empty); AudioPaths.OverrideUser(empty); }
                 yield return Load();
                 if (_lib.Ready)
                 {
@@ -79,6 +81,7 @@ namespace Monolith.Game
                     yield return Guard("Stings", Stings());
                     yield return Guard("Endings", Endings());
                     yield return Guard("Radio", Radio());
+                    yield return Guard("Themes", Themes());
                     yield return Guard("Overrides", Overrides());
                     yield return Guard("Effects", Effects());
                     yield return Guard("Cabin", Cabin());
@@ -438,6 +441,151 @@ namespace Monolith.Game
                 Check(rig2.Sys.Radio.Fallbacks == 1 && rig2.Sys.Radio.Missing.Count == 1, "a line with no clip falls back to a squelch and is logged");
                 Check(Db(Rms(rec2.Ch[0], 0, rec2.Frames)) > -70f, "the squelch is heard");
                 rig2.Sys.Radio.Log.ForEach(l => Say("   " + l));
+            }
+
+            // ------------------------------------------------------------------------------------------------ theme tracks over the base score
+
+            static void ThemeOn(string mission, string name, float fadeIn = float.NaN, float fadeOut = float.NaN, float priority = float.NaN, string mode = null, float duck = float.NaN, float volume = float.NaN)
+                => GameEvents.Raise(MissionEvents.Theme, new ThemeEvent { Mission = mission, Name = name, FadeIn = fadeIn, FadeOut = fadeOut, Priority = priority, Mode = mode, DuckDb = duck, VolumeDb = volume }.Format(), 1f);
+            static void ThemeOff(string mission, string name, float fadeOut = float.NaN)
+                => GameEvents.Raise(MissionEvents.Theme, new ThemeEvent { Mission = mission, Name = name, On = false, FadeOut = fadeOut }.Format(), 0f);
+
+            IEnumerator Themes()
+            {
+                Say("== themes over the base score: fade in on cue, fade out, priorities, fall back, never clip");
+                // 1. a theme comes in on the bar over the base, which gives way, and goes out again with the base back
+                var rig = NewRig();
+                var sys = rig.Sys; var mx = sys.Mixer;
+                GameEvents.Raise(MissionEvents.MusicState, "battle2");
+                rig.Step(4f); yield return null;
+                Check(mx.ThemeLayerCount == 0 && mx.BaseDuck > 0.99f, "no theme, the base score untouched");
+                float t0 = rig.Now;
+                ThemeOn("escort", "lector");
+                var fades = new List<float>(); float tFull = -1f, tFirst = -1f;
+                for (int i = 0; i < 40 * 4; i++)                                         // 16 s in quarter seconds
+                {
+                    rig.Step(0.25f); if (i % 8 == 0) yield return null;
+                    float f = mx.ThemeFade; fades.Add(f);
+                    if (tFirst < 0f && f > 0.02f) tFirst = rig.Now;
+                    if (tFull < 0f && f >= 0.999f) tFull = rig.Now;
+                }
+                bool monotone = true; for (int i = 1; i < fades.Count; i++) if (fades[i] > 0.01f && fades[i - 1] > 0.01f && fades[i] + 0.002f < fades[i - 1]) monotone = false;
+                Check(sys.Music.ThemePlaying == "lector" && tFirst > 0f && tFull > 0f, $"a theme fades in on cue (the Lector: first heard at +{tFirst - t0:0.0} s, full at +{tFull - t0:0.0} s)");
+                Check(monotone && tFull - tFirst > 3.2f && tFull - tFirst < 4.8f, $"in its own time, smoothly (4 s set: {tFull - tFirst:0.00} s from first to full)");
+                double barFrames = mx.FramesPerBeat * mx.BeatsPerBar;
+                double barPos = (mx.LastThemeStartClock % barFrames); if (barPos > barFrames / 2) barPos -= barFrames;
+                Check(Math.Abs(barPos) < 3.0 && mx.ThemeStarts == 1, $"on the bar of the music clock ({barPos:0} frames off)");
+                float duckDb = 20f * Mathf.Log10(Mathf.Max(mx.BaseDuck, 1e-6f));
+                Check(Math.Abs(duckDb + 9f) < 0.6f, $"the base gives way (ducked {duckDb:0.0} dB; the built-in Lector theme asks -9)");
+                var mid = sys.RecordedAudio();
+                float rmsBase = Rms(mid.Ch[0], (int)(t0 * R) - R * 3, R * 3), rmsBoth = Rms(mid.Ch[0], (int)((tFull + 4f) * R), R * 3);
+                Say($"   level before the theme {Db(rmsBase):0.0} dB, with it {Db(rmsBoth):0.0} dB");
+                ThemeOff("escort", "lector");
+                var outFades = new List<float>(); float tGone = -1f;
+                for (int i = 0; i < 4 * 12; i++)
+                {
+                    rig.Step(0.25f); if (i % 8 == 0) yield return null;
+                    outFades.Add(mx.ThemeFade);
+                    if (tGone < 0f && mx.ThemeLayerCount == 0) tGone = rig.Now;
+                }
+                float tOff = rig.Now - 12f;
+                Check(tGone > 0f && Math.Abs((tGone - tOff) - 6f) < 1.0f && mx.BaseDuck > 0.97f, $"and out again over its 6 s ({tGone - tOff:0.0} s), the base back ({20f * Mathf.Log10(mx.BaseDuck):0.0} dB)");
+                Check(sys.Music.ThemePlaying == null && mx.ClippedSamples == 0, "no theme is left on, nothing clipped");
+
+                // 2. replace: the base falls silent under the theme; the action's own settings (fade, priority, mode) win over the theme's
+                ThemeOn("escort", "lector", fadeIn: 1.5f, mode: "replace");
+                for (int i = 0; i < 4 * 9; i++) { rig.Step(0.25f); if (i % 8 == 0) yield return null; }
+                Check(mx.BaseDuck < 0.03f && mx.ThemeFade > 0.99f, $"a theme that replaces the base silences it ({mx.BaseDuck:0.000})");
+                ThemeOff("escort", "lector", 1f);
+                for (int i = 0; i < 4 * 3; i++) { rig.Step(0.25f); if (i % 8 == 0) yield return null; }
+                Check(mx.ThemeLayerCount == 0 && mx.BaseDuck > 0.9f, "and gives it back when it goes");
+
+                // 3. priorities: the destroyer outranks the Lector; when it ends the Lector is back
+                ThemeOn("dogfight", "lector"); rig.Step(0.5f);
+                ThemeOn("dogfight", "destroyer"); rig.Step(0.5f);
+                Check(sys.Music.ThemePlaying == "destroyer" && sys.Music.ThemesOn == 2, $"the higher priority plays ({sys.Music.ThemePlaying}), the other waits");
+                ThemeOff("dogfight", "destroyer"); rig.Step(0.5f);
+                Check(sys.Music.ThemePlaying == "lector", $"and the other comes back when it ends ({sys.Music.ThemePlaying})");
+                ThemeOff("dogfight", "lector"); rig.Step(0.5f);
+
+                // 4. a theme nobody has a sound for: nothing plays, and it is said once
+                int before = mx.ThemeStarts;
+                ThemeOn("escort", "no_such_theme"); rig.Step(0.5f); yield return null; rig.Step(5f); yield return null;
+                Check(mx.ThemeStarts == before && sys.Music.ThemesOn == 0 && sys.Music.Log.Any(l => l.Contains("no_such_theme") && l.Contains("no sound")), "a theme with no sound plays nothing and the log says why");
+
+                // 5. the mission ending takes every theme with it
+                ThemeOn("escort", "lector", fadeIn: 1f); rig.Step(3f); yield return null;
+                GameEvents.Raise(MissionEvents.MusicState, "victory");
+                for (int i = 0; i < 4 * 6; i++) { rig.Step(0.25f); if (i % 8 == 0) yield return null; }
+                Check(mx.ThemeLayerCount == 0 && sys.Music.ThemesOn == 0, "victory (or failure, or death) ends every theme");
+                var rec = sys.RecordedAudio();
+                var m = LoudnessMeter.Measure(rec);
+                WriteWav("themes.wav", rec);
+                Check(mx.ClippedSamples == 0 && m.PeakDb <= -0.9f, $"all of it without clipping (peak {m.PeakDb:0.0} dBFS, {m.Integrated:0.0} LUFS)");
+
+                // 6. the player's own music.json: their track in place of the built-in theme, with their fades; theirs for a base state, on its own tempo; a mistake is said, not fatal
+                string prev = AudioPaths.User;
+                string scratch = Path.Combine(Application.temporaryCachePath, "music_json_test_" + DateTime.Now.Ticks);
+                try
+                {
+                    Directory.CreateDirectory(scratch);
+                    var tone = new PcmBuffer(R, 2, R * 12);
+                    for (int i = 0; i < tone.Frames; i++) { float v = 0.2f * Mathf.Sin(2f * Mathf.PI * 220f * i / R); tone.Ch[0][i] = v; tone.Ch[1][i] = v; }
+                    Wav.Write(Path.Combine(scratch, "my_lector.wav"), tone, 16, false);
+                    var tone2 = new PcmBuffer(R, 2, R * 8);
+                    for (int i = 0; i < tone2.Frames; i++) { float v = 0.2f * Mathf.Sin(2f * Mathf.PI * 330f * i / R); tone2.Ch[0][i] = v; tone2.Ch[1][i] = v; }
+                    Wav.Write(Path.Combine(scratch, "my_ambient.wav"), tone2, 16, false);
+                    Wav.Write(Path.Combine(scratch, "my_battle.wav"), tone2, 16, false);
+                    File.WriteAllText(Path.Combine(scratch, "music.json"), @"{
+                        ""themes"": { ""escort/lector"": { ""file"": ""my_lector.wav"", ""fadeIn"": 1.0, ""fadeOut"": 2.0, ""volume"": -6, ""mode"": ""replace"", ""priority"": 50 } },
+                        ""base"": { ""ambient"": { ""file"": ""my_ambient.wav"", ""bpm"": 120, ""fadeIn"": 0.2 }, ""battle1"": { ""file"": ""my_battle.wav"", ""bpm"": 120 }, ""battel2"": { ""file"": ""my_battle.wav"" } },
+                        ""endings"": { ""death"": { ""file"": ""nowhere.mp3"" } },
+                        ""nonsense"": { }
+                    }");
+                    AudioPaths.OverrideUser(scratch);
+                    var lib2 = new AudioLibrary();
+                    yield return lib2.Load(_host);
+                    Check(lib2.UserMusic != null && lib2.UserMusic.Slots.Count == 5, $"music.json is read ({(lib2.UserMusic != null ? lib2.UserMusic.Slots.Count : 0)} slots)");
+                    var probs = lib2.UserMusic != null ? string.Join(" | ", lib2.UserMusic.Problems) : "";
+                    Check(probs.Contains("battel2") && probs.Contains("nowhere.mp3") && probs.Contains("nonsense"), "and its mistakes are named, not fatal: " + probs);
+                    var r2 = NewRig(true, lib2);
+                    var s2 = r2.Sys; var m2 = s2.Mixer;
+                    GameEvents.Raise(MissionEvents.MusicState, "ambient");
+                    for (int i = 0; i < 12; i++) { r2.Step(0.25f); yield return null; }
+                    Check(s2.Music.Track == "ambient" && s2.Music.Log.Any(l => l.Contains("my_ambient.wav")), "your own track plays for a base state");
+                    var rb = s2.RecordedAudio();
+                    float tA = Tone(rb.Ch[0], r2.Tick * (R / Sim.Hz) - R * 2, R * 2, 330f);
+                    Check(tA > 0.02f, $"(it is your 330 Hz: {Db(tA):0.0} dB)");
+                    GameEvents.Raise(MissionEvents.MusicState, "battle1");
+                    for (int i = 0; i < 12; i++) { r2.Step(0.25f); yield return null; }
+                    double beatFrames = m2.FramesPerBeat;
+                    double bp = m2.LastMusicStartClock % beatFrames; if (bp > beatFrames / 2) bp -= beatFrames;
+                    Check(Math.Abs(m2.FramesPerBeat - 24000.0) < 2.0 && Math.Abs(bp) < 3.0, $"a tempo in music.json puts the change on its beat (120 BPM: {m2.FramesPerBeat:0} frames a beat, {bp:0} off)");
+                    ThemeOn("escort", "lector");
+                    float tt0 = r2.Now; float tFull2 = -1f;
+                    for (int i = 0; i < 4 * 6; i++) { r2.Step(0.25f); if (i % 8 == 0) yield return null; if (tFull2 < 0f && m2.ThemeFade >= 0.999f) tFull2 = r2.Now; }
+                    var rt = s2.RecordedAudio();
+                    float t220 = Tone(rt.Ch[0], r2.Tick * (R / Sim.Hz) - R * 2, R * 2, 220f);
+                    Check(s2.Music.ThemePlaying == "lector" && tFull2 > 0f && tFull2 - tt0 < 2.0f && m2.BaseDuck < 0.03f, $"your track plays for the theme, with your fade (1 s set: full at +{tFull2 - tt0:0.0} s) and your mode (replace: base {m2.BaseDuck:0.000})");
+                    Check(t220 > 0.01f && s2.Music.Log.Any(l => l.Contains("my_lector.wav") && l.Contains("priority 50")), $"(it is your 220 Hz: {Db(t220):0.0} dB; its priority is yours)");
+                    ThemeOff("escort", "lector");
+                    float tOff2 = r2.Now; float tGone2 = -1f;
+                    for (int i = 0; i < 4 * 6; i++) { r2.Step(0.25f); if (i % 8 == 0) yield return null; if (tGone2 < 0f && m2.ThemeLayerCount == 0) tGone2 = r2.Now; }
+                    Check(tGone2 > 0f && Math.Abs((tGone2 - tOff2) - 2f) < 0.8f, $"and goes out over your 2 s ({tGone2 - tOff2:0.0} s)");
+                    // another mission has no entry for the Lector: the built-in theme plays for it
+                    GameEvents.Raise(MissionEvents.Theme, ThemeEvent.StopAll, 0f);
+                    ThemeOn("dogfight", "lector"); r2.Step(1f); yield return null; r2.Step(1f);
+                    Check(s2.Music.ThemePlaying == "lector" && s2.Music.Log.Any(l => l.Contains("theme lector on") && l.Contains("theme_lector") && l.Contains("built-in")), "a mission you named nothing for gets the built-in theme");
+                    Check(m2.ClippedSamples == 0, "and none of it clips");
+                    // the file is removed from the folder: its slot falls back to the built-in theme the next time
+                    File.Delete(Path.Combine(scratch, "my_lector.wav"));
+                    var lib3 = new AudioLibrary(); yield return lib3.Load(_host);
+                    var r3 = NewRig(true, lib3); GameEvents.Raise(MissionEvents.MusicState, "ambient");
+                    for (int i = 0; i < 8; i++) { r3.Step(0.25f); yield return null; }
+                    ThemeOn("escort", "lector"); r3.Step(1f); yield return null; r3.Step(1f);
+                    Check(r3.Sys.Music.ThemePlaying == "lector" && r3.Sys.Music.Log.Any(l => l.Contains("theme lector on") && l.Contains("built-in")), "take your file away and the built-in theme plays, with your fades");
+                }
+                finally { AudioPaths.OverrideUser(prev); try { Directory.Delete(scratch, true); } catch (Exception) { } }
             }
 
             // ------------------------------------------------------------------------------------------------ the player's own files

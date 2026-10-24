@@ -12,6 +12,7 @@ namespace Monolith.Audio
     public static class AudioPaths
     {
         static string _user;
+        static bool _userFixed;
 
         /// <summary>The built-in sounds: music, effects and radio voices, as made by tools/audio.</summary>
         public static string BuiltIn => Path.Combine(Application.streamingAssetsPath, "Audio");
@@ -23,13 +24,22 @@ namespace Monolith.Audio
             {
                 if (_user != null) return _user;
                 var flag = CommandLine.Get("-mnAudioUser");
-                if (!string.IsNullOrEmpty(flag)) return _user = flag;
+                if (!string.IsNullOrEmpty(flag)) { _userFixed = true; return _user = flag; }
                 return _user = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "Audio");
             }
         }
 
         /// <summary>Point the player's Audio folder somewhere else (the checks use a scratch folder).</summary>
-        public static void OverrideUser(string dir) { _user = dir; }
+        public static void OverrideUser(string dir) { _user = dir; _userFixed = true; }
+
+        /// <summary>The player's music.json: beside Monolith.exe, or inside the Audio folder (the first that exists); null when there is none. (With -mnAudioUser, only that folder is looked in.)</summary>
+        public static string FindMusicConfig()
+        {
+            string beside = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "music.json");
+            string inUser = Path.Combine(User, "music.json");               // reading User first: it sets whether the folder was fixed by a flag
+            if (!_userFixed && File.Exists(beside)) return beside;
+            return File.Exists(inUser) ? inUser : null;
+        }
 
         public static string SettingsFile => Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "audio.json");
 

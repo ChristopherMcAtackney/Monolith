@@ -159,6 +159,7 @@ members (`"Choir 2"`) or `"<player>"`. Delays are seconds after the fact first b
 | `beams` | `{ "do": "beams", "ship": "Small Mercy", "free": true }` | FS2's beam-free / beam-lock |
 | `turrets` | `{ "do": "turrets", "ship": "Oculus", "fire": true }` | a capital's guns and flak wake (or hold; beams follow `beams`) |
 | `music` | `{ "do": "music", "state": "battle3", "for": 30 }`, `{ "do": "music", "auto": true }`, `{ "do": "music", "sting": "enemy_arrival" }` | the music state (`ambient`, `battle1..3`, `victory`, `failure`, `death`) |
+| `theme` | `{ "do": "theme", "name": "lector" }` fades a theme track in over the base score; `{ "do": "theme", "name": "lector", "on": false }` fades it out. Optional: `fadeIn`, `fadeOut` (seconds), `priority` (the higher one plays when two are on), `volume` (dB), `mode` (`duck`: the base score drops under it; `replace`: the base falls silent), `duck` (dB) | the music's **second layer** (below). Built-in themes: `lector` (Earth's picket corvette), `destroyer` (Earth's capital ship), `outpost` (an isolated station) |
 | `end` | `{ "do": "end", "result": "victory", "text": "AREA CLEAR" }` | `victory`, `defeat`, `neutral`; the debrief follows |
 | `cond` | `{ "do": "cond", "cases": [ { "if": {...}, "then": [...] }, { "else": [...] } ] }` | the first case that holds |
 | `invulnerable` | `{ "do": "invulnerable", "ship": "Tamsin", "on": true }` | damage never kills it |
@@ -194,6 +195,13 @@ seated and powered, a scan detects a powered player in range, a knock-out destro
 and finds a powered one, a hit that takes the port engine while drones come in, a briefing at the plan table and the loadout at the rack.
 
 ## Music, juice, HUD
+
+**Themes (the music's second layer).** The base score (`music` actions and `auto`) follows the fight: ambient, battle 1 to 3. A mission moment can lay a *theme* over it: `{ "do": "theme", "name": "lector" }` in the event that
+brings the Lector in, and `{ "do": "theme", "name": "lector", "on": false }` in the event that ends it (the Lector destroyed or gone). The theme fades in (seconds set per theme, `fadeIn` here overrides), takes over (the base keeps playing
+underneath, ducked or, with `"mode": "replace"`, silent), and fades back to the base when it goes off. Two themes on at once: the higher `priority` plays, the other waits and comes back when it ends. A theme stops by itself when the
+mission ends or starts again. The name is letters, digits and underscores. The audio finds the sound by `"<mission id>/<name>"` then `"<name>"` in the player's `music.json` (their own MP3, WAV or OGG, see `tools/audio/MUSIC.txt`), and
+falls back to the synthesised theme of that name if there is one (`lector`, `destroyer`, `outpost`); a theme nobody has a sound for plays nothing and is logged once. An event can switch several: use one `theme` action per theme.
+So a mission needs no music file to use a theme, and the player can give any of them a track.
 
 The runtime only publishes: `music_state` / `music_sting` and `GameWorld.Mission.Music` (the audio system will play them; auto follows how
 many hostiles are close or on the player), `jump_in` / `jump_out` (`Juice/Fx/Jumps` draws them: a scene attaches it to its juice director with

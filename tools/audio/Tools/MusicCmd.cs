@@ -94,6 +94,23 @@ namespace Monolith.AudioTools
                         + ", \"bpm\": " + rep.Bpm.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + ", \"bars\": " + rep.Bars + ", \"lufs\": " + rep.Lufs.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)
                         + ", \"truePeakDb\": " + rep.TruePeakDb.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " }";
                 }
+                // the themes: a theme track's own section (the cue's "theme" object in audio_src/music.json), merged with what is there, written next to the tracks
+                var themes = new SortedDictionary<string, string>();
+                if (File.Exists(catPath))
+                {
+                    var old = JsonDocument.Parse(File.ReadAllText(catPath)).RootElement;
+                    if (old.TryGetProperty("themes", out var ot)) foreach (var p in ot.EnumerateObject()) themes[p.Name] = p.Value.GetRawText();
+                }
+                var specDoc = JsonDocument.Parse(File.ReadAllText(specPath), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true }).RootElement.GetProperty("cues");
+                foreach (var rep in reports)
+                {
+                    if (!specDoc.TryGetProperty(rep.Name, out var cue) || !cue.TryGetProperty("theme", out var th)) continue;
+                    string track = specs[rep.Name].Track ?? rep.Name;
+                    var ic = System.Globalization.CultureInfo.InvariantCulture;
+                    string F(string k, double d) => (th.TryGetProperty(k, out var v) ? v.GetDouble() : d).ToString("0.##", ic);
+                    themes[th.GetProperty("name").GetString()] = "{ \"track\": \"" + track + "\", \"fadeIn\": " + F("fadeIn", 4) + ", \"fadeOut\": " + F("fadeOut", 6) + ", \"priority\": " + F("priority", 10)
+                        + ", \"mode\": \"" + (th.TryGetProperty("mode", out var md) ? md.GetString() : "duck") + "\", \"duckDb\": " + F("duckDb", -10) + ", \"volumeDb\": " + F("volumeDb", 0) + " }";
+                }
                 string loopSec = entries.ContainsKey("battle1") ? JsonDocument.Parse(entries["battle1"]).RootElement.GetProperty("seconds").GetDouble().ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) : "68.571";
                 var sb = new StringBuilder();
                 sb.Append("{" + Environment.NewLine);
@@ -102,6 +119,9 @@ namespace Monolith.AudioTools
                 sb.Append("  \"bpm\": 112, \"beatsPerBar\": 4, \"loopSeconds\": " + loopSec + "," + Environment.NewLine);
                 sb.Append("  \"tracks\": {" + Environment.NewLine);
                 sb.Append(string.Join("," + Environment.NewLine, entries.Select(e => "    \"" + e.Key + "\": " + e.Value)));
+                sb.Append(Environment.NewLine + "  }," + Environment.NewLine);
+                sb.Append("  \"themes\": {" + Environment.NewLine);
+                sb.Append(string.Join("," + Environment.NewLine, themes.Select(e => "    \"" + e.Key + "\": " + e.Value)));
                 sb.Append(Environment.NewLine + "  }" + Environment.NewLine + "}" + Environment.NewLine);
                 File.WriteAllText(catPath, sb.ToString());
             }

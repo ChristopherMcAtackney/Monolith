@@ -15,7 +15,7 @@ namespace Monolith.Mission
         public static readonly string[] Ops =
         {
             "arrive", "depart", "radio", "objective", "order", "beams", "turrets", "music", "end", "cond", "invulnerable", "log",
-            "scan", "callOut", "knockOut", "cabinLights",
+            "scan", "callOut", "knockOut", "cabinLights", "theme",
         };
 
         public abstract void Run(MissionRuntime rt);
@@ -101,6 +101,18 @@ namespace Monolith.Mission
                     if (sting != null && !MissionMusic.IsSting(sting)) ctx.Errors.Add($"{where}.sting: '{sting}' ({string.Join(", ", MissionMusic.Stings)})");
                     if (state == null && sting == null && !hasAuto) ctx.Errors.Add($"{where}: music needs state, sting or auto");
                     return new Music(state, sting, hasAuto ? auto : (bool?)null, hold);
+                }
+                case "theme":
+                {
+                    // a theme track over the base score: { "do": "theme", "name": "lector" } fades it in, { "do": "theme", "name": "lector", "on": false } fades it out
+                    string name = r.Str("name", required: true);
+                    bool on = r.Bool("on", true);
+                    float fadeIn = r.Float("fadeIn", float.NaN), fadeOut = r.Float("fadeOut", float.NaN), prio = r.Float("priority", float.NaN), vol = r.Float("volume", float.NaN), duck = r.Float("duck", float.NaN);
+                    string mode = r.Str("mode");
+                    if (name != null && !System.Text.RegularExpressions.Regex.IsMatch(name, "^[A-Za-z0-9_]+$")) ctx.Errors.Add($"{where}.name: '{name}' is letters, digits and underscores (it names a theme in music.json: \"<mission>/<name>\")");
+                    if (mode != null && mode != "duck" && mode != "replace") ctx.Errors.Add($"{where}.mode: '{mode}' (duck or replace)");
+                    if (!float.IsNaN(fadeIn) && fadeIn < 0f || !float.IsNaN(fadeOut) && fadeOut < 0f) ctx.Errors.Add($"{where}: fadeIn and fadeOut are seconds, not negative");
+                    return name == null ? null : new Theme(name, on, fadeIn, fadeOut, prio, vol, mode, duck);
                 }
                 case "end":
                 {
@@ -238,6 +250,15 @@ namespace Monolith.Mission
                 if (_auto.HasValue) rt.Music.SetAuto(_auto.Value);
             }
             public override string Describe() => "music" + (_state != null ? " " + _state : "") + (_sting != null ? " sting " + _sting : "") + (_auto.HasValue ? " auto " + _auto.Value : "") + (_hold > 0f ? $" for {F(_hold)}s" : "");
+        }
+
+        /// <summary>A theme track on or off over the base score (see MissionMusic.Theme).</summary>
+        sealed class Theme : Act
+        {
+            readonly string _name, _mode; readonly bool _on; readonly float _in, _out, _prio, _vol, _duck;
+            public Theme(string name, bool on, float fadeIn, float fadeOut, float priority, float volume, string mode, float duck) { _name = name; _on = on; _in = fadeIn; _out = fadeOut; _prio = priority; _vol = volume; _mode = mode; _duck = duck; }
+            public override void Run(MissionRuntime rt) => rt.Music.Theme(new ThemeEvent { Name = _name, On = _on, FadeIn = _in, FadeOut = _out, Priority = _prio, VolumeDb = _vol, Mode = _mode, DuckDb = _duck });
+            public override string Describe() => $"theme {_name} {(_on ? "on" : "off")}" + (float.IsNaN(_in) ? "" : $" fadeIn {F(_in)}s") + (float.IsNaN(_out) ? "" : $" fadeOut {F(_out)}s");
         }
 
         sealed class End : Act

@@ -147,7 +147,7 @@ namespace Monolith.Audio
 
         // ------------------------------------------------------------------------------------------------ control (any thread)
 
-        enum CmdType { Play, Ctl, Stop, StopAll, BusGain, MasterGain, BigDuck, TimePitch, MusicPlay, MusicStop, Sting, Tone, ToneOff, MusicTempo }
+        enum CmdType { Play, Ctl, Stop, StopAll, BusGain, MasterGain, BigDuck, TimePitch, MusicPlay, MusicStop, Sting, Tone, ToneOff, MusicTempo, ThemePlay, ThemeStop }
 
         sealed class Cmd
         {
