@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "earth_corvette",
+  "name": "Warden-class corvette",
+  "role": "Earth's corvette: flak and anti-fighter guns. Model: Resources/ShipArt/earth_corvette (art_src/earth_corvette).",
+  "flight": {
+    "topSpeed": {
+      "value": 32,
+      "unit": "m/s",
+      "source": "FS2 design appendix (docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md, flight table): corvette 30-35 m/s"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 design appendix: capital ships have no reverse in the slice"
+    },
+    "rotationTime": {
+      "value": [
+        100,
+        100,
+        75
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "FS2 design appendix: corvette turn 100 s (roll 70-80 s)"
+    },
+    "rotDamp": {
+      "value": 1.5,
+      "unit": "s (turn-rate time constant)",
+      "source": "FS2 design appendix: corvette rot damp 1-2 s"
+    },
+    "sideDamp": {
+      "value": 1.5,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "Estimate: capital ships do not slide in FS2 (side damping is not in the appendix); set equal to the turn damping"
+    },
+    "forwardAccel": {
+      "value": 8,
+      "unit": "s (speed-up time constant)",
+      "source": "FS2 design appendix: corvette accel/decel 8 / 4 s"
+    },
+    "forwardDecel": {
+      "value": 4,
+      "unit": "s (slow-down time constant)",
+      "source": "FS2 design appendix: corvette accel/decel 8 / 4 s"
+    },
+    "afterburner": {
+      "value": false,
+      "unit": "bool",
+      "source": "FS2 design appendix: capital ships have no afterburner"
+    },
+    "afterburnerSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "No afterburner"
+    },
+    "afterburnerAccel": {
+      "value": 0,
+      "unit": "s",
+      "source": "No afterburner"
+    },
+    "afterburnerFuel": {
+      "value": 0,
+      "unit": "fuel units",
+      "source": "No afterburner"
+    },
+    "afterburnerBurnRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "afterburnerRechargeRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "mass": {
+      "value": 70000000.0,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        76,
+        91,
+        374
+      ],
+      "unit": "m (width, height, length)",
+      "source": "The model's own bounds (Resources/ShipArt/earth_corvette.ship.json), sensor boom and fins included"
+    }
+  }
+}

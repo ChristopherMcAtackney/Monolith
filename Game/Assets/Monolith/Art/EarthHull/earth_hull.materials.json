@@ -1,0 +1,238 @@
+{
+ "format": "monolith-ship-materials/1",
+ "about": "HDRP material recipes for Earth's hull set. baseColor and emissiveColor are sRGB display values; emissiveNits scales the emissive map. ShipArtSetup makes the assets.",
+ "materials": [
+  {
+   "blender": "mn_earth_plate",
+   "name": "MN_EarthPlate",
+   "baseColor": [
+    0.85,
+    0.85,
+    0.87
+   ],
+   "baseMap": "earth_plate_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.75
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_trim",
+   "name": "MN_EarthTrim",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_trim_albedo",
+   "normalMap": "earth_trim_normal",
+   "maskMap": "earth_trim_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    1
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.5,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.5,
+   "specularAA": true,
+   "emissiveMap": "earth_trim_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 42000
+  },
+  {
+   "blender": "mn_earth_lights",
+   "name": "MN_EarthLights",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.6,
+   "emissiveMap": "earth_lights_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 150000
+  },
+  {
+   "blender": "mn_earth_chrome",
+   "name": "MN_EarthChrome",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_chrome_albedo",
+   "normalMap": "earth_chrome_normal",
+   "maskMap": "earth_chrome_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.9
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plume",
+   "name": "MN_EarthPlume",
+   "shader": "HDRP/Unlit",
+   "surface": "additive",
+   "emissiveMap": "earth_plume_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 15000,
+   "noShadows": true
+  },
+  {
+   "blender": "mn_earth_engine",
+   "name": "MN_EarthEngine",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.4,
+   "emissiveMap": "earth_engine_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 60000
+  },
+  {
+   "blender": "mn_earth_plate_b",
+   "name": "MN_EarthPlateB",
+   "baseColor": [
+    0.97,
+    0.97,
+    1.0
+   ],
+   "baseMap": "earth_plate_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.75
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plate_c",
+   "name": "MN_EarthPlateC",
+   "baseColor": [
+    0.7,
+    0.7,
+    0.73
+   ],
+   "baseMap": "earth_plate_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.75
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  }
+ ],
+ "decal": {
+  "name": "MN_EarthDamageDecal",
+  "baseMap": "earth_damage_albedo",
+  "normalMap": "earth_damage_normal",
+  "maskMap": "earth_damage_mask",
+  "emissiveMap": "earth_damage_emissive",
+  "emissiveNits": 14000,
+  "affectEmission": true
+ }
+}

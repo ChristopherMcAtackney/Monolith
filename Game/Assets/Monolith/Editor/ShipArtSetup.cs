@@ -59,6 +59,7 @@ namespace Monolith.EditorTools
             foreach (var m in (JArray)spec["materials"])
             {
                 string name = (string)m["name"];
+                if ((string)m["shader"] == "HDRP/Unlit") { set.ByBlenderName[(string)m["blender"]] = EnsureUnlitGlow(m, dir, matDir); continue; }
                 var baseCol = Col(m["baseColor"], Color.white);
                 var mat = Hdrp.EnsureLit($"{matDir}/{name}.mat", baseCol, (float?)m["metallic"] ?? 0f, (float?)m["smoothness"] ?? 0.5f);
                 Tex(mat, "_BaseColorMap", dir, (string)m["baseMap"]);
@@ -83,6 +84,12 @@ namespace Monolith.EditorTools
                     var tiling = m["detailTiling"] != null ? new Vector2((float)m["detailTiling"][0], (float)m["detailTiling"][1]) : Vector2.one;
                     mat.SetTextureScale("_DetailMap", tiling);
                 }
+                if ((bool?)m["specularAA"] == true)
+                {
+                    mat.SetFloat("_EnableGeometricSpecularAA", 1f);       // tames the glitter of sun on tiny bevels and fine scratches
+                    mat.SetFloat("_SpecularAAScreenSpaceVariance", 0.2f);
+                    mat.SetFloat("_SpecularAAThreshold", 0.2f);
+                }
                 float nits = (float?)m["emissiveNits"] ?? 0f;
                 var emCol = Col(m["emissiveColor"], Color.white);
                 mat.SetFloat("_UseEmissiveIntensity", 1f);
@@ -98,6 +105,36 @@ namespace Monolith.EditorTools
             }
             if (spec["decal"] is JObject dec) set.Decal = EnsureDecal(dec, dir, matDir);
             return set;
+        }
+
+        /// <summary>An emissive-only HDRP/Unlit surface, additive and double sided: engine plumes. Light, not a solid.</summary>
+        static Material EnsureUnlitGlow(JToken m, string dir, string matDir)
+        {
+            string name = (string)m["name"];
+            string path = $"{matDir}/{name}.mat";
+            var shader = Shader.Find("HDRP/Unlit") ?? throw new InvalidOperationException("shader HDRP/Unlit not found");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null) { mat = new Material(shader); AssetDatabase.CreateAsset(mat, path); MnLog.Info("created " + path); }
+            mat.shader = shader;
+            mat.SetColor("_UnlitColor", Color.black);
+            Tex(mat, "_EmissiveColorMap", dir, (string)m["emissiveMap"]);
+            float nits = (float?)m["emissiveNits"] ?? 0f;
+            mat.SetFloat("_UseEmissiveIntensity", 1f);
+            mat.SetFloat("_EmissiveIntensityUnit", 0f);
+            mat.SetFloat("_EmissiveIntensity", nits);
+            mat.SetColor("_EmissiveColorLDR", Color.white);
+            mat.SetColor("_EmissiveColor", Color.white * nits);
+            mat.SetFloat("_SurfaceType", 1f);                  // transparent
+            mat.SetFloat("_BlendMode", 1f);                    // additive
+            mat.SetFloat("_ZWrite", 0f);
+            mat.SetFloat("_TransparentZWrite", 0f);
+            mat.SetFloat("_DoubleSidedEnable", 1f);
+            mat.SetFloat("_TransparentCullMode", 0f);
+            mat.SetFloat("_EnableFogOnTransparent", 0f);
+            HDShaderUtils.ResetMaterialKeywords(mat);
+            EditorUtility.SetDirty(mat);
+            MnLog.Info($"SHIPART unlit glow {name}: keywords [{string.Join(" ", mat.shaderKeywords)}] queue {mat.renderQueue} blend {mat.GetFloat("_SrcBlend")}/{mat.GetFloat("_DstBlend")}");
+            return mat;
         }
 
         static Material EnsureDecal(JObject d, string dir, string matDir)
@@ -198,8 +235,9 @@ namespace Monolith.EditorTools
                     r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
                     r.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
                     r.motionVectorGenerationMode = MotionVectorGenerationMode.Object;
-                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                    r.receiveShadows = true;
+                    bool glow = shared.Length > 0 && shared[0] != null && shared[0].name == "MN_EarthPlume";
+                    r.shadowCastingMode = glow ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
+                    r.receiveShadows = !glow;
                 }
 
                 // Subsystems first: their intact renderers join the LODs, the variants and debris stay out of them.

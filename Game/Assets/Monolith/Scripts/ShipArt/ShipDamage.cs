@@ -96,7 +96,7 @@ namespace Monolith.ShipArt
             severity01 = Mathf.Clamp01(severity01);
             int row = severity01 < 0.25f ? 0 : severity01 < 0.55f ? 1 : severity01 < 0.85f ? 2 : 3;
             int seed = Mathf.RoundToInt(worldPoint.x * 7.1f + worldPoint.y * 13.7f + worldPoint.z * 3.3f);
-            PlaceDecal(worldPoint, worldNormal, Mathf.Max(0.5f, radiusMetres) * 2.2f, row, seed);
+            PlaceDecal(worldPoint, worldNormal, Mathf.Max(0.5f, radiusMetres) * 4.0f, row, seed);
             for (int i = 0; i < _sites.Count; i++)
             {
                 float d = Vector3.Distance(_sites[i].transform.position, worldPoint);
@@ -174,7 +174,7 @@ namespace Monolith.ShipArt
             var n = normal.normalized;
             var t = dp.transform;
             t.gameObject.SetActive(true);
-            t.position = point + n * 1.75f;
+            t.position = point + n * 0.6f;          // the projection volume reaches 1.25 m below the surface point and 2.25 m above it (plates stand up to half a metre)
             t.rotation = Quaternion.LookRotation(-n, Mathf.Abs(Vector3.Dot(n, Vector3.up)) > 0.95f ? Vector3.forward : Vector3.up) * Quaternion.Euler(0f, 0f, spin);
             dp.size = new Vector3(size, size, 3.5f);
             dp.pivot = Vector3.zero;

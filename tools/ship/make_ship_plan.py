@@ -36,6 +36,34 @@ def world(p, orient):
     return [round(x, 3) for x in apply(rot(*orient), p)]
 
 
+def look_rot(pos, target, up):
+    """Unity Euler (pitch, yaw, roll) for a camera at ``pos`` looking at ``target`` with its up as close to ``up`` as it can be."""
+    f = [target[i] - pos[i] for i in range(3)]
+    n = math.sqrt(sum(x * x for x in f))
+    f = [x / n for x in f]
+    r = [up[1] * f[2] - up[2] * f[1], up[2] * f[0] - up[0] * f[2], up[0] * f[1] - up[1] * f[0]]      # up x forward (Unity is left-handed)
+    rn = math.sqrt(sum(x * x for x in r))
+    r = [x / rn for x in r]
+    u = [f[1] * r[2] - f[2] * r[1], f[2] * r[0] - f[0] * r[2], f[0] * r[1] - f[1] * r[0]]
+    pitch = -math.degrees(math.asin(max(-1, min(1, f[1]))))
+    yaw = math.degrees(math.atan2(f[0], f[2]))
+    roll = math.degrees(math.atan2(r[1], u[1]))
+    return [round(pitch, 3), round(yaw, 3), round(roll, 3)]
+
+
+def shot(name, cam, look, fov, orient):
+    """A still in the ship's frame: world position, and a rotation that keeps the ship's own up upward in the picture."""
+    R = rot(*orient)
+    up = apply(R, (0, 1, 0))
+    p, t = world(cam, orient), world(look, orient)
+    return {"name": name, "pos": p, "rot": look_rot(p, t, up), "fov": fov}
+
+
+def hit(pos, normal, radius, severity, orient):
+    """A hull hit given in the ship's frame, as the scene options want it (world position and normal)."""
+    return {"pos": world(pos, orient), "normal": world(normal, orient), "radius": radius, "severity": severity}
+
+
 def sun_in_ship(orient):
     R = rot(*orient)
     return [sum(R[k][i] * SUN[k] for k in range(3)) for i in range(3)]       # R^T * SUN
@@ -67,6 +95,11 @@ def solve_orientation(target, prefer_level=True):
     return best[1], best[2]
 
 
+def fwd_of(rot_euler):
+    p, y = math.radians(rot_euler[0]), math.radians(rot_euler[1])
+    return (math.cos(p) * math.sin(y), -math.sin(p), math.cos(p) * math.cos(y))
+
+
 def project(p_world, cam, look, fov, aspect=16 / 9):
     f = [look[i] - cam[i] for i in range(3)]
     n = math.sqrt(sum(x * x for x in f))
@@ -88,18 +121,16 @@ def project(p_world, cam, look, fov, aspect=16 / 9):
 def corvette():
     # The Sun in the ship's frame (x starboard, y up, z bow): from ahead, high and a little to starboard, so it rakes the starboard flank and the top deck.
     orient, err = solve_orientation((0.30, 0.50, 0.81))
-    fighter = {"pos_ship": (52.0, 26.0, 250.0), "rot": [0.0, 0.0, 0.0]}
+    fighter = {"pos_ship": (46.0, 12.0, 122.0), "rot": [0.0, 0.0, 0.0]}
     shots = [
         ("close_hull", (44.0, 6.0, -78.0), (14.0, 6.0, 40.0), 50),
         ("medium_three_quarter", (150.0, 70.0, 250.0), (0.0, 10.0, -10.0), 34),
         ("wide_sun_rake", (520.0, 55.0, 40.0), (0.0, 8.0, 0.0), 30),
-        ("shadow_side", (-170.0, 38.0, -250.0), (-5.0, 8.0, -30.0), 38),
-        ("scale_fighter", (112.0, 24.0, 150.0), (22.0, 14.0, 228.0), 40),
+        ("shadow_side", (-140.0, 30.0, -290.0), (-6.0, 6.0, -95.0), 48),
+        ("scale_fighter", (135.0, 28.0, 30.0), (18.0, 8.0, 125.0), 44),
     ]
     perf_cam = ((52.0, 10.0, -130.0), (4.0, 6.0, 60.0), 62)
-    out = []
-    for name, cam, look, fov in shots:
-        out.append({"name": name, "pos": world(cam, orient), "lookAt": world(look, orient), "fov": fov})
+    out = [shot(name, cam, look, fov, orient) for name, cam, look, fov in shots]
     # the fighter flies the ship's heading, wings level, in the ship's own frame
     frot = fighter["rot"]
     plan = {
@@ -108,7 +139,7 @@ def corvette():
                          "fighter": {"pos": world(fighter["pos_ship"], orient), "rot": [orient[0], orient[1], orient[2]]}},
         "defaults": {"width": 1920, "height": 1080, "warmup": 1.5, "perfWarmup": 2.0},
         "stills": out,
-        "perf": [{"name": "corvette_fills_frame", "seconds": 12, "pos": world(perf_cam[0], orient), "lookAt": world(perf_cam[1], orient), "fov": perf_cam[2]}],
+        "perf": [dict(shot("corvette_fills_frame", perf_cam[0], perf_cam[1], perf_cam[2], orient), seconds=12)],
     }
     dmg = json.loads(json.dumps(plan))
     dmg["sceneOptions"].pop("fighter")
@@ -117,13 +148,16 @@ def corvette():
         "health": {"SUB_flak_S01": 0.0, "SUB_aaf_D03": 0.0},
         "debrisAge": 1.3,
         "hull": 0.75,
+        "hits": [hit((19.4, 6.0, -112.0), (1, 0, 0), 4.0, 0.9, orient), hit((19.3, 9.0, -127.0), (1, 0, 0), 3.0, 0.7, orient),
+                 hit((19.2, 0.0, -140.0), (1, 0, 0), 5.0, 0.95, orient), hit((10.0, 13.4, -118.0), (0, 1, 0), 3.5, 0.8, orient)],
     }
     dmg["stills"] = [
-        {"name": "damage_three_quarter", "pos": world((170.0, 80.0, 230.0), orient), "lookAt": world((0.0, 8.0, -20.0), orient), "fov": 36},
-        {"name": "damage_aft", "pos": world((120.0, 38.0, -330.0), orient), "lookAt": world((15.0, 6.0, -145.0), orient), "fov": 40},
-        {"name": "damage_close", "pos": world((52.0, 20.0, -40.0), orient), "lookAt": world((20.0, 10.0, -125.0), orient), "fov": 50},
+        shot("damage_three_quarter", (170.0, 80.0, 230.0), (0.0, 8.0, -20.0), 36, orient),
+        shot("damage_aft", (120.0, 38.0, -330.0), (15.0, 6.0, -145.0), 40, orient),
+        shot("damage_close", (52.0, 20.0, -40.0), (20.0, 10.0, -125.0), 50, orient),
+        shot("damage_flank", (62.0, 8.0, -78.0), (19.0, 4.0, -126.0), 46, orient),
     ]
-    dmg["perf"] = []
+    dmg["perf"] = [dict(shot("corvette_damaged_fills_frame", perf_cam[0], perf_cam[1], perf_cam[2], orient), seconds=12)]
     return plan, dmg, fighter, shots, orient, err
 
 
@@ -140,9 +174,11 @@ def main():
     if "--check" in sys.argv:
         fw = world(fighter["pos_ship"], orient)
         for st in plan["stills"]:
-            pr = project(fw, st["pos"], st["lookAt"], st["fov"])
+            look = [st["pos"][i] + 100 * v for i, v in enumerate(fwd_of(st["rot"]))]
+            pr = project(fw, st["pos"], look, st["fov"])
             vis = pr is not None and abs(pr[0]) < 1.05 and abs(pr[1]) < 1.05
             print(f"  {st['name']:<22} fighter at {pr}  {'IN FRAME' if vis else 'out'}")
 
 
-main()
+if __name__ == "__main__":
+    main()

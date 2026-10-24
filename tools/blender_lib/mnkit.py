@@ -17,7 +17,7 @@ import numpy as np
 from . import mnmesh
 from .mnmesh import Frame, Patch, norm, cross, chamfered_rect, EDGE_NAMES
 
-PLATE, TRIM, LIGHTS, ENGINE = 0, 1, 2, 3          # material slots, in the order the model script lists them
+PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C, PLUME = 0, 1, 2, 3, 4, 5, 6, 7          # material slots, in the order the model script lists them
 
 # running-light palette (earth_lights_emissive.png): 8 swatches of 16 px
 LIGHT_WHITE, LIGHT_COLD, LIGHT_RED, LIGHT_GREEN, LIGHT_AMBER, LIGHT_BLUE, LIGHT_EMBER, LIGHT_VIOLET = range(8)
@@ -172,7 +172,12 @@ class Kit:
         h = rng.uniform(*height, size=m) + step * ri_
         ch = np.minimum(chamfer, h * 0.9)
         off = rng.uniform(0, 1, size=(m, 2))
-        mb.slabs(P, n, h, ch, PLATE, TRIM, tile=12.0, tile_off=off, edge_rect=self.rect("edge_paint"), edge_tile=8.0)
+        # plate-to-plate variety: three batches of paint, a plain one, a lighter one and a darker one
+        batch = rng.choice(3, size=m, p=[0.55, 0.2, 0.25])
+        for bi, mat in enumerate((PLATE, PLATE_B, PLATE_C)):
+            g = batch == bi
+            if g.any():
+                mb.slabs(P[g], n[g], h[g], ch[g], mat, TRIM, tile=12.0, tile_off=off[g], edge_rect=self.rect("edge_paint"), edge_tile=8.0)
         self.last_cells = np.stack([a0, a1, b0, b1, h], axis=1)
         count = m
         if sub_prob > 0:
@@ -190,8 +195,13 @@ class Kit:
                 svv = np.stack([S[:, 2], S[:, 2], S[:, 3], S[:, 3]], axis=1) / Lv
                 SP = patch.pt(suu, svv) + patch.normal() * S[:, 4][:, None, None]
                 sh = rng.uniform(*sub_height, size=len(S))
-                mb.slabs(SP, np.tile(patch.normal(), (len(S), 1)), sh, np.minimum(0.06, sh * 0.9), PLATE, TRIM, tile=12.0,
-                         tile_off=rng.uniform(0, 1, size=(len(S), 2)), edge_rect=self.rect("edge_paint"), edge_tile=8.0)
+                sb_ = rng.choice(3, size=len(S), p=[0.5, 0.3, 0.2])
+                soff = rng.uniform(0, 1, size=(len(S), 2))
+                for bi, mat in enumerate((PLATE, PLATE_B, PLATE_C)):
+                    g = sb_ == bi
+                    if g.any():
+                        mb.slabs(SP[g], np.tile(patch.normal(), (int(g.sum()), 1)), sh[g], np.minimum(0.06, sh[g] * 0.9), mat, TRIM, tile=12.0,
+                                 tile_off=soff[g], edge_rect=self.rect("edge_paint"), edge_tile=8.0)
                 count += len(S)
         return count
 
@@ -251,18 +261,21 @@ class Kit:
             self.ctx.ship.add_light(pos, kind, LIGHT_RGB[colour], size, blink)
 
     # ---------------------------------------------------------------------------------------------- solid parts
-    def ring(self, y0, y1, outer, inner=None, centre=(0.0, 0.0), mb=None, rect_name="chrome_brushed", bevel=0.6):
-        """A chrome collar round the hull: outer = (hw, hh, c). A stepped rim: the band itself and a thinner raised lip at each face."""
+    def ring(self, y0, y1, outer, inner=None, centre=(0.0, 0.0), mb=None, rect_name="chrome_brushed", bevel=0.6, plate=False):
+        """A collar round the hull: outer = (hw, hh, c). A stepped rim: the band itself and a thinner raised lip at each face. Chrome by default;
+        ``plate=True`` makes a rib in the armour paint instead (matte black, chrome only on the corner rails)."""
         mb = mb or self.hull
         rect = self.rect(rect_name)
+        if plate:
+            return self._plate_rib(y0, y1, outer, inner, centre, mb)
         hw, hh, c = outer
         cx, cz = centre
         prof = chamfered_rect(hw, hh, c)
         fr = Frame((cx, 0, cz), (0, 1, 0), (0, 0, 1))
-        mb.extrude(prof, fr, y0 + bevel, y1 - bevel, TRIM, rect=rect, caps=(False, False))
+        mb.extrude(prof, fr, y0 + bevel, y1 - bevel, CHROME, tile=3.0, caps=(False, False))
         # lips (stepped bevel) at each end: slightly smaller prisms
         for ya, yb, s0, s1 in ((y0, y0 + bevel, (1 - bevel / hw * 1.4, 1 - bevel / hh * 1.4), (1.0, 1.0)), (y1 - bevel, y1, (1.0, 1.0), (1 - bevel / hw * 1.4, 1 - bevel / hh * 1.4))):
-            mb.extrude(prof, fr, ya, yb, TRIM, s0=s0, s1=s1, rect=rect, caps=(False, False))
+            mb.extrude(prof, fr, ya, yb, CHROME, s0=s0, s1=s1, tile=3.0, caps=(False, False))
         # front and back faces: dark annulus between the lip and the hull
         if inner is not None:
             ihw, ihh, ic = inner
@@ -276,14 +289,47 @@ class Kit:
                     P = P[:, ::-1]
                 mb.quads_metric(P, PLATE, 12.0)
 
-    def pipe(self, p0, p1, radius, mat=TRIM, rect_name="chrome_brushed", sides=8, mb=None, caps=True):
+    def _plate_rib(self, y0, y1, outer, inner, centre, mb):
+        hw, hh, c = outer
+        cx, cz = centre
+        prof = chamfered_rect(hw, hh, c)
+        fr = Frame((cx, 0, cz), (0, 1, 0), (0, 0, 1))
+        mb.extrude(prof, fr, y0, y1, PLATE, caps=(False, False), tile=8.0)
+        if inner is not None:
+            ihw, ihh, ic = inner
+            iprof = chamfered_rect(ihw, ihh, ic)
+            k = len(prof)
+            for y, facing in ((y0, -1.0), (y1, 1.0)):
+                P = np.array([[(prof[i][0] + cx, y, prof[i][1] + cz), (prof[(i + 1) % k][0] + cx, y, prof[(i + 1) % k][1] + cz),
+                               (iprof[(i + 1) % k][0] + cx, y, iprof[(i + 1) % k][1] + cz), (iprof[i][0] + cx, y, iprof[i][1] + cz)] for i in range(k)])
+                if facing < 0:
+                    P = P[:, ::-1]
+                mb.quads_metric(P, PLATE, 8.0)
+
+    def dome(self, frame, radius, mb=None, rect_name="chrome_brushed", segs=16):
+        """A sensor blister: a shallow dome on a short collar; frame z = out of the surface."""
+        mb = mb or self.hull
+        ax = Frame(frame.o, frame.u, frame.f)
+        prof = [(radius * 1.15, 0.0), (radius * 1.15, radius * 0.18)]
+        for i in range(1, 7):
+            a = i / 6 * math.pi / 2
+            prof.append((radius * math.cos(a) * 0.98, radius * 0.18 + radius * 0.7 * math.sin(a)))
+        mb.lathe(prof, ax, CHROME, segs=segs, tile=3.0)
+
+    def pipe(self, p0, p1, radius, mat=None, rect_name=None, sides=8, mb=None, caps=True):
+        """A prism between two points: chrome (metric brushed tile) by default, or any atlas piece by ``rect_name`` (burnt metal for wrecks)."""
         mb = mb or self.hull
         d = np.asarray(p1, float) - np.asarray(p0, float)
         ln = np.linalg.norm(d)
         up = np.array([0, 0, 1.0]) if abs(d[2] / ln) < 0.9 else np.array([1.0, 0, 0])
         fr = Frame(p0, d, up)
         prof = mnmesh.regular_poly(sides, radius)
-        mb.extrude(prof, fr, 0, ln, mat, rect=self.rect(rect_name), caps=(caps, caps))
+        if mat == PLATE:
+            mb.extrude(prof, fr, 0, ln, PLATE, tile=4.0, caps=(caps, caps))
+        elif rect_name is None:
+            mb.extrude(prof, fr, 0, ln, CHROME, tile=3.0, caps=(caps, caps))
+        else:
+            mb.extrude(prof, fr, 0, ln, TRIM, rect=self.rect(rect_name), caps=(caps, caps), cap_mat=TRIM, cap_rect=self.rect(rect_name))
 
     def slab_box(self, frame, size, centre=(0, 0, 0), chamfer=0.0, mat=PLATE, tile=12.0, mb=None, rect=None, caps=True, off=(0, 0)):
         (mb or self.hull).box(frame, size, mat, centre=centre, tile=tile, chamfer=chamfer, rect=rect, caps=caps, off=off)
@@ -294,7 +340,45 @@ class Kit:
         mb = mb or self.hull
         fr = Frame((x, 0, 0), (1, 0, 0), (0, 0, 1))
         prof = [(-y, z) for y, z in poly_yz]                 # local x runs toward -y
-        mb.extrude(prof, fr, -thickness / 2, thickness / 2, TRIM, rect=self.rect(rim), caps=(True, True), cap_mat=PLATE, tile=12.0)
+        mb.extrude(prof, fr, -thickness / 2, thickness / 2, CHROME, caps=(True, True), cap_mat=PLATE, tile=3.0)
+
+    def lattice(self, outline, x, thickness=0.9, beam=0.5, braces=3, mb=None, mat=None):
+        """A lattice panel in the (y, z) plane at x: ``outline`` = [bottom-left, top-left, top-right, bottom-right] as (y, z); square beams round
+        the edge, a cross-brace at the middle and X-braces between ``braces`` bays. mat=PLATE for black beams (default chrome)."""
+        mb = mb or self.hull
+        (y0, z0), (y1, z1), (y2, z2), (y3, z3) = outline
+        P = lambda y, z: np.array([x, y, z], float)
+        edges = [((y0, z0), (y1, z1)), ((y1, z1), (y2, z2)), ((y2, z2), (y3, z3)), ((y3, z3), (y0, z0))]
+        for a, b in edges:
+            self.pipe(P(*a), P(*b), beam, mat=mat, sides=4, mb=mb)
+        sides = 4
+        mid = lambda a, b, t: (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+        L0, L1 = (y0, z0), (y1, z1)             # left edge, bottom to top
+        R0, R1 = (y3, z3), (y2, z2)             # right edge, bottom to top
+        self.pipe(P(*mid(L0, L1, 0.5)), P(*mid(R0, R1, 0.5)), beam * 0.7, mat=mat, sides=sides, mb=mb)          # a cross-brace at mid height
+        for k in range(braces + 1):
+            t = k / braces
+            bot, top = mid(L0, R0, t), mid(L1, R1, t)
+            if 0 < k < braces:
+                self.pipe(P(*bot), P(*top), beam * 0.7, mat=mat, sides=sides, mb=mb)
+            if k < braces:
+                bot2, top2 = mid(L0, R0, (k + 1) / braces), mid(L1, R1, (k + 1) / braces)
+                a, b = (bot, top2) if k % 2 == 0 else (top, bot2)
+                self.pipe(P(*a), P(*b), beam * 0.6, mat=mat, sides=sides, mb=mb)
+
+    def fin_plates(self, rect_yz, x, thickness, key, **style):
+        """Raised armour plates on both faces of a fin: rect_yz = (y0, y1, z0, z1) inside the fin's outline."""
+        if self.lod >= 1:
+            return
+        y0, y1, z0, z1 = rect_yz
+        for side in (1, -1):
+            xs = x + side * thickness / 2
+            if side > 0:
+                patch = Patch((xs, y0, z0), (xs, y1, z0), (xs, y1, z1), (xs, y0, z1))
+            else:
+                patch = Patch((xs, y1, z0), (xs, y0, z0), (xs, y0, z1), (xs, y1, z1))
+            self.plate_patch(patch, f"{key}{side}", rows=style.get("rows", (4, 8)), cols=style.get("cols", (3, 7)), height=style.get("height", (0.1, 0.25)),
+                             margin=0.3, sub_prob=style.get("sub_prob", 0.0))
 
     def truss(self, p0, p1, radius=1.5, bay=5.0, rod=0.18, mb=None):
         """A triangular truss between two points: three longerons, a ring of struts and a diagonal in every bay."""

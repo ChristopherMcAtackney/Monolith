@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 
-from .mnkit import PLATE, TRIM, LIGHTS, ENGINE
+from .mnkit import PLATE, TRIM, LIGHTS, ENGINE, CHROME
 from .mnmesh import Frame, norm, cross, chamfered_rect
 from .mnparts import wreck_stump, debris_set, torn_plate, _ember
 
@@ -21,8 +21,8 @@ def sensor_dish(K, sb, fr, key, r=6.0):
     base.box(fr, (3.4, 3.4, 3.0), PLATE, centre=(0, -1.0, -1.5), chamfer=0.7)
     for sx in (-1, 1):
         base.box(fr, (0.7, 1.2, r * 1.15), PLATE, centre=(sx * r * 0.62, -0.7, 0.0), chamfer=0.2, tile=5.0)
-    head.lathe([(0.9, -2.2), (r * 0.5, -1.7), (r * 0.92, -0.7), (r, -0.1), (r, 0.35)], fr, TRIM, segs=36, rect=chrome)
-    head.lathe([(r, 0.35), (r * 0.94, 0.45)], fr, TRIM, segs=36, rect=chrome)
+    head.lathe([(0.9, -2.2), (r * 0.5, -1.7), (r * 0.92, -0.7), (r, -0.1), (r, 0.35)], fr, CHROME, segs=36, tile=3.0)
+    head.lathe([(r, 0.35), (r * 0.94, 0.45)], fr, CHROME, segs=36, tile=3.0)
     head.disc(fr, r * 0.94, 0.45, TRIM, segs=36, facing=1.0, rect=K.rect("sensor_grid"))
     head.box(fr, (0.9, 3.0, 0.9), PLATE, centre=(0, 1.6, 0), chamfer=0.2)
     d = sb.variant("destroyed")
@@ -78,7 +78,7 @@ def comms_mast(K, sb, fr, key, height=28.0):
         K.pipe(fr.p(0, -w * 0.8, z + 0.3), fr.p(0, w * 0.8, z + 0.3), 0.22, mb=base, sides=5)
         for sx in (-1, 1):
             f2 = Frame(fr.p(sx * w, 0, z), (sx * 0.4, 0.2, 0.9), (0, 0, 1))
-            base.lathe([(0.15, -0.6), (1.0, -0.1), (1.1, 0.12)], f2, TRIM, segs=14, rect=chrome)
+            base.lathe([(0.15, -0.6), (1.0, -0.1), (1.1, 0.12)], f2, CHROME, segs=14, tile=3.0)
     for k in range(3):
         K.pipe(fr.p(math.cos(k * 2.1) * 1.8, math.sin(k * 2.1) * 1.8, 1.0), fr.p(0, 0, height * 0.5), 0.12, mb=base, sides=4)
     d = sb.variant("destroyed")
@@ -108,11 +108,11 @@ def reactor_stacks(K, sb, fr, key, n=3, spacing=6.0, radius=1.7, height=6.5):
     for i in range(n):
         x = (i - (n - 1) / 2) * spacing
         ax = Frame(fr.p(x, 0, 1.6), fr.u, fr.f)
-        base.lathe([(radius * 1.25, 0), (radius * 1.25, 0.6), (radius, 0.9), (radius, height * 0.85), (radius * 1.2, height * 0.9), (radius * 1.2, height)], ax, TRIM, segs=20, rect=chrome)
+        base.lathe([(radius * 1.25, 0), (radius * 1.25, 0.6), (radius, 0.9), (radius, height * 0.85), (radius * 1.2, height * 0.9), (radius * 1.2, height)], ax, CHROME, segs=20, tile=3.0)
         base.disc(ax, radius * 1.2, height, TRIM, segs=20, facing=1.0, rect=K.rect("vent"))
         for k in range(3):
             y0 = height * (0.25 + 0.2 * k)
-            base.lathe([(radius * 1.08, y0), (radius * 1.3, y0 + 0.2), (radius * 1.08, y0 + 0.4)], ax, TRIM, segs=20, rect=chrome)
+            base.lathe([(radius * 1.08, y0), (radius * 1.3, y0 + 0.2), (radius * 1.08, y0 + 0.4)], ax, CHROME, segs=20, tile=3.0)
     for sy in (-1, 1):
         K.decal(fr.p(0, sy * 4.2, 1.62), fr.r, fr.u, "vent", scale=1.5, mb=base)
     d = sb.variant("destroyed")

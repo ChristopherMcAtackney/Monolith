@@ -109,7 +109,7 @@ def make_plate(size=1024, seed=11):
     """Matte black armour paint: one satin coat, faintly different from plate to plate, with sparse fine scratches and a few chips down to
     bare steel. Albedo is the final value (dark charcoal), not a pattern to be tinted."""
     rng = rngf(seed)
-    L = Layers(size, size, albedo=(0.285, 0.288, 0.30), metal=0.0, smooth=0.42, ao=1.0)
+    L = Layers(size, size, albedo=(0.36, 0.365, 0.38), metal=0.0, smooth=0.42, ao=1.0)
     n_big = spectral_noise(size, size, rng, beta=3.2, fmax=5)
     n_mid = spectral_noise(size, size, rng, beta=2.4, fmin=5, fmax=24)
     n_fine = spectral_noise(size, size, rng, beta=1.0, fmin=150)
@@ -121,11 +121,29 @@ def make_plate(size=1024, seed=11):
     # satin paint: smoothness wanders a little and is duller under the long grime streaks
     L.smo += 0.035 * n_mid + 0.03 * n_big - 0.07 * np.clip(n_streak, 0, None)
     # orange peel in the height field (pixels of relief): a fine skin, not stone
-    L.hgt += 0.22 * n_fine + 0.35 * spectral_noise(size, size, rng, beta=1.6, fmin=18, fmax=110)
+    L.hgt += 0.07 * n_fine + 0.14 * spectral_noise(size, size, rng, beta=1.6, fmin=18, fmax=110)
     chips(L, rng, 36, size=(0.9, 2.6))
     scratches(L, rng, 64, length=(60, 480), width=(0.6, 1.0), angle=90, alpha=(0.1, 0.4))
     scratches(L, rng, 14, length=(20, 100), width=(0.5, 0.9), angle=0, spread=40, alpha=(0.1, 0.35))
     L.ao *= 1.0 - 0.03 * np.clip(n_mid, 0, None)
+    return L
+
+
+# ------------------------------------------------------------------------------------------------ chrome tile
+
+def make_chrome(size=512, seed=71):
+    """Brushed chrome that tiles every 4 m (u along the brushing): calm, polished, a little uneven, with a few hairline scratches."""
+    rng = rngf(seed)
+    L = Layers(size, size, albedo=(0.86, 0.87, 0.90), metal=1.0, smooth=0.82, ao=1.0)
+    band = spectral_noise(size, size, rng, beta=2.2, fmin=1, fmax=36, sx=0.04, sy=1.0)
+    L.tint_noise(band, 0.02)
+    L.smo += 0.03 * band
+    L.hgt += 0.16 * spectral_noise(size, size, rng, beta=0.8, fmin=14, sx=0.03, sy=1.0)
+    for _ in range(26):
+        x0, y0 = rng.uniform(0, size), rng.uniform(0, size)
+        ln = rng.uniform(20, 160)
+        a = math.radians(rng.normal(0, 4))
+        draw_segment(L, (x0, y0), (x0 + math.cos(a) * ln, y0 + math.sin(a) * ln), 0.7, k=0.3, albedo=(0.95, 0.96, 0.98), smooth_add=-0.08, height_add=-0.2)
     return L
 
 
@@ -169,7 +187,7 @@ def piece_edge_paint(tile_m=8.0, h_m=0.25, density=PX):
     """Narrow strip for the walls and chamfers of raised plates: paint with chips of bare metal, more along the lip."""
     rng = rngf(32)
     w, h = px(tile_m, density), max(px(h_m, density), 16)
-    L = Layers(w, h, albedo=(0.285, 0.288, 0.30), metal=0.0, smooth=0.42, ao=0.8)
+    L = Layers(w, h, albedo=(0.28, 0.285, 0.30), metal=0.0, smooth=0.42, ao=0.8)
     L.tint_noise(spectral_noise(h, w, rng, beta=1.4, fmin=8), 0.05)
     L.hgt += 0.5 * spectral_noise(h, w, rng, beta=1.0, fmin=40)
     # worn lip: the upper rows are brighter bare metal in patches
@@ -186,10 +204,10 @@ def piece_chrome_brushed(w_m=8.0, h_m=2.0, density=64):
     w, h = px(w_m, density), px(h_m, density)
     L = Layers(w, h, albedo=(0.86, 0.87, 0.9), metal=1.0, smooth=0.84, ao=1.0)
     band = spectral_noise(h, w, rng, beta=2.2, fmin=1, fmax=40, sx=0.05, sy=1.0)          # brushing: long along u
-    L.tint_noise(band, 0.035)
-    L.smo += 0.05 * band
+    L.tint_noise(band, 0.02)
+    L.smo += 0.025 * band
     L.hgt += 0.25 * spectral_noise(h, w, rng, beta=0.6, fmin=20, sx=0.04, sy=1.0)
-    for _ in range(int(w_m * h_m * 7)):                                                      # hairline scratches along u
+    for _ in range(int(w_m * h_m * 2)):                                                      # hairline scratches along u
         x0, y0 = rng.uniform(0, w), rng.uniform(0, h)
         ln = rng.uniform(10, 120)
         a = math.radians(rng.normal(0, 5))
@@ -215,7 +233,7 @@ def piece_chrome_panel(m=4.0, density=64):
             for bx, by in ((6, 6), (cell - 8, 6), (6, cell - 8), (cell - 8, cell - 8)):
                 L.rect(ix * cell + bx - 1.5, iy * cell + by - 1.5, ix * cell + bx + 1.5, iy * cell + by + 1.5, albedo=(0.7, 0.71, 0.74), height=1.0, smooth=0.6)
     L.tint_noise(spectral_noise(s, s, rng, beta=2.0, fmin=2, fmax=30), 0.03)
-    scratches(L, rng, int(m * m * 6), length=(10, 80), width=(0.6, 1.0), angle=0, spread=70, bright=0.95, metal=1.0, gloss=-0.08, depth=0.2)
+    scratches(L, rng, int(m * m * 2), length=(10, 80), width=(0.6, 1.0), angle=0, spread=70, bright=0.92, metal=1.0, gloss=-0.05, depth=0.15, alpha=(0.1, 0.35))
     return L
 
 
@@ -511,7 +529,7 @@ def piece_heat_tiles(m=4.0, density=64, seed=54):
     cell = s / n
     for iy in range(n):
         for ix in range(n):
-            tone = 0.20 + 0.06 * rng.random()
+            tone = 0.11 + 0.035 * rng.random()
             L.bevel_rect(ix * cell + 2, iy * cell + 2, (ix + 1) * cell - 2, (iy + 1) * cell - 2, 2.0, 3.0, albedo=(tone, tone, tone * 1.05), metal=0.1, smooth=0.3 + 0.1 * rng.random())
             L.rect(ix * cell, iy * cell, (ix + 1) * cell, iy * cell + 2, albedo=(0.03, 0.03, 0.035), ao=0.2, height=-2.0)
             L.rect(ix * cell, iy * cell, ix * cell + 2, (iy + 1) * cell, albedo=(0.03, 0.03, 0.035), ao=0.2, height=-2.0)
@@ -535,7 +553,7 @@ def piece_radiator(w_m=8.0, h_m=4.0, density=48, seed=55):
         gy = (np.arange(ys.start, ys.stop) + 0.5)[:, None]
         t = (gy - (py0 + py1) / 2) / ((py1 - py0) / 2)
         rh = np.sqrt(np.clip(1 - t * t, 0, 1)) * 5.0
-        L.paint((ys, xs), c, albedo=(0.78, 0.8, 0.84), metal=1.0, smooth=0.72, height=np.broadcast_to(rh, (ys.stop - ys.start, w)))
+        L.paint((ys, xs), c, albedo=(0.55, 0.57, 0.6), metal=1.0, smooth=0.7, height=np.broadcast_to(rh, (ys.stop - ys.start, w)))
         # fin: dark ribbed surface with panel variation
         tone = 0.16 + 0.05 * rng.random()
         L.rect(0, py1, w, y1, albedo=(tone, tone, tone * 1.06), metal=0.4, smooth=0.38)
@@ -561,22 +579,20 @@ def piece_light_bar(w_m=8.0, density=PX):
 
 
 def piece_burnt(m=4.0, density=64, seed=57):
-    """Scorched, torn metal: soot, a bare-metal gash and glowing cracks. For wrecks and breaches."""
+    """Scorched, torn metal: charcoal soot, a few raw bright gashes and a sparse web of glowing cracks. For wrecks and breaches."""
     rng = rngf(seed)
     s = px(m, density)
-    L = Layers(s, s, albedo=(0.10, 0.095, 0.09), metal=0.35, smooth=0.25, ao=0.55)
-    L.tint_noise(spectral_noise(s, s, rng, beta=2.0, fmin=2), 0.35)
+    L = Layers(s, s, albedo=(0.085, 0.082, 0.08), metal=0.35, smooth=0.25, ao=0.55)
+    L.tint_noise(spectral_noise(s, s, rng, beta=2.0, fmin=2), 0.30)
     L.hgt += 1.8 * spectral_noise(s, s, rng, beta=1.6, fmin=6, fmax=80)
-    # raw bright metal in the gashes
-    gash = soft_mask_noise(L, rng, 2.2, 0.9, 1.6, fmin=4, fmax=40)
-    L.alb = L.alb * (1 - gash[:, :, None] * 0.7) + np.array([0.45, 0.43, 0.42]) * gash[:, :, None] * 0.7
-    L.met = np.clip(L.met + gash * 0.5, 0, 1)
-    L.smo += gash * 0.25
-    # glowing cracks: ridged noise
+    gash = soft_mask_noise(L, rng, 2.2, 1.1, 1.8, fmin=4, fmax=40)
+    L.alb = L.alb * (1 - gash[:, :, None] * 0.8) + np.array([0.55, 0.55, 0.57]) * gash[:, :, None] * 0.8
+    L.met = np.clip(L.met + gash * 0.55, 0, 1)
+    L.smo += gash * 0.3
     cr = np.abs(spectral_noise(s, s, rng, beta=2.0, fmin=6, fmax=60))
-    crack = 1 - smoothstep(0.0, 0.07, cr)
-    crack *= smoothstep(-0.2, 0.9, spectral_noise(s, s, rng, beta=2.5, fmax=6))
-    L.em = np.stack([crack * 1.0, crack * 0.34, crack * 0.06], axis=2)
+    crack = 1 - smoothstep(0.0, 0.035, cr)
+    crack *= smoothstep(0.2, 1.4, spectral_noise(s, s, rng, beta=2.5, fmax=6))
+    L.em = np.stack([crack * 1.0, crack * 0.30, crack * 0.05], axis=2)
     L.alb *= (1 - 0.8 * crack)[:, :, None]
     L.hgt -= 2.0 * crack
     return L, m, m
@@ -639,32 +655,46 @@ def make_trim_atlas(size=2048):
 # ------------------------------------------------------------------------------------------------ engine and lights
 
 def make_engine_emissive(size=256):
-    """The exhaust bell's inside, u around, v from the throat (v = 0, white hot) to the lip (v = 1, a cooling violet), plus (in the
-    lower-left quarter) a core disc for the recessed combustion glow: radial, white centre, blue body, violet edge."""
+    """The exhaust bell's inside, u around, v from the throat (v = 1, the top row, white hot) to the lip (a dim cooling violet), in the top
+    half of the sheet; in the bottom half, the combustion disc seen end-on: a small white core, a blue body and a dark edge, so the bell
+    reads as a deep funnel and not a lit plate."""
     rng = rngf(61)
     em = np.zeros((size, size, 3), np.float32)
-    v = (np.arange(size)[:, None] + 0.5) / size
-    # the bell gradient occupies the top half of the sheet (rows 0..size/2): v runs down the rows
-    hv = np.clip(v[: size // 2] * 2.0, 0, 1)
-    hot = np.array([1.0, 0.96, 0.9]); mid = np.array([0.55, 0.72, 1.0]); cool = np.array([0.22, 0.12, 0.55])
-    t1 = np.clip(hv / 0.35, 0, 1)
-    t2 = np.clip((hv - 0.35) / 0.65, 0, 1)
+    half = size // 2
+    hv = np.clip((np.arange(half)[:, None] + 0.5) / half, 0, 1)                  # 0 at the throat, 1 at the lip
+    hot = np.array([1.0, 0.95, 0.88]); mid = np.array([0.30, 0.52, 1.0]); cool = np.array([0.10, 0.06, 0.30])
+    t1 = np.clip(hv / 0.18, 0, 1)
+    t2 = np.clip((hv - 0.18) / 0.82, 0, 1)
     col = hot * (1 - t1)[..., None] + mid * t1[..., None]
     col = col * (1 - t2)[..., None] + cool * t2[..., None]
-    fall = (1.0 - 0.8 * np.clip((hv - 0.3) / 0.7, 0, 1))
-    streak = 1.0 + 0.12 * spectral_noise(size // 2, size, rng, beta=2.0, fmin=2, sy=0.2)
-    em[: size // 2] = (col * fall[..., None] * streak[..., None] * 0.9)
-    # the core disc: bottom half, a radial glow filling it
-    yy, xx = np.mgrid[0:size // 2, 0:size].astype(np.float32)
-    cx, cy = size / 2, size / 4
-    r = np.sqrt(((xx - cx) / (size / 2)) ** 2 + ((yy - cy) / (size / 4)) ** 2)
-    core = np.clip(1 - r, 0, 1)
-    c = np.zeros((size // 2, size, 3), np.float32)
-    w1 = smoothstep(0.0, 0.5, 1 - r)[..., None]
-    c = (hot * w1 + mid * (1 - w1)) * (core ** 0.6)[..., None]
-    c *= 1.0 + 0.1 * spectral_noise(size // 2, size, rng, beta=1.5, fmin=3)[..., None]
-    em[size // 2:] = c
+    fall = 1.0 * np.exp(-hv * 3.2) + 0.04
+    streak = 1.0 + 0.18 * spectral_noise(half, size, rng, beta=2.0, fmin=2, sy=0.2)
+    em[:half] = col * fall[..., None] * streak[..., None]
+    yy, xx = np.mgrid[0:half, 0:size].astype(np.float32)
+    r = np.sqrt(((xx - size / 2) / (size / 2)) ** 2 + ((yy - half / 2) / (half / 2)) ** 2)
+    core = np.exp(-(r / 0.28) ** 2)
+    body = np.clip(1 - r, 0, 1) ** 1.6
+    c = hot * core[..., None] * 1.0 + mid * body[..., None] * 0.35
+    c *= (1.0 + 0.12 * spectral_noise(half, size, rng, beta=1.5, fmin=3))[..., None]
+    em[half:] = c * (r < 1.0)[..., None]
     return mntex.to_u8(mntex.srgb_encode(em))
+
+
+def make_plume_emissive(w=96, h=256):
+    """The exhaust plume (three nested additive shells, one 32 px column each: faint outer, brighter middle, hot core). Row 0 is at the
+    nozzle: white-blue, falling off fast through blue to nothing; no hard edge anywhere, so an additive cone reads as light, not a solid."""
+    rng = rngf(62)
+    t = (np.arange(h)[:, None] + 0.5) / h
+    hot = np.array([0.85, 0.93, 1.0]); mid = np.array([0.30, 0.52, 1.0]); cool = np.array([0.22, 0.16, 0.70])
+    a = np.clip(t / 0.25, 0, 1)
+    b = np.clip((t - 0.25) / 0.75, 0, 1)
+    col = (hot * (1 - a)[..., None] + mid * a[..., None]) * (1 - b)[..., None] + cool * b[..., None]
+    fall = np.exp(-t * 3.4) * (1 - smoothstep(0.82, 1.0, t)) + 0.0
+    out = np.zeros((h, w, 3), np.float32)
+    for k, strength in enumerate((0.22, 0.5, 1.0)):
+        flicker = 1.0 + 0.10 * spectral_noise(h, 32, rng, beta=2.0, fmin=2, sy=0.3)
+        out[:, k * 32:(k + 1) * 32] = (col * fall[..., None] * strength)[:, :1, :] * flicker[..., None]
+    return mntex.to_u8(mntex.srgb_encode(np.clip(out, 0, 1)))
 
 
 def make_lights_emissive():
@@ -708,13 +738,13 @@ def make_damage_atlas(size=2048):
             if row == 0:         # small scorch: soot fading outward with a few radial flecks
                 rad = 0.55 * wob * (0.8 + 0.3 * rng.random())
                 cov = np.clip(1 - r / rad, 0, 1) ** 0.9
-                cov *= np.clip(0.6 + 0.6 * cell_noise(rng, 1.2, 4, 60), 0, 1.2)
+                cov *= np.clip(0.7 + 0.5 * cell_noise(rng, 1.4, 2, 14), 0, 1.2)
                 relief = -0.8 * np.clip(1 - r / (rad * 0.4), 0, 1)
             elif row == 1:       # blast scorch: wide, streaked outward, pitted
                 rad = 0.8 * wob
                 streaks = 0.5 + 0.5 * np.sin(ang * 14 + cell_noise(rng, 1.0, 3, 20) * 2)
                 cov = np.clip(1 - r / rad, 0, 1) ** 0.7 * (0.55 + 0.45 * streaks)
-                cov *= np.clip(0.55 + 0.7 * cell_noise(rng, 1.2, 4, 80), 0, 1.2)
+                cov *= np.clip(0.65 + 0.5 * cell_noise(rng, 1.4, 2, 16), 0, 1.2)
                 pits = smoothstep(1.2, 1.7, cell_noise(rng, 0.5, 40)) * (r < rad)
                 relief = -2.5 * pits - 1.0 * np.clip(1 - r / (rad * 0.3), 0, 1)
                 ember = smoothstep(1.5, 2.2, cell_noise(rng, 1.0, 20)) * (r < rad * 0.45) * 0.5
@@ -725,8 +755,8 @@ def make_damage_atlas(size=2048):
                 cov = np.clip(inner * 4 + rim * 1.2 + 0.0, 0, 1) * np.clip(1.15 - r / (rad * 1.5), 0, 1)
                 cov = np.maximum(cov, np.clip(1 - r / (rad * 1.6), 0, 1) ** 1.2 * 0.7)
                 relief = -9.0 * smoothstep(0.0, 0.9, inner) + 5.0 * rim + 1.5 * cell_noise(rng, 1.5, 6, 50) * inner
-                crackn = np.abs(cell_noise(rng, 2.0, 6, 50))
-                crack = (1 - smoothstep(0.0, 0.10, crackn)) * smoothstep(0.1, 0.6, inner)
+                crackn = np.abs(cell_noise(rng, 2.0, 3, 22))
+                crack = blur((1 - smoothstep(0.0, 0.16, crackn)).astype(np.float32), 1.6) * smoothstep(0.1, 0.6, inner)
                 ember = crack * 1.0 + 0.35 * np.clip(inner - 0.6, 0, 1)
                 bare = rim * 0.9
             else:                # streak: a long soot trail from a small impact at one end
@@ -740,16 +770,19 @@ def make_damage_atlas(size=2048):
             cov = np.clip(cov, 0, 1)
             cov *= 1.0 - smoothstep(0.82, 0.99, np.maximum(np.abs(u), np.abs(v)))             # fade to nothing at the cell's border
             sy, sx = row * cell, col * cell
-            soot = np.clip(0.045 + 0.03 * cell_noise(rng, 1.2, 3, 40) + 0.12 * bare, 0.0, 0.5)
-            alb[sy:sy + cell, sx:sx + cell, 0] = soot * 1.05
+            # blistered ash round the edge (pale on dark paint, so a scorch reads), a charred dark core, bare bright metal on rims
+            core = smoothstep(0.55, 0.95, cov)
+            ash = 0.50 + 0.07 * cell_noise(rng, 1.4, 2, 12)
+            soot = np.clip(ash * (1.0 - 0.78 * core) + 0.30 * bare, 0.03, 0.75)
+            alb[sy:sy + cell, sx:sx + cell, 0] = soot * 1.12
             alb[sy:sy + cell, sx:sx + cell, 1] = soot
-            alb[sy:sy + cell, sx:sx + cell, 2] = soot * 0.95
+            alb[sy:sy + cell, sx:sx + cell, 2] = soot * 0.9
             alb[sy:sy + cell, sx:sx + cell, 3] = np.clip(cov * 1.1, 0, 1)
             hgt[sy:sy + cell, sx:sx + cell] = relief
             met[sy:sy + cell, sx:sx + cell] = np.clip(0.25 + 0.7 * bare, 0, 1)
             smo[sy:sy + cell, sx:sx + cell] = np.clip(0.14 + 0.35 * bare, 0.05, 0.8)
             ao[sy:sy + cell, sx:sx + cell] = np.clip(1 - 0.7 * np.clip(-relief / 8, 0, 1), 0.3, 1)
-            e = np.clip(ember, 0, 1.5)
+            e = np.clip(blur(ember.astype(np.float32), 1.4), 0, 1.5)
             emi[sy:sy + cell, sx:sx + cell, 0] = e
             emi[sy:sy + cell, sx:sx + cell, 1] = e * 0.36
             emi[sy:sy + cell, sx:sx + cell, 2] = e * 0.07
@@ -782,6 +815,10 @@ def main():
         plate = make_plate().finish(normal_strength=0.9)
         for k in ("albedo", "normal", "mask"):
             save(f"earth_plate_{k}", plate[k])
+    if want("chrome"):
+        ch = make_chrome().finish(normal_strength=0.6)
+        for k in ("albedo", "normal", "mask"):
+            save(f"earth_chrome_{k}", ch[k])
     if want("detail"):
         save("earth_detail", make_detail())
     if want("trim"):
@@ -794,6 +831,8 @@ def main():
         log("wrote trims.json")
     if want("engine"):
         save("earth_engine_emissive", make_engine_emissive())
+    if want("plume"):
+        save("earth_plume_emissive", make_plume_emissive())
     if want("lights"):
         arr, cols = make_lights_emissive()
         save("earth_lights_emissive", arr)
@@ -805,21 +844,30 @@ def main():
         "format": "monolith-ship-materials/1",
         "about": "HDRP material recipes for Earth's hull set. baseColor and emissiveColor are sRGB display values; emissiveNits scales the emissive map. ShipArtSetup makes the assets.",
         "materials": [
-            {"blender": "mn_earth_plate", "name": "MN_EarthPlate", "baseColor": [1.0, 1.0, 1.0], "baseMap": "earth_plate_albedo", "normalMap": "earth_plate_normal", "maskMap": "earth_plate_mask",
-             "normalScale": 1.0, "metallicRemap": [0, 1], "smoothnessRemap": [0, 0.75], "aoRemap": [0, 1],
-             "detailMap": "earth_detail", "uvDetail": 1, "detailTiling": [1, 1], "detailAlbedo": 0.8, "detailNormal": 0.8, "detailSmoothness": 0.8},
+            {"blender": "mn_earth_plate", "name": "MN_EarthPlate", "baseColor": [0.85, 0.85, 0.87], "baseMap": "earth_plate_albedo", "normalMap": "earth_plate_normal", "maskMap": "earth_plate_mask",
+             "normalScale": 0.5, "metallicRemap": [0, 1], "smoothnessRemap": [0, 0.75], "aoRemap": [0, 1],
+             "detailMap": "earth_detail", "uvDetail": 1, "detailTiling": [1, 1], "detailAlbedo": 0.6, "detailNormal": 0.2, "detailSmoothness": 0.6, "specularAA": True},
             {"blender": "mn_earth_trim", "name": "MN_EarthTrim", "baseColor": [1.0, 1.0, 1.0], "baseMap": "earth_trim_albedo", "normalMap": "earth_trim_normal", "maskMap": "earth_trim_mask",
              "normalScale": 1.0, "metallicRemap": [0, 1], "smoothnessRemap": [0, 1], "aoRemap": [0, 1],
-             "detailMap": "earth_detail", "uvDetail": 1, "detailTiling": [1, 1], "detailAlbedo": 0.7, "detailNormal": 0.7, "detailSmoothness": 0.7,
-             "emissiveMap": "earth_trim_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 30000},
+             "detailMap": "earth_detail", "uvDetail": 1, "detailTiling": [1, 1], "detailAlbedo": 0.5, "detailNormal": 0.2, "detailSmoothness": 0.5, "specularAA": True,
+             "emissiveMap": "earth_trim_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 42000},
             {"blender": "mn_earth_lights", "name": "MN_EarthLights", "baseColor": [0.02, 0.02, 0.02], "metallic": 0.0, "smoothness": 0.6,
              "emissiveMap": "earth_lights_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 150000},
+            {"blender": "mn_earth_chrome", "name": "MN_EarthChrome", "baseColor": [1.0, 1.0, 1.0], "baseMap": "earth_chrome_albedo", "normalMap": "earth_chrome_normal", "maskMap": "earth_chrome_mask",
+             "normalScale": 1.0, "metallicRemap": [0, 1], "smoothnessRemap": [0, 0.9], "aoRemap": [0, 1], "specularAA": True},
+            {"blender": "mn_earth_plume", "name": "MN_EarthPlume", "shader": "HDRP/Unlit", "surface": "additive", "emissiveMap": "earth_plume_emissive",
+             "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 15000, "noShadows": True},
             {"blender": "mn_earth_engine", "name": "MN_EarthEngine", "baseColor": [0.02, 0.02, 0.02], "metallic": 0.0, "smoothness": 0.4,
-             "emissiveMap": "earth_engine_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 120000},
+             "emissiveMap": "earth_engine_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 60000},
         ],
         "decal": {"name": "MN_EarthDamageDecal", "baseMap": "earth_damage_albedo", "normalMap": "earth_damage_normal", "maskMap": "earth_damage_mask",
-                  "emissiveMap": "earth_damage_emissive", "emissiveNits": 60000, "affectEmission": True},
+                  "emissiveMap": "earth_damage_emissive", "emissiveNits": 14000, "affectEmission": True},
     }
+    plate = materials["materials"][0]
+    for blender, name, tint in (("mn_earth_plate_b", "MN_EarthPlateB", [0.97, 0.97, 1.0]), ("mn_earth_plate_c", "MN_EarthPlateC", [0.70, 0.70, 0.73])):
+        v = dict(plate)
+        v.update({"blender": blender, "name": name, "baseColor": tint})
+        materials["materials"].append(v)
     with open(os.path.join(OUT, "earth_hull.materials.json"), "w") as f:
         json.dump(materials, f, indent=1)
     log("done")

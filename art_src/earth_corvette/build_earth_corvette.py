@@ -18,7 +18,7 @@ import sys
 import numpy as np
 
 from blender_lib import mnmesh, mnship, mnkit, mnparts, mnsystems, mnpreview
-from blender_lib.mnkit import Kit, station, complement, PLATE, TRIM, LIGHTS, ENGINE
+from blender_lib.mnkit import Kit, station, complement, PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLATE_B, PLATE_C
 from blender_lib.mnkit import LIGHT_WHITE, LIGHT_COLD, LIGHT_RED, LIGHT_GREEN, LIGHT_AMBER, LIGHT_BLUE
 from blender_lib.mnmesh import Frame, norm, cross, chamfered_rect, regular_poly
 
@@ -47,9 +47,9 @@ SEG = {
 }
 # lit windows on the flanks: segment -> [(z of the strip's centre, trim piece)]
 WINDOWS = {
-    "reactor": [(-5.0, "windows_a")],
-    "main": [(9.0, "windows_a"), (3.5, "windows_b"), (-4.5, "windows_a")],
-    "fwd": [(5.0, "windows_a"), (-1.5, "windows_b")],
+    "reactor": [(-5.0, "windows_a"), (-1.0, "windows_b")],
+    "main": [(10.5, "windows_a"), (6.0, "windows_b"), (0.5, "windows_a"), (-4.5, "windows_b"), (-9.5, "windows_a")],
+    "fwd": [(7.0, "windows_a"), (1.5, "windows_b"), (-4.0, "windows_a")],
 }
 PLATING = {
     "t": dict(rows=(6, 15), cols=(4, 10), height=(0.2, 0.45), sub_prob=0.4),
@@ -164,6 +164,15 @@ def build(ctx):
         if lod <= 1:
             rails(K, sts)
 
+    # --- armour ribs: matte frames round the reactor, main and forward hulls every dozen metres, so the long flanks have a rhythm ---
+    if lod <= 1:
+        for name, y_lo, y_hi, pitch in (("reactor", -144.0, -108.0, 12.0), ("main", -90.0, 8.0, 14.0), ("fwd", 44.0, 118.0, 14.0)):
+            y = y_lo
+            while y < y_hi:
+                s0 = seg_at(name, y)
+                K.ring(y, y + 1.0, (s0["hw"] + 1.0, s0["hh"] + 1.0, s0["c"] + 0.6), inner=(s0["hw"], s0["hh"], s0["c"]), plate=True)
+                y += pitch
+
     # --- chrome collars where the segments join ---
     K.ring(-104, -96, (22.0, 15.2, 5.2), inner=(16.5, 11, 4))
     K.ring(15, 21, (17.5, 12.8, 4.2), inner=(14, 10.5, 3.5))
@@ -193,10 +202,18 @@ def build(ctx):
             rails(K, d, 0.22)
 
     # --- fins, spines and keels (asymmetric: a tall swept fin to port, a low one to starboard, a ventral keel and a forward keel) ---
-    K.fin([(-70, 27.0), (-62, 49.0), (-34, 49.0), (-20, 33.0), (-12, 27.0)], -11.5, 1.3)
-    K.fin([(-96, 27.0), (-92, 40.0), (-74, 40.0), (-66, 27.0)], 10.0, 1.1)
+    # the tall fin to port: a solid armoured base carrying the sensor panel, and a lattice sail above it
+    K.fin([(-70, 27.0), (-66.6, 38.0), (-18.6, 38.0), (-12, 27.0)], -11.5, 1.3)
+    K.lattice([(-66.6, 38.0), (-61.0, 52.0), (-36.0, 52.0), (-21.5, 38.0)], -11.5, beam=0.55, braces=4, mat=PLATE)
+    K.fin_plates((-62.0, -22.0, 28.5, 36.5), -11.5, 1.3, "finP1", rows=(5, 9), cols=(3, 6))
+    # the low fin to starboard: armoured, with a chrome lattice mast on it
+    K.fin([(-96, 27.0), (-92, 36.0), (-74, 36.0), (-66, 27.0)], 10.0, 1.1)
+    K.lattice([(-91.0, 36.0), (-88.0, 44.0), (-77.0, 44.0), (-74.5, 36.0)], 10.0, beam=0.4, braces=2)
+    K.fin_plates((-90.0, -69.0, 28.0, 34.0), 10.0, 1.1, "finS", rows=(4, 7), cols=(3, 6))
     K.fin([(-84, -19.0), (-78, -33.0), (-34, -36.0), (-14, -28.0), (-4, -19.0)], 0.0, 1.8)
+    K.fin_plates((-76.0, -22.0, -32.0, -21.0), 0.0, 1.8, "keelA", rows=(5, 9), cols=(3, 6), height=(0.15, 0.35))
     K.fin([(36, -15.0), (42, -24.0), (100, -26.0), (114, -15.0)], 0.0, 1.5)
+    K.fin_plates((44.0, 98.0, -24.0, -16.5), 0.0, 1.5, "keelB", rows=(5, 9), cols=(3, 6), height=(0.15, 0.35))
     K.fin([(-184, 15.0), (-176, 29.0), (-162, 29.0), (-152, 15.0)], 13.5, 1.0)
     K.fin([(-184, 15.0), (-178, 23.0), (-164, 23.0), (-156, 15.0)], -13.5, 1.0)
     if lod == 0:
@@ -204,28 +221,45 @@ def build(ctx):
         for sx in (-1, 1):
             n = XHAT * sx
             run = cross(ZHAT, n)
-            lo, hi = (-58.0, -36.0) if run[1] > 0 else (-36.0, -58.0)
-            K.strip(np.array([-11.5 + sx * 0.68, lo, 45.0]), run, n, 22.0, "windows_slit", lift=0.0)
-            lo, hi = (-60.0, -32.0) if run[1] > 0 else (-32.0, -60.0)
-            K.strip(np.array([-11.5 + sx * 0.68, lo, 41.5]), run, n, 28.0, "light_bar", lift=0.0)
+            if sx < 0:
+                continue                                       # the port face carries the sensor panel
+            lo = -58.0 if run[1] > 0 else -26.0
+            K.strip(np.array([-11.5 + sx * 0.68, lo, 34.0]), run, n, 28.0, "windows_slit", lift=0.0)
+            lo = -60.0 if run[1] > 0 else -26.0
+            K.strip(np.array([-11.5 + sx * 0.68, lo, 30.5]), run, n, 32.0, "light_bar", lift=0.0)
 
-    # --- radiator stacks on the reactor's flanks: three vanes to port, two to starboard ---
-    def vane(x, y0, y1, z0, z1):
-        K.fin([(y0, z0), (y1, z0), (y1, z1), (y0, z1)], x, 0.6)
-        if lod == 0:
-            for side in (-1, 1):
-                if side > 0:
-                    K.tile_piece("radiator", (x + 0.32, y0, z0), YHAT, ZHAT, y1 - y0, z1 - z0)
-                else:
-                    K.tile_piece("radiator", (x - 0.32, y1, z0), -YHAT, ZHAT, y1 - y0, z1 - z0)
-    for x in (-25.5, -30.5, -35.5):
-        vane(x, -146, -104, -9.0, 15.0)
-    for x in (25.5, 30.5):
-        vane(x, -146, -108, -10.0, 13.0)
-    for y in (-136, -118):
-        for z in (-3.0, 7.0):
-            K.pipe((-19.0, y, z), (-36.0, y, z), 0.45, sides=6 if lod == 0 else 4)
-            K.pipe((19.0, y, z), (31.0, y, z), 0.45, sides=6 if lod == 0 else 4)
+    # a comb of low spines along the forward hull's centreline, and a row of sensor blisters along the belts and deck edges
+    for i, y in enumerate(np.arange(46.0, 112.0, 8.5)):
+        z0 = top_pt("fwd", y)[2] - 0.2
+        h = 4.0 + 3.0 * ((i * 5) % 3) / 2.0
+        K.fin([(y, z0), (y + 0.7, z0 + h), (y + 2.6, z0 + h * 0.78), (y + 3.4, z0)], 0.0, 0.7)
+    if lod == 0:
+        for i, y in enumerate(np.arange(-80.0, -14.0, 11.0)):
+            for sx, zz in ((1, 6.5), (-1, 8.6)):
+                K.dome(K.frame_on((sx * 30.8, y + (3.0 if sx < 0 else 0.0), zz), ZHAT, (0, 1, 0)), 1.1)
+        for y in (-70.0, -44.0, -18.0):
+            for sx in (-1, 1):
+                K.dome(K.frame_on((sx * 18.0, y, 23.45), ZHAT, (0, 1, 0)), 1.5)
+
+    # --- radiator stacks on the engine block's flanks: louvred plates cantilevered out sideways, six to port and four to starboard ---
+    def radiator_stack(side, zs, y0, y1, reach):
+        x0 = side * 22.0
+        x1 = side * (22.0 + reach)
+        cx, ln = (x0 + x1) / 2, y1 - y0
+        for z in zs:
+            ctx.hull.box(Frame((cx, (y0 + y1) / 2, z), YHAT, ZHAT), (reach, ln, 0.55), PLATE, chamfer=0.15, tile=6.0)
+            if lod == 0:
+                xa, xb = (min(x0, x1), max(x0, x1))
+                K.tile_piece("radiator", (xa, y0, z + 0.3), XHAT, YHAT, xb - xa, ln)
+                K.tile_piece("radiator", (xa, y0, z - 0.3), YHAT, XHAT, ln, xb - xa)
+        # an outer spar and cross-struts tie the plates together and to the hull
+        K.pipe((x1, y0 + 1.0, min(zs) - 0.5), (x1, y0 + 1.0, max(zs) + 0.5), 0.35, sides=6 if lod == 0 else 4)
+        K.pipe((x1, y1 - 1.0, min(zs) - 0.5), (x1, y1 - 1.0, max(zs) + 0.5), 0.35, sides=6 if lod == 0 else 4)
+        for y in (y0 + 6.0, (y0 + y1) / 2, y1 - 6.0):
+            K.pipe((x0, y, zs[0]), (x1, y, zs[0]), 0.3, sides=4)
+            K.pipe((x0, y, zs[-1]), (x1, y, zs[-1]), 0.3, sides=4)
+    radiator_stack(-1, [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5], -182.0, -154.0, 12.0)
+    radiator_stack(1, [-6.0, -2.0, 2.0, 6.0], -180.0, -156.0, 10.0)
 
     # --- the sensor boom to starboard: a truss to a phased-array dish; a pod on the way ---
     boom_a, boom_b = np.array([34.0, -50.0, -1.5]), np.array([38.0, 54.0, -1.5])
@@ -234,12 +268,12 @@ def build(ctx):
     # --- the prow: a beak block, three lances and a halo ---
     pf = Frame((0, 0, 0), YHAT, ZHAT)
     chrome = K.rect("chrome_brushed")
-    ctx.hull.extrude(regular_poly(8, 4.2), pf, 150, 186, TRIM, s1=(0.22, 0.22), rect=chrome, caps=(False, True), cap_mat=TRIM, cap_rect=chrome)
+    ctx.hull.extrude(regular_poly(8, 4.2), pf, 150, 186, CHROME, s1=(0.22, 0.22), tile=3.0, caps=(False, True), cap_mat=CHROME)
     for sx in (-1, 1):
-        ctx.hull.extrude(regular_poly(8, 2.2), Frame((sx * 8.5, 0, -0.5), YHAT, ZHAT), 146, 176 - 2 * (sx < 0), TRIM, s1=(0.28, 0.28), rect=chrome, caps=(False, True), cap_mat=TRIM, cap_rect=chrome)
+        ctx.hull.extrude(regular_poly(8, 2.2), Frame((sx * 8.5, 0, -0.5), YHAT, ZHAT), 146, 176 - 2 * (sx < 0), CHROME, s1=(0.28, 0.28), tile=3.0, caps=(False, True), cap_mat=CHROME)
     K.ring(150, 154, (11.6, 8.1, 3.4), inner=(11, 7.5, 3))
     if lod <= 1:
-        ctx.hull.lathe([(9.4, 150.2), (10.2, 150.5), (10.2, 152.5), (9.4, 152.8)], pf, TRIM, segs=40 if lod == 0 else 16, rect=chrome)
+        ctx.hull.lathe([(9.4, 150.2), (10.2, 150.5), (10.2, 152.5), (9.4, 152.8)], pf, CHROME, segs=40 if lod == 0 else 16, tile=3.0)
         for k in range(4):
             a = k * math.pi / 2 + math.pi / 4
             K.pipe((math.sin(a) * 3.5, 151.5, math.cos(a) * 3.5), (math.sin(a) * 9.6, 151.5, math.cos(a) * 9.6), 0.3, sides=6 if lod == 0 else 4)
@@ -249,6 +283,10 @@ def build(ctx):
     # --- the engine block's aft face: a heat-tiled plate with the five bells set into it ---
     if lod == 0:
         K.tile_piece("heat_tiles", (21.5, -186.05, -14.0), -XHAT, ZHAT, 43.0, 28.0)
+    if lod <= 1:
+        # cross-braces over the aft face between the five bells
+        ctx.hull.box(Frame((0, -187.2, 0), YHAT, ZHAT), (44.5, 2.2, 1.6), CHROME, tile=3.0, chamfer=0.4)
+        ctx.hull.box(Frame((0, -187.2, 0), YHAT, ZHAT), (1.6, 2.2, 30.5), CHROME, tile=3.0, chamfer=0.4)
 
     # ============================================================================================ subsystems
     engines = [("C", 0.0, 0.0, 3.4, 6.6, 15.0)] + [(f"{i + 1:02d}", x, z, 2.4, 4.6, 11.0) for i, (x, z) in enumerate([(-14.5, 8.5), (14.5, 8.5), (-14.5, -8.5), (14.5, -8.5)])]
@@ -287,7 +325,7 @@ def build(ctx):
     bfr = Frame((0, -36.0, 31.6), YHAT, ZHAT)
     with ctx.subsystem("main", "bridge", bfr, radius=12.0, hp=3.0, tags=["command"]) as sb:
         mnsystems.bridge_block(K, sb, bfr, "bridge")
-    ffr = Frame((-11.5 - 0.66, -48.0, 40.0), ZHAT, -XHAT)         # local y = up the fin, local z = out of its port face
+    ffr = Frame((-11.5 - 0.66, -42.0, 32.5), ZHAT, -XHAT)         # local y = up the fin, local z = out of its port face
     with ctx.subsystem("fin", "sensors", ffr, radius=11.0, tags=["radar"]) as sb:
         mnsystems.sensor_panel(K, sb, ffr, "finpanel", w=22.0, h=8.0)
     dfr = Frame((38.0, 56.0, -1.5), (0.25, 1, 0.12), ZHAT)
@@ -305,14 +343,15 @@ def build(ctx):
         # running lights: red to port, green to starboard at the extremes, cold white elsewhere
         K.light(np.array([-8.5, 172.0, -0.5]) + np.array([-1.9, 0, 0]), (-1, 0.2, 0), LIGHT_RED, 0.9, "nav")
         K.light(np.array([8.5, 174.0, -0.5]) + np.array([1.9, 0, 0]), (1, 0.2, 0), LIGHT_GREEN, 0.9, "nav")
-        K.light(np.array([-11.5, -30.0, 49.2]), ZHAT, LIGHT_RED, 1.1, "nav")
-        K.light(np.array([10.0, -80.0, 40.2]), ZHAT, LIGHT_GREEN, 1.1, "nav")
+        K.light(np.array([-11.5, -60.0, 52.5]), ZHAT, LIGHT_RED, 1.1, "nav")
+        K.light(np.array([10.0, -78.0, 44.2]), ZHAT, LIGHT_GREEN, 1.1, "nav")
         K.light(np.array([0.0, -34.0, -36.2]), -ZHAT, LIGHT_WHITE, 1.2, "strobe", blink="strobe")
         K.light(np.array([38.0, 62.0, 4.8]), ZHAT, LIGHT_GREEN, 0.9, "nav")
-        K.light(np.array([-36.0, -144.0, 15.2]), ZHAT, LIGHT_RED, 1.0, "nav")
-        K.light(np.array([31.5, -144.0, 13.2]), ZHAT, LIGHT_GREEN, 1.0, "nav")
+        K.light(np.array([-34.0, -168.0, 8.1]), ZHAT, LIGHT_RED, 1.0, "nav")
+        K.light(np.array([32.0, -168.0, 6.3]), ZHAT, LIGHT_GREEN, 1.0, "nav")
         K.light(np.array([0.0, 185.0, 0.0]), YHAT, LIGHT_WHITE, 1.0, "strobe", blink="strobe")
         K.light(np.array([-20.0, -70.0, 54.0]), ZHAT, LIGHT_WHITE, 0.9, "strobe", blink="strobe")
+        K.light(np.array([-36.0, -34.0, 52.5]), ZHAT, LIGHT_WHITE, 0.9, "strobe", blink="strobe") if False else None
         # a line of small cold lights along the belts' tops and the decks' edges
         for y in np.arange(-80.0, -10.0, 14.0):
             K.light(np.array([30.8, y, 6.6]), ZHAT, LIGHT_COLD, 0.45, "running")
@@ -409,7 +448,7 @@ def damage_points(count=72):
 
 def main():
     preview = "--preview" in sys.argv
-    ship = mnship.Ship(SHIP_ID, "Warden-class corvette", ART, ["mn_earth_plate", "mn_earth_trim", "mn_earth_lights", "mn_earth_engine"], seed=SEED,
+    ship = mnship.Ship(SHIP_ID, "Warden-class corvette", ART, ["mn_earth_plate", "mn_earth_trim", "mn_earth_lights", "mn_earth_engine", "mn_earth_chrome", "mn_earth_plate_b", "mn_earth_plate_c", "mn_earth_plume"], seed=SEED,
                        manifest_dir=RES, material_set=MATERIAL_SET)
     for lod in (0, 1, 2):
         ship.build_lod(lod, build)

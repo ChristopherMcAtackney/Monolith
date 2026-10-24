@@ -10,7 +10,7 @@ import math
 import numpy as np
 
 from . import mnmesh
-from .mnkit import PLATE, TRIM, LIGHTS, ENGINE, LIGHT_EMBER, LIGHT_COLD, LIGHT_WHITE, LIGHT_RED, LIGHT_GREEN
+from .mnkit import PLATE, TRIM, LIGHTS, ENGINE, CHROME, PLUME, LIGHT_EMBER, LIGHT_COLD, LIGHT_WHITE, LIGHT_RED, LIGHT_GREEN
 from .mnmesh import Frame, MeshBuilder, norm, cross, chamfered_rect
 
 
@@ -96,7 +96,7 @@ def debris_set(K, sb, fr, key, specs):
         mb = MeshBuilder("debris")
         if sp.get("kind") == "tube":
             L = sp["size"][1]
-            K.pipe((0, -L / 2, 0), (0, L / 2, 0), sp["size"][0] / 2, mb=mb, rect_name="chrome_brushed")
+            K.pipe((0, -L / 2, 0), (0, L / 2, 0), sp["size"][0] / 2, mb=mb)
         elif sp.get("kind") == "plate":
             torn_plate(K, mb, (0, 0, 0), (0, 0, 1), max(sp["size"]) * 0.5, rng, thickness=0.15)
         else:
@@ -123,12 +123,12 @@ def gun_turret(K, sb, fr, key, s=1.0, barrels=2, barrel_len=4.6, barrel_r=0.26, 
     # seat: a low chamfered pad with a chrome ring on it
     base.box(fr, (4.4 * s, 4.4 * s, 0.5 * s), PLATE, centre=(0, 0, 0.25 * s), chamfer=0.9 * s)
     axis = Frame(fr.p(0, 0, 0.5 * s), fr.u, fr.f)
-    base.lathe([(2.35 * s, 0.0), (2.35 * s, 0.22 * s), (2.0 * s, 0.5 * s), (1.55 * s, 0.5 * s)], axis, TRIM, segs=24, rect=chrome)
+    base.lathe([(2.35 * s, 0.0), (2.35 * s, 0.22 * s), (2.0 * s, 0.5 * s), (1.55 * s, 0.5 * s)], axis, CHROME, segs=24, tile=3.0)
     hz = 1.4 * s
     body = chamfered_rect(1.4 * s, 0.85 * s, 0.4 * s)
     bf = Frame(fr.p(0, 0, hz), fr.f, fr.u)
     head.extrude(body, bf, -1.6 * s, 1.1 * s, PLATE, tile=5.0, cap_mat=PLATE)
-    head.extrude(body, bf, 1.1 * s, 1.75 * s, TRIM, s0=(1.0, 1.0), s1=(0.72, 0.78), rect=K.rect("chrome_panel"), caps=(False, True), cap_mat=PLATE)
+    head.extrude(body, bf, 1.1 * s, 1.75 * s, CHROME, s0=(1.0, 1.0), s1=(0.72, 0.78), tile=3.0, caps=(False, True), cap_mat=PLATE)
     # a raised sight block on top and ammunition boxes on the flanks
     head.box(bf, (1.0 * s, 1.2 * s, 0.55 * s), PLATE, centre=(0.4 * s, -0.3 * s, 0.95 * s), chamfer=0.15 * s, tile=5.0)
     for sx in (-1, 1):
@@ -137,7 +137,7 @@ def gun_turret(K, sb, fr, key, s=1.0, barrels=2, barrel_len=4.6, barrel_r=0.26, 
     for x in xs:
         y0, y1 = 1.5 * s, (1.5 + barrel_len) * s
         K.pipe(fr.p(x, y0, hz + 0.05 * s), fr.p(x, y1, hz + 0.05 * s), barrel_r * s, mb=head, sides=8)
-        head.box(fr, (barrel_r * 2.9 * s, 0.7 * s, barrel_r * 2.9 * s), TRIM, centre=(x, y1 - 0.35 * s, hz + 0.05 * s), rect=chrome)
+        head.box(fr, (barrel_r * 2.9 * s, 0.7 * s, barrel_r * 2.9 * s), CHROME, centre=(x, y1 - 0.35 * s, hz + 0.05 * s), tile=3.0)
     # ---- wreck: the ring scorched, a stump, one barrel bent over, torn plates and embers
     d = sb.variant("destroyed")
     burnt = K.rect("burnt")
@@ -175,9 +175,9 @@ def engine_nozzle(K, sb, fr, key, throat=2.6, exit_r=6.0, length=13.0, hull_y=0.
     wall = 0.45
     prof_out = [(r + wall, y) for r, y in prof_in]
     # outer bell (chrome) and the thick lip ring
-    base.lathe(prof_out, fr, TRIM, segs=40, rect=chrome)
-    base.lathe([(prof_out[-1][0], prof_out[-1][1]), (prof_out[-1][0], prof_out[-1][1] + 0.35), (prof_in[-1][0], prof_out[-1][1] + 0.35)], fr, TRIM, segs=40, rect=chrome)
-    base.lathe([(prof_in[-1][0], prof_out[-1][1] + 0.35), (prof_in[-1][0], prof_out[-1][1])], fr, TRIM, segs=40, rect=chrome)
+    base.lathe(prof_out, fr, CHROME, segs=40, tile=4.0)
+    base.lathe([(prof_out[-1][0], prof_out[-1][1]), (prof_out[-1][0], prof_out[-1][1] + 0.35), (prof_in[-1][0], prof_out[-1][1] + 0.35)], fr, CHROME, segs=40, tile=4.0)
+    base.lathe([(prof_in[-1][0], prof_out[-1][1] + 0.35), (prof_in[-1][0], prof_out[-1][1])], fr, CHROME, segs=40, tile=4.0)
     # inner bell: emissive gradient, normals toward the axis
     base.lathe(prof_in, fr, ENGINE, segs=40, rect=inner_rect, flip=True)
     # combustion disc, recessed at the throat, facing out
@@ -186,11 +186,22 @@ def engine_nozzle(K, sb, fr, key, throat=2.6, exit_r=6.0, length=13.0, hull_y=0.
     for tt in (0.25, 0.5, 0.75):
         r = throat + (exit_r - throat) * (tt ** 0.62) + wall
         y = 1.0 + length * tt
-        base.lathe([(r, y - 0.18), (r + 0.3, y - 0.1), (r + 0.3, y + 0.1), (r, y + 0.18)], fr, TRIM, segs=40, rect=chrome)
+        base.lathe([(r, y - 0.18), (r + 0.3, y - 0.1), (r + 0.3, y + 0.1), (r, y + 0.18)], fr, CHROME, segs=40, tile=4.0)
     # the housing: a chamfered black block set into the hull round the throat, with a chrome collar
     hb = exit_r * 1.25
-    base.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.3, 0), chamfer=hb * 0.3, tile=6.0)
-    base.lathe([(throat + wall + 0.1, 0.9), (exit_r * 0.78, 0.9), (exit_r * 0.78, 1.4), (throat + wall + 0.1, 1.4)], fr, TRIM, segs=40, rect=chrome)
+    base.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.1, 0), chamfer=hb * 0.3, tile=6.0)
+    base.lathe([(throat + wall + 0.1, 0.9), (exit_r * 0.78, 0.9), (exit_r * 0.78, 1.4), (throat + wall + 0.1, 1.4)], fr, CHROME, segs=40, tile=4.0)
+    # the plume: three nested additive shells streaming away from the lip, faint outside and hot at the core (its own part, so a wreck loses it)
+    plume = sb.part("plume")
+    y_lip = prof_out[-1][1] + 0.35
+    plume_len = exit_r * 13.0
+    for k, (scale, ) in enumerate(((1.0,), (0.62,), (0.34,))):
+        pts = []
+        for i in range(9):
+            tt = i / 8
+            pts.append((exit_r * scale * (1.0 + 0.12 * math.sin(tt * math.pi) - 0.88 * tt ** 0.8) + 0.02, y_lip + plume_len * tt))
+        plume.lathe(pts, fr, PLUME, segs=24, rect=(k / 3.0, 1.0, (k + 1) / 3.0, 0.0))
+        plume.lathe(pts, fr, PLUME, segs=24, rect=(k / 3.0, 1.0, (k + 1) / 3.0, 0.0), flip=True)
     # ---- wreck: the bell torn open on one side, dead and dark with a few embers; no gradient
     d = sb.variant("destroyed")
     burnt = K.rect("burnt")
@@ -200,7 +211,7 @@ def engine_nozzle(K, sb, fr, key, throat=2.6, exit_r=6.0, length=13.0, hull_y=0.
     prof_cut_out = [(r + wall, y) for r, y in prof_cut]
     d.lathe(prof_cut_out, fr, TRIM, segs=28, rect=burnt, arc=(a0, a0 + 250))
     d.lathe(prof_cut, fr, TRIM, segs=28, rect=burnt, flip=True, arc=(a0, a0 + 250))
-    d.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.3, 0), chamfer=hb * 0.3, tile=6.0)
+    d.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.1, 0), chamfer=hb * 0.3, tile=6.0)
     d.disc(fr, throat * 1.1, 1.0, TRIM, segs=24, facing=1.0, rect=burnt)
     for i in range(4):
         th = rng.uniform(0, 2 * math.pi)
