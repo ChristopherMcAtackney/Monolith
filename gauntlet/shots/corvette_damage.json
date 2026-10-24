@@ -1,0 +1,78 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_corvette",
+  "pitch": 2,
+  "yaw": 172,
+  "roll": -53,
+  "damage": {
+   "destroy": [
+    "SUB_flak_S02",
+    "SUB_flak_S04",
+    "SUB_aaf_D04",
+    "SUB_aaf_F03",
+    "SUB_launcher_S01",
+    "SUB_engine_02",
+    "SUB_sensors_boom",
+    "SUB_comms_main"
+   ],
+   "health": {
+    "SUB_flak_S01": 0.0,
+    "SUB_aaf_D03": 0.0
+   },
+   "debrisAge": 1.3,
+   "hull": 0.75
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "damage_three_quarter",
+   "pos": [
+    -132.166,
+    -79.543,
+    -253.782
+   ],
+   "lookAt": [
+    -9.132,
+    4.114,
+    19.07
+   ],
+   "fov": 36
+  },
+  {
+   "name": "damage_aft",
+   "pos": [
+    -147.113,
+    -84.44,
+    309.793
+   ],
+   "lookAt": [
+    -33.812,
+    -13.424,
+    141.289
+   ],
+   "fov": 40
+  },
+  {
+   "name": "damage_close",
+   "pos": [
+    -52.227,
+    -30.871,
+    31.989
+   ],
+   "lookAt": [
+    -37.165,
+    -14.311,
+    120.577
+   ],
+   "fov": 50
+  }
+ ],
+ "perf": []
+}

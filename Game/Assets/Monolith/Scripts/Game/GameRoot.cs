@@ -53,7 +53,7 @@ namespace Monolith.Game
             scene ??= CommandLine.Get("-mnScene");
             if (string.Equals(scene, FlightPlaytest.SceneName, StringComparison.OrdinalIgnoreCase)) FlightPlaytest.Build(World, flight, transform, sceneOptions);
             else if (string.Equals(scene, JuiceSandbox.SceneName, StringComparison.OrdinalIgnoreCase)) JuiceSandbox.Build(World, flight, transform, sceneOptions);
-            else if (!SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
+            else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
             if (CommandLine.Has("-mnCapture"))
             {

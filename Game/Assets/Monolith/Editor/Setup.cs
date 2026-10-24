@@ -48,6 +48,8 @@ namespace Monolith.EditorTools
             Hdrp.EnsureLit(SmokeMaterialsDir + "/MN_SmokeBox.mat", new Color(0.55f, 0.36f, 0.22f), 0f, 0.40f);
             // The flight playtest's base materials (Game/PlaceholderShips makes its ship materials from instances of them).
             FlightAssets.Ensure(FlightMaterialsDir);
+            // Ship models from the art pipeline (art_src): materials, prefabs, LODs, subsystems. A no-op until a model script has run.
+            ShipArtSetup.Ensure();
 
             EnsureBootScene();
             ConfigurePlayer();
