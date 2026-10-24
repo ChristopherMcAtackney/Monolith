@@ -22,6 +22,15 @@ namespace Monolith.Game
             get
             {
                 if (_mat != null) return _mat;
+                // The comet outpost's own crust (ShipArt's MN_OortRock: art_src/oort_art), when it is there: the field's rocks then are the same dark dusty stuff as the nucleus the
+                // station is built into, a little paler, instead of the generated pale ice below. Only the surface: the shapes, the placement and the spin stay this file's.
+                var crust = Resources.Load<Material>("ShipArt/Materials/MN_OortRock");
+                if (crust != null)
+                {
+                    _mat = new Material(crust) { name = "MN_Ice" };
+                    _mat.SetColor("_BaseColor", new Color(1.35f, 1.35f, 1.4f));
+                    return _mat;
+                }
                 var plated = Resources.Load<Material>("Flight/MN_FlightPlated") ?? throw new InvalidOperationException("Resources/Flight/MN_FlightPlated is missing: run Setup.Project, then build");
                 Textures(512, 31, out var albedo, out var normal, out var mask);
                 _mat = new Material(plated) { name = "MN_Ice" };
@@ -148,6 +157,8 @@ namespace Monolith.Game
             mesh.SetVertices(fv);
             mesh.SetNormals(fn);
             mesh.SetUVs(0, fuv);
+            var fuv1 = new List<Vector2>(fuv.Count); foreach (var q in fuv) fuv1.Add(q * 36f);      // the detail map's set (the outpost's crust material reads it): a rock is a few metres to a few hundred across, so one scale for all
+            mesh.SetUVs(1, fuv1);
             mesh.SetTriangles(ft, 0);
             mesh.RecalculateTangents();
             mesh.RecalculateBounds();

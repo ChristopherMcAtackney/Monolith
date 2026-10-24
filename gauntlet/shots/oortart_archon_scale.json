@@ -1,0 +1,122 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "C:/Users/chris/mnoort/gauntlet/missions/archon_scale_test.mission.json",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0
+ },
+ "stills": [
+  {
+   "name": "scale_three_quarter_raking",
+   "pos": [
+    760.0,
+    380.0,
+    1150.0
+   ],
+   "lookAt": [
+    -20.0,
+    60.0,
+    2480.0
+   ],
+   "fov": 42,
+   "warmup": 2.0
+  },
+  {
+   "name": "scale_line_up",
+   "pos": [
+    -1500.0,
+    520.0,
+    2150.0
+   ],
+   "lookAt": [
+    20.0,
+    120.0,
+    2600.0
+   ],
+   "fov": 55,
+   "warmup": 1.0
+  },
+  {
+   "name": "scale_line_up_wide",
+   "pos": [
+    -2300.0,
+    700.0,
+    1900.0
+   ],
+   "lookAt": [
+    60.0,
+    150.0,
+    2650.0
+   ],
+   "fov": 62,
+   "warmup": 1.0
+  },
+  {
+   "name": "scale_side_by_side",
+   "pos": [
+    -1200.0,
+    160.0,
+    2460.0
+   ],
+   "lookAt": [
+    -60.0,
+    90.0,
+    2200.0
+   ],
+   "fov": 50,
+   "warmup": 1.0
+  },
+  {
+   "name": "scale_from_above",
+   "pos": [
+    300.0,
+    2100.0,
+    2400.0
+   ],
+   "lookAt": [
+    100.0,
+    100.0,
+    2500.0
+   ],
+   "fov": 52,
+   "warmup": 1.0
+  },
+  {
+   "name": "scale_bow_on",
+   "pos": [
+    1900.0,
+    60.0,
+    2280.0
+   ],
+   "lookAt": [
+    100.0,
+    40.0,
+    2400.0
+   ],
+   "fov": 46,
+   "warmup": 1.0
+  },
+  {
+   "name": "scale_corvette_beside",
+   "pos": [
+    -480.0,
+    120.0,
+    1900.0
+   ],
+   "lookAt": [
+    -60.0,
+    60.0,
+    2150.0
+   ],
+   "fov": 52,
+   "warmup": 1.0
+  }
+ ]
+}

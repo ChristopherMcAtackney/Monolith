@@ -117,6 +117,32 @@ comes through the same pipeline, so nothing in the game knows the difference exc
   `make_diaspora_action.py` (spectator cameras on a Sable wingman and on the Mercy in the dogfight); `gauntlet\missions\mercy_death_test.mission.json` starts the Mercy at 2 percent
   hull for the staged-death frames (a fixed camera: the spectator camera hands back to the cockpit when its ship dies).
 
+## The Oort models: a comet outpost and a destroyer (`mnrock`, `mnearth`, `mnheavy`, `art_src\oort_art`)
+
+Earth's two big pieces for the Oort mission, built on the capital kit and three more libraries; the ship id is the class id, so the mission picks the model up by class with no change.
+
+- **`mnrock`** (numpy only): a comet nucleus is a smooth union of superellipsoid lobes found by marching rays from the centre (the outermost root), then displaced along the ray by domain-warped
+  noise (lumps, ridges, strata only in "cliff" zones, craters) and carved by edit functions the model script gives it (a flat shelf for the station, a cliff and a pocket for the hangar, pits for
+  the guns, vents for the jets). `RockMesh` answers `drop(x, y)` and `ray(o, d)` by casting against the mesh itself, so the station stands on the rock that is really there. UVs are box-projected
+  per face from a normal smoothed over about 60 m (few, long seams), UV1 metric for the tiling detail map. `boulder()` adds loose rocks (a displaced icosphere sunk into the surface).
+  Levels: 6 is 82k triangles with 9 m edges (LOD0), 5 the distance mesh, 3 the collision proxy; the lobes and craters agree between them.
+- **`mnearth`**: what Earth's big builds share: `loft_placed` (a hull segment lofted in a frame of its own and put in ship space with its plating patches, so a spine can run along x), plating
+  bands whose window rows work on either winding of a flank and scale with the ship (`win_scale`), chrome rails, a lattice tower, a clamp claw. **`mnheavy`**: the beam cannon (a barbette, a
+  turret body with radiators, a caged barrel of chrome coil rings with red bands, a red lens; the subsystem sits at the MUZZLE because the juice starts the charge glow and the beam at the part's
+  position) and the chin hangar (a plated pod with its far face open, lit ceiling strips, doors hung open).
+- **Textures** (`build_oort_textures.py`, into `Art\EarthHull` so one `earth_oort.materials.json` can name both sets): the crust ("popcorn" lumps at three scales, sparse long fractures, dust,
+  pits with rims, ice specks), the frost, a jet atlas (four nested shells, edges inset against bilinear wrap), a detail map. They must be statistically uniform: the mesh is box-projected and the
+  tile repeats every 160 m, so anything bigger than a few metres in the albedo shows as a grid (the first version had Voronoi cells and a quilted look).
+- **Materials**: `MN_OortRock` (dark crust), `MN_OortIce` (frost: pits, vents, big crater floors), `MN_OortJet` (HDRP Unlit additive, like the plumes; `ShipArtSetup` turns shadows off for it).
+  Jets and vents are decorative subsystems (kind `vent`, not in `partKinds`): they break for the show and stay out of the juice's hull sections.
+- **Combat wiring** (`wire_combat_defs.py`, plain Python): adds `partKinds` to the two defs and replaces their `geometry` boxes with ones that follow the model (the capital AI's turret arcs are
+  measured off the nearest box face, so a gun must sit near a box whose face points the way it should fire; the script prints each part's normal). Cannon boxes cover their whole barrel.
+- **Beam sweeps and hit boxes**: a capital's beam sweeps a line along the face of the def's boxes' bounding box at 0.9 of its half-extent and only hurts what the line meets, so a big irregular body's
+  boxes must fill that face (the outpost's nucleus is one broad box at 0.95 of its bounds; inscribed lobe boxes made the Patience's beams miss and the outpost fall 3 minutes late).
+- **Death**: the juice's capital death works on both as it is (parts go one after another, the baked hull sections fly apart, a final blast sized to the hull, the shockwave); for the nucleus the
+  sections are slabs of rock with the station's parts riding the nearest slab. `gauntlet\missions\{outpost,archon}_death_test.mission.json` (target at 2 percent hull, the Mercy's beams free) and
+  `tools\ship\make_oortart_plan.py outpost_death|archon_death` make the death captures; `archon_test.mission.json` is the lab for the scale and beam shots.
+
 ## Adding a ship
 
 1. Copy `art_src\earth_corvette`, rename. Reuse `earth_hull` textures for Earth ships; a new faction gets its own `art_src\<set>` script (copy it, change the look: albedo, trim pieces, markings, emissive colours).

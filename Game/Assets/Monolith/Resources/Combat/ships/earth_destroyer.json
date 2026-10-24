@@ -1,9 +1,9 @@
 {
   "format": "monolith-combat-ship/1",
   "id": "earth_destroyer",
-  "name": "Earth destroyer (placeholder)",
+  "name": "Hecate-class destroyer",
   "sizeClass": "capital",
-  "note": "Earth's destroyer for the Oort strike (design section 3, beat 5). A placeholder hull with no part models: its two heavy beam turrets (kind turret, firing beam_slash), flak, anti-fighter guns, three engines, hangar, bridge, sensors, comms and reactor are combat parts placed on the hull boxes. Hull, power and weapon energy are FS2's GTD Hecate's; part shares follow FS2's capital ships (turrets about 0.8% each, beams 1.5%, engines 4%). When a model of the class lands its own parts replace these (missions address parts by kind: turret for the beams, engine, hangar).",
+  "note": "Earth's destroyer for the Oort strike (design section 3, beat 5). Its parts come from the model (see partKindsSource): two heavy beam cannons (kind turret, firing beam_slash), flak, anti-fighter guns, three engines, a chin hangar, bridge, sensors, comms and reactor. Hull, power and weapon energy are FS2's GTD Hecate's; part shares follow FS2's capital ships (turrets about 0.8% each, beams 1.5%, engines 4%). Missions address parts by kind (turret for the beams, engine, hangar), so the stand-in parts below are only for a lab without the model.",
   "defense": {
     "hull": {
       "value": 100000,
@@ -32,58 +32,214 @@
     }
   },
   "geometry": {
-    "about": "Boxes round the placeholder hull: engine block, the plated body, the blunt nose, the dorsal spine. Unity axes, nose +z.",
+    "about": "The hull's stations as inscribed boxes (the wasp-waisted loft: engine block, the flared citadel, the waist, the lance, the prow), the dorsal mesa and bridge tower, the two cannons' turret bodies and the chin hangar pod. Unity axes, nose +z. From art_src/oort_art/build_earth_destroyer.py via art_src/oort_art/wire_combat_defs.py.",
     "boxes": [
       {
         "centre": [
-          0,
-          0,
-          -454
+          0.0,
+          0.0,
+          -485.0
         ],
         "half": [
-          72,
-          53,
-          46
+          50.5,
+          36.5,
+          15.0
         ]
       },
       {
         "centre": [
-          0,
-          0,
-          -43
+          0.0,
+          0.0,
+          -439.0
         ],
         "half": [
-          85,
-          67,
-          365
+          56.5,
+          40.5,
+          31.0
         ]
       },
       {
         "centre": [
-          0,
-          0,
-          411
+          0.0,
+          0.0,
+          -349.0
         ],
         "half": [
-          61,
-          50,
-          89
+          64.5,
+          44.5,
+          49.0
         ]
       },
       {
         "centre": [
-          0,
-          83,
-          -65
+          0.0,
+          0.0,
+          -250.0
         ],
         "half": [
-          10,
-          20,
-          326
+          90.5,
+          52.5,
+          50.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          -155.0
+        ],
+        "half": [
+          90.5,
+          58.5,
+          45.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          -75.0
+        ],
+        "half": [
+          76.5,
+          54.5,
+          35.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          -5.0
+        ],
+        "half": [
+          68.5,
+          52.5,
+          35.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          60.0
+        ],
+        "half": [
+          64.5,
+          48.5,
+          30.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          145.0
+        ],
+        "half": [
+          56.5,
+          42.5,
+          55.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          265.0
+        ],
+        "half": [
+          44.5,
+          34.5,
+          65.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          386.0
+        ],
+        "half": [
+          30.5,
+          24.5,
+          44.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          0.0,
+          464.0
+        ],
+        "half": [
+          18.5,
+          14.5,
+          34.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          74.0,
+          -180.0
+        ],
+        "half": [
+          50.0,
+          16.0,
+          150.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          104.0,
+          -216.0
+        ],
+        "half": [
+          36.0,
+          26.0,
+          46.0
+        ]
+      },
+      {
+        "centre": [
+          8.0,
+          84.0,
+          285.0
+        ],
+        "half": [
+          36.0,
+          40.0,
+          112.0
+        ]
+      },
+      {
+        "centre": [
+          -22.0,
+          -90.0,
+          -208.0
+        ],
+        "half": [
+          36.0,
+          40.0,
+          78.0
+        ]
+      },
+      {
+        "centre": [
+          0.0,
+          -58.0,
+          152.0
+        ],
+        "half": [
+          32.0,
+          14.0,
+          60.0
         ]
       }
     ],
-    "boundRadius": 520
+    "boundRadius": 640
   },
   "arms": {
     "missiles": {},
@@ -457,5 +613,38 @@
       "radius": 16,
       "hpPercent": 2
     }
-  ]
+  ],
+  "partKindsSource": "Parts come from the model (Resources/ShipArt/earth_destroyer.ship.json): the two heavy beam cannons (kind turret, firing beam_slash: the dorsal one on the lance, the ventral one aft under the citadel; the part sits at the muzzle, where the charge glow gathers), six flak batteries on the shoulders, six anti-fighter guns on the decks and the belly, the three engines, the chin hangar, the bridge on its tower, the sensor panel on the tower and the dish on the prow, the comms mast and the reactor stacks, each at the share of the hull the stand-in parts above had (FS2's GTD Hecate on FS2's capital shares). The stand-ins are for a headless lab without a model.",
+  "partKinds": {
+    "turret": {
+      "hpPercent": 1.5,
+      "weapon": "beam_slash"
+    },
+    "flak": {
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    "aaf": {
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    "engine": {
+      "hpPercent": 4.0
+    },
+    "hangar": {
+      "hpPercent": 4.0
+    },
+    "sensors": {
+      "hpPercent": 3.0
+    },
+    "comms": {
+      "hpPercent": 3.0
+    },
+    "bridge": {
+      "hpPercent": 2.0
+    },
+    "reactor": {
+      "hpPercent": 2.0
+    }
+  }
 }

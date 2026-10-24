@@ -1,4 +1,4 @@
-# Piece: human-capitals (Earth's capital ships; the corvette first, the destroyer later)
+# Piece: human-capitals (Earth's capital ships: the corvette, and the Archon's destroyer)
 
 Owner of Earth's capital-ship models, the art pipeline they come through (`art_src/PIPELINE.md`) and the damage presentation every ship will
 use. Bar: The Expanse's space frames, blind, with modern FS2's design language (`reference/critic_pool/capital_ship_close` and `capital_ship_wide`,
@@ -279,3 +279,62 @@ Six critics, one pair each, the same three references for both sets (capital_shi
 - **Lead's read, now looking at the frames myself:** the shadows are right, but two things remain. (1) The Sun direction was chosen in round 3 to light decks, flank and fore faces about equally (0.52, 0.52, 0.68), so every face sits at a similar mid value. That's the "studio set". The show uses raking and rim light: one face blazing, the neighbouring faces falling fast toward dark. (2) The geometry is a repeating grid of same-sized beveled modules, with detail repeating every 2 m and 12 m. The show's hulls have irregular detail at many scales (antennas, pipes, conduits, hull-mounted gear, insignia, uneven plates).
 - Round 5 gaps: per-shot raking or rim key light (grazing on the hero face, adjacent faces falling off) and less fill on the shadow side, while keeping the user's rule that shadows keep a hint of form; break the module grid (varied plate sizes, irregular placement, multi-scale kit-bash detail such as pipes, conduits, antennas, sensor clusters, hull-mounted gear, an insignia); vary the light strips.
 - The user's own eye on this piece is now asked for; it outranks the critics.
+
+## The destroyer, the Archon (`earth_destroyer`, GTD Hecate numbers; builder, 2026-10-24)
+
+Built for the Oort mission with the outpost (`gauntlet/pieces/outpost/history.md`). Code: `art_src/oort_art/build_earth_destroyer.py`, `tools/blender_lib/mnearth.py` (what the corvette's script
+kept private, shared: lofts placed in a frame, window rows on either winding of a flank, rails, a lattice tower) and `mnheavy.py` (the beam cannon and the chin hangar),
+`wire_combat_defs.py`, `tools/ship/make_oortart_plan.py archon`, labs `gauntlet/missions/archon_test.mission.json` (the Archon, the Cantor and the Mercy hung still, the Archon's
+beams quick) and `archon_death_test.mission.json`.
+
+### What it is
+1,104 m from the prow spike to the engine lips (1,000 m of hull), 252 m across (the sponsons and radiators), 281 m tall: a **wasp in plan**. A narrow engine block (three big recessed
+bells, an aft face of heat tiles, louvred radiator stacks cantilevered out on both sides), a citadel that flares to 200 m across, a waist, a long fore lance tapering to a prow of two
+forked blades and a chrome spike behind a lit halo. One continuous loft with chrome collars at the three joints and armour ribs every 20 to 30 m (the corvette's language, but plates
+of 10 to 25 m and windows 2.2 times as big, so the scale reads: the same strip is a corvette's three-metre window and here a seven-metre one). Down both flanks heavy belts of plate
+of different lengths and heights, and under each flak battery a sponson of a different size. On the back a stepped dorsal mesa (the citadel's roof) carrying the bridge tower with
+its lit canopy band and a lattice mast, a tall lattice sail to starboard, a low armoured fin to port aft and another forward, a comb of low spines down the lance, four tall thin masts
+at different heights on its keel; under it a ventral fin, a comb of belly spines and the chin hangar; a sensor boom reaches out to port.
+
+The parts that are meant to frighten are the **two heavy beam cannons** (kind `turret`, `beam_slash`): a barbette drum 40 m across, a turret body with radiators, a hazard chevron and a
+sensor blister, and a **126 m caged barrel** of six chrome coil rings with red bands lit between them and a flared muzzle with a red lens ringed by lamps. One stands on the lance
+to starboard with its barrel raised 22 degrees over the prow, the other hangs under the citadel to port aft (so a pilot above or below finds one: the stand-in had the same
+dorsal fore, ventral aft). The part's frame is at the muzzle, because the juice starts the charge glow and the beam at the part's position; the combat's beam muzzle is that plus half the
+part's radius along its forward.
+
+The **chin hangar** (kind `hangar`) is a 62 by 118 m plated pod hung under the lance with its far face open: ceiling strips lit amber, ribs, window strips, a chrome lip with amber
+beacons, two door slabs hung open on rams. Its part sits in the open face pointing down, so the bombers come out 82 m below it. Also: three engines (`engine`, Earth's bell at 3.3
+times the fighter's), six flak batteries (`flak`, three a side), six anti-fighter guns (`aaf`, three dorsal and three on the belly), the bridge, the tower's sensor panel and the prow's
+dish (`sensors`), the comms mast and the reactor's four stacks aft. 23 subsystems, each with an intact look, a wreck and debris; 27 FX hooks (fire at the engines, vents at the
+reactor, sparks and vents at ten hull sites), 96 scorch points, a 336-triangle collision proxy.
+
+### Wiring
+`earth_destroyer.json`: `partKinds` (turret 1.5 percent with `beam_slash`, flak 0.8, aaf 0.8, engine 4, hangar 4, sensors 3, comms 3, bridge 2, reactor 2: the stand-ins' shares) and
+`geometry` boxes that follow the wasp (one inscribed box per hull interval, the mesa, the tower, the two cannons with their barrels, the pod). `ShipArtSetup` needed nothing. Mission:
+no change. Juice sections `earth_destroyer.sections.asset` (8 sections along the length; the staged death on the lab works without a special case: 8 sections, final blast 616 m).
+Budgets: hull LOD0 194,926 triangles, LOD1 10,292, LOD2 4,460 (screen heights 0.12, 0.035, 0.01), subsystems 43,726 intact / 12,224 wrecks / 1,840 debris; FBX 14.1 MB; 55 lights.
+
+### Lessons applied (from the corvette's four rounds and the verdicts)
+Varied detail at many scales (a 126 m barrel and a 0.2 m edge chip on one ship); no module grids (plates 10 to 25 m, sub-plates on 30 to 45 percent of the big ones, three paint
+batches by region, belts, sponsons, ribs and fins at different lengths and spacings, nothing the same twice in a row); outline-breaking gear on every long edge (masts, sails, spines,
+booms, sponsons, the cannons' barrels); a silhouette that is not the corvette's (the corvette is a straight stack of rectangles with a three-lance prow; this is a taper with a
+forked prow, a flared citadel and a stepped mesa, and from the side the two cannons make a different line); raking light is the capture plans' job (`make_oortart_plan.py archon` puts the
+camera on the lit side).
+
+### Captures (`gauntlet/captures/oort-art/r1/`, HUD off; `critic/` the 1280 JPEGs)
+`destroyer_three_quarter_raking_with_corvette_and_mercy` (the three capitals hung still, the sun raking the Archon's starboard side), `destroyer_scale_line_up`, `_wide`, `_side_by_side`,
+`_from_above`, `_bow_on`, `_corvette_beside`; `destroyer_beam_charging_three_quarter_with_corvette_and_mercy`, `destroyer_charging_beam_1_gathering .. 4_fires` and `_wide` (the glow
+gathering at the lens with sparks pulled in, then the beam), `destroyer_beam_fires_at_the_mercy`; `destroyer_close_dorsal_cannon`, `_ventral_cannon`, `_lance_dorsal`, `_bridge_tower`,
+`_hangar_below`, `_hangar_side`, `_engines`, `_prow`, `_three_quarter_aft`, `_from_above`; the death in six frames (`destroyer_death_02 .. 20`). Plans:
+`gauntlet/shots/oortart_archon.json`, `_archon_scale.json`, `_archon_charge.json`, `_archon_death.json`.
+
+### Honest read
+What works: next to the corvette (`destroyer_scale_*`) it is a different ship: a taper to a forked prow with a flared citadel and a stepped mesa, not a stack of rectangles, and from
+one end to the other it is three corvettes long; the two cannons are the first thing the eye finds in every frame (a 126 m caged barrel with red bands and a lit lens) and the charge
+looks like a charge (the glow gathers on the lens, sparks pulled in, a flare, then the ribbon: the juice's, on a part whose frame is at the muzzle). The sponsons, belts, ribs, masts
+and spines break every long edge. The staged death works untouched (parts one after another, 8 baked sections, a 616 m final blast).
+What does not: (1) it is made of the corvette's plates, windows and chrome, only bigger: a critic who held the corvette against the references will say the same of this (modular
+rectangles, lit like a set). I scaled the plates and windows but did not make a new surface language. (2) The prow's two blades and the spike read, but the prow is the least designed
+end: a taper with nothing at its tip. (3) The hangar pod is a box hung on a hull; from below it reads as an industrial building, not as a warship's bay. (4) The citadel's roof is
+busy and the lance's keel masts are thin: from 1 km they alias. (5) The engines are the corvette's bell at 3.3 times, with the same flare: small hot disc on a big dark block; it
+needs the bigger glow the juice's engine rework would give it.

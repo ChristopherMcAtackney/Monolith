@@ -1,0 +1,420 @@
+{
+ "format": "monolith-ship-materials/1",
+ "about": "The Earth hull set's recipes plus the Oort Cloud's ice (art_src/oort_art): the comet outpost's materials.",
+ "materials": [
+  {
+   "blender": "mn_earth_plate",
+   "name": "MN_EarthPlate",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.74
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_trim",
+   "name": "MN_EarthTrim",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_trim_albedo",
+   "normalMap": "earth_trim_normal",
+   "maskMap": "earth_trim_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    1
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.5,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.5,
+   "specularAA": true,
+   "emissiveMap": "earth_trim_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 42000
+  },
+  {
+   "blender": "mn_earth_lights",
+   "name": "MN_EarthLights",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.6,
+   "emissiveMap": "earth_lights_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 150000
+  },
+  {
+   "blender": "mn_earth_chrome",
+   "name": "MN_EarthChrome",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_chrome_albedo",
+   "normalMap": "earth_chrome_normal",
+   "maskMap": "earth_chrome_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    1.0
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plume",
+   "name": "MN_EarthPlume",
+   "shader": "HDRP/Unlit",
+   "surface": "additive",
+   "emissiveMap": "earth_plume_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 48000,
+   "noShadows": true
+  },
+  {
+   "blender": "mn_earth_engine",
+   "name": "MN_EarthEngine",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.4,
+   "emissiveMap": "earth_engine_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 150000
+  },
+  {
+   "blender": "mn_earth_plate_b",
+   "name": "MN_EarthPlateDeep",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_deep_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.7
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plate_c",
+   "name": "MN_EarthPlateMid",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_mid_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.7
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plate_d",
+   "name": "MN_EarthPlateLight",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_light_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.62
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_plate_e",
+   "name": "MN_EarthPlatePale",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_plate_pale_albedo",
+   "normalMap": "earth_plate_normal",
+   "maskMap": "earth_plate_mask",
+   "normalScale": 0.5,
+   "metallicRemap": [
+    0,
+    1
+   ],
+   "smoothnessRemap": [
+    0,
+    0.58
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "earth_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.6,
+   "detailNormal": 0.2,
+   "detailSmoothness": 0.6,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_earth_paint",
+   "name": "MN_EarthPaint",
+   "shader": "HDRP/Lit",
+   "surface": "alpha",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_paint_albedo",
+   "metallic": 0.0,
+   "smoothness": 0.34
+  },
+  {
+   "blender": "mn_earth_wear",
+   "name": "MN_EarthWear",
+   "shader": "HDRP/Lit",
+   "surface": "alpha",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "earth_wear_albedo",
+   "metallic": 0.0,
+   "smoothness": 0.3
+  },
+  {
+   "blender": "mn_oort_rock",
+   "name": "MN_OortRock",
+   "baseColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "baseMap": "oort_rock_albedo",
+   "normalMap": "oort_rock_normal",
+   "maskMap": "oort_rock_mask",
+   "normalScale": 1.3,
+   "metallicRemap": [
+    0,
+    0
+   ],
+   "smoothnessRemap": [
+    0,
+    0.55
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "oort_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.55,
+   "detailNormal": 0.55,
+   "detailSmoothness": 0.5,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_oort_ice",
+   "name": "MN_OortIce",
+   "baseColor": [
+    0.84,
+    0.86,
+    0.9
+   ],
+   "baseMap": "oort_ice_albedo",
+   "normalMap": "oort_ice_normal",
+   "maskMap": "oort_ice_mask",
+   "normalScale": 1.0,
+   "metallicRemap": [
+    0,
+    0
+   ],
+   "smoothnessRemap": [
+    0,
+    0.92
+   ],
+   "aoRemap": [
+    0,
+    1
+   ],
+   "detailMap": "oort_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.4,
+   "detailNormal": 0.4,
+   "detailSmoothness": 0.4,
+   "specularAA": true
+  },
+  {
+   "blender": "mn_oort_jet",
+   "name": "MN_OortJet",
+   "shader": "HDRP/Unlit",
+   "surface": "additive",
+   "emissiveMap": "oort_jet_emissive",
+   "emissiveColor": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "emissiveNits": 4200,
+   "noShadows": true
+  }
+ ],
+ "decal": {
+  "name": "MN_EarthDamageDecal",
+  "baseMap": "earth_damage_albedo",
+  "normalMap": "earth_damage_normal",
+  "maskMap": "earth_damage_mask",
+  "emissiveMap": "earth_damage_emissive",
+  "emissiveNits": 14000,
+  "affectEmission": true
+ }
+}

@@ -1,9 +1,9 @@
 {
   "format": "monolith-combat-ship/1",
   "id": "earth_outpost",
-  "name": "Earth comet outpost (placeholder)",
+  "name": "Earth comet outpost",
   "sizeClass": "capital",
-  "note": "Earth's early-warning outpost (design section 3, the strike). Combat parts on the placeholder's shapes: the comms array (kind comms: knock it out or the warning gets out), the hangar (kind hangar: while it stands, the outpost scrambles interceptors), the scanner (sensors), flak on the station, anti-fighter guns dug into the ice. Hull, power and weapon energy are FS2's GTI Arcadia installation's; part shares ours, on FS2's scale. Missions address parts by kind, so a real model's parts replace these without the mission changing.",
+  "note": "Earth's early-warning outpost (design section 3, the strike), built into a comet nucleus. Its parts come from the model (see partKindsSource): the comms array (kind comms: knock it out or the warning gets out), the hangar (kind hangar: while it stands, the outpost scrambles interceptors), the Eye and the boom's dish (sensors), flak on the station, anti-fighter guns dug into the ice. Hull, power and weapon energy are FS2's GTI Arcadia installation's; part shares ours, on FS2's scale. Missions address parts by kind, so the stand-in parts below are only for a lab without the model.",
   "defense": {
     "hull": {
       "value": 100000,
@@ -32,58 +32,82 @@
     }
   },
   "geometry": {
-    "about": "The ice nucleus as three crossed boxes inside its ellipsoid (546 x 357 x 462 m half-axes), and the station on top. Unity axes.",
+    "about": "The nucleus as one broad box over its bounds (a beam sweeps the face of the shape's bounding box, so the boxes must fill it) and the station's blocks on top: the spine, the Eye's ring and pylons, the comms tower. Unity axes, the hangar face +z. From art_src/oort_art/build_earth_outpost.py via art_src/oort_art/wire_combat_defs.py.",
     "boxes": [
       {
         "centre": [
-          0,
-          0,
-          0
+          -1.0,
+          -9.5,
+          -32.5
         ],
         "half": [
-          500,
-          200,
-          360
+          532.9,
+          286.4,
+          359.6
         ]
       },
       {
         "centre": [
-          0,
-          0,
-          0
+          -125.0,
+          292.0,
+          -20.0
         ],
         "half": [
-          360,
-          310,
-          300
+          225.0,
+          24.0,
+          50.0
         ]
       },
       {
         "centre": [
-          0,
-          0,
-          0
+          -100.0,
+          432.0,
+          22.0
         ],
         "half": [
-          300,
-          180,
-          440
+          100.0,
+          100.0,
+          16.0
         ]
       },
       {
         "centre": [
-          0,
-          330,
-          0
+          -15.0,
+          392.0,
+          22.0
         ],
         "half": [
-          45,
-          36,
-          180
+          45.0,
+          60.0,
+          13.0
+        ]
+      },
+      {
+        "centre": [
+          -185.0,
+          392.0,
+          22.0
+        ],
+        "half": [
+          45.0,
+          60.0,
+          13.0
+        ]
+      },
+      {
+        "centre": [
+          82.0,
+          410.0,
+          -20.0
+        ],
+        "half": [
+          14.0,
+          108.0,
+          14.0
         ]
       }
     ],
-    "boundRadius": 640
+    "boundRadius": 660
   },
   "arms": {
     "missiles": {},
@@ -309,5 +333,25 @@
       "hpPercent": 0.8,
       "weapon": "turret_laser"
     }
-  ]
+  ],
+  "partKindsSource": "Parts come from the model (Resources/ShipArt/earth_outpost.ship.json): the comms array on its tower (kind comms: knock it out or the warning gets out), the Eye and the boom's dish (sensors), the hangar in the cliff (kind hangar: while it stands the outpost scrambles interceptors), six flak batteries on the station and six anti-fighter guns dug into the ice, each at the share of the hull the stand-in parts above had (the GTI Arcadia installation's, on FS2's scale). The vents (the comet's jets) are decoration: they break for the show and are not combat parts. The stand-ins are for a headless lab without a model.",
+  "partKinds": {
+    "comms": {
+      "hpPercent": 3.0
+    },
+    "sensors": {
+      "hpPercent": 2.0
+    },
+    "hangar": {
+      "hpPercent": 4.0
+    },
+    "flak": {
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    "aaf": {
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    }
+  }
 }

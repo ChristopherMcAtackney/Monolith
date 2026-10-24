@@ -249,7 +249,7 @@ namespace Monolith.EditorTools
                     r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
                     r.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
                     r.motionVectorGenerationMode = MotionVectorGenerationMode.Object;
-                    bool glow = shared.Length > 0 && shared[0] != null && shared[0].name == "MN_EarthPlume";
+                    bool glow = shared.Length > 0 && shared[0] != null && (shared[0].name == "MN_EarthPlume" || shared[0].name == "MN_OortJet");
                     r.shadowCastingMode = glow ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
                     r.receiveShadows = !glow;
                 }

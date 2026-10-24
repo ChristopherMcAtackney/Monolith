@@ -1,0 +1,41 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "oort",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [],
+ "perf": [
+  {
+   "name": "outpost_fight_from_the_hangar_face",
+   "pos": [
+    770.7,
+    630.0,
+    6631.7
+   ],
+   "lookAt": [
+    819.5,
+    630.0,
+    7189.5
+   ],
+   "fov": 62,
+   "warmup": 126.0,
+   "seconds": 25
+  },
+  {
+   "name": "archon_fight_follow",
+   "follow": true,
+   "warmup": 178.0,
+   "seconds": 30
+  }
+ ]
+}

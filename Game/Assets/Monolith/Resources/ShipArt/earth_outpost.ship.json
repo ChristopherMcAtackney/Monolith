@@ -1,0 +1,3666 @@
+{
+ "lods": {
+  "0": {
+   "triangles": 252401,
+   "vertices": 613241,
+   "subsystemTriangles": 58404
+  },
+  "1": {
+   "triangles": 37558,
+   "vertices": 99822
+  },
+  "2": {
+   "triangles": 3546,
+   "vertices": 8804
+  }
+ },
+ "subsystems": [
+  {
+   "name": "SUB_sensors_eye",
+   "kind": "sensors",
+   "radius": 81.25,
+   "hp": 1.0,
+   "tags": [
+    "radar",
+    "long-range"
+   ],
+   "position": [
+    -100.0,
+    432.0,
+    52.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_sensors_eye__ball",
+     "SUB_sensors_eye__iris"
+    ],
+    "destroyed": [
+     "SUB_sensors_eye__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_sensors_eye__debris_00",
+     "position": [
+      17.0,
+      7.0,
+      2.0
+     ],
+     "velocity": [
+      -5.9559,
+      5.5723,
+      0.1258
+     ],
+     "spin": [
+      93.4331,
+      28.1397,
+      25.4269
+     ]
+    },
+    {
+     "name": "SUB_sensors_eye__debris_01",
+     "position": [
+      -15.0,
+      -10.0,
+      -8.0
+     ],
+     "velocity": [
+      -0.5386,
+      7.6854,
+      -0.8136
+     ],
+     "spin": [
+      -12.2254,
+      15.9708,
+      41.2799
+     ]
+    },
+    {
+     "name": "SUB_sensors_eye__debris_02",
+     "position": [
+      -12.0,
+      15.0,
+      -3.0
+     ],
+     "velocity": [
+      4.0541,
+      9.0757,
+      2.2299
+     ],
+     "spin": [
+      -115.4579,
+      -36.0142,
+      -132.1599
+     ]
+    },
+    {
+     "name": "SUB_sensors_eye__debris_03",
+     "position": [
+      8.0,
+      -17.0,
+      -15.0
+     ],
+     "velocity": [
+      4.5816,
+      12.5477,
+      6.8776
+     ],
+     "spin": [
+      -119.3783,
+      -38.009,
+      -29.1641
+     ]
+    },
+    {
+     "name": "SUB_sensors_eye__debris_04",
+     "position": [
+      27.0,
+      5.0,
+      -10.0
+     ],
+     "velocity": [
+      -2.1533,
+      2.7093,
+      5.241
+     ],
+     "spin": [
+      -41.0578,
+      11.837,
+      134.474
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_comms_array",
+   "kind": "comms",
+   "radius": 52.0,
+   "hp": 1.0,
+   "tags": [
+    "comms"
+   ],
+   "position": [
+    82.0,
+    470.4,
+    -11.0
+   ],
+   "forward": [
+    0.0,
+    0.7828,
+    0.6222
+   ],
+   "up": [
+    0.0,
+    0.6222,
+    -0.7828
+   ],
+   "parts": {
+    "intact": [
+     "SUB_comms_array__mast",
+     "SUB_comms_array__dish",
+     "SUB_comms_array__arms"
+    ],
+    "destroyed": [
+     "SUB_comms_array__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_comms_array__debris_00",
+     "position": [
+      0.0,
+      -2.3485,
+      1.8667
+     ],
+     "velocity": [
+      3.4635,
+      5.8587,
+      -3.522
+     ],
+     "spin": [
+      -14.4656,
+      -70.8668,
+      -20.091
+     ]
+    },
+    {
+     "name": "SUB_comms_array__debris_01",
+     "position": [
+      -3.0,
+      -10.3774,
+      -27.5192
+     ],
+     "velocity": [
+      1.209,
+      2.242,
+      -2.5572
+     ],
+     "spin": [
+      128.9851,
+      112.0585,
+      4.6669
+     ]
+    },
+    {
+     "name": "SUB_comms_array__debris_02",
+     "position": [
+      4.0,
+      21.4975,
+      17.4028
+     ],
+     "velocity": [
+      6.1493,
+      7.156,
+      1.3312
+     ],
+     "spin": [
+      63.4196,
+      -22.72,
+      128.626
+     ]
+    },
+    {
+     "name": "SUB_comms_array__debris_03",
+     "position": [
+      0.0,
+      -4.155,
+      -19.691
+     ],
+     "velocity": [
+      0.5524,
+      5.3568,
+      3.5995
+     ],
+     "spin": [
+      -26.5436,
+      55.7215,
+      -7.5157
+     ]
+    },
+    {
+     "name": "SUB_comms_array__debris_04",
+     "position": [
+      -22.0,
+      -10.5179,
+      -32.5173
+     ],
+     "velocity": [
+      1.2155,
+      11.5944,
+      -3.3478
+     ],
+     "spin": [
+      48.4227,
+      -85.9307,
+      97.2287
+     ]
+    },
+    {
+     "name": "SUB_comms_array__debris_05",
+     "position": [
+      23.0,
+      -8.6512,
+      -30.1688
+     ],
+     "velocity": [
+      1.8444,
+      9.9669,
+      2.7255
+     ],
+     "spin": [
+      -58.1714,
+      -47.3796,
+      96.8758
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_hangar_main",
+   "kind": "hangar",
+   "radius": 64.0,
+   "hp": 1.0,
+   "tags": [
+    "hangar"
+   ],
+   "position": [
+    -235.0,
+    12.0,
+    315.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_hangar_main__frame",
+     "SUB_hangar_main__interior",
+     "SUB_hangar_main__door"
+    ],
+    "destroyed": [
+     "SUB_hangar_main__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_hangar_main__debris_00",
+     "position": [
+      -40.0,
+      34.0,
+      12.0
+     ],
+     "velocity": [
+      7.2033,
+      5.9044,
+      -1.5426
+     ],
+     "spin": [
+      -58.7911,
+      7.922,
+      20.8168
+     ]
+    },
+    {
+     "name": "SUB_hangar_main__debris_01",
+     "position": [
+      60.0,
+      6.0,
+      10.0
+     ],
+     "velocity": [
+      -0.5794,
+      3.272,
+      -4.7517
+     ],
+     "spin": [
+      65.9538,
+      14.2186,
+      149.7391
+     ]
+    },
+    {
+     "name": "SUB_hangar_main__debris_02",
+     "position": [
+      62.0,
+      -20.0,
+      12.0
+     ],
+     "velocity": [
+      4.6444,
+      7.6917,
+      0.4191
+     ],
+     "spin": [
+      -57.0857,
+      -46.3795,
+      19.769
+     ]
+    },
+    {
+     "name": "SUB_hangar_main__debris_03",
+     "position": [
+      -20.0,
+      -23.0,
+      6.0
+     ],
+     "velocity": [
+      -3.1732,
+      10.0811,
+      4.0489
+     ],
+     "spin": [
+      46.8632,
+      -81.0217,
+      63.4624
+     ]
+    },
+    {
+     "name": "SUB_hangar_main__debris_04",
+     "position": [
+      0.0,
+      30.0,
+      8.0
+     ],
+     "velocity": [
+      0.5057,
+      2.0603,
+      4.6103
+     ],
+     "spin": [
+      -55.3504,
+      -27.8811,
+      -7.4091
+     ]
+    },
+    {
+     "name": "SUB_hangar_main__debris_05",
+     "position": [
+      20.0,
+      0.0,
+      4.0
+     ],
+     "velocity": [
+      0.742,
+      11.5304,
+      10.5845
+     ],
+     "spin": [
+      18.3323,
+      61.1076,
+      -54.0026
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_flak_F01",
+   "kind": "flak",
+   "radius": 6.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "flak"
+   ],
+   "position": [
+    -322.0,
+    329.55,
+    -4.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_flak_F01__base",
+     "SUB_flak_F01__head"
+    ],
+    "destroyed": [
+     "SUB_flak_F01__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_flak_F01__debris_00",
+     "position": [
+      1.054,
+      2.89,
+      4.42
+     ],
+     "velocity": [
+      4.3246,
+      5.3765,
+      4.7365
+     ],
+     "spin": [
+      -25.8366,
+      -93.7727,
+      24.9524
+     ]
+    },
+    {
+     "name": "SUB_flak_F01__debris_01",
+     "position": [
+      0.0,
+      2.72,
+      0.0
+     ],
+     "velocity": [
+      5.2187,
+      3.6407,
+      4.283
+     ],
+     "spin": [
+      -38.629,
+      -88.8983,
+      66.9517
+     ]
+    },
+    {
+     "name": "SUB_flak_F01__debris_02",
+     "position": [
+      -1.36,
+      3.23,
+      -1.36
+     ],
+     "velocity": [
+      -1.7277,
+      8.374,
+      4.5482
+     ],
+     "spin": [
+      76.3848,
+      98.3191,
+      -90.985
+     ]
+    },
+    {
+     "name": "SUB_flak_F01__debris_03",
+     "position": [
+      2.21,
+      2.38,
+      -1.02
+     ],
+     "velocity": [
+      -1.006,
+      6.962,
+      11.1053
+     ],
+     "spin": [
+      1.1349,
+      7.008,
+      -66.9973
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_flak_F02",
+   "kind": "flak",
+   "radius": 6.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "flak"
+   ],
+   "position": [
+    -300.0,
+    322.05,
+    -42.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_flak_F02__base",
+     "SUB_flak_F02__head"
+    ],
+    "destroyed": [
+     "SUB_flak_F02__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_flak_F02__debris_00",
+     "position": [
+      1.054,
+      2.89,
+      4.42
+     ],
+     "velocity": [
+      9.3172,
+      5.2425,
+      3.781
+     ],
+     "spin": [
+      26.4849,
+      -76.8017,
+      -65.6457
+     ]
+    },
+    {
+     "name": "SUB_flak_F02__debris_01",
+     "position": [
+      0.0,
+      2.72,
+      0.0
+     ],
+     "velocity": [
+      -2.5675,
+      3.7651,
+      1.1572
+     ],
+     "spin": [
+      69.1497,
+      -96.293,
+      146.115
+     ]
+    },
+    {
+     "name": "SUB_flak_F02__debris_02",
+     "position": [
+      -1.36,
+      3.23,
+      -1.36
+     ],
+     "velocity": [
+      -4.2955,
+      3.7146,
+      3.812
+     ],
+     "spin": [
+      26.0212,
+      120.794,
+      11.9244
+     ]
+    },
+    {
+     "name": "SUB_flak_F02__debris_03",
+     "position": [
+      2.21,
+      2.38,
+      -1.02
+     ],
+     "velocity": [
+      1.2153,
+      11.1054,
+      -1.6386
+     ],
+     "spin": [
+      -73.6274,
+      72.5158,
+      -69.3869
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_flak_F03",
+   "kind": "flak",
+   "radius": 6.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "flak"
+   ],
+   "position": [
+    -188.0,
+    330.05,
+    -8.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_flak_F03__base",
+     "SUB_flak_F03__head"
+    ],
+    "destroyed": [
+     "SUB_flak_F03__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_flak_F03__debris_00",
+     "position": [
+      1.054,
+      2.89,
+      4.42
+     ],
+     "velocity": [
+      2.5162,
+      4.1497,
+      7.189
+     ],
+     "spin": [
+      16.5943,
+      38.3947,
+      -44.3421
+     ]
+    },
+    {
+     "name": "SUB_flak_F03__debris_01",
+     "position": [
+      0.0,
+      2.72,
+      0.0
+     ],
+     "velocity": [
+      -0.4368,
+      3.7229,
+      3.6912
+     ],
+     "spin": [
+      -81.5668,
+      -12.0334,
+      74.3555
+     ]
+    },
+    {
+     "name": "SUB_flak_F03__debris_02",
+     "position": [
+      -1.36,
+      3.23,
+      -1.36
+     ],
+     "velocity": [
+      2.6884,
+      9.6266,
+      -0.8359
+     ],
+     "spin": [
+      10.1073,
+      11.8183,
+      28.4526
+     ]
+    },
+    {
+     "name": "SUB_flak_F03__debris_03",
+     "position": [
+      2.21,
+      2.38,
+      -1.02
+     ],
+     "velocity": [
+      8.327,
+      4.9636,
+      2.5905
+     ],
+     "spin": [
+      66.2263,
+      4.6102,
+      96.7959
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_flak_F04",
+   "kind": "flak",
+   "radius": 6.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "flak"
+   ],
+   "position": [
+    30.0,
+    326.55,
+    -34.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_flak_F04__base",
+     "SUB_flak_F04__head"
+    ],
+    "destroyed": [
+     "SUB_flak_F04__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_flak_F04__debris_00",
+     "position": [
+      1.054,
+      2.89,
+      4.42
+     ],
+     "velocity": [
+      -0.5934,
+      4.442,
+      8.9633
+     ],
+     "spin": [
+      40.058,
+      -12.2538,
+      54.8804
+     ]
+    },
+    {
+     "name": "SUB_flak_F04__debris_01",
+     "position": [
+      0.0,
+      2.72,
+      0.0
+     ],
+     "velocity": [
+      0.5689,
+      4.1197,
+      5.2415
+     ],
+     "spin": [
+      55.2432,
+      -16.9026,
+      67.6709
+     ]
+    },
+    {
+     "name": "SUB_flak_F04__debris_02",
+     "position": [
+      -1.36,
+      3.23,
+      -1.36
+     ],
+     "velocity": [
+      -2.5078,
+      4.0508,
+      4.9957
+     ],
+     "spin": [
+      -21.4166,
+      31.9444,
+      145.0596
+     ]
+    },
+    {
+     "name": "SUB_flak_F04__debris_03",
+     "position": [
+      2.21,
+      2.38,
+      -1.02
+     ],
+     "velocity": [
+      -0.4543,
+      10.1233,
+      6.3319
+     ],
+     "spin": [
+      -18.5473,
+      -57.2349,
+      119.9061
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_flak_F05",
+   "kind": "flak",
+   "radius": 6.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "flak"
+   ],
+   "position": [
+    -150.0,
+    328.6017,
+    -58.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_flak_F05__base",
+     "SUB_flak_F05__head"
+    ],
+    "destroyed": [
+     "SUB_flak_F05__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_flak_F05__debris_00",
+     "position": [
+      1.054,
+      2.89,
+      4.42
+     ],
+     "velocity": [
+      7.1976,
+      6.4091,
+      -3.4462
+     ],
+     "spin": [
+      -62.7488,
+      142.3401,
+      -81.2681
+     ]
+    },
+    {
+     "name": "SUB_flak_F05__debris_01",
+     "position": [
+      0.0,
+      2.72,
+      0.0
+     ],
+     "velocity": [
+      -0.2841,
+      6.205,
+      3.8847
+     ],
+     "spin": [
+      -56.6919,
+      -49.8058,
+      27.2513
+     ]
+    },
+    {
+     "name": "SUB_flak_F05__debris_02",
+     "position": [
+      -1.36,
+      3.23,
+      -1.36
+     ],
+     "velocity": [
+      4.4577,
+      3.01,
+      5.5089
+     ],
+     "spin": [
+      -107.3122,
+      -64.9079,
+      28.1837
+     ]
+    },
+    {
+     "name": "SUB_flak_F05__debris_03",
+     "position": [
+      2.21,
+      2.38,
+      -1.02
+     ],
+     "velocity": [
+      3.3708,
+      7.749,
+      -1.9504
+     ],
+     "spin": [
+      192.9067,
+      -53.4395,
+      -19.8659
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_flak_F06",
+   "kind": "flak",
+   "radius": 6.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "flak"
+   ],
+   "position": [
+    -62.0,
+    329.5167,
+    -56.0
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_flak_F06__base",
+     "SUB_flak_F06__head"
+    ],
+    "destroyed": [
+     "SUB_flak_F06__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_flak_F06__debris_00",
+     "position": [
+      1.054,
+      2.89,
+      4.42
+     ],
+     "velocity": [
+      -4.2451,
+      7.3788,
+      3.7009
+     ],
+     "spin": [
+      -100.1007,
+      65.3576,
+      22.8734
+     ]
+    },
+    {
+     "name": "SUB_flak_F06__debris_01",
+     "position": [
+      0.0,
+      2.72,
+      0.0
+     ],
+     "velocity": [
+      3.3011,
+      2.6835,
+      -1.3456
+     ],
+     "spin": [
+      32.1176,
+      60.048,
+      0.4848
+     ]
+    },
+    {
+     "name": "SUB_flak_F06__debris_02",
+     "position": [
+      -1.36,
+      3.23,
+      -1.36
+     ],
+     "velocity": [
+      0.8579,
+      4.6654,
+      5.3882
+     ],
+     "spin": [
+      112.4821,
+      -2.1138,
+      -46.5313
+     ]
+    },
+    {
+     "name": "SUB_flak_F06__debris_03",
+     "position": [
+      2.21,
+      2.38,
+      -1.02
+     ],
+     "velocity": [
+      -5.8724,
+      9.3711,
+      -8.4985
+     ],
+     "spin": [
+      97.6407,
+      -31.4836,
+      60.0758
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_aaf_G01",
+   "kind": "aaf",
+   "radius": 10.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "laser"
+   ],
+   "position": [
+    -315.2381,
+    238.8573,
+    219.7361
+   ],
+   "forward": [
+    0.0537,
+    -0.5259,
+    0.8489
+   ],
+   "up": [
+    -0.0475,
+    0.8478,
+    0.5282
+   ],
+   "parts": {
+    "intact": [
+     "SUB_aaf_G01__base",
+     "SUB_aaf_G01__head"
+    ],
+    "destroyed": [
+     "SUB_aaf_G01__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_aaf_G01__debris_00",
+     "position": [
+      1.426,
+      3.91,
+      5.98
+     ],
+     "velocity": [
+      -4.4235,
+      3.9622,
+      3.6909
+     ],
+     "spin": [
+      49.4613,
+      47.3482,
+      -5.6239
+     ]
+    },
+    {
+     "name": "SUB_aaf_G01__debris_01",
+     "position": [
+      0.0,
+      3.68,
+      0.0
+     ],
+     "velocity": [
+      4.7336,
+      4.6741,
+      -3.7081
+     ],
+     "spin": [
+      -64.3783,
+      79.2588,
+      10.3195
+     ]
+    },
+    {
+     "name": "SUB_aaf_G01__debris_02",
+     "position": [
+      -1.84,
+      4.37,
+      -1.84
+     ],
+     "velocity": [
+      -3.5655,
+      5.5756,
+      6.8207
+     ],
+     "spin": [
+      36.9023,
+      -27.161,
+      -59.0973
+     ]
+    },
+    {
+     "name": "SUB_aaf_G01__debris_03",
+     "position": [
+      2.99,
+      3.22,
+      -1.38
+     ],
+     "velocity": [
+      0.9911,
+      11.3882,
+      4.9196
+     ],
+     "spin": [
+      107.9113,
+      32.6272,
+      -42.2572
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_aaf_G02",
+   "kind": "aaf",
+   "radius": 10.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "laser"
+   ],
+   "position": [
+    241.2279,
+    131.6163,
+    226.6443
+   ],
+   "forward": [
+    0.0741,
+    -0.6825,
+    0.7271
+   ],
+   "up": [
+    -0.0428,
+    0.7263,
+    0.6861
+   ],
+   "parts": {
+    "intact": [
+     "SUB_aaf_G02__base",
+     "SUB_aaf_G02__head"
+    ],
+    "destroyed": [
+     "SUB_aaf_G02__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_aaf_G02__debris_00",
+     "position": [
+      1.426,
+      3.91,
+      5.98
+     ],
+     "velocity": [
+      -7.3395,
+      3.4382,
+      -5.5922
+     ],
+     "spin": [
+      -31.7835,
+      5.9591,
+      -7.516
+     ]
+    },
+    {
+     "name": "SUB_aaf_G02__debris_01",
+     "position": [
+      0.0,
+      3.68,
+      0.0
+     ],
+     "velocity": [
+      6.2762,
+      2.9269,
+      1.6647
+     ],
+     "spin": [
+      -102.6803,
+      76.1995,
+      42.7617
+     ]
+    },
+    {
+     "name": "SUB_aaf_G02__debris_02",
+     "position": [
+      -1.84,
+      4.37,
+      -1.84
+     ],
+     "velocity": [
+      1.4063,
+      2.6333,
+      5.719
+     ],
+     "spin": [
+      -112.4586,
+      -21.0214,
+      21.4425
+     ]
+    },
+    {
+     "name": "SUB_aaf_G02__debris_03",
+     "position": [
+      2.99,
+      3.22,
+      -1.38
+     ],
+     "velocity": [
+      5.768,
+      7.2903,
+      -2.591
+     ],
+     "spin": [
+      -71.8243,
+      -24.9474,
+      33.1469
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_aaf_G03",
+   "kind": "aaf",
+   "radius": 10.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "laser"
+   ],
+   "position": [
+    -548.24,
+    67.8044,
+    56.5131
+   ],
+   "forward": [
+    -0.1011,
+    0.2614,
+    0.9599
+   ],
+   "up": [
+    -0.9644,
+    -0.2628,
+    -0.0301
+   ],
+   "parts": {
+    "intact": [
+     "SUB_aaf_G03__base",
+     "SUB_aaf_G03__head"
+    ],
+    "destroyed": [
+     "SUB_aaf_G03__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_aaf_G03__debris_00",
+     "position": [
+      1.426,
+      3.91,
+      5.98
+     ],
+     "velocity": [
+      4.6984,
+      3.643,
+      2.3039
+     ],
+     "spin": [
+      -83.2423,
+      -13.3864,
+      9.7922
+     ]
+    },
+    {
+     "name": "SUB_aaf_G03__debris_01",
+     "position": [
+      0.0,
+      3.68,
+      0.0
+     ],
+     "velocity": [
+      -3.5841,
+      3.7286,
+      -0.191
+     ],
+     "spin": [
+      -44.8776,
+      -111.3683,
+      32.2314
+     ]
+    },
+    {
+     "name": "SUB_aaf_G03__debris_02",
+     "position": [
+      -1.84,
+      4.37,
+      -1.84
+     ],
+     "velocity": [
+      -2.6145,
+      3.312,
+      3.7537
+     ],
+     "spin": [
+      76.3843,
+      13.2214,
+      10.3858
+     ]
+    },
+    {
+     "name": "SUB_aaf_G03__debris_03",
+     "position": [
+      2.99,
+      3.22,
+      -1.38
+     ],
+     "velocity": [
+      -5.3568,
+      6.6993,
+      -1.9883
+     ],
+     "spin": [
+      34.9907,
+      -44.3142,
+      82.4549
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_aaf_G04",
+   "kind": "aaf",
+   "radius": 10.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "laser"
+   ],
+   "position": [
+    524.988,
+    76.5722,
+    43.7427
+   ],
+   "forward": [
+    -0.0544,
+    0.2665,
+    0.9623
+   ],
+   "up": [
+    0.9296,
+    0.3653,
+    -0.0486
+   ],
+   "parts": {
+    "intact": [
+     "SUB_aaf_G04__base",
+     "SUB_aaf_G04__head"
+    ],
+    "destroyed": [
+     "SUB_aaf_G04__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_aaf_G04__debris_00",
+     "position": [
+      1.426,
+      3.91,
+      5.98
+     ],
+     "velocity": [
+      6.4484,
+      7.1267,
+      3.39
+     ],
+     "spin": [
+      -8.6408,
+      131.5716,
+      -59.1718
+     ]
+    },
+    {
+     "name": "SUB_aaf_G04__debris_01",
+     "position": [
+      0.0,
+      3.68,
+      0.0
+     ],
+     "velocity": [
+      3.7087,
+      4.5283,
+      -0.6991
+     ],
+     "spin": [
+      29.739,
+      -84.439,
+      56.688
+     ]
+    },
+    {
+     "name": "SUB_aaf_G04__debris_02",
+     "position": [
+      -1.84,
+      4.37,
+      -1.84
+     ],
+     "velocity": [
+      -0.8287,
+      6.6653,
+      3.09
+     ],
+     "spin": [
+      -60.4937,
+      37.5625,
+      -94.2818
+     ]
+    },
+    {
+     "name": "SUB_aaf_G04__debris_03",
+     "position": [
+      2.99,
+      3.22,
+      -1.38
+     ],
+     "velocity": [
+      9.5796,
+      9.9607,
+      -1.0552
+     ],
+     "spin": [
+      -28.8239,
+      -44.7187,
+      7.8153
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_aaf_G05",
+   "kind": "aaf",
+   "radius": 10.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "laser"
+   ],
+   "position": [
+    -124.3743,
+    136.831,
+    -364.8543
+   ],
+   "forward": [
+    -0.1105,
+    0.8339,
+    0.5407
+   ],
+   "up": [
+    -0.1282,
+    0.5275,
+    -0.8398
+   ],
+   "parts": {
+    "intact": [
+     "SUB_aaf_G05__base",
+     "SUB_aaf_G05__head"
+    ],
+    "destroyed": [
+     "SUB_aaf_G05__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_aaf_G05__debris_00",
+     "position": [
+      1.426,
+      3.91,
+      5.98
+     ],
+     "velocity": [
+      4.251,
+      7.0311,
+      -0.784
+     ],
+     "spin": [
+      -125.1027,
+      88.3694,
+      18.1432
+     ]
+    },
+    {
+     "name": "SUB_aaf_G05__debris_01",
+     "position": [
+      0.0,
+      3.68,
+      0.0
+     ],
+     "velocity": [
+      1.0604,
+      4.2079,
+      0.2948
+     ],
+     "spin": [
+      -117.0702,
+      42.524,
+      41.9123
+     ]
+    },
+    {
+     "name": "SUB_aaf_G05__debris_02",
+     "position": [
+      -1.84,
+      4.37,
+      -1.84
+     ],
+     "velocity": [
+      1.6295,
+      3.9648,
+      3.9602
+     ],
+     "spin": [
+      132.272,
+      -75.9458,
+      -14.5828
+     ]
+    },
+    {
+     "name": "SUB_aaf_G05__debris_03",
+     "position": [
+      2.99,
+      3.22,
+      -1.38
+     ],
+     "velocity": [
+      -6.5717,
+      10.1114,
+      5.2244
+     ],
+     "spin": [
+      -24.9831,
+      -98.5754,
+      -82.6074
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_aaf_G06",
+   "kind": "aaf",
+   "radius": 10.0,
+   "hp": 1.0,
+   "tags": [
+    "anti-fighter",
+    "laser"
+   ],
+   "position": [
+    0.0166,
+    -266.3215,
+    103.0863
+   ],
+   "forward": [
+    0.0118,
+    0.255,
+    0.9669
+   ],
+   "up": [
+    0.332,
+    -0.9131,
+    0.2368
+   ],
+   "parts": {
+    "intact": [
+     "SUB_aaf_G06__base",
+     "SUB_aaf_G06__head"
+    ],
+    "destroyed": [
+     "SUB_aaf_G06__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_aaf_G06__debris_00",
+     "position": [
+      1.426,
+      3.91,
+      5.98
+     ],
+     "velocity": [
+      -4.788,
+      4.1928,
+      -0.6325
+     ],
+     "spin": [
+      -67.2943,
+      23.7517,
+      -51.1338
+     ]
+    },
+    {
+     "name": "SUB_aaf_G06__debris_01",
+     "position": [
+      0.0,
+      3.68,
+      0.0
+     ],
+     "velocity": [
+      -3.8797,
+      2.1091,
+      -1.8735
+     ],
+     "spin": [
+      35.3111,
+      -54.0897,
+      92.0608
+     ]
+    },
+    {
+     "name": "SUB_aaf_G06__debris_02",
+     "position": [
+      -1.84,
+      4.37,
+      -1.84
+     ],
+     "velocity": [
+      -5.4198,
+      6.5669,
+      4.1126
+     ],
+     "spin": [
+      -8.136,
+      93.4248,
+      48.7494
+     ]
+    },
+    {
+     "name": "SUB_aaf_G06__debris_03",
+     "position": [
+      2.99,
+      3.22,
+      -1.38
+     ],
+     "velocity": [
+      -4.5168,
+      4.3595,
+      -4.5045
+     ],
+     "spin": [
+      65.8151,
+      -81.5692,
+      -0.5924
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_sensors_boom",
+   "kind": "sensors",
+   "radius": 15.0,
+   "hp": 1.0,
+   "tags": [
+    "radar"
+   ],
+   "position": [
+    -472.0,
+    296.0,
+    -12.0
+   ],
+   "forward": [
+    -0.1541,
+    0.4623,
+    0.8732
+   ],
+   "up": [
+    0.0803,
+    0.8867,
+    -0.4553
+   ],
+   "parts": {
+    "intact": [
+     "SUB_sensors_boom__base",
+     "SUB_sensors_boom__head"
+    ],
+    "destroyed": [
+     "SUB_sensors_boom__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_sensors_boom__debris_00",
+     "position": [
+      3.3,
+      0.0,
+      0.3
+     ],
+     "velocity": [
+      2.8649,
+      4.4282,
+      -4.4495
+     ],
+     "spin": [
+      -239.6679,
+      62.5657,
+      -80.1324
+     ]
+    },
+    {
+     "name": "SUB_sensors_boom__debris_01",
+     "position": [
+      -4.4,
+      3.3,
+      0.2
+     ],
+     "velocity": [
+      -2.2956,
+      7.9309,
+      2.0929
+     ],
+     "spin": [
+      -71.5579,
+      117.0034,
+      39.1998
+     ]
+    },
+    {
+     "name": "SUB_sensors_boom__debris_02",
+     "position": [
+      -6.6,
+      0.0,
+      -0.7
+     ],
+     "velocity": [
+      -3.1996,
+      4.8477,
+      4.4216
+     ],
+     "spin": [
+      -21.7172,
+      17.0847,
+      -85.4844
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_vent_vent_neck_top",
+   "kind": "vent",
+   "radius": 35.2,
+   "hp": 0.1,
+   "tags": [
+    "decor"
+   ],
+   "position": [
+    186.3619,
+    176.5249,
+    -66.9276
+   ],
+   "forward": [
+    0.1017,
+    0.9082,
+    -0.4061
+   ],
+   "up": [
+    0.0452,
+    0.4036,
+    0.9138
+   ],
+   "parts": {
+    "intact": [
+     "SUB_vent_vent_neck_top__jet"
+    ],
+    "destroyed": [
+     "SUB_vent_vent_neck_top__destroyed"
+    ]
+   },
+   "debris": []
+  },
+  {
+   "name": "SUB_vent_vent_west_rim",
+   "kind": "vent",
+   "radius": 32.0,
+   "hp": 0.1,
+   "tags": [
+    "decor"
+   ],
+   "position": [
+    -492.4465,
+    186.0287,
+    147.3275
+   ],
+   "forward": [
+    -0.93,
+    0.3447,
+    -0.1274
+   ],
+   "up": [
+    -0.1195,
+    0.0443,
+    0.9918
+   ],
+   "parts": {
+    "intact": [
+     "SUB_vent_vent_west_rim__jet"
+    ],
+    "destroyed": [
+     "SUB_vent_vent_west_rim__destroyed"
+    ]
+   },
+   "debris": []
+  },
+  {
+   "name": "SUB_vent_vent_east_front",
+   "kind": "vent",
+   "radius": 27.200000000000003,
+   "hp": 0.1,
+   "tags": [
+    "decor"
+   ],
+   "position": [
+    350.1836,
+    55.4818,
+    277.3141
+   ],
+   "forward": [
+    0.1435,
+    0.2123,
+    0.9666
+   ],
+   "up": [
+    -0.0312,
+    0.9772,
+    -0.21
+   ],
+   "parts": {
+    "intact": [
+     "SUB_vent_vent_east_front__jet"
+    ],
+    "destroyed": [
+     "SUB_vent_vent_east_front__destroyed"
+    ]
+   },
+   "debris": []
+  },
+  {
+   "name": "SUB_vent_vent_neck_front",
+   "kind": "vent",
+   "radius": 25.6,
+   "hp": 0.1,
+   "tags": [
+    "decor"
+   ],
+   "position": [
+    61.692,
+    -67.359,
+    291.972
+   ],
+   "forward": [
+    0.4155,
+    0.0452,
+    0.9085
+   ],
+   "up": [
+    -0.0188,
+    0.999,
+    -0.0411
+   ],
+   "parts": {
+    "intact": [
+     "SUB_vent_vent_neck_front__jet"
+    ],
+    "destroyed": [
+     "SUB_vent_vent_neck_front__destroyed"
+    ]
+   },
+   "debris": []
+  },
+  {
+   "name": "SUB_vent_vent_back_top",
+   "kind": "vent",
+   "radius": 30.400000000000002,
+   "hp": 0.1,
+   "tags": [
+    "decor"
+   ],
+   "position": [
+    -95.5611,
+    256.7921,
+    -267.9388
+   ],
+   "forward": [
+    -0.0585,
+    0.8451,
+    -0.5314
+   ],
+   "up": [
+    -0.0367,
+    0.5302,
+    0.8471
+   ],
+   "parts": {
+    "intact": [
+     "SUB_vent_vent_back_top__jet"
+    ],
+    "destroyed": [
+     "SUB_vent_vent_back_top__destroyed"
+    ]
+   },
+   "debris": []
+  },
+  {
+   "name": "SUB_vent_vent_belly_vent",
+   "kind": "vent",
+   "radius": 24.0,
+   "hp": 0.1,
+   "tags": [
+    "decor"
+   ],
+   "position": [
+    13.4264,
+    -258.2639,
+    81.7326
+   ],
+   "forward": [
+    -0.12,
+    -0.8827,
+    0.4543
+   ],
+   "up": [
+    0.0612,
+    0.4502,
+    0.8908
+   ],
+   "parts": {
+    "intact": [
+     "SUB_vent_vent_belly_vent__jet"
+    ],
+    "destroyed": [
+     "SUB_vent_vent_belly_vent__destroyed"
+    ]
+   },
+   "debris": []
+  }
+ ],
+ "hooks": [
+  {
+   "name": "FX_spark_00",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -215.0,
+    296.0,
+    17.85
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_01",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -219.0,
+    296.0,
+    17.55
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_spark_02",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -310.0,
+    302.0,
+    17.65
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_03",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -313.5,
+    302.0,
+    17.35
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_spark_04",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -70.0,
+    304.0,
+    28.85
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_05",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -74.0,
+    304.0,
+    28.55
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_spark_06",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    10.0,
+    298.0,
+    15.85
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_07",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    6.5,
+    298.0,
+    15.55
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_spark_08",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -100.0,
+    340.4,
+    -20.0
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_09",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -100.0,
+    340.1,
+    -24.5
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_10",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -215.0,
+    330.9,
+    -28.0
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_11",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -215.0,
+    330.6,
+    -31.5
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_12",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    88.0,
+    303.45,
+    -12.0
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_13",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    88.0,
+    303.15,
+    -15.5
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_14",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -219.0,
+    352.0,
+    -4.1
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_15",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -222.0,
+    352.0,
+    -4.4
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_spark_16",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    -161.0795,
+    35.7955,
+    316.0
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_17",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    -167.0795,
+    35.7955,
+    315.7
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_spark_18",
+   "kind": "spark",
+   "size": 1.5,
+   "position": [
+    28.3147,
+    274.17,
+    33.4184
+   ],
+   "direction": [
+    0.4302,
+    0.9017,
+    -0.043
+   ]
+  },
+  {
+   "name": "FX_vent_19",
+   "kind": "vent",
+   "size": 3.0,
+   "position": [
+    28.1856,
+    273.6375,
+    27.9376
+   ],
+   "direction": [
+    0.4302,
+    0.9017,
+    -0.043
+   ]
+  },
+  {
+   "name": "FX_fire_20",
+   "kind": "fire",
+   "size": 6.0,
+   "position": [
+    -100.0,
+    432.0,
+    52.0
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_21",
+   "kind": "vent",
+   "size": 5.0,
+   "position": [
+    -100.0,
+    432.0,
+    52.0
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_fire_22",
+   "kind": "fire",
+   "size": 5.0,
+   "position": [
+    82.0,
+    420.4,
+    -20.0
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_23",
+   "kind": "vent",
+   "size": 4.0,
+   "position": [
+    82.0,
+    420.4,
+    -20.0
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_fire_24",
+   "kind": "fire",
+   "size": 8.0,
+   "position": [
+    -235.0,
+    12.0,
+    317.0
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "name": "FX_vent_25",
+   "kind": "vent",
+   "size": 6.0,
+   "position": [
+    -255.0,
+    12.0,
+    317.0
+   ],
+   "direction": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  }
+ ],
+ "damageSites": [
+  {
+   "name": "DMG_site_00",
+   "radius": 8.0,
+   "position": [
+    -215.0,
+    296.0,
+    17.05
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "breachTriangles": 504
+  },
+  {
+   "name": "DMG_site_01",
+   "radius": 7.0,
+   "position": [
+    -310.0,
+    302.0,
+    16.85
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "breachTriangles": 488
+  },
+  {
+   "name": "DMG_site_02",
+   "radius": 8.0,
+   "position": [
+    -70.0,
+    304.0,
+    28.05
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "breachTriangles": 484
+  },
+  {
+   "name": "DMG_site_03",
+   "radius": 7.0,
+   "position": [
+    10.0,
+    298.0,
+    15.05
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "breachTriangles": 468
+  },
+  {
+   "name": "DMG_site_04",
+   "radius": 9.0,
+   "position": [
+    -100.0,
+    339.6,
+    -20.0
+   ],
+   "normal": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "breachTriangles": 500
+  },
+  {
+   "name": "DMG_site_05",
+   "radius": 7.0,
+   "position": [
+    -215.0,
+    330.1,
+    -28.0
+   ],
+   "normal": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "breachTriangles": 492
+  },
+  {
+   "name": "DMG_site_06",
+   "radius": 7.0,
+   "position": [
+    88.0,
+    302.65,
+    -12.0
+   ],
+   "normal": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "breachTriangles": 460
+  },
+  {
+   "name": "DMG_site_07",
+   "radius": 6.0,
+   "position": [
+    -219.0,
+    352.0,
+    -4.9
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "breachTriangles": 480
+  },
+  {
+   "name": "DMG_site_08",
+   "radius": 12.0,
+   "position": [
+    -161.0795,
+    35.7955,
+    315.2
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "breachTriangles": 492
+  },
+  {
+   "name": "DMG_site_09",
+   "radius": 11.0,
+   "position": [
+    27.9706,
+    273.4486,
+    33.4528
+   ],
+   "normal": [
+    0.4302,
+    0.9017,
+    -0.043
+   ],
+   "breachTriangles": 472
+  }
+ ],
+ "lights": [
+  {
+   "pos": [
+    -316.379,
+    337.854,
+    -31.8971
+   ],
+   "kind": "nav",
+   "colour": [
+    1,
+    0.07,
+    0.05
+   ],
+   "size": 0.6,
+   "blink": null
+  },
+  {
+   "pos": [
+    -245.7091,
+    327.4352,
+    -5.4965
+   ],
+   "kind": "nav",
+   "colour": [
+    1,
+    0.07,
+    0.05
+   ],
+   "size": 0.6,
+   "blink": null
+  },
+  {
+   "pos": [
+    42.3544,
+    328.1538,
+    -35.8439
+   ],
+   "kind": "nav",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.6,
+   "blink": null
+  }
+ ],
+ "subsystemTriangles": {
+  "intact": 58404,
+  "destroyed": 12172,
+  "debris": 1408
+ },
+ "collisionTriangles": 1328,
+ "bounds": {
+  "min": [
+   -568.5924,
+   -311.0689,
+   -410.7705
+  ],
+  "max": [
+   559.792,
+   534.6793,
+   350.8756
+  ],
+  "size": [
+   1128.3844,
+   845.7482,
+   761.6461
+  ],
+  "length": 761.65
+ },
+ "id": "earth_outpost",
+ "name": "Earth comet outpost",
+ "materials": [
+  "mn_earth_plate",
+  "mn_earth_trim",
+  "mn_earth_lights",
+  "mn_earth_engine",
+  "mn_earth_chrome",
+  "mn_earth_plate_b",
+  "mn_earth_plate_c",
+  "mn_earth_plume",
+  "mn_earth_plate_d",
+  "mn_earth_plate_e",
+  "mn_earth_wear",
+  "mn_earth_paint",
+  "mn_oort_rock",
+  "mn_oort_ice",
+  "mn_oort_jet"
+ ],
+ "materialSet": "Assets/Monolith/Art/EarthHull/earth_oort.materials.json",
+ "damagePoints": [
+  {
+   "p": [
+    -200.1761,
+    291.3441,
+    -56.3912
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    70.9336,
+    289.8507,
+    7.5033
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -135.6522,
+    294.2073,
+    27.5912
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -250.3089,
+    296.3634,
+    -55.4077
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -86.0862,
+    308.134,
+    29.1224
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -224.8686,
+    319.132,
+    -34.8265
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -184.9798,
+    304.0724,
+    15.7158
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -24.9246,
+    314.3737,
+    -23.8111
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -318.9621,
+    304.9241,
+    15.7746
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -294.2586,
+    293.753,
+    -58.05
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -73.131,
+    330.2587,
+    -26.4772
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    44.5466,
+    287.968,
+    11.5953
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -226.5102,
+    308.5989,
+    16.5146
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    32.5116,
+    308.9699,
+    12.7988
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -149.8074,
+    284.8563,
+    26.615
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    85.5054,
+    302.7747,
+    -44.3718
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -247.3459,
+    311.9154,
+    -55.5455
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    4.2153,
+    312.6945,
+    14.7455
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    41.6013,
+    313.3098,
+    -5.8886
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -234.3682,
+    286.3622,
+    16.1492
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -57.0444,
+    288.5713,
+    27.1863
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -219.0248,
+    319.6756,
+    0.2291
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    46.6098,
+    290.7208,
+    -51.389
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -48.054,
+    318.0795,
+    26.5869
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -94.1099,
+    331.6573,
+    -32.4738
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -64.9518,
+    329.7135,
+    -39.4718
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -186.2738,
+    317.4966,
+    -27.5805
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -343.402,
+    296.7546,
+    12.8418
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -322.8277,
+    288.8739,
+    15.3107
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    21.0782,
+    316.3883,
+    -24.7415
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    8.6184,
+    317.9046,
+    -12.7036
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -14.3449,
+    315.4874,
+    -37.1632
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -194.0858,
+    318.191,
+    2.0139
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -315.6297,
+    320.1744,
+    -29.8601
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -286.0521,
+    299.2503,
+    18.05
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -208.6317,
+    306.3188,
+    -56.767
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -337.5565,
+    317.5432,
+    -31.4787
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -43.3448,
+    328.273,
+    2.296
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    89.4325,
+    284.8691,
+    6.5784
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -104.3425,
+    322.3376,
+    -69.7505
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -109.1375,
+    300.1967,
+    29.4198
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    88.4616,
+    302.6269,
+    -26.0549
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -79.4333,
+    291.3922,
+    28.6789
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    65.7866,
+    303.7607,
+    -7.8648
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    49.1938,
+    312.1709,
+    -22.1635
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -332.0332,
+    298.0918,
+    -54.206
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -6.9289,
+    295.0196,
+    14.159
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -253.6761,
+    311.0674,
+    15.2511
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -102.0397,
+    326.5678,
+    29.9093
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -10.1242,
+    315.9317,
+    3.3227
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -303.3145,
+    313.3147,
+    17.6523
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -111.6464,
+    331.2468,
+    1.9656
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -132.5996,
+    291.3187,
+    -67.8018
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    6.7743,
+    284.6379,
+    -54.8802
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -128.2822,
+    330.0995,
+    1.7114
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -191.6333,
+    317.973,
+    -41.5902
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -24.5832,
+    302.5541,
+    13.2298
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -72.161,
+    316.9377,
+    -68.1941
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -58.2155,
+    297.8694,
+    -67.2644
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -112.9157,
+    331.1593,
+    -30.8822
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -209.0866,
+    293.61,
+    16.7872
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    82.0802,
+    284.5594,
+    -46.946
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -157.9662,
+    321.2038,
+    26.0523
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -85.841,
+    325.6604,
+    29.1061
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -145.5863,
+    314.2327,
+    -66.9061
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    10.291,
+    318.0063,
+    -44.799
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    16.2194,
+    298.0614,
+    14.4281
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -283.1176,
+    322.05,
+    -30.0489
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -139.2554,
+    316.8491,
+    27.3427
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    3.7544,
+    300.4381,
+    -54.7213
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -120.2512,
+    301.4809,
+    -68.6534
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -252.0469,
+    316.6038,
+    -23.2524
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -129.8161,
+    329.9937,
+    -34.6105
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -295.5502,
+    309.1857,
+    -58.05
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -90.9221,
+    331.4448,
+    -16.8052
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    47.2635,
+    306.4918,
+    11.3237
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -172.1909,
+    307.1976,
+    -55.1474
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -201.9712,
+    318.8919,
+    -26.1224
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -44.7463,
+    300.7212,
+    26.3664
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -156.574,
+    328.1483,
+    -12.769
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -290.5413,
+    284.4494,
+    18.05
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -333.6203,
+    313.5858,
+    14.0156
+   ],
+   "n": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "p": [
+    -14.5471,
+    284.5307,
+    -53.758
+   ],
+   "n": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "p": [
+    -77.6093,
+    330.5573,
+    4.2731
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  }
+ ],
+ "lodScreenHeights": [
+  0.07,
+  0.02,
+  0.006
+ ]
+}

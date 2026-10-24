@@ -1,0 +1,104 @@
+{
+  "format": "monolith-mission/1",
+  "id": "outpost_death_test",
+  "name": "Outpost Death Test",
+  "about": "A lab for the Oort art pass (not a game mission): the Oculus (earth_outpost) at 2 percent hull, the Small Mercy's beams free and quick, so the target's staged death plays within the first half minute for the capture plans (gauntlet/shots/oortart_*_death.json).",
+  "difficulty": "Medium",
+  "player": "Sable 1",
+  "teams": [
+    "diaspora",
+    "earth"
+  ],
+  "briefing": {
+    "title": "Archon test",
+    "stages": [
+      "A lab scene for the Oort art pass."
+    ],
+    "questions": []
+  },
+  "ships": [
+    {
+      "name": "Sable 1",
+      "class": "vanguard_fighter",
+      "team": "diaspora",
+      "invulnerable": true,
+      "arrival": {
+        "at": [
+          900,
+          120,
+          1000
+        ],
+        "rot": [
+          0,
+          0,
+          0
+        ],
+        "speed": 0.0
+      }
+    },
+    {
+      "name": "Oculus",
+      "class": "earth_outpost",
+      "team": "earth",
+      "hullScale": 0.4,
+      "hull": 2,
+      "capital": {
+        "stationary": true,
+        "turretProfile": "earth_turret",
+        "holdTurrets": true,
+        "holdBeams": true
+      },
+      "arrival": {
+        "at": [
+          0,
+          0,
+          3000
+        ],
+        "rot": [
+          0,
+          185,
+          0
+        ],
+        "speed": 0
+      }
+    },
+    {
+      "name": "Small Mercy",
+      "class": "diaspora_cruiser",
+      "team": "diaspora",
+      "selfHeal": false,
+      "capital": {
+        "stationary": true,
+        "turretProfile": "diaspora_turret",
+        "beamWaitScale": 0.05,
+        "holdTurrets": true
+      },
+      "arrival": {
+        "at": [
+          150,
+          -520,
+          2050
+        ],
+        "rot": [
+          0,
+          0,
+          0
+        ],
+        "speed": 0
+      }
+    }
+  ],
+  "wings": [],
+  "objectives": [
+    {
+      "id": "lab",
+      "kind": "primary",
+      "text": "Look at the ships",
+      "complete": {
+        "destroyed": "Oculus"
+      }
+    }
+  ],
+  "messages": [],
+  "events": []
+}
