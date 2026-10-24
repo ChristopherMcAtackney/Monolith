@@ -6,17 +6,17 @@
     "t": 0.0,
     "do": "place",
     "pos": [
-     -40,
-     80,
-     -80
-    ],
-    "rot": [
-     1.5,
-     22.0,
-     0
+     470,
+     35,
+     1250
     ],
     "speed": 0.0,
-    "throttle": 0.0
+    "throttle": 0.0,
+    "lookAt": [
+     170,
+     70,
+     700
+    ]
    },
    {
     "t": 0.2,
@@ -33,7 +33,8 @@
     "do": "event",
     "name": "capital_death"
    }
-  ]
+  ],
+  "hud": false
  },
  "defaults": {
   "width": 1920,

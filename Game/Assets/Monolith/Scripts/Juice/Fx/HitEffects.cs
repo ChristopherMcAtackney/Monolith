@@ -23,6 +23,9 @@ namespace Monolith.Juice
 
         public static readonly Vector3 ShieldBlue = new Vector3(0.42f, 0.78f, 1.0f);
 
+        /// <summary>A radius that never falls below a fraction of the view at its distance, so a hit far away is still a clear flare.</summary>
+        float Ap(Vector3 p, float r, float minFraction) => Mathf.Max(r, minFraction * _c.DistanceToCamera(p));
+
         // ------------------------------------------------------------------------------------------------ shields
 
         public void OnShieldHit(in GameEvent e)
@@ -42,9 +45,9 @@ namespace Monolith.Juice
             {
                 // A bright flash where it lands, blue-white sparks thrown back off the bubble.
                 float r = 2.6f * m * _c.Size;
-                _fx.Flash(e.Position, r, ShieldBlue * (22f * m), 0.11f, 0.8f, 2f, 1.5f, vel);
-                _fx.Flash(e.Position, r * 3f, ShieldBlue * (3.4f * m), 0.26f, 0.1f, 1.6f, 1.4f, vel);
-                _fx.Flare(e.Position, r * 3.5f, r * 0.3f, ShieldBlue * (9f * m), 0.14f);
+                _fx.Flash(e.Position, Ap(e.Position, r, 0.02f), ShieldBlue * (40f * m), 0.14f, 0.8f, 2f, 1.5f, vel);
+                _fx.Flash(e.Position, Ap(e.Position, r * 3f, 0.035f), ShieldBlue * (4.0f * m), 0.28f, 0.1f, 1.6f, 1.4f, vel);
+                _fx.Flare(e.Position, Ap(e.Position, r * 3.5f, 0.05f), Ap(e.Position, r * 0.3f, 0.004f), ShieldBlue * (12f * m), 0.16f);
                 _fx.Sparks(e.Position, vel, outward, 70f, _c.N(Mathf.RoundToInt(12 * m)), 25f, 90f * m, 0.25f, 0.65f, 0.09f, SparkStyle.Plasma, 0.5f);
                 _fx.Ring(e.Position, r * 0.5f, r * 3.6f, 0.25f, ShieldBlue * (3.0f * m), 0.11f);
             }
@@ -112,7 +115,7 @@ namespace Monolith.Juice
             {
                 string kind = site.name.Length > 3 ? site.name.Substring(3).ToLowerInvariant() : "";
                 if (kind.StartsWith("spark")) _fx.Sparks(site.position, Vector3.zero, site.forward, 50f, _c.N(10), 14f, 70f, 0.3f, 0.9f, 0.12f, SparkStyle.Metal, 0.5f);
-                else if (kind.StartsWith("fire")) _fx.Fireball(site.position + site.forward * r * 0.4f, Vector3.zero, r * 0.5f, r * 1.2f, 1.4f, 0.9f, 7f);
+                else if (kind.StartsWith("fire")) _fx.Fireball(site.position + site.forward * r * 0.4f, Vector3.zero, r * 0.5f, r * 1.2f, 1.4f, 1.7f, 4f, 0f, 1.2f, 0.5f);
                 else if (kind.StartsWith("smoke")) _fx.Gas(site.position, site.forward * 12f, r * 0.6f, r * 2.2f, 2.2f, new Vector3(0.5f, 0.55f, 0.65f), 0.3f, 2f);
                 else _fx.Vent(site.position, site.forward, r, 14f + 10f * big, 22f + 30f * big, parent);
                 return;
@@ -138,15 +141,22 @@ namespace Monolith.Juice
 
             if (s.effects.hullHits && !toPlayer)
             {
-                _fx.Flash(e.Position + n * 0.5f, R * 1.0f, Emitters.WarmWhite * (30f * m), 0.07f, 0.75f, 2f, 1.3f, vel);
-                _fx.Flash(e.Position + n * 0.5f, R * 3.4f, Emitters.Orange * (4.5f * m), 0.2f, 0.08f, 1.8f, 1.4f, vel);
-                _fx.Flare(e.Position + n * 0.5f, R * 3.4f, R * 0.22f, Emitters.WarmWhite * (11f * m), 0.1f);
-                _fx.Fireball(e.Position + n * R * 0.3f, vel + n * 10f, R * 0.6f, R * 1.6f, 0.4f + 0.16f * big, 1.1f, 11f * m);
+                _fx.Flash(e.Position + n * 0.5f, Ap(e.Position, R * 1.0f, 0.014f), Emitters.WarmWhite * (34f * m), 0.09f, 0.75f, 2f, 1.3f, vel);
+                _fx.Flash(e.Position + n * 0.5f, Ap(e.Position, R * 3.4f, 0.04f), Emitters.Orange * (5.5f * m), 0.24f, 0.08f, 1.8f, 1.4f, vel);
+                _fx.Flare(e.Position + n * 0.5f, Ap(e.Position, R * 3.4f, 0.06f), Ap(e.Position, R * 0.22f, 0.004f), Emitters.WarmWhite * (15f * m), 0.13f);
+                _fx.Fireball(e.Position + n * R * 0.3f, vel + n * 10f, R * 0.6f, R * 1.6f, 0.4f + 0.16f * big, 2.0f, 4.5f * m, 0f, 1.2f, 0.5f);
                 _fx.Sparks(e.Position + n * 0.3f, vel, n, 78f, _c.N(Mathf.RoundToInt(26 * m * (1f + big))), 22f, 150f + 90f * big, 0.3f, 1.0f + 0.5f * big, 0.11f + 0.04f * big, SparkStyle.Hot, 0.4f);
                 _fx.Sparks(e.Position + n * 0.3f, vel, n, 40f, _c.N(Mathf.RoundToInt(6 * m)), 80f, 260f, 0.12f, 0.3f, 0.1f, SparkStyle.Metal, 0.3f);
                 if (s.effects.debris)
                     _fx.Embers(e.Position + n * 0.5f, vel, R * 0.3f, _c.N(Mathf.RoundToInt(3 + 3 * m)), 14f + 30f * big, 0.9f, 2.2f, 0.45f + 0.5f * big);
-                _fx.Scorch(e.Position + n * 0.15f, R * (0.75f + 0.25f * big), 26f + 10f * big);
+                var look = _c.LookOf(e.Entity);
+                if (look != null && look.Damage != null)
+                {
+                    // A modelled ship paints its own scorch, crater and streak decals on the plating, and opens its damage sites.
+                    float sev = Mathf.Clamp01(0.3f + e.Value / 70f);
+                    look.Damage.HullHit(e.Position, n, 1.2f + 1.6f * sev + 2f * big, sev);
+                }
+                else _fx.Scorch(e.Position + n * 0.15f, R * (0.75f + 0.25f * big), big < 0.3f ? 1.0f : 26f + 10f * big, 1f, vel);   // a small ship turns and flies away from its mark, so the mark is brief
                 if (ship != null) Smoulder(e, ship, n, big);
             }
             if (s.effects.lights) _c.Lights.Flash(e.Position + n * (R + 2f), new Color(1f, 0.66f, 0.34f), 6e7f * m * (1f + 2f * big) * _c.Bright, 140f + 260f * big, 0.14f + 0.08f * big, 2f);
@@ -193,8 +203,8 @@ namespace Monolith.Juice
                 _fx.Flash(e.Position, R * 1.5f, new Vector3(1f, 0.92f, 0.75f) * 42f, 0.08f, 0.75f, 2f, 1.3f);
                 _fx.Flash(e.Position, R * 4f, Emitters.Orange * 4.5f, 0.26f, 0.08f, 1.8f, 1.4f);
                 _fx.Flare(e.Position, R * 4.2f, R * 0.2f, Emitters.WarmWhite * 12f, 0.12f);
-                _fx.Fireball(e.Position, Vector3.zero, R * 0.55f, R * 1.35f, 0.55f, 1.1f, 12f);
-                _fx.Fireball(e.Position + _c.Rng.OnSphere() * R * 0.35f, Vector3.zero, R * 0.4f, R * 1.0f, 0.48f, 1.0f, 10f);
+                _fx.Fireball(e.Position, Vector3.zero, R * 0.55f, R * 1.35f, 0.55f, 2.0f, 4.5f, 0f, 1.2f, 0.5f);
+                _fx.Fireball(e.Position + _c.Rng.OnSphere() * R * 0.35f, Vector3.zero, R * 0.4f, R * 1.0f, 0.48f, 1.9f, 4.0f, 0f, 1.2f, 0.5f);
                 // Shrapnel: a fast, bright, short-lived shell of streaks.
                 _fx.Sparks(e.Position, Vector3.zero, Vector3.up, 360f, _c.N(60), 70f, 260f, 0.16f, 0.5f, 0.1f, SparkStyle.Metal, 0.35f, 1.1f);
                 _fx.Ring(e.Position, R * 0.3f, R * 2.2f, 0.2f, new Vector3(1f, 0.8f, 0.5f) * 0.8f, 0.05f);

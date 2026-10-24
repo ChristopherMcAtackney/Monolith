@@ -76,9 +76,9 @@ namespace Monolith.Game
             {
                 case "place":
                 {
-                    Vector3 pos = V3(o["pos"]);
-                    Vector3 rot = o["lookAt"] != null ? Quaternion.LookRotation(V3(o["lookAt"]) - pos, Vector3.up).eulerAngles : V3(o["rot"]);
-                    _box.PlacePlayer(pos, rot, (float)(o["speed"] ?? 0.3f), (float)(o["throttle"] ?? 0.3f));
+                    Vector3 pos = _box.L(V3(o["pos"]));
+                    Quaternion rot = o["lookAt"] != null ? Quaternion.LookRotation(_box.L(V3(o["lookAt"])) - pos, Vector3.up) : _box.L(Quaternion.Euler(V3(o["rot"])));
+                    _box.PlacePlayerWorld(pos, rot, (float)(o["speed"] ?? 0.3f), (float)(o["throttle"] ?? 0.3f));
                     _held = default; _velInit = false;
                     break;
                 }
@@ -97,10 +97,10 @@ namespace Monolith.Game
                     ShipState ship = null;
                     foreach (var s in _world.Ships.All) if (s.Callsign == name) { ship = s; break; }
                     if (ship == null) throw new ArgumentException($"no ship called '{name}'");
-                    Vector3 dir = o["from"] != null ? V3(o["from"]).normalized : new Vector3(0.1f, 0.08f, -1f).normalized;
+                    Vector3 dir = o["from"] != null ? _box.L(V3(o["from"])).normalized : _box.L(new Vector3(0.1f, 0.08f, -1f)).normalized;
                     Vector3 pos = ship.Position + dir * (float)(o["distance"] ?? 200f);
                     var look = Quaternion.LookRotation(ship.Position - pos, Vector3.up);
-                    _box.PlacePlayer(pos, look.eulerAngles, 0f, 0f);
+                    _box.PlacePlayerWorld(pos, look, 0f, 0f);
                     _world.Ships.Get(_world.LocalPlayerShip).Target = ship.Id;
                     _held = default; _velInit = false;
                     break;
@@ -112,7 +112,7 @@ namespace Monolith.Game
                     break;
                 }
                 case "raise":
-                    GameEvents.RaiseAt((string)o["id"], V3(o["pos"]), o["dir"] != null ? V3(o["dir"]) : Vector3.zero, (string)o["subject"], (float)(o["value"] ?? 0f),
+                    GameEvents.RaiseAt((string)o["id"], _box.L(V3(o["pos"])), o["dir"] != null ? _box.L(V3(o["dir"])) : Vector3.zero, (string)o["subject"], (float)(o["value"] ?? 0f),
                                        (int)(o["entity"] ?? GameWorld.NoShip), (int)(o["other"] ?? GameWorld.NoShip));
                     break;
                 default: throw new ArgumentException($"unknown script step '{what}'");

@@ -6,6 +6,7 @@ using Monolith.Flight;
 using Monolith.Hud;
 using Monolith.Input;
 using Monolith.Juice;
+using Monolith.ShipArt;
 using Monolith.Sky;
 using Monolith.View;
 using Newtonsoft.Json.Linq;
@@ -45,6 +46,11 @@ namespace Monolith.Game
         string _lastTrigger;
 
         static readonly Vector3 PlayerStart = new Vector3(0f, 90f, -250f);
+        /// <summary>How the whole layout is turned about the vertical by default (the Sun is fixed in the sky, so this decides how the hulls are lit).</summary>
+        public const float DefaultLayoutYaw = 0f;
+        Quaternion _layout = Quaternion.identity;
+        public Vector3 L(Vector3 v) => _layout * v;
+        public Quaternion L(Quaternion q) => _layout * q;
 
         // ------------------------------------------------------------------------------------------------ building
 
@@ -64,11 +70,16 @@ namespace Monolith.Game
             self._views = ShipViews.Create(world, root.transform);
             self._mats = PlaceholderShips.MakeMaterials();
 
+            // The layout of the scene (a turn about the vertical through the origin: which way the Sun falls on everything) and whether there is a HUD:
+            // "sceneOptions": { "layoutYaw": 200, "hud": false }. A look capture has no HUD at all.
+            self._layout = Quaternion.Euler(0f, opts != null && opts["layoutYaw"] != null ? (float)opts["layoutYaw"] : DefaultLayoutYaw, 0f);
+            bool hud = !(opts != null && opts["hud"] != null && !(bool)opts["hud"]) && !CommandLine.Has("-mnNoHud");
+
             // The player.
             var cls = ShipCatalog.Load(CommandLine.Get("-mnShip", "vanguard_fighter"));
-            self._player = flight.Spawn(cls, PlayerStart, Quaternion.identity, 0.25f * cls.TopSpeed, 0.25f, 0, "Player");
+            self._player = flight.Spawn(cls, self._layout * PlayerStart, self._layout, 0.25f * cls.TopSpeed, 0.25f, 0, "Player");
             world.LocalPlayerShip = self._player.Id;
-            self._hud = FlightHud.Create(world, view.Camera, root.transform);
+            if (hud) self._hud = FlightHud.Create(world, view.Camera, root.transform);
 
             // The juice, then everything that raises events for it.
             var settings = JuiceSettings.Load();
@@ -135,6 +146,8 @@ namespace Monolith.Game
             public string Name, Class, Kind; public int Team;
             public Vector3 Pos, Rot; public float Yaw, Speed;
             public float Length, Width, Height; public int Seed;
+            /// <summary>A ship model from Resources/ShipArt (real parts, damage looks, collision), instead of a placeholder hull.</summary>
+            public string Model;
         }
 
         static readonly Slot[] Slots =
@@ -145,8 +158,8 @@ namespace Monolith.Game
             new Slot { Name = "Hammer 1", Class = "gtb_artemis", Kind = "bomber", Team = 1, Pos = new Vector3(-30, 172, 730), Rot = new Vector3(0, 190, 0), Yaw = 0.09f, Speed = 0.3f },
             new Slot { Name = "Vanguard 2", Class = "gtf_myrmidon", Kind = "wingman", Team = 0, Pos = new Vector3(-75, 82, -160), Rot = new Vector3(0, 20, 0), Yaw = 0.2f, Speed = 0.3f },
             new Slot { Name = "Vanguard 3", Class = "gtf_ulysses", Kind = "wingman", Team = 0, Pos = new Vector3(100, 100, -200), Rot = new Vector3(0, -30, 0), Yaw = -0.18f, Speed = 0.3f },
-            new Slot { Name = "Resolute", Class = "juice_cruiser", Kind = "cruiser", Team = 1, Pos = new Vector3(430, 40, 1020), Rot = new Vector3(0, 112f, 0), Length = 1100, Width = 180, Height = 140, Seed = 3 },
-            new Slot { Name = "Ravager", Class = "juice_destroyer", Kind = "destroyer", Team = 0, Pos = new Vector3(-1250, 520, 2700), Rot = new Vector3(0, 42f, 5f), Length = 2200, Width = 300, Height = 220, Seed = 2 },
+            new Slot { Name = "Resolute", Class = "juice_corvette", Kind = "cruiser", Team = 1, Pos = new Vector3(170, 70, 700), Rot = new Vector3(0, 98f, 0), Model = "earth_corvette" },
+            new Slot { Name = "Ravager", Class = "juice_corvette", Kind = "destroyer", Team = 0, Pos = new Vector3(-780, 230, 1750), Rot = new Vector3(0, 62f, 0), Model = "earth_corvette" },
         };
 
         void SpawnWorld()
@@ -159,14 +172,26 @@ namespace Monolith.Game
         SandboxShip Spawn(Slot s)
         {
             var cls = ShipCatalog.Load(s.Class);
-            var rot = Quaternion.Euler(s.Rot);
+            var rot = _layout * Quaternion.Euler(s.Rot);
             bool capital = s.Kind == "cruiser" || s.Kind == "destroyer";
-            var st = _flight.Spawn(cls, s.Pos, rot, capital ? 0f : s.Speed * cls.TopSpeed, capital ? 0f : s.Speed, s.Team, s.Name);
+            var st = _flight.Spawn(cls, _layout * s.Pos, rot, capital ? 0f : s.Speed * cls.TopSpeed, capital ? 0f : s.Speed, s.Team, s.Name);
             Transform visual;
+            IJuiceShipDamage damage = null;
             if (capital)
             {
-                st.Radius = 0.5f * new Vector3(s.Width, s.Height, s.Length).magnitude;
-                visual = PlaceholderShips.Hull(s.Name, s.Length, s.Width, s.Height, s.Seed, _mats, _root).transform;
+                if (s.Model != null)
+                {
+                    var go = ShipArtCatalog.Instantiate(s.Model, _root);
+                    go.name = s.Name;
+                    visual = go.transform;
+                    damage = new ShipArtJuiceDamage(go);
+                    st.Radius = 0.5f * ShipArtCatalog.Manifest(s.Model).Size.magnitude;
+                }
+                else
+                {
+                    st.Radius = 0.5f * new Vector3(s.Width, s.Height, s.Length).magnitude;
+                    visual = PlaceholderShips.Hull(s.Name, s.Length, s.Width, s.Height, s.Seed, _mats, _root).transform;
+                }
                 _world.Pilots.Attach(st.Id, new ScriptedPilot(new[] { new ScriptedPilot.Key(0f, default(ControlInput)) }));
             }
             else
@@ -179,7 +204,7 @@ namespace Monolith.Game
                 _world.Pilots.Attach(st.Id, new ScriptedPilot(keys));
             }
             _views.Register(st.Id, visual);
-            Juice.RegisterShip(st.Id, visual);
+            Juice.RegisterShip(st.Id, visual, null, damage);
             var rec = new SandboxShip { Id = st.Id, Name = s.Name, Team = s.Team, Kind = s.Kind };
             switch (s.Kind)
             {
@@ -327,7 +352,7 @@ namespace Monolith.Game
         void ResetPlayer()
         {
             var cls = ShipCatalog.Load(_player.ClassId);
-            _flight.Place(_player.Id, PlayerStart, Quaternion.identity, 0.25f * cls.TopSpeed, 0.25f);
+            _flight.Place(_player.Id, _layout * PlayerStart, _layout, 0.25f * cls.TopSpeed, 0.25f);
             _lastAction = "player reset";
         }
 
@@ -516,8 +541,14 @@ namespace Monolith.Game
         public void SetBattle(bool on) { Combat.Battle = on; }
         public void PlacePlayer(Vector3 pos, Vector3 eulerRot, float speedFraction, float throttle)
         {
+            PlacePlayerWorld(_layout * pos, _layout * Quaternion.Euler(eulerRot), speedFraction, throttle);
+        }
+
+        /// <summary>Put the player's ship at a world position and rotation (no layout turn).</summary>
+        public void PlacePlayerWorld(Vector3 pos, Quaternion rot, float speedFraction, float throttle)
+        {
             var cls = ShipCatalog.Load(_player.ClassId);
-            _flight.Place(_player.Id, pos, Quaternion.Euler(eulerRot), speedFraction * cls.TopSpeed, throttle);
+            _flight.Place(_player.Id, pos, rot, speedFraction * cls.TopSpeed, throttle);
         }
 
         // ------------------------------------------------------------------------------------------------ the pad, quiet when the panel is up

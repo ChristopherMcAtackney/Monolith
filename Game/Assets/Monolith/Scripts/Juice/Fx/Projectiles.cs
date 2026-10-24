@@ -38,10 +38,10 @@ namespace Monolith.Juice
             var hotRed = new Vector3(1.00f, 0.24f, 0.06f);
             var amber = new Vector3(1.00f, 0.58f, 0.18f);
 
-            Add(new WeaponLook { Id = "laser_player", Colour = green * 3.4f, Core = 10f, Speed = 620f, Life = 2.6f, Length = 36f, HalfWidth = 1.25f, MuzzleSize = 2.4f, Cue = JuiceCue.LaserLight });
-            Add(new WeaponLook { Id = "laser_enemy", Colour = red * 3.8f, Core = 9f, Speed = 520f, Life = 3.0f, Length = 34f, HalfWidth = 1.25f, MuzzleSize = 2.6f, Cue = JuiceCue.LaserEnemy });
-            Add(new WeaponLook { Id = "laser_heavy", Colour = teal * 4.2f, Core = 14f, Speed = 340f, Life = 9f, Length = 150f, HalfWidth = 5.5f, TailBright = 0.5f, HeadGlow = 2.0f, MuzzleSize = 11f, Cue = JuiceCue.LaserHeavy });
-            Add(new WeaponLook { Id = "laser_heavy_enemy", Colour = hotRed * 4.6f, Core = 13f, Speed = 300f, Life = 9f, Length = 155f, HalfWidth = 5.8f, TailBright = 0.5f, HeadGlow = 2.0f, MuzzleSize = 12f, Cue = JuiceCue.LaserHeavy });
+            Add(new WeaponLook { Id = "laser_player", Colour = green * 3.4f, Core = 14f, Speed = 620f, Life = 2.6f, Length = 90f, HalfWidth = 0.9f, TailSharp = 1.0f, TailBright = 0.10f, HeadGlow = 3.2f, HeadStrength = 1.1f, MuzzleSize = 2.4f, Cue = JuiceCue.LaserLight });
+            Add(new WeaponLook { Id = "laser_enemy", Colour = red * 3.8f, Core = 13f, Speed = 520f, Life = 3.0f, Length = 85f, HalfWidth = 0.9f, TailSharp = 1.0f, TailBright = 0.10f, HeadGlow = 3.2f, HeadStrength = 1.1f, MuzzleSize = 2.6f, Cue = JuiceCue.LaserEnemy });
+            Add(new WeaponLook { Id = "laser_heavy", Colour = teal * 4.2f, Core = 16f, Speed = 340f, Life = 9f, Length = 230f, HalfWidth = 4.2f, TailSharp = 0.9f, TailBright = 0.12f, HeadGlow = 3.0f, HeadStrength = 1.1f, MuzzleSize = 11f, Cue = JuiceCue.LaserHeavy });
+            Add(new WeaponLook { Id = "laser_heavy_enemy", Colour = hotRed * 4.6f, Core = 15f, Speed = 300f, Life = 9f, Length = 240f, HalfWidth = 4.4f, TailSharp = 0.9f, TailBright = 0.12f, HeadGlow = 3.0f, HeadStrength = 1.1f, MuzzleSize = 12f, Cue = JuiceCue.LaserHeavy });
             Add(new WeaponLook { Id = "flak_shell", Colour = amber * 3.4f, Core = 7f, Speed = 720f, Life = 3.2f, Length = 22f, HalfWidth = 0.9f, MuzzleSize = 3.5f, Cue = JuiceCue.FlakShell });
             Add(new WeaponLook { Id = "missile_heat", Kind = ProjectileKind.Missile, Colour = amber * 3.2f, Core = 8f, Speed = 190f, Life = 11f, Length = 9f, HalfWidth = 0.55f, MuzzleSize = 4f, Cue = JuiceCue.MissileLaunch, TurnRate = 1.5f, AccelTime = 0.7f });
             Add(new WeaponLook { Id = "missile_lock", Kind = ProjectileKind.Missile, Colour = new Vector3(0.45f, 0.75f, 1f) * 3.4f, Core = 8f, Speed = 250f, Life = 12f, Length = 9f, HalfWidth = 0.55f, MuzzleSize = 4f, Cue = JuiceCue.MissileLaunch, TurnRate = 2.2f, AccelTime = 0.5f });

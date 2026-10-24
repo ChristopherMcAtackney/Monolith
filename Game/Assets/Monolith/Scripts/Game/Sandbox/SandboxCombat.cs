@@ -154,6 +154,7 @@ namespace Monolith.Game
         void StepBolts()
         {
             float tNow = (_world.Tick + 1) * Sim.Dt;       // the end of this tick
+            if (_bolts.Count > 0) Physics.SyncTransforms();   // ships' views move every frame; their collision proxies must follow before a ray is cast
             for (int i = _bolts.Count - 1; i >= 0; i--)
             {
                 var b = _bolts[i];
@@ -229,12 +230,10 @@ namespace Monolith.Game
             if (look != null) { centre = st.Position + st.Rotation * look.LocalCentre; half = look.HalfExtents; }
             if (s.Capital)
             {
-                var m = Matrix4x4.TRS(st.Position, st.Rotation, Vector3.one);
-                var box = new Bounds(look != null ? look.LocalCentre : Vector3.zero, half * 2f);
                 Vector3 d = p1 - p0; float len = d.magnitude;
                 if (len < 1e-4f) return false;
-                if (!HullGeometry.RayBox(p0, d / len, m, box, out var hit, out var n, 0.9f)) return false;
-                if ((hit - p0).magnitude > len) return false;
+                // The real shape (a ship model's collision proxies) when it has one, else a box round the hull.
+                if (!HullGeometry.Raycast(_juice.Context, s.Id, p0, d / len, len, out var hit, out var n, 0.9f)) return false;
                 point = hit; normal = n; return true;
             }
             Vector3 radii = look != null && look.ShieldRadii.sqrMagnitude > 1f ? look.ShieldRadii * 0.92f : half * 1.4f;

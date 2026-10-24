@@ -58,6 +58,31 @@ namespace Monolith.Juice
             return true;
         }
 
+        /// <summary>
+        /// Where a ray first meets a ship's real shape (its collision proxies when the model has them), else its box. The ray is
+        /// <paramref name="origin"/> + <paramref name="dir"/> * t for t up to <paramref name="maxDistance"/>.
+        /// </summary>
+        public static bool Raycast(JuiceContext c, int ship, Vector3 origin, Vector3 dir, float maxDistance, out Vector3 hit, out Vector3 normal, float boxInset = 0.97f)
+        {
+            var look = c.LookOf(ship);
+            var cols = look?.Damage?.Colliders;
+            if (cols != null && cols.Count > 0)
+            {
+                var ray = new Ray(origin, dir);
+                float best = maxDistance; bool any = false;
+                hit = default; normal = default;
+                foreach (var col in cols)
+                {
+                    if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) continue;
+                    if (col.Raycast(ray, out var h, best)) { best = h.distance; hit = h.point; normal = h.normal; any = true; }
+                }
+                if (any) return true;
+            }
+            if (!Box(c, ship, out var l2w, out var box)) { hit = default; normal = default; return false; }
+            if (!RayBox(origin, dir, l2w, box, out hit, out normal, boxInset)) return false;
+            return (hit - origin).sqrMagnitude <= maxDistance * maxDistance;
+        }
+
         public static Vector3 ClosestOnSegment(Vector3 a, Vector3 b, Vector3 p)
         {
             Vector3 ab = b - a;
@@ -90,7 +115,7 @@ namespace Monolith.Juice
             public Vector3 End, EndNormal; public bool HasEnd;
             public Vector3 Colour;
             public float HalfWidth;
-            public float SparkCarry, ScorchCarry, BlastCarry;
+            public float SparkCarry, ScorchCarry, BlastCarry, FireCarry, LickCarry, HitCarry, PartCarry;
             public IJuiceLoop Loop, ImpactLoop;
             public int Key;
             public bool Passed;
@@ -121,7 +146,7 @@ namespace Monolith.Juice
                 Source = e.Entity, Target = e.Other, Id = e.Subject, MuzzleWorld = e.Position,
                 AimDir = e.Direction.sqrMagnitude > 0.5f ? e.Direction.normalized : Vector3.forward,
                 Colour = team == 0 ? new Vector3(0.20f, 1.0f, 0.34f) : new Vector3(1.0f, 0.13f, 0.08f),
-                HalfWidth = 24f, Key = _keySeq += 3,
+                HalfWidth = 16f, Key = _keySeq += 3,
             };
             if (!string.IsNullOrEmpty(e.Subject))
             {
@@ -289,59 +314,73 @@ namespace Monolith.Juice
             Vector3 extEnd = end + u * width * 1.2f;
             float bright = _c.Bright * fade;
             var add = _c.Add;
-            var col = b.Colour * (4.0f * bright);
-            // Wide soft sheath, then the saturated body, then the hot core.
-            Ribbon(mz, extEnd, width * 2.3f, new Vector4(col.x, col.y, col.z, 0.5f * bright), 0.11f, 55f, 1.0f);
-            Ribbon(mz, extEnd, width * 1.0f, new Vector4(col.x, col.y, col.z, 4.5f * bright), 0.42f, 90f, 1.6f);
-            var hot = Vector3.Lerp(b.Colour, Vector3.one, 0.7f) * (26f * bright);
-            Ribbon(mz, extEnd, width * 0.40f, new Vector4(hot.x, hot.y, hot.z, 14f * bright), 0.73f, 140f, 2.4f);
+            // One fat ribbon: a white-hot hard-edged core inside a saturated body whose edges flare and lick, inside a soft glow (the shader draws all three).
+            var col = b.Colour * (5.0f * bright);
+            Ribbon(mz, extEnd, width * 3.4f, new Vector4(col.x, col.y, col.z, 16f * bright), 0.42f, 75f, 1.35f, 0.118f);
+            if (b.Phase == Phase.Firing) EdgeLicks(b, mz, end, u, len, width, bright, dt);
 
             // Muzzle: a hard flare and glow.
+            var white = Vector3.Lerp(b.Colour, Vector3.one, 0.6f);
             var mg = b.Colour * (16f * bright);
-            add.Quad(mz, new Vector4(mg.x, mg.y, mg.z, 0f), FxKind.Glow, 0.2f, Vector4.zero, width * 4.2f, 0f, 0.7f, 0f);
-            var mf = Vector3.Lerp(b.Colour, Vector3.one, 0.5f) * (18f * bright);
-            add.Quad(mz, new Vector4(mf.x, mf.y, mf.z, 0f), FxKind.Flare, 0.4f, new Vector4(width * 0.9f, 0, 0, 0), width * 14f, 0f, 0f, 0f);
+            add.Quad(mz, new Vector4(mg.x, mg.y, mg.z, 0f), FxKind.Glow, 0.2f, Vector4.zero, Cap(mz, width * 5f, 0.4f), 0f, 0.7f, 0f);
+            var mf = white * (20f * bright);
+            add.Quad(mz, new Vector4(mf.x, mf.y, mf.z, 0f), FxKind.Flare, 0.4f, new Vector4(Cap(mz, width * 1.1f, 0.08f), 0, 0, 0), Cap(mz, width * 16f, 0.9f), 0f, 0.4f, 0f);
 
             if (b.HasEnd)
             {
-                // Impact: a blinding spot, a long flare, sparks flung off the hull, molten scorch trail, small blasts.
-                float flick = 0.85f + 0.3f * Mathf.Sin(_c.Time * 53f + b.Key);
-                var ig = Vector3.Lerp(b.Colour, Vector3.one, 0.55f) * (30f * bright * flick);
-                add.Quad(end + b.EndNormal * 2f, new Vector4(ig.x, ig.y, ig.z, 0f), FxKind.Glow, 0.3f, Vector4.zero, width * 4.4f, 0f, 0.75f, 0f);
-                var og = Emitters.Orange * (6f * bright);
-                add.Quad(end + b.EndNormal * 3f, new Vector4(og.x, og.y, og.z, 0f), FxKind.Glow, 0.6f, Vector4.zero, width * 7f, 0f, 0.1f, 0f);
-                var ifl = Vector3.Lerp(b.Colour, Vector3.one, 0.6f) * (26f * bright);
-                add.Quad(end + b.EndNormal * 2f, new Vector4(ifl.x, ifl.y, ifl.z, 0f), FxKind.Flare, 0.5f, new Vector4(width * 0.8f, 0, 0, 0), width * 18f, 0f, 0f, 0f);
+                // Where it bites: a blinding white spot with a molten orange halo and a wide flare with a tall spike, flickering with the hammering.
+                float flick = 0.85f + 0.3f * Mathf.Sin(_c.Time * 53f + b.Key) + 0.12f * Mathf.Sin(_c.Time * 97f);
+                Vector3 hp = end + b.EndNormal * 2f;
+                var ig = white * (26f * bright * flick);
+                add.Quad(hp, new Vector4(ig.x, ig.y, ig.z, 0f), FxKind.Glow, 0.3f, Vector4.zero, Cap(hp, width * 1.35f, 0.2f), 0f, 0.9f, 0f);
+                var cg = b.Colour * (5f * bright * flick);
+                add.Quad(hp, new Vector4(cg.x, cg.y, cg.z, 0f), FxKind.Glow, 0.5f, Vector4.zero, Cap(hp, width * 3.6f, 0.4f), 0f, 0.15f, 0f);
+                var og = Emitters.Orange * (4f * bright);
+                add.Quad(end + b.EndNormal * 4f, new Vector4(og.x, og.y, og.z, 0f), FxKind.Glow, 0.6f, Vector4.zero, Cap(hp, width * 2.6f, 0.3f), 0f, 0.1f, 0f);
+                var ifl = white * (28f * bright * flick);
+                add.Quad(hp, new Vector4(ifl.x, ifl.y, ifl.z, 0f), FxKind.Flare, 0.5f, new Vector4(Cap(hp, width * 2.6f, 0.08f), 0, 0, 0), Cap(hp, width * 18f, 0.7f), 0f, 0.6f, 0f);
 
                 if (b.Phase == Phase.Firing)
                 {
                     var tgt = _c.World.Ships.Get(b.Target);
                     Vector3 tv = tgt != null ? tgt.Velocity : Vector3.zero;
-                    b.SparkCarry += 300f * dt * _c.Settings.levels.density;
+                    float sw = Mathf.Clamp(width / 24f, 0.6f, 2.2f);
+                    // Hammering: a hail of sparks, thrown in every direction at every depth, off the hull the whole time it burns.
+                    b.SparkCarry += 520f * dt * _c.Settings.levels.density;
                     int n = (int)b.SparkCarry; b.SparkCarry -= n;
-                    if (n > 0) _fx.Sparks(end + b.EndNormal, tv, b.EndNormal, 72f, n, 60f, 520f, 0.4f, 1.4f, 0.5f, SparkStyle.Hot, 0.35f, 1.3f);
+                    if (n > 0) _fx.Sparks(end + b.EndNormal, tv, b.EndNormal, 78f, n, 80f * sw, 620f * sw, 0.4f, 1.5f, 0.5f * sw, SparkStyle.Hot, 0.35f, 1.3f);
                     int m = Mathf.Max(1, n / 5);
-                    _fx.Sparks(end + b.EndNormal, tv, b.EndNormal, 40f, m, 160f, 720f, 0.2f, 0.5f, 0.4f, SparkStyle.Metal, 0.3f, 1.3f);
+                    _fx.Sparks(end + b.EndNormal, tv, b.EndNormal, 45f, m, 180f * sw, 800f * sw, 0.2f, 0.5f, 0.4f * sw, SparkStyle.Metal, 0.3f, 1.3f);
 
+                    // Molten dots left along the track: they glow and cool behind the beam.
                     b.ScorchCarry += dt;
-                    if (b.ScorchCarry > 0.07f)
+                    if (b.ScorchCarry > 0.06f)
                     {
                         b.ScorchCarry = 0f;
-                        _fx.Scorch(end + b.EndNormal * 0.25f, width * _c.Rng.Range(0.7f, 1.0f), 34f, 1f);
+                        _fx.Scorch(end + b.EndNormal * 0.25f, width * _c.Rng.Range(0.22f, 0.4f), 4f, 1f, tv);
                     }
-                    b.BlastCarry += dt * _c.Rng.Range(1.8f, 3.2f);
+                    // A fireball burst every fraction of a second, and a bigger blast now and then: the hull is being hammered, not touched.
+                    b.FireCarry += dt * _c.Rng.Range(6f, 9f);
+                    if (b.FireCarry > 1f)
+                    {
+                        b.FireCarry = 0f;
+                        Vector3 at = end + b.EndNormal * width * _c.Rng.Range(0.2f, 0.8f) + _c.Rng.OnSphere() * width * 0.45f;
+                        _fx.Fireball(at, tv + b.EndNormal * _c.Rng.Range(20f, 70f), width * 0.5f, width * _c.Rng.Range(1.2f, 1.9f), _c.Rng.Range(0.55f, 0.95f), 1.7f, 5.0f, 0f, 1.5f, 0.3f);
+                    }
+                    b.BlastCarry += dt * _c.Rng.Range(1.6f, 2.6f);
                     if (b.BlastCarry > 1f)
                     {
                         b.BlastCarry = 0f;
                         Vector3 at = end + b.EndNormal * 5f + _c.Rng.OnSphere() * width;
-                        _fx.Blast(at, tv, _c.Rng.Range(18f, 40f), 0.8f);
+                        _fx.Blast(at, tv, width * _c.Rng.Range(0.9f, 1.5f), 0.85f);
                         _fx.Vent(end, b.EndNormal, 4f, 1.2f, 55f);
                         _c.Audio.Play(JuiceCue.BeamImpactLoop, at, 0.6f, _c.DistanceToCamera(at));
                     }
+                    Hammer(b, end, width, tv, dt);
                 }
-                _c.Lights.Hold(b.Key + 1, end + b.EndNormal * 60f, new Color(1f, 0.8f, 0.6f), 9e9f * bright * Mathf.Max(0.4f, width / 8f), 1100f);
+                _c.Lights.Hold(b.Key + 1, end + b.EndNormal * 60f, new Color(1f, 0.82f, 0.62f), 1.6e10f * bright * Mathf.Max(0.5f, width / 12f) * flick, 1600f);
             }
-            _c.Lights.Hold(b.Key, mz + u * 30f, new Color(b.Colour.x, b.Colour.y * 0.85f + 0.15f, b.Colour.z * 0.85f + 0.15f), 6e9f * bright, 1200f);
+            _c.Lights.Hold(b.Key, mz + u * 30f, new Color(b.Colour.x, b.Colour.y * 0.85f + 0.15f, b.Colour.z * 0.85f + 0.15f), 1e10f * bright, 1500f);
 
             // Sound follows the closest part of the beam to the listener; the pad feels it when it is near.
             Vector3 cam = _c.CameraPosition;
@@ -365,7 +404,7 @@ namespace Monolith.Juice
         /// A beam layer from <paramref name="a"/> to <paramref name="b"/> as a chain of ribbon segments, short near the camera and long far
         /// away, so every part of it faces the viewer (a single long quad would turn edge-on when you are beside the beam).
         /// </summary>
-        void Ribbon(Vector3 a, Vector3 b, float halfWidth, Vector4 colour, float seed, float p1, float p2)
+        void Ribbon(Vector3 a, Vector3 b, float halfWidth, Vector4 colour, float seed, float p1, float p2, float coreFraction)
         {
             Vector3 d = b - a;
             float total = d.magnitude;
@@ -384,8 +423,67 @@ namespace Monolith.Juice
                 float len = end - at;
                 Vector3 centre = a + u * (at + len * 0.5f);
                 _c.Add.Quad(centre, colour, FxKind.Beam, seed, new Vector4(u.x, u.y, u.z, len * 0.5f), halfWidth, 0f, p1, p2,
-                            0f, 0f, 0f, 0f, new Vector4(total, at / total, end / total, 0f));
+                            0f, 0f, 0f, 0f, new Vector4(total, at / total, end / total, coreFraction));
                 at = end;
+            }
+        }
+
+        /// <summary>A radius held to a fraction of the distance to the lens, so a glow right beside the camera cannot cover the view.</summary>
+        float Cap(Vector3 p, float r, float fraction) => Mathf.Min(r, Mathf.Max(8f, fraction * _c.DistanceToCamera(p)));
+
+        /// <summary>Flames licking off the sides of the beam: thin bright streaks that peel away from the edge and trail behind.</summary>
+        void EdgeLicks(Beam b, Vector3 mz, Vector3 end, Vector3 u, float len, float width, float bright, float dt)
+        {
+            b.LickCarry += 90f * dt * _c.Settings.levels.density;
+            int n = (int)b.LickCarry; b.LickCarry -= n;
+            if (n <= 0) return;
+            Vector3 cam = _c.CameraPosition;
+            Vector3 nearest = HullGeometry.ClosestOnSegment(mz, end, cam);
+            float reach = Mathf.Clamp(Vector3.Distance(nearest, cam) * 1.6f + 200f, 250f, 1800f);
+            float s0 = Vector3.Dot(nearest - mz, u);
+            var c4 = b.Colour * (6f * bright);
+            for (int i = 0; i < n; i++)
+            {
+                float s = Mathf.Clamp(s0 + _c.Rng.Range(-reach, reach), 0f, len);
+                Vector3 side = Vector3.Cross(u, _c.Rng.OnSphere());
+                if (side.sqrMagnitude < 1e-4f) continue;
+                side.Normalize();
+                Vector3 vel = side * width * _c.Rng.Range(0.8f, 2.8f) + u * width * _c.Rng.Range(-1.5f, 1.5f);
+                ref var p = ref _c.Particles.Add();
+                p.Kind = FxKind.Streak; p.Pos = mz + u * s + side * width * _c.Rng.Range(0.8f, 1.15f); p.Vel = vel; p.Dir = vel.normalized; p.Drag = 1.2f;
+                p.Life = _c.Rng.Range(0.25f, 0.5f); p.W0 = p.W1 = width * _c.Rng.Range(0.035f, 0.08f);
+                p.Stretch = 0.22f; p.MinLen = width * _c.Rng.Range(0.5f, 1.4f); p.P1a = p.P1b = 1.0f; p.P2a = 0.4f; p.P2b = 0.9f; p.Blur = _c.Rng.Range(0.1f, 0.5f);
+                p.C0 = new Vector4(c4.x, c4.y, c4.z, 5f); p.C1 = new Vector4(c4.x, c4.y, c4.z, 2f) * 0.6f; p.C2 = new Vector4(c4.x, c4.y, c4.z, 0f) * 0.12f;
+                p.FadeExp = 0.8f; p.Seed = _c.Rng.F(); p.Flicker = 0.3f; p.NearStart = 4f; p.NearRange = 14f;
+            }
+        }
+
+        /// <summary>
+        /// What a beam does to a modelled ship while it burns: scorch marks and breaches along its track, and the parts it crosses are
+        /// blown off (their wrecks show, their chunks fly).
+        /// </summary>
+        void Hammer(Beam b, Vector3 end, float width, Vector3 tv, float dt)
+        {
+            var look = _c.LookOf(b.Target);
+            if (look == null || look.Damage == null) return;
+            b.HitCarry += dt;
+            if (b.HitCarry > 0.1f)
+            {
+                b.HitCarry = 0f;
+                look.Damage.HullHit(end, b.EndNormal, Mathf.Clamp(width * 0.16f, 2.5f, 9f), 0.9f);
+            }
+            b.PartCarry += dt;
+            if (b.PartCarry > 0.14f)
+            {
+                b.PartCarry = 0f;
+                string hit = null; float best = float.MaxValue;
+                foreach (var p in look.Damage.Parts)
+                {
+                    if (p.Destroyed || p.Pivot == null) continue;
+                    float d = Vector3.Distance(p.Pivot.position, end) - (p.Radius + width * 1.1f);
+                    if (d < 0f && d < best) { best = d; hit = p.Name; }
+                }
+                if (hit != null) _c.Explosions.DestroyPart(look, hit, tv, 1f, _c.IsPlayer(b.Source), false);
             }
         }
 
@@ -406,7 +504,7 @@ namespace Monolith.Juice
                     p += _c.Camera.transform.up * (Mathf.Sin(_c.Time * 9f + b.Key) * 6f);
                     aim = (p - muzzle).normalized;
                 }
-                if (HullGeometry.RayBox(muzzle, aim, l2w, box, out var hit, out var normal, 0.97f))
+                if (HullGeometry.Raycast(_c, b.Target, muzzle, aim, 20000f, out var hit, out var normal))
                 {
                     b.End = hit; b.EndNormal = normal; b.HasEnd = true; b.AimDir = aim;
                     return;

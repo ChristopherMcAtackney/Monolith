@@ -41,6 +41,7 @@ namespace Monolith.Juice
         readonly List<DebrisPiece> _pieces = new List<DebrisPiece>(128);
         readonly HashSet<Material> _heatCopies = new HashSet<Material>();
         readonly Transform _root;
+        readonly HashSet<string> _unreadableWarned = new HashSet<string>();
         public int MaxPieces = 220;
         public static float LastSliceMs; public static int LastSliceTris;
 
@@ -83,7 +84,7 @@ namespace Monolith.Juice
         {
             var result = new List<DebrisPiece>();
             var swSlice = System.Diagnostics.Stopwatch.StartNew();
-            int triCount = 0;
+            int triCount = 0, unreadable = 0; string firstUnreadable = null;
             var rends = source.GetComponentsInChildren<MeshRenderer>(false);
             var cells = new CellBuild[seeds.Count];
             for (int i = 0; i < cells.Length; i++) cells[i] = new CellBuild();
@@ -97,7 +98,7 @@ namespace Monolith.Juice
                 var mesh = mf.sharedMesh;
                 if (!mesh.isReadable)
                 {
-                    MnLog.Warn($"JUICE cannot cut '{mesh.name}' into pieces: the mesh is not readable (turn on Read/Write in its import settings); it will vanish whole instead");
+                    unreadable++; if (firstUnreadable == null) firstUnreadable = mesh.name;
                     r.enabled = false;
                     continue;
                 }
@@ -211,6 +212,8 @@ namespace Monolith.Juice
                 result.Add(piece);
             }
             LastSliceMs = (float)swSlice.Elapsed.TotalMilliseconds; LastSliceTris = triCount;
+            if (unreadable > 0 && _unreadableWarned.Add(firstUnreadable))
+                MnLog.Warn($"JUICE cut: {unreadable} mesh(es) are not readable (Read/Write is off in their import settings, as ship models import) and vanish whole instead of breaking; first: '{firstUnreadable}'");
             return result;
         }
 
@@ -351,6 +354,26 @@ namespace Monolith.Juice
             return p;
         }
 
+        /// <summary>
+        /// Take a free-flying chunk of a real ship (a wrecked part's debris, already cut loose from the ship) under the effects' control:
+        /// it drifts and tumbles from now on, and can trail fire.
+        /// </summary>
+        public DebrisPiece AdoptChunk(Transform piece, Vector3 velocity, Vector3 spinDegPerSec, float life)
+        {
+            piece.SetParent(_root, true);
+            piece.gameObject.SetActive(true);
+            var rends = piece.GetComponentsInChildren<Renderer>();
+            Bounds b = default; bool any = false;
+            foreach (var r in rends) { if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds); }
+            var p = new DebrisPiece { Go = piece.gameObject, T = piece, Vel = velocity, Rends = rends, Glows = new bool[rends.Length], Life = life };
+            p.Radius = any ? b.extents.magnitude : 2f;
+            p.LocalCentre = any ? piece.InverseTransformPoint(b.center) : Vector3.zero;
+            p.SpinAxis = spinDegPerSec.sqrMagnitude > 1e-4f ? spinDegPerSec.normalized : _c.Rng.OnSphere();
+            p.SpinRate = spinDegPerSec.magnitude * Mathf.Deg2Rad;
+            _pieces.Add(p);
+            return p;
+        }
+
         public void Remove(DebrisPiece p)
         {
             if (p.Dead) return;
@@ -387,7 +410,7 @@ namespace Monolith.Juice
                     {
                         p.Carry -= 1f;
                         Vector3 at = p.T.TransformPoint(p.LocalCentre) + _c.Rng.OnSphere() * p.Radius * 0.6f;
-                        _fx.Fireball(at, p.Vel * 0.95f + _c.Rng.OnSphere() * 6f, p.Radius * 0.06f + 1.2f, p.Radius * 0.14f + 3f, _c.Rng.Range(0.4f, 0.9f), 0.8f, 5.5f);
+                        _fx.Fireball(at, p.Vel * 0.95f + _c.Rng.OnSphere() * 6f, p.Radius * 0.06f + 1.2f, p.Radius * 0.14f + 3f, _c.Rng.Range(0.4f, 0.8f), 1.1f, 4.0f, 0f, 1.2f, 0.9f);
                         if (_c.Rng.Chance(0.5f)) _fx.Sparks(at, p.Vel, Vector3.up, 360f, 1, 12f, 55f, 0.4f, 0.9f, 0.13f, SparkStyle.Hot, 0.4f);
                     }
                 }
@@ -400,7 +423,7 @@ namespace Monolith.Juice
                     {
                         p.Carry -= 1f;
                         Vector3 at = p.T.TransformPoint(p.Burn[_c.Rng.Int(0, p.Burn.Count)]) + _c.Rng.OnSphere() * p.BurnSize * 0.35f;
-                        _fx.Fireball(at, p.Vel + _c.Rng.OnSphere() * 5f, p.BurnSize * 0.5f, p.BurnSize * 1.2f, _c.Rng.Range(0.5f, 1.0f), 0.95f * (0.55f + 0.45f * k), 6.5f);
+                        _fx.Fireball(at, p.Vel + _c.Rng.OnSphere() * 5f, p.BurnSize * 0.5f, p.BurnSize * 1.2f, _c.Rng.Range(0.5f, 0.9f), 1.3f * (0.55f + 0.45f * k), 4.5f, 0f, 1.2f, 0.8f);
                         if (_c.Rng.Chance(0.4f)) _fx.Sparks(at, p.Vel, Vector3.up, 360f, 2, 15f, 70f, 0.4f, 1.0f, 0.15f, SparkStyle.Hot, 0.4f);
                     }
                 }

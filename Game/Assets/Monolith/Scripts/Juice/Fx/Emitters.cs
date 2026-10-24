@@ -56,16 +56,19 @@ namespace Monolith.Juice
 
         // ------------------------------------------------------------------------------------------------ fire
 
-        /// <summary>A billowing ball of fire that swells and cools. <paramref name="brightness"/> is its colour scale (10 is a hot, bright ball).</summary>
-        public void Fireball(Vector3 pos, Vector3 vel, float r0, float r1, float life, float heat, float brightness, float palette = 0f, float drag = 1.2f)
+        /// <summary>
+        /// A billowing, turbulent ball of fire (a raymarched volume: the shader makes the structure) that swells and cools. <paramref name="heat"/> about 1 is
+        /// white-hot at birth; <paramref name="brightness"/> scales its light (5 is a hot, bright ball). It is opaque where it is dense, so it hides what is behind it.
+        /// </summary>
+        public void Fireball(Vector3 pos, Vector3 vel, float r0, float r1, float life, float heat, float brightness, float palette = 0f, float drag = 1.2f, float erode = 0.25f)
         {
-            float lim = Mathf.Max(5f, 0.42f * _c.DistanceToCamera(pos));
+            float lim = Mathf.Max(6f, 0.80f * _c.DistanceToCamera(pos));
             if (r1 > lim) { float k = lim / r1; r0 *= k; r1 = lim; }
             ref var b = ref _c.Particles.Add();
-            b.Kind = FxKind.Fire; b.Pos = pos; b.Vel = vel; b.Drag = drag; b.Life = life; b.W0 = r0; b.W1 = r1; b.SizeCurve = 0.55f;
-            b.Seed = _c.Rng.F(); b.P1a = b.P1b = heat; b.P2a = b.P2b = 0.25f; b.Palette = palette; b.Angle = _c.Rng.F() * 6.28f; b.Spin = _c.Rng.Range(-0.5f, 0.5f);
-            b.C0 = b.C1 = b.C2 = V4(Vector3.one * (brightness * FireGain)); b.FadeExp = 0.45f; b.FadeIn = 0.015f;
-            b.Soft = Mathf.Max(3f, r1 * 0.6f); b.NearStart = Mathf.Max(8f, r1 * 0.5f); b.NearRange = Mathf.Max(30f, r1 * 1.2f);
+            b.Kind = FxKind.Fire; b.Pos = pos; b.Vel = vel; b.Drag = drag; b.Life = life; b.W0 = r0; b.W1 = r1; b.SizeCurve = 0.5f;
+            b.Seed = _c.Rng.F(); b.P1a = b.P1b = heat; b.P2a = b.P2b = erode; b.Palette = palette; b.Angle = 0f; b.Spin = 0f;
+            b.C0 = b.C1 = b.C2 = V4(Vector3.one * brightness); b.FadeExp = 0.45f; b.FadeIn = 0.0f;
+            b.NearStart = Mathf.Max(4f, r1 * 0.12f); b.NearRange = Mathf.Max(12f, r1 * 0.4f);
         }
 
         /// <summary>A soft gas puff: dim, fast to thin out, cooler colour (venting atmosphere, escaping coolant).</summary>
@@ -102,14 +105,25 @@ namespace Monolith.Juice
                 c2 = new Vector4(t.x * 0.5f, t.y * 0.5f, t.z * 0.5f, 0f);
             }
             bool every = coneDeg >= 179f;
+            Vector3 toCam = _c.CameraPosition - pos;
+            float camDist = toCam.magnitude;
+            toCam = camDist > 1f ? toCam / camDist : Vector3.back;
             for (int i = 0; i < count; i++)
             {
                 ref var s = ref _c.Particles.Add();
                 Vector3 d = every ? _c.Rng.OnSphere() : _c.Rng.InCone(dir, coneDeg);
-                float sp = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 1.6f));
-                s.Kind = FxKind.Streak; s.Pos = pos; s.Vel = inherit + d * sp; s.Dir = d; s.Drag = drag; s.Life = _c.Rng.Range(lifeMin, lifeMax);
-                s.W0 = s.W1 = width * _c.Rng.Range(0.7f, 1.3f); s.Stretch = _c.Rng.Range(0.01f, 0.034f); s.MinLen = Mathf.Max(1.0f, width * _c.Rng.Range(3f, 9f)); s.P1a = s.P1b = 0.4f; s.P2a = 0.6f; s.P2b = 0.2f;
-                s.C0 = c0; s.C1 = c1; s.C2 = c2; s.FadeExp = 0.55f; s.Seed = _c.Rng.F(); s.Flicker = 0.25f; s.NearStart = 4f; s.NearRange = 14f;
+                // Depth: a share of the sparks fly at the camera (they come out big, long and soft), a share fly away (small and sharp).
+                float pick = _c.Rng.F();
+                if (pick < 0.16f && camDist > 8f) d = (d * 0.55f + toCam * 0.85f).normalized;
+                float spd = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 1.7f));
+                float size = width * Mathf.Exp(_c.Rng.Range(-0.9f, 0.6f));           // many fine ones, a few thick
+                float shutter = _c.Rng.Range(0.014f, 0.055f);                         // exposure time: longer = a longer streak
+                float lum = Mathf.Exp(_c.Rng.Range(-1.1f, 0.35f));                    // brightness varies widely
+                s.Kind = FxKind.Streak; s.Pos = pos + d * _c.Rng.F() * width * 4f; s.Vel = inherit + d * spd; s.Dir = d; s.Drag = drag * _c.Rng.Range(0.6f, 1.4f);
+                s.Life = _c.Rng.Range(lifeMin, lifeMax);
+                s.W0 = s.W1 = size; s.Stretch = shutter; s.MinLen = Mathf.Max(0.5f, size * _c.Rng.Range(2f, 6f));
+                s.P1a = s.P1b = 1.1f; s.P2a = 0.0f; s.P2b = 0.0f; s.Blur = _c.Rng.Range(0.15f, 0.75f);
+                s.C0 = c0 * lum; s.C1 = c1 * lum; s.C2 = c2 * lum; s.FadeExp = 0.5f; s.Seed = _c.Rng.F(); s.Flicker = 0.3f; s.NearStart = 4f; s.NearRange = 14f;
             }
         }
 
@@ -158,11 +172,11 @@ namespace Monolith.Juice
         // ------------------------------------------------------------------------------------------------ scorch
 
         /// <summary>A dark burn mark with a hot rim that cools: it stays for <paramref name="life"/> seconds.</summary>
-        public void Scorch(Vector3 pos, float radius, float life, float heat = 1f)
+        public void Scorch(Vector3 pos, float radius, float life, float heat = 1f, Vector3 vel = default)
         {
             if (!_c.Settings.effects.hullHits) return;
             ref var s = ref _c.Particles.Add();
-            s.Kind = FxKind.Scorch; s.Alpha = true; s.Pos = pos; s.Life = life; s.W0 = s.W1 = radius; s.Seed = _c.Rng.F(); s.Angle = _c.Rng.F() * 6.28f;
+            s.Kind = FxKind.Scorch; s.Alpha = true; s.Pos = pos; s.Vel = vel; s.Life = life; s.W0 = s.W1 = radius; s.Seed = _c.Rng.F(); s.Angle = _c.Rng.F() * 6.28f;
             s.P1a = 0.5f; s.P1b = 0.32f; s.P2a = heat; s.P2b = 0f; s.P2Decay = 0.75f; s.FadeExp = 0.25f; s.C0 = s.C1 = s.C2 = V4(new Vector3(1f, 0.55f, 0.2f));
             s.Soft = Mathf.Max(0.6f, radius * 0.5f); s.NearStart = 10f; s.NearRange = 30f; s.Bright = 1f;
         }
@@ -217,28 +231,34 @@ namespace Monolith.Juice
         {
             float R = radius * _c.Size;
             if (!_c.Settings.effects.explosions) return;
-            float life = 0.40f + R * 0.011f;
+            float life = 0.55f + R * 0.0085f;
             Vector3 core = plasmaFlash ? new Vector3(0.78f, 0.9f, 1f) : WarmWhite;
-            Flash(pos, R * 2.1f, core * (26f * intensity), 0.10f + R * 0.0006f, 0.75f, 2f, 1.3f, inherit);
-            Flash(pos, R * 3.0f, Orange * (1.0f * intensity), 0.24f + R * 0.004f, 0.08f, 2.0f, 1.4f, inherit);
-            Flare(pos, R * 6.5f, R * 0.30f, Vector3.Lerp(WarmWhite, core, 0.5f) * (12f * intensity), 0.20f + R * 0.001f);
+            // A blown-out core: far brighter than the bloom threshold, so it burns through to white and spills.
+            Flash(pos, R * 1.7f, core * (70f * intensity), 0.10f + R * 0.0006f, 0.85f, 2.4f, 1.25f, inherit);
+            Flare(pos, R * 7.5f, R * 0.30f, Vector3.Lerp(WarmWhite, core, 0.5f) * (36f * intensity), 0.20f + R * 0.001f);
 
-            int balls = Mathf.Min(_c.N(Mathf.RoundToInt(3 + R * 0.28f)), 46);
+            // The fire: a few big turbulent volumes that overlap and swallow what is behind them, and smaller ones that fly out.
+            int balls = Mathf.Min(_c.N(Mathf.RoundToInt(3 + R * 0.12f)), 24);
             for (int i = 0; i < balls; i++)
             {
-                Vector3 off = _c.Rng.OnSphere() * R * 0.5f * _c.Rng.F();
-                float rr = R * _c.Rng.Range(0.65f, 1.05f);
-                Fireball(pos + off, inherit + off.normalized * R * 0.9f, rr * 0.85f, rr * _c.Rng.Range(1.6f, 2.2f), life * _c.Rng.Range(0.75f, 1.15f),
-                         _c.Rng.Range(1.0f, 1.2f), _c.Rng.Range(9f, 13f) * intensity, 0f);
+                bool main = i < 2;
+                Vector3 off = _c.Rng.OnSphere() * R * (main ? 0.15f : 0.7f) * _c.Rng.F();
+                float rr = R * (main ? _c.Rng.Range(1.0f, 1.25f) : _c.Rng.Range(0.45f, 0.85f));
+                Fireball(pos + off, inherit + off.normalized * R * (main ? 0.25f : 1.0f), rr * 0.55f, rr * _c.Rng.Range(1.3f, 1.6f), life * (main ? 1.2f : _c.Rng.Range(0.7f, 1.1f)),
+                         _c.Rng.Range(2.1f, 2.6f), _c.Rng.Range(4.0f, 5.0f) * intensity, 0f);
             }
-            int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(70 + R * 6f)), 900);
-            Sparks(pos, inherit, Vector3.up, 360f, sparks, 30f + R * 1.2f, 110f + R * 7f, 0.5f, 1.3f + R * 0.012f, 0.10f + R * 0.008f, SparkStyle.Hot, 0.45f, intensity);
-            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(40 + R * 4f)), 900), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.06f + R * 0.0012f);
+            int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(80 + R * 5f)), 800);
+            Sparks(pos, inherit, Vector3.up, 360f, sparks, 40f + R * 1.4f, 140f + R * 8f, 0.5f, 1.3f + R * 0.012f, 0.08f + R * 0.0045f, SparkStyle.Hot, 0.45f, intensity);
+            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(60 + R * 4f)), 900), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.05f + R * 0.0012f);
             Embers(pos, inherit, R * 0.6f, _c.N(Mathf.RoundToInt(6 + R * 0.25f)), 10f + R * 0.6f, 1.2f, 2.8f + R * 0.015f, 0.55f + R * 0.03f);
-            if (ring) Ring(pos, R * 0.4f, R * (3.2f + R * 0.01f), 0.34f + R * 0.004f, BlueWhite * (0.55f * intensity), 0.045f, 2f);
+            if (ring && R > 60f) Ring(pos, R * 0.4f, R * (2.6f + R * 0.006f), 0.30f + R * 0.003f, BlueWhite * (0.12f * intensity), 0.012f, 2.4f);
 
+            // Light on what is near: a big hot flash, and a longer warm glow (the hulls round the blast light up and the ship in it goes into silhouette).
             if (light && _c.Settings.effects.lights)
-                _c.Lights.Flash(pos, new Color(1f, 0.82f, 0.58f), 6e5f * R * R * intensity * _c.Bright, Mathf.Max(220f, R * 22f), 0.3f + R * 0.006f, 1.8f);
+            {
+                float b = _c.Bright * intensity;
+                _c.Lights.Flash(pos, new Color(1f, 0.80f, 0.55f), 4.0e6f * R * R * b, Mathf.Max(400f, R * 28f), 0.45f + R * 0.006f, 1.6f);
+            }
         }
     }
 }

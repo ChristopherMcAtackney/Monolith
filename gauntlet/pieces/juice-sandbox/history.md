@@ -163,3 +163,101 @@ Two blind critics, each with fresh context.
 - Giveaways: our beam is a dim green smear, where FS2's is fat and saturated with a white-hot, hard-edged core, flaring edges and a big hit flare; our bolts are short glow-stick dashes with no sustained hammering on a hull; our capital death is a decent burst but small, and the ship stays crisp and readable "like a cutout with a sticker on it", where FS2's fireball swallows the whole hull.
 
 **Both critics point the same way.** Explosions several times bigger and brighter, with a blown-out core, turbulent volumetric structure and real light spill onto nearby surfaces, so the ship disappears into the blast. Beams fat and saturated with a white-hot core, a big flare where they hit, and visible sustained hammering. Sparks and debris with depth and motion blur. These are pointers, not a recipe.
+
+## Round 2 (builder, 2026-10-24)
+
+Both critics' notes pointed the same way (bigger, brighter, volumetric explosions that light what is near; fat saturated beams that hammer; bolts and
+sparks with depth; no HUD in look captures; use the real corvette), so one pass answered both. The notes were pointers; the fixes below came from
+the reference frames (Expanse `7wFt319UB2o_0035`, `7_ATYOm3nNc_0191`, `XuqEX1PnG9I_0002`; FS2 `big_battle_comparison_0132`, `_0187`, `_0110`).
+
+### What changed
+- **Fireballs are raymarched turbulent volumes** (`ShadeFire` in `MN_Fx.shader`, 16 steps, white-noise jitter so the edges grain instead of
+  hatching). A 64 cubed tiling `Texture3D` of Perlin-Worley, Worley and Perlin noise is built in code at start-up (`Fx/FxNoise.cs`, about 60 ms),
+  warped once and read once per step, so lobes billow out of the ball (cauliflower edges, hard-edged dark pockets) instead of a smooth sprite.
+  Temperature drives a blackbody ramp: a blown-out white core, yellow, orange, red at the edges; the ball is opaque where dense so it swallows what
+  is behind it, and as it cools it erodes into hot lumps and goes (gas that has cooled thins out; it does not hang as a smooth red cloud). Fireballs
+  are drawn far to near; a ball's quad is grown so that close to the lens it still covers its sphere.
+- **Explosions several times bigger**: a fighter's blast radius 30 to 52 m, a bomber's 56 to 96 m (two blasts), a part blasting off a corvette 16 to 80 m,
+  a capital's final blast as big as the ship is long (220 to 250 m radius for the 374 m corvette, up to 800 m for a big hull) with fireballs spread
+  through the space the hull filled (not a sphere round its middle), a core flash far above the bloom threshold and an anamorphic flare.
+- **Real light (spill)** on nearby hulls and debris: blasts carry a point light of `4e6 x R^2` candela (the final blast `2e6 x R^2`, range 5.2 km) and beams
+  light the hull at the impact (`1.6e10` candela) and along their length. The Round 1 spill was there but invisible because the camera sat with the
+  Sun behind it, washing the hull out; a lights-on, lights-off test with the camera looking toward the Sun showed the hull taking the orange. The capture
+  plans now put the camera where the hull is backlit or in shade for the death and the beam. No lighting, exposure or post setting was touched.
+- **Beams**: one fat ribbon (`Beams.UpdateFire`, shader kind 7): a white-hot hard-edged core (0.4 of the body radius), a saturated body with a ragged
+  flaring edge, a soft glow, edge licks (short bright streaks peeling off the sides), round ends, noise that flows along it (half width 16 m, swelling with
+  distance). At the hit: a blinding white spot, a coloured halo and an orange halo, a wide flare with a tall spike, and **sustained hammering**: about
+  520 sparks a second thrown in every direction at every depth, a fireball burst six to nine times a second, a bigger blast now and then, molten dots
+  left behind the beam. Halos are held to a fraction of the view so one beside the lens cannot cover it.
+- **Bolts**: long (85 to 90 m), thin (0.9 m half width), tapered to a point behind a hot white head with a saturated body; capital turret bolts 230 m long.
+  **Hit flares**: a hit now flashes with an apparent-size floor (never smaller than 1.4 to 6 per cent of the view at its distance), so a hit a kilometre away is
+  still a clear flare, on shields and hulls.
+- **Sparks** vary in depth (a sixth fly at the camera, long and soft; the rest away, small and sharp), size (log-normal), shutter (14 to 55 ms, so streak
+  length varies), brightness (e^-1.1 to e^0.35) and blur (`FxParticles.Particle.Blur`: hard saturated to soft smear). Tapered to a point, like the show's.
+- **HUD-free looks**: `"sceneOptions": { "hud": false }` (or `-mnNoHud`) leaves the HUD out; every look plan uses it. `"layoutYaw"` turns the whole
+  sandbox layout (ships, player start, scripted places and faces) so the Sun can be behind or in front.
+- **The real Earth corvette** replaces the placeholder hulls as the two capital ships (`Model = "earth_corvette"`, class `juice_corvette`: FS2 corvette numbers):
+  - `IJuiceShipDamage` (`Fx/ShipDamageHook.cs`) is what the juice may ask of a model with real parts; `Game/Sandbox/ShipArtJuiceDamage.cs` adapts the ship
+    art's `ShipDamage` to it, so the juice never references the art. `JuiceDirector.RegisterShip(id, visual, shield, damage)`.
+  - **Hits on the hull** paint the model's own scorch, crater and streak decals and open its damage sites (`AddHullHit`) instead of a flat quad; a beam
+    does it along its track every 0.1 s. **Beams blow parts off**: every part within the beam's width is destroyed (its wreck shows, a blast sized to
+    it, its debris chunks fly at 9 times the model's slow-reveal speed with a fire trail; `Explosions.DestroyPart`). `subsystem_destroyed` does the same
+    to the part the event names (else the nearest weapon). Bolts and beams hit the model's collision proxies (`HullGeometry.Raycast`), not a box.
+  - **The capital death uses the real parts**: internal blasts erupt at parts, and parts go one after another (weapons and sensors first, engines,
+    reactor and bridge last) with the hull scorched to 0.6 at the start; at the break the **hull splits along cuts baked for the model**. Ship models
+    import unreadable (`ShipArtSetup.OnPreprocessModel`), so a built game cannot cut them; `Monolith.EditorTools.JuiceSetup.BakeSections`
+    (`tools\unity.ps1 Monolith.EditorTools.JuiceSetup.BakeSections`, 0.5 s) reads them in the editor and cuts every hull mesh into 8 ragged sections along
+    the ship's length, saved as one 3.7 MB asset per ship (`Resources/Juice/Sections/<ship>.sections.asset`; a mesh name carries the source's name and vertex
+    count so a stale bake is never used). At the break the juice swaps the intact hull for the sections (with the model's materials and an inner skin,
+    made once at spawn), moves each real part and each scorch decal to the nearest section, and the final blast throws the sections whole (cutting
+    them again cost 20 to 75 ms in a frame) and flings the parts still on them through the fireball. Without a bake the parts still fly and the hull
+    vanishes into the blast.
+  - No art file was edited; ship models stay unreadable.
+- **Smaller fixes found on the way**: scorch marks now travel with their ship and last one second on a small ship (they used to hang in space as black dots where a
+  fighter had been); cooled gas is a lit pale puff, not a black blob; a shockwave reaching you is a faint warm edge glow, not a grey haze; the shockwave ring
+  and the blast ring are much fainter; the first break-up no longer has a 31 ms frame (the baked cuts are loaded and doubled at spawn).
+
+### Captures (`gauntlet/captures/juice-sandbox/r2/`, from a fresh build, **no HUD**)
+- `stills/`: the same names as r1: `laser_exchange`, `fighter_kill`, `fighter_kill_fireball`, `shield_hit`, `hull_hit_capital`, `bomber_kill`,
+  `bomber_kill_fireball`, `flak_barrage`, `beam_charge`, `beam_strike`, `beam_strike_sweep`, `beam_impact_close`, and **`capital_death_internal`,
+  `capital_death_breakup`, `capital_death_final` with the corvette**. Contact sheets `overview_a/b/c.png`.
+- `capital_death.mp4` (10.6 s, 30 fps), `capital_death_strip.png`, `capital_death_key_frames/`: the corvette losing its parts, breaking into its real hull
+  sections and dying in a blast that fills the frame. `shake.mp4`, `shake_strip.png`, `shake_log.csv` as in r1. `checks/` as in r1.
+- **Best three**: `stills/capital_death_final.png` (the corvette's death: a blown-out volumetric fireball filling the frame, the hull's own parts flung through
+  it and a fine spray of sparks at every depth), `stills/beam_strike.png` (the fat saturated beam with its white core and flaring edges hammering the corvette:
+  sparks, fireballs, the hull lit by the blast), `stills/fighter_kill_fireball.png` (a 52 m blast 0.26 s in: billowing lobes, a white core, sparks varying in
+  depth and blur).
+
+### Performance (`perf/`, `perf_repeats/`, 1920x1080, vsync off, RTX 4070 Ti, the same 18 s run as r1: ambient battle, firing, a capital death at 3 s)
+477.9 fps average, 1% low 132.6 fps, worst frame 16.4 ms, p99 6.3 ms, GPU 1.7 ms, CPU main thread 2.1 ms. Two repeats while other builders were running Unity on the
+machine: 456.4 and 345.3 fps, 1% lows 116.7 and 103.1, worst 49.5 and 14.8 ms. Peak load about 12,000 particles and 11,000 quads (the final blast), 12 lights, 85
+debris pieces. Headroom is about 8x at 60 fps. A first version of the final blast shattered the baked sections with the Voronoi cutter: 20 to 75 ms frames with up to 16 gen0
+collections; throwing them whole fixed it (worst frame 75 ms to 14 ms).
+
+### Honest read against the reference frames
+- **Explosions (Expanse and FS2 capital frames)**: closer than r1 by a long way. The final blast has the turbulent, hard-edged, billowing, blown-out look with dark pockets
+  and a spark spray with depth; it envelops the hull and lights it. Still short of the references: the interior is mostly uniform pale yellow-white where FS2's has more orange and red
+  structure inside, and the ball is a little too clean at its edge next to the Expanse's ragged flat-lit cloud; the Expanse's blue-white grade is not used (orange fire).
+- **Beams (FS2 `heavy_beam_fire`)**: fat, saturated, hard white core, flaring edges, big hit flare and constant hammering. The flaring edge is a repeating comb of tall teeth
+  (noise with one dominant wavelength), where FS2's is rougher; the body is smoother than FS2's particle-noise texture. Beams are 16 m half width, fat against a 74 m corvette; against
+  a kilometre-wide ship they would want to be fatter, which the beam width slider does.
+- **Bolts (FS2 `gunfire`, Expanse tracers)**: long, thin, saturated with a hot head; the Expanse's blurred, pink-white tracers are not copied (ours are crisp, FS2's way).
+- **Spill**: visible on the corvette (orange on the hull at a hit, the beam's white-green on the plating, blue-grey sections lit by the Sun and orange by their fires); it is
+  strongest when the hull is backlit or in shade, and weak when the Sun is behind the camera and already lights the hull.
+- **The shield hit still is weak** (a pale bubble around a fighter with a short flash; the flash is 0.14 s and the shot lands near its end). Unchanged in spirit from r1.
+
+### Gaps and what to do next
+- The break-up sections are hollow shells (the second skin helps, but a torn edge shows no interior structure), and their cut edges are flat, ragged planes, not torn plating.
+- Part wrecks and debris fly well but have no heat glow (they are the model's own materials); the heat glow only reaches Voronoi pieces.
+- The edge-of-screen flash (when the shockwave reaches you) is still a faint warm haze at the frame's corners in the `capital_death_final` still.
+- Beams: break the tooth pattern with a second incommensurate noise; give the hit a shower of molten dripping. Flipbooks (precomputed volume slices) would let the fireball cost less.
+- Only the Earth corvette has baked cuts; run `BakeSections` after any model change, and for each new ship model.
+
+### Gotchas found
+- Shared files (`Projectiles.cs`, `JuiceDirector.cs`) also carry the weapons builder's missile-tracking work (`OnTrack`, `missile_track`) and `hammer` weapon looks; the Round 2 commit
+  stages only the hunks that are mine, so it builds against the committed `CombatEvents.cs`.
+- Ship models import with `isReadable = false`: `Mesh.vertices` works in the editor (so the bake works) and logs nothing, but the same call fails in a built player.
+- A `LODGroup` that is disabled lets every LOD show at once; hiding a model means disabling its renderers explicitly.
+- Reparenting a model's parts out of its root before the root is destroyed keeps them; `ShipDamage` lives on the root and is gone a frame after `ship_destroyed`, so everything that
+  needs it (the hull-damage ramp) must be done in that frame.
+- Three captures ran at once by mistake (a backgrounded script that kept running after its tool call returned) and corrupted each other's output folder; run each capture script once, in the foreground.

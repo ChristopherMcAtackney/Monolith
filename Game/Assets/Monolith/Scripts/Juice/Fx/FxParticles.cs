@@ -46,6 +46,8 @@ namespace Monolith.Juice
         public float P2Decay;
         public float Seed, Palette, Angle, Spin;
         public float Stretch, MinLen;
+        /// <summary>Streaks: 0 = hard and saturated, 1 = a soft smear (motion blur).</summary>
+        public float Blur;
         public float FadeExp, FadeIn, SizeCurve, Flicker;
         public float Soft, NearStart, NearRange;
         /// <summary>1 = affected by the brightness (flash) setting; 0 = drawn as is (dark scorch).</summary>
@@ -103,44 +105,63 @@ namespace Monolith.Juice
             }
         }
 
-        /// <summary>Write every live particle into the two batches. <paramref name="brightness"/> scales glowing colours.</summary>
-        public void Write(FxBatch add, FxBatch alpha, float time, float brightness)
+        int[] _fireIdx = new int[512];
+        float[] _fireKey = new float[512];
+
+        /// <summary>Write every live particle into the two batches. <paramref name="brightness"/> scales glowing colours; fireballs are drawn far to near.</summary>
+        public void Write(FxBatch add, FxBatch alpha, float time, float brightness, Vector3 camera)
         {
+            int fires = 0;
             for (int i = 0; i < _n; i++)
             {
                 ref var p = ref _p[i];
-                float n = p.Age / p.Life;
-                var c = n < 0.35f ? Vector4.Lerp(p.C0, p.C1, n / 0.35f) : Vector4.Lerp(p.C1, p.C2, (n - 0.35f) / 0.65f);
-                float env = Mathf.Pow(1f - n, p.FadeExp);
-                if (p.FadeIn > 0f) env *= Mathf.Clamp01(p.Age / p.FadeIn);
-                if (p.Flicker > 0f)
+                if (p.Kind == FxKind.Fire)
                 {
-                    float f = Mathf.Sin(time * 61f + p.Seed * 91f) * Mathf.Sin(time * 37f + p.Seed * 17f);
-                    env *= 1f + p.Flicker * f;
+                    if (fires >= _fireIdx.Length) { System.Array.Resize(ref _fireIdx, fires * 2); System.Array.Resize(ref _fireKey, fires * 2); }
+                    _fireIdx[fires] = i; _fireKey[fires] = -(p.Pos - camera).sqrMagnitude; fires++;
+                    continue;
                 }
-                float k = env * (p.Bright > 0f ? Mathf.Lerp(1f, brightness, p.Bright) : 1f);
-                if (!p.Alpha) { c.x *= k; c.y *= k; c.z *= k; c.w *= k; }
-                else { c.x *= k; c.y *= k; c.z *= k; }
-                float sn = p.SizeCurve == 1f ? n : Mathf.Pow(n, p.SizeCurve);
-                float w = Mathf.Lerp(p.W0, p.W1, sn);
-                float h = p.H0 > 0f || p.H1 > 0f ? Mathf.Lerp(p.H0, p.H1, sn) : 0f;
-                float p1 = Mathf.Lerp(p.P1a, p.P1b, n), p2 = p.P2Decay > 0f ? p.P2a * Mathf.Exp(-p.Age * p.P2Decay) : Mathf.Lerp(p.P2a, p.P2b, n);
-                var batch = p.Alpha ? alpha : add;
+                Emit(ref p, add, alpha, time, brightness);
+            }
+            if (fires > 1) System.Array.Sort(_fireKey, _fireIdx, 0, fires);      // ascending by minus distance squared: far first
+            for (int k = 0; k < fires; k++) Emit(ref _p[_fireIdx[k]], add, alpha, time, brightness);
+        }
 
-                if (p.Kind == FxKind.Streak || p.Kind == FxKind.Beam)
-                {
-                    float speed = p.Vel.magnitude;
-                    Vector3 dir = speed > 0.05f ? p.Vel / speed : p.Dir;
-                    if (dir.sqrMagnitude < 0.5f) dir = Vector3.forward;
-                    float len = Mathf.Max(p.MinLen, speed * p.Stretch);
-                    float half = len * 0.5f;
-                    // The head sits on the particle; the tail trails behind it.
-                    batch.Quad(p.Pos - dir * half, c, p.Kind, p.Seed, new Vector4(dir.x, dir.y, dir.z, half), w, n, p1, p2, p.Soft, p.NearStart, p.NearRange, p.Palette);
-                }
-                else
-                {
-                    batch.Quad(p.Pos, c, p.Kind, p.Seed, new Vector4(h, 0f, 0f, p.Angle + p.Spin * p.Age), w, n, p1, p2, p.Soft, p.NearStart, p.NearRange, p.Palette);
-                }
+        static void Emit(ref Particle p, FxBatch add, FxBatch alpha, float time, float brightness)
+        {
+            float n = p.Age / p.Life;
+            var c = n < 0.35f ? Vector4.Lerp(p.C0, p.C1, n / 0.35f) : Vector4.Lerp(p.C1, p.C2, (n - 0.35f) / 0.65f);
+            float env = Mathf.Pow(1f - n, p.FadeExp);
+            if (p.FadeIn > 0f) env *= Mathf.Clamp01(p.Age / p.FadeIn);
+            if (p.Flicker > 0f)
+            {
+                float f = Mathf.Sin(time * 61f + p.Seed * 91f) * Mathf.Sin(time * 37f + p.Seed * 17f);
+                env *= 1f + p.Flicker * f;
+            }
+            float k = env * (p.Bright > 0f ? Mathf.Lerp(1f, brightness, p.Bright) : 1f);
+            // A fireball fades by eroding (in its shader), not by dimming: only its brightness setting applies.
+            if (p.Kind == FxKind.Fire) k = Mathf.Lerp(1f, brightness, p.Bright) * (p.FadeExp <= 0f ? 1f : Mathf.Clamp01(1.4f - n * 0.4f));
+            if (!p.Alpha) { c.x *= k; c.y *= k; c.z *= k; c.w *= k; }
+            else { c.x *= k; c.y *= k; c.z *= k; }
+            float sn = p.SizeCurve == 1f ? n : Mathf.Pow(n, p.SizeCurve);
+            float w = Mathf.Lerp(p.W0, p.W1, sn);
+            float h = p.H0 > 0f || p.H1 > 0f ? Mathf.Lerp(p.H0, p.H1, sn) : 0f;
+            float p1 = Mathf.Lerp(p.P1a, p.P1b, n), p2 = p.P2Decay > 0f ? p.P2a * Mathf.Exp(-p.Age * p.P2Decay) : Mathf.Lerp(p.P2a, p.P2b, n);
+            var batch = p.Alpha || p.Kind == FxKind.Fire ? alpha : add;
+
+            if (p.Kind == FxKind.Streak || p.Kind == FxKind.Beam)
+            {
+                float speed = p.Vel.magnitude;
+                Vector3 dir = speed > 0.05f ? p.Vel / speed : p.Dir;
+                if (dir.sqrMagnitude < 0.5f) dir = Vector3.forward;
+                float len = Mathf.Max(p.MinLen, speed * p.Stretch);
+                float half = len * 0.5f;
+                // The head sits on the particle; the tail trails behind it.
+                batch.Quad(p.Pos - dir * half, c, p.Kind, p.Seed, new Vector4(dir.x, dir.y, dir.z, half), w, n, p1, p2, p.Soft, p.NearStart, p.NearRange, p.Palette, new Vector4(p.Blur, 0f, 0f, 0f));
+            }
+            else
+            {
+                batch.Quad(p.Pos, c, p.Kind, p.Seed, new Vector4(h, 0f, 0f, p.Angle + p.Spin * p.Age), w, n, p1, p2, p.Soft, p.NearStart, p.NearRange, p.Palette);
             }
         }
     }

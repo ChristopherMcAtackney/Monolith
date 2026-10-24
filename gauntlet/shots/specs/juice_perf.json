@@ -1,10 +1,49 @@
 {
-  "scene": "juice", "width": 1920, "height": 1080,
-  "script": [
-    { "t": 0.0, "do": "place", "pos": [-40, 80, -80], "rot": [1.5, 22.0, 0], "speed": 0.0, "throttle": 0.0 },
-    { "t": 0.2, "do": "battle", "on": true },
-    { "t": 0.5, "do": "fire", "on": true },
-    { "t": 3.0, "do": "event", "name": "capital_death" }
-  ],
-  "perf": [ { "name": "capital_death", "follow": true, "seconds": 18, "warmup": 2.0 } ]
+ "scene": "juice",
+ "width": 1920,
+ "height": 1080,
+ "script": [
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    470,
+    35,
+    1250
+   ],
+   "speed": 0.0,
+   "throttle": 0.0,
+   "lookAt": [
+    170,
+    70,
+    700
+   ]
+  },
+  {
+   "t": 0.2,
+   "do": "battle",
+   "on": true
+  },
+  {
+   "t": 0.5,
+   "do": "fire",
+   "on": true
+  },
+  {
+   "t": 3.0,
+   "do": "event",
+   "name": "capital_death"
+  }
+ ],
+ "perf": [
+  {
+   "name": "capital_death",
+   "follow": true,
+   "seconds": 18,
+   "warmup": 2.0
+  }
+ ],
+ "options": {
+  "hud": false
+ }
 }

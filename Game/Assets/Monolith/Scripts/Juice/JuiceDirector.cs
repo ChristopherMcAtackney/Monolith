@@ -89,7 +89,7 @@ namespace Monolith.Juice
             _waves = new Shockwaves(c, _fx); c.Shockwaves = _waves;
             _projectiles = new Projectiles(c);
             _hits = new HitEffects(c, _fx, _projectiles, _feel); c.Hits = _hits;
-            _explosions = new Explosions(c, _fx, _feel, _debris, _waves);
+            _explosions = new Explosions(c, _fx, _feel, _debris, _waves); c.Explosions = _explosions;
             _beams = new Beams(c, _fx, _feel);
 
             // The one custom pass that draws it all, for this camera only.
@@ -152,10 +152,11 @@ namespace Monolith.Juice
         /// Tell the juice what a ship looks like: its visual (so it can break into lit pieces when destroyed and so beams and hits
         /// know its hull) and, for fighters and bombers, a shield bubble. Capital ships get no shield (design appendix: shield 0).
         /// </summary>
-        public ShipLook RegisterShip(int shipId, Transform visual, Vector3? shieldRadii = null)
+        public ShipLook RegisterShip(int shipId, Transform visual, Vector3? shieldRadii = null, IJuiceShipDamage damage = null)
         {
             var st = Context.World.Ships.Get(shipId);
-            var look = new ShipLook { Id = shipId, Visual = visual, Radius = st != null ? st.Radius : 10f };
+            var look = new ShipLook { Id = shipId, Visual = visual, Radius = st != null ? st.Radius : 10f, Damage = damage };
+            if (damage != null) HullSections.Warm(damage.HullRenderers);
             if (visual != null)
             {
                 var b = Debris.LocalBounds(visual);
@@ -237,7 +238,7 @@ namespace Monolith.Juice
             _projectiles.Draw();
             _hits.Draw();
             c.Particles.Update(dt);
-            c.Particles.Write(_frame.Add, _frame.Alpha, c.Time, c.Bright);
+            c.Particles.Write(_frame.Add, _frame.Alpha, c.Time, c.Bright, c.CameraPosition);
             _frame.Add.Upload();
             _frame.Alpha.Upload();
             _frame.Enabled = true;

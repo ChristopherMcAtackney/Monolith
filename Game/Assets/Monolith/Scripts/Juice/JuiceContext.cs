@@ -16,6 +16,8 @@ namespace Monolith.Juice
         public string SizeClass;
         /// <summary>Empty children named FX_&lt;kind&gt;_&lt;NN&gt; (spark, vent, fire, smoke) that the ship's model marks on its hull, forward pointing out of the surface.</summary>
         public readonly System.Collections.Generic.List<Transform> FxSites = new System.Collections.Generic.List<Transform>();
+        /// <summary>The model's real parts and damage looks, when it has them (see <see cref="IJuiceShipDamage"/>).</summary>
+        public IJuiceShipDamage Damage;
         public ShieldDraw Shield;
         public float ShieldRim;
         public float Radius;
@@ -42,6 +44,7 @@ namespace Monolith.Juice
         public HitEffects Hits;
         public Debris Debris;
         public Shockwaves Shockwaves;
+        public Explosions Explosions;
         public Transform Root;
         public readonly Dictionary<int, ShipLook> Looks = new Dictionary<int, ShipLook>();
 

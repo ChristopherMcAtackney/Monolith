@@ -5,7 +5,8 @@
 // so the effects follow the camera's exposure the way real light does and never fight it.
 //
 //   Pass 0 Add     additive quads (everything that glows)
-//   Pass 1 Alpha   premultiplied alpha quads (scorch marks: a dark blot with a hot rim)
+//   Pass 1 Alpha   premultiplied alpha quads: scorch marks, and every fireball, which is a RAYMARCHED VOLUME (a sphere of turbulent
+//                  3D noise, lit by its own heat, opaque where it is dense, clipped at the scene's depth) so a blast hides the ship in it
 //   Pass 2 Shield  a shield bubble (ellipsoid mesh) with hex ripples at up to 8 hit points
 //   Pass 3 Edge    a screen-edge flash that never touches the middle of the picture (hits on the player)
 //
@@ -14,10 +15,10 @@
 //   COLOR      rgb = colour in display units, a = kind specific (bolt: core strength)
 //   TEXCOORD0  corner.x, corner.y, kind, seed
 //   TEXCOORD1  oriented kinds: axis.xyz (unit), half length m.   billboards: half height m (0 = square), -, -, angle (radians)
-//   TEXCOORD2  half width m, age 0..1, p1, p2
-//   TEXCOORD3  soft distance m (0 = off), near fade start m, near fade range m, palette (0 fire, 1 plasma, 0..1 mix)
-//   TEXCOORD4  beams: whole beam length m, this quad's start and end as fractions of it
-// Kinds: 0 glow, 1 fire, 2 streak (bolt, spark, missile trail), 3 ring, 4 flare, 5 scorch, 7 beam.
+//   TEXCOORD2  half width m (a fireball: its radius), age 0..1, p1, p2
+//   TEXCOORD3  soft distance m (0 = off), near fade start m, near fade range m, palette (0 fire, 1 plasma, 0..1 mix, above 1 cool gas)
+//   TEXCOORD4  streaks: x = blur 0..1 (0 = hard saturated, 1 = soft smear).  beams: total length m, this quad's start and end fractions, core fraction
+// Kinds: 0 glow, 1 fireball (volume), 2 streak (bolt, spark, missile), 3 ring, 4 flare, 5 scorch, 7 beam.
 Shader "Hidden/Monolith/Fx"
 {
     SubShader
@@ -38,6 +39,8 @@ Shader "Hidden/Monolith/Fx"
         float4 _MN_Eye;             // the camera's world position (vertices are world space; positions are made eye-relative here)
         float4 _MN_Screen;          // width, height, 1/width, 1/height
         float4 _MN_Params;          // x nits per display unit, y focal length in pixels, z min half width of a streak in pixels, w time (s)
+        TEXTURE3D(_MN_Noise3D);     // 64^3 tiling noise: r perlin-worley, g worley, b fine worley, a perlin
+        SAMPLER(sampler_MN_Noise3D);
 
         // ------------------------------------------------------------------ noise
 
@@ -65,29 +68,22 @@ Shader "Hidden/Monolith/Fx"
                         lerp(lerp(n001, n101, f.x), lerp(n011, n111, f.x), f.y), f.z);
         }
 
-        float Fbm3(float3 p)
-        {
-            float a = 0.5, s = 0.0;
-            [unroll] for (int i = 0; i < 4; i++)
-            {
-                s += a * Noise3(p);
-                p = p * 2.03 + float3(17.1, 9.2, 5.7);
-                a *= 0.5;
-            }
-            return s * 1.0667;     // 0..1
-        }
-
         float Fbm2(float3 p)
         {
             return (0.6 * Noise3(p) + 0.4 * Noise3(p * 2.1 + 3.7));
         }
 
+        float4 Tex3(float3 p)
+        {
+            return SAMPLE_TEXTURE3D_LOD(_MN_Noise3D, sampler_MN_Noise3D, p, 0);
+        }
+
         // ------------------------------------------------------------------ colour
 
-        // A cooling fireball: deep red, orange, yellow, then white at the top. T 0..1.3
+        // A cooling fireball: deep red, orange, yellow, then white at the top. T 0..1.6
         float3 Incandescent(float T)
         {
-            return float3(saturate(T * 2.4), saturate((T - 0.38) * 1.6), saturate((T - 0.85) * 2.2));
+            return float3(saturate(T * 2.6), saturate((T - 0.30) * 1.55), saturate((T - 0.78) * 1.9));
         }
 
         // The Expanse's blue-white plasma: violet-blue when cool, white-cyan when hot.
@@ -117,7 +113,9 @@ Shader "Hidden/Monolith/Fx"
             float4 p : TEXCOORD1;       // age, p1, p2, palette
             float4 q : TEXCOORD2;       // soft distance, near fade start, near fade range, view depth
             float4 r : TEXCOORD3;       // x = half length / half width (oriented) or width / height (billboards)
-            float4 s : TEXCOORD4;       // beams: total length, start fraction, end fraction
+            float4 s : TEXCOORD4;       // streaks: blur.  beams: total length, start fraction, end fraction, core fraction
+            float4 ctr : TEXCOORD5;     // fireballs: centre (camera-relative) and radius
+            float3 ray : TEXCOORD6;     // camera-relative world position of the fragment's quad point
         };
 
         FxOut VertFx(FxIn a)
@@ -131,6 +129,7 @@ Shader "Hidden/Monolith/Fx"
             float dist = max(length(centre), 0.01);
             float aspect = 1.0;
             float2 local = corner;
+            float4 ctr = float4(centre, halfW);
 
             if ((kind > 1.5 && kind < 2.5) || kind > 6.5)
             {
@@ -140,7 +139,9 @@ Shader "Hidden/Monolith/Fx"
                 float3 side = cross(ax, centre / dist);
                 float sl = length(side);
                 side = sl > 1e-4 ? side / sl : _MN_CamRight.xyz;
-                float minHalf = _MN_Params.z * dist / _MN_Params.y;
+                // A minimum width on screen, so a bolt far away is still a line and a beam still has presence. Beams carry their own (t4.w is unused for them: core fraction is t4.w).
+                float minPx = _MN_Params.z * (kind > 6.5 ? 5.0 : 1.0);
+                float minHalf = minPx * dist / _MN_Params.y;
                 float hw = max(halfW, minHalf);
                 len = max(len, hw);
                 wpos = centre + ax * (corner.x * len) + side * (corner.y * hw);
@@ -150,10 +151,17 @@ Shader "Hidden/Monolith/Fx"
             else
             {
                 float hh = a.t1.x > 0.0 ? a.t1.x : halfW;
+                float grow = 1.0;
+                if (kind > 0.5 && kind < 1.5)
+                {
+                    // A fireball is a sphere: its quad must cover the sphere's silhouette, which is wider than the radius when close.
+                    grow = min(rsqrt(max(1.0 - (halfW * halfW) / (dist * dist), 0.06)), 3.6) * 1.03;
+                    hh = halfW;
+                }
                 float s, c;
                 sincos(a.t1.w, s, c);
                 float2 rc = float2(c * corner.x - s * corner.y, s * corner.x + c * corner.y);
-                wpos = centre + _MN_CamRight.xyz * (rc.x * halfW) + _MN_CamUp.xyz * (rc.y * hh);
+                wpos = centre + _MN_CamRight.xyz * (rc.x * halfW * grow) + _MN_CamUp.xyz * (rc.y * hh * grow);
                 aspect = halfW / max(hh, 1e-3);
             }
 
@@ -164,6 +172,8 @@ Shader "Hidden/Monolith/Fx"
             o.q = float4(a.t3.x, a.t3.y, a.t3.z, dot(wpos, _MN_CamFwd.xyz));
             o.r = float4(aspect, 0, 0, 0);
             o.s = a.t4;
+            o.ctr = ctr;
+            o.ray = wpos;
             return o;
         }
 
@@ -180,7 +190,84 @@ Shader "Hidden/Monolith/Fx"
             return f;
         }
 
-        // Returns rgb (display units) and a coverage / darkening alpha for the alpha pass.
+        float NearFade(FxOut i)
+        {
+            return i.q.z > 0.0 ? saturate((i.q.w - i.q.y) / i.q.z) : 1.0;
+        }
+
+        // ------------------------------------------------------------------ the fireball: a raymarched, turbulent, glowing volume
+
+        // Returns premultiplied colour (display units) and the opacity. col.rgb is the overall brightness, p1 the heat at birth (about 1 is
+        // white-hot), p2 how fast it erodes into scattered embers, age 0..1 over its life, palette 0 fire / 1 plasma / above 1 a cool gas.
+        float4 ShadeFire(FxOut i)
+        {
+            float age = i.p.x;
+            float heat = i.p.y;
+            float erodeRate = i.p.z;
+            float palette = i.p.w;
+            float seed = i.uv.w;
+            float3 centre = i.ctr.xyz;
+            float Rs = i.ctr.w;
+            float3 rd = normalize(i.ray);
+
+            float b = dot(rd, centre);
+            float disc = b * b - (dot(centre, centre) - Rs * Rs);
+            if (disc <= 0.0) return 0.0;
+            float sq = sqrt(disc);
+            float t0 = max(b - sq, 0.05);
+            float t1 = b + sq;
+            float sceneZ = LinearEyeDepth(LoadCameraDepth(uint2(i.pos.xy)), _ZBufferParams);
+            t1 = min(t1, sceneZ / max(dot(rd, _MN_CamFwd.xyz), 1e-3));          // the hull in front of the ball hides the part behind it
+            if (t1 <= t0) return 0.0;
+
+            const int STEPS = 16;
+            float dt = (t1 - t0) / STEPS;
+            float jit = frac(sin(dot(i.pos.xy + frac(_MN_Params.w * 3.7) * 29.0, float2(12.9898, 78.233))) * 43758.5453);   // white noise: grain, not the hatching of a regular pattern
+            float3 off = float3(seed * 7.13, seed * 3.71, seed * 11.3);
+            float erode = age * (0.50 + erodeRate);
+            float life = saturate(1.0 - pow(age, 1.45) * 0.88);       // cools slowly at first: most of the ball stays yellow-white
+            float3 sum = 0.0;
+            float A = 0.0;
+
+            [loop] for (int k = 0; k < STEPS; k++)
+            {
+                float t = t0 + (k + jit) * dt;
+                float3 l = (rd * t - centre) / Rs;
+                float r2 = dot(l, l);
+                if (r2 >= 1.0) continue;
+                float r = sqrt(r2);
+
+                // Turbulence: a warp from a slow low-frequency lookup, then three octaves of Perlin-Worley in one fetch. Big lobes first, fine detail on them.
+                float3 q = l * 0.55 + off + float3(0.12, -0.35, 0.08) * age;
+                float3 warp = Tex3(q * 0.5).rgb - 0.5;
+                float4 n = Tex3(q + warp * 0.9);
+                float fbm = n.r * 0.55 + n.g * 0.30 + n.b * 0.15;
+                float base = 1.0 - r / 0.74;                          // the dense body reaches 0.74 of the sphere; lobes of fire reach out to its edge
+                float mask = base * 1.55 + (fbm - 0.45) * 1.7 - erode * 1.6;
+                float dens = smoothstep(0.0, 0.16, mask);            // a narrow ramp: hard, ragged, cauliflower edges, not an airbrushed fade
+                if (dens <= 0.0) continue;
+
+                float hotspot = saturate(base) * saturate(base);
+                float T = heat * life * (0.22 + 0.95 * hotspot + 0.55 * (n.g - 0.45) + 0.30 * (n.a - 0.5)) * lerp(0.55, 1.20, n.b);
+                T = max(T, 0.10 * life);
+                float3 ramp = lerp(Incandescent(T), PlasmaRamp(T), saturate(palette));
+                ramp = lerp(ramp, float3(0.78, 0.88, 1.0) * (0.25 + T), saturate(palette - 1.0));
+                float vein = pow(saturate(1.0 - abs(2.0 * n.g - 1.0)), 4.0);
+                float lum = (0.10 + T * T * 2.0) * (0.75 + 0.60 * vein);
+                lum = lerp(lum, 1.0 * (0.7 + 0.5 * vein), saturate(palette - 1.0));      // cool gas is lit, not black: a pale puff, even in front of a fireball
+                float3 emit = ramp * lum;
+                dens *= lerp(smoothstep(0.10, 0.55, T), 1.0, saturate(palette - 1.0));                       // gas that has cooled thins out instead of hanging as a smooth red cloud
+                float a = 1.0 - exp(-dens * 7.5 * dt / (2.0 * Rs));
+                sum += (1.0 - A) * emit * a;
+                A += (1.0 - A) * a;
+                if (A > 0.985) break;
+            }
+            return float4(sum * i.col.rgb, A);
+        }
+
+        // ------------------------------------------------------------------ the other kinds
+
+        // Returns rgb (display units) for the additive pass, and a coverage / darkening alpha for the scorch.
         float4 ShadeFx(FxOut i)
         {
             float kind = i.uv.z;
@@ -203,40 +290,29 @@ Shader "Hidden/Monolith/Fx"
             }
             else if (kind < 1.5)
             {
-                // Fire: a billowing ball. p1 = heat at birth (about 1 is white-hot), p2 = how fast it shrinks into embers.
-                float r2 = dot(c, c);
-                if (r2 >= 1.0) return 0;
-                float rad = sqrt(r2);
-                float3 q = float3(c * 1.55, age * 1.3) + float3(seed * 7.1, seed * 3.3, seed * 13.7);
-                float n = Fbm3(q);
-                float n2 = Noise3(q * 2.9 + 11.0);
-                float edge = 1.0 - rad;
-                float mask = edge * 1.45 + (n - 0.5) * 1.35 + (n2 - 0.5) * 0.5 - 0.16 - age * (0.30 + p2) * 0.85;
-                float dens = smoothstep(0.0, 0.95, mask);
-                float T = p1 * pow(saturate(1.0 - age * 0.78), 1.1) * (0.30 + 0.80 * dens + 0.55 * (n - 0.5) + 0.3 * (n2 - 0.5));
-                T = max(T, 0.0);
-                float3 ramp = lerp(Incandescent(T), PlasmaRamp(T), saturate(i.p.w));
-                // Palette above 1: gas, a pale cool haze whatever its temperature.
-                ramp = lerp(ramp, float3(0.80, 0.90, 1.0) * (0.3 + T), saturate(i.p.w - 1.0));
-                float ridge = pow(saturate(1.0 - abs(2.0 * n2 - 1.0)), 3.0);       // thin bright veins where the flame folds over itself
-                float bright = (0.08 + T * T * 1.4) * (0.78 + 0.55 * ridge);
-                return float4(colour * ramp * (dens * bright), 0);
+                return 0;                       // fireballs are drawn by the alpha pass
             }
             else if (kind < 2.5)
             {
-                // Streak: a capsule with a white-hot core, a saturated body and a wide soft halo.
-                // c.x runs along the streak in half widths (tail at -aspect, head at +aspect), c.y across.
+                // Streak: a bolt, a spark, an exhaust segment. c.x runs along it in half widths (tail at -aspect, head at +aspect), c.y across.
+                // p1 = taper (0 = a capsule, 1 = a long point at the tail, 2 = sharper), p2 = tail brightness floor, s.x = blur (0 hard and saturated, 1 a soft smear).
                 float cap = i.r.x;
-                float ex = max(abs(c.x) - (cap - 1.0), 0.0);
-                float d2 = ex * ex + c.y * c.y;
+                float t = saturate(c.x / (2.0 * cap) + 0.5);                  // 0 at the tail, 1 at the head
+                float widthAt = lerp(1.0, pow(max(t, 1e-3), 0.55 * p1 + 1e-3), saturate(p1));
+                float yn = c.y / max(widthAt, 0.05);
+                float ex = max(c.x - (cap - 1.0), 0.0);                       // a round head
+                float d2 = ex * ex + yn * yn;
                 if (d2 >= 1.0) return 0;
-                float t = saturate(c.x / (2.0 * cap) + 0.5);          // 0 at the tail, 1 at the head
-                float tail = lerp(p2, 1.0, pow(t, 1.0 + p1 * 3.0));      // p2 = tail brightness, p1 = how sharply it falls off
-                float core = exp(-d2 * 16.0);
-                float body = exp(-d2 * 4.2);
-                float halo = (1.0 - d2) * exp(-d2 * 1.2);
-                float3 rgb = colour * (halo * 0.55 + body * 1.15) + lerp(colour, float3(1, 1, 1), 0.82) * (core * i.col.a);
-                return float4(rgb * tail, 0);
+                float d = sqrt(d2);
+                float blur = i.s.x;
+                float coreHard = 1.0 - smoothstep(0.10, 0.34, d);
+                float bodyHard = 1.0 - smoothstep(0.38, 0.88, d);
+                float core = lerp(coreHard, exp(-d2 * 16.0), blur);
+                float body = lerp(bodyHard, exp(-d2 * 4.2), blur);
+                float halo = (1.0 - d2) * exp(-d2 * 1.4);
+                float tail = lerp(p2, 1.0, pow(t, 1.4));
+                float3 rgb = colour * (halo * 0.40 + body * 1.30) + lerp(colour, float3(1, 1, 1), 0.86) * (core * i.col.a);
+                return float4(rgb * tail * smoothstep(0.0, 0.04, t + (1.0 - saturate(p1))), 0);
             }
             else if (kind < 3.5)
             {
@@ -253,11 +329,11 @@ Shader "Hidden/Monolith/Fx"
             }
             else if (kind < 4.5)
             {
-                // Flare: a lens-like star. The quad is wide (anamorphic horizontal streak) and the glow is tight.
-                float r2 = dot(c, c);
+                // Flare: a lens-like star. The quad is wide (anamorphic horizontal streak) and the glow is tight. p1 = vertical spike strength (default 0.28).
                 float asp = max(i.r.x, 1.0);
+                float spike = p1 > 0.0 ? p1 : 0.28;
                 float horiz = exp(-abs(c.y) * 26.0) * pow(saturate(1.0 - abs(c.x)), 2.4);
-                float vert = exp(-abs(c.x) * 30.0 * asp) * pow(saturate(1.0 - abs(c.y)), 3.0) * 0.28;
+                float vert = exp(-abs(c.x) * 30.0 * asp) * pow(saturate(1.0 - abs(c.y)), 3.0) * spike;
                 float glow = exp(-(c.x * c.x * asp * asp + c.y * c.y) * 22.0);
                 return float4(colour * (horiz + vert + glow * 1.2), 0);
             }
@@ -276,19 +352,36 @@ Shader "Hidden/Monolith/Fx"
             }
             else
             {
-                // Beam (kind 7): a long ribbon drawn in segments. c.x along (in half widths), c.y across. p1 = animation speed, p2 = noise scale.
+                // Beam (kind 7): one fat ribbon drawn in segments. c.x along (in half widths), c.y across (-1..1 over the whole width).
+                // p1 = animation speed, p2 = noise scale, s = (total length, start, end, core fraction). A white-hot hard core inside a saturated body with a
+                // ragged flaring edge, inside a soft glow. col.rgb = the body colour, col.a = the core's strength.
                 float cap = i.r.x;
-                float y = abs(c.y);
-                float along = lerp(i.s.y, i.s.z, c.x * (0.5 / cap) + 0.5);       // 0 at the muzzle, 1 at the far end, over the whole beam
-                float xm = along * i.s.x;                                          // metres from the muzzle
-                float s1 = Noise3(float3(xm * 0.021 * p2 - time * p1 * 0.05, c.y * 4.0, seed));
-                float s2 = Noise3(float3(xm * 0.067 * p2 - time * p1 * 0.11, c.y * 9.0 + 3.0, seed + 5.0));
-                float streak = 0.30 + 1.15 * s1 * s1 + 0.55 * s2;
-                float core = exp(-y * y * 18.0) * (0.78 + 0.5 * s2);
-                float body = exp(-y * y * 4.4) * streak;
-                float sheath = pow(saturate(1.0 - y * y), 2.0) * (0.25 + 1.1 * s1);
-                float ends = smoothstep(0.0, 0.012, along) * smoothstep(1.0, 0.985, along);
-                float3 rgb = colour * (sheath * 0.5 + body * 1.3) + lerp(colour, float3(1, 1, 1), 0.85) * (core * i.col.a);
+                float along = lerp(i.s.y, i.s.z, c.x * (0.5 / cap) + 0.5);
+                float xm = along * i.s.x;
+                // Round ends: the ribbon narrows to a point over about half its half width at each end, so a beam that stops at a hull has a rounded head.
+                float segLen = max((i.s.z - i.s.y) * i.s.x, 1e-3);
+                float Wm = segLen / (2.0 * cap);                                  // the ribbon's half width in metres
+                float dEnd = (1.0 - along) * i.s.x / Wm, dStart = along * i.s.x / Wm;
+                float capR = 0.7;
+                float ce = dEnd < capR ? sqrt(saturate(1.0 - (1.0 - dEnd / capR) * (1.0 - dEnd / capR))) : 1.0;
+                float cs = dStart < capR ? sqrt(saturate(1.0 - (1.0 - dStart / capR) * (1.0 - dStart / capR))) : 1.0;
+                float y = abs(c.y) / max(min(ce, cs), 0.04);
+                float coreF = max(i.s.w, 0.05);
+                float bodyF = coreF * 2.5;
+                float n1 = Tex3(float3(xm * 0.0065 * p2 - time * p1 * 0.02, c.y * 0.30, seed)).r;
+                float n2 = Tex3(float3(xm * 0.0075 * p2 - time * p1 * 0.045, c.y * 0.45 + 0.37, seed + 0.31)).a;
+                float n3 = Tex3(float3(xm * 0.017 * p2 - time * p1 * 0.09, c.y * 0.7, seed + 0.62)).a;
+                float rag = (n1 - 0.5) * 0.30 + (pow(saturate(n2 * 1.35), 3.0) - 0.22) * 0.9 + (n3 - 0.5) * 0.10;      // flaring, ragged edges
+                float coreEdge = coreF * (1.0 + 0.20 * rag);
+                float bodyEdge = bodyF * (1.0 + 0.55 * rag);
+                float core = 1.0 - smoothstep(coreEdge * 0.78, coreEdge * 1.10, y);
+                float body = 1.0 - smoothstep(bodyEdge * 0.80, bodyEdge * 1.16, y);
+                float shimmer = 0.80 + 0.45 * n2 + 0.25 * n3;
+                float flame = pow(saturate(1.0 - y), 2.2) * (0.45 + 1.1 * n1);                  // the soft glow and the long flares beyond the body
+                float streaks = pow(saturate(n3 * 1.6 - 0.35), 2.0) * exp(-pow(max(y - bodyEdge, 0.0) / (bodyF * 0.9), 2.0)) * (1.0 - body);
+                float ends = 1.0;
+                float3 whiteHot = lerp(colour, float3(1, 1, 1), 0.88);
+                float3 rgb = colour * (body * shimmer * 1.0 + flame * 0.42 + streaks * 1.6) + whiteHot * (core * (0.85 + 0.3 * n2) * i.col.a);
                 return float4(rgb * ends, 0);
             }
         }
@@ -335,6 +428,12 @@ Shader "Hidden/Monolith/Fx"
 
             float4 FragAlpha(FxOut i) : SV_Target
             {
+                if (i.uv.z > 0.5 && i.uv.z < 1.5)
+                {
+                    float4 f = ShadeFire(i);
+                    float nf = NearFade(i);
+                    return float4(ToExposure(f.rgb * nf), saturate(f.a) * nf);
+                }
                 float4 s = ShadeFx(i);
                 float fade = DepthFade(i);
                 return float4(ToExposure(s.rgb * fade), saturate(s.a) * fade);

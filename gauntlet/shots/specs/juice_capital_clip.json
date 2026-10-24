@@ -1,8 +1,39 @@
 {
-  "scene": "juice", "width": 1280, "height": 720,
-  "script": [
-    { "t": 0.0, "do": "place", "pos": [-40, 80, -80], "rot": [1.5, 22.0, 0], "speed": 0.0, "throttle": 0.0 },
-    { "t": 1.0, "do": "event", "name": "capital_death" }
-  ],
-  "series": [ { "name": "capdeath", "from": 0.9, "to": 14.0, "step": 0.0333333 } ]
+ "scene": "juice",
+ "width": 1280,
+ "height": 720,
+ "script": [
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    470,
+    35,
+    1250
+   ],
+   "speed": 0.0,
+   "throttle": 0.0,
+   "lookAt": [
+    170,
+    70,
+    700
+   ]
+  },
+  {
+   "t": 1.0,
+   "do": "event",
+   "name": "capital_death"
+  }
+ ],
+ "series": [
+  {
+   "name": "capdeath",
+   "from": 0.9,
+   "to": 11.5,
+   "step": 0.0333333
+  }
+ ],
+ "options": {
+  "hud": false
+ }
 }

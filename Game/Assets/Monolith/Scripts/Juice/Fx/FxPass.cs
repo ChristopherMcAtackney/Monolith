@@ -52,7 +52,8 @@ namespace Monolith.Juice
             IdObject = Shader.PropertyToID("_MN_Object"), IdObjectRot = Shader.PropertyToID("_MN_ObjectRot"),
             IdRadii = Shader.PropertyToID("_ShieldRadii"), IdShieldColour = Shader.PropertyToID("_ShieldColor"),
             IdShieldParams = Shader.PropertyToID("_ShieldParams"), IdShieldHit = Shader.PropertyToID("_ShieldHit"),
-            IdEdgeColour = Shader.PropertyToID("_MN_EdgeColor"), IdEdgeParams = Shader.PropertyToID("_MN_EdgeParams");
+            IdEdgeColour = Shader.PropertyToID("_MN_EdgeColor"), IdEdgeParams = Shader.PropertyToID("_MN_EdgeParams"),
+            IdNoise = Shader.PropertyToID("_MN_Noise3D");
 
         protected override bool executeInSceneView => false;
 
@@ -83,6 +84,7 @@ namespace Monolith.Juice
             p.SetVector(IdFwd, tr.forward);
             p.SetVector(IdEye, eye);
             p.SetVector(IdScreen, new Vector4(w, h, 1f / w, 1f / h));
+            p.SetTexture(IdNoise, FxNoise.Get());
             p.SetVector(IdParams, new Vector4(Frame.NitsPerUnit, focal, Frame.MinStreakPx * Mathf.Max(1f, h / 1080f), Frame.Time));
 
             CoreUtils.SetRenderTarget(ctx.cmd, ctx.cameraColorBuffer, ctx.cameraDepthBuffer, ClearFlag.None);

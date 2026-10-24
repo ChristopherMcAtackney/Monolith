@@ -40,8 +40,10 @@ graphics after post-processing, so captures show it. Both View and Hud draw thro
 
 **Juice** (`Monolith.Juice`) turns combat events into light, fire, sparks, debris, camera shake, pad rumble and sound, and
 knows nothing about who raised them. One HDRP custom pass draws every glow, bolt, beam, spark, fireball and shield ripple in
-the HDR buffer before post-processing (`Resources/Juice/MN_Fx.shader`); hull visuals registered with
-`JuiceDirector.RegisterShip` are cut into lit pieces when they die; a capital ship dies in stages and its shockwave shoves ships
+the HDR buffer before post-processing (`Resources/Juice/MN_Fx.shader`); fireballs are raymarched turbulent volumes (a 64 cubed tiling noise made in code) that light nearby hulls with real lights; hull visuals registered with
+`JuiceDirector.RegisterShip` are cut into lit pieces when they die, or, for a ship model that has real parts, handed to it through
+`IJuiceShipDamage` (the Game assembly adapts `ShipDamage` to it: hits scorch the plating, beams blow parts off, a capital ship loses its
+parts one by one and then breaks along cuts baked by `JuiceSetup.BakeSections`); a capital ship dies in stages and its shockwave shoves ships
 through `GameWorld.Knocks`. Sounds are placeholders built in code behind `IJuiceAudio`. Settings (presets, switches, levels) are
 `juice.json` next to the game, falling back to `Resources/Juice/juice_defaults.json`. Detail: `Scripts/Juice/README.md`.
 
@@ -51,8 +53,8 @@ through `GameWorld.Knocks`. Sounds are placeholders built in code behind `IJuice
 `GameRoot`, which builds the clock, the world and every system, and registers them. Today it also builds the smoke scene
 (`SmokeWorld`: camera, sun, sphere and box) and, with `-mnScene flight` or a plan's `"scene": "flight"`, the flight
 playtest (`FlightPlaytest`: the Sky, placeholder ships from `PlaceholderShips`, layout in `Resources/Flight/playtest.json`) or,
-with `-mnScene juice`, the juice sandbox (`Sandbox/JuiceSandbox`: the fighter, targets, two capital hulls, stand-in weapons and
-the panel). It is the only assembly allowed to reference the others.
+with `-mnScene juice`, the juice sandbox (`Sandbox/JuiceSandbox`: the fighter, targets, two Earth corvettes as the capital ships, stand-in weapons and
+the panel; `"hud": false` in a plan's `sceneOptions` or `-mnNoHud` leaves the HUD out of look captures). It is the only assembly allowed to reference the others.
 
 **Editor** (`Monolith.Editor`, namespace `Monolith.EditorTools`, editor only) is scripted project set-up and building:
 `Batch.Run` wrapper, `Setup.Project` (HDRP asset and global settings, colour space, Input System, player settings, the

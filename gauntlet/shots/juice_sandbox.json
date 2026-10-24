@@ -76,10 +76,10 @@
     "name": "shield_hit"
    },
    {
-    "t": 15.0,
+    "t": 14.9,
     "do": "face",
     "name": "Resolute",
-    "distance": 420,
+    "distance": 330,
     "from": [
      -0.5,
      0.12,
@@ -137,14 +137,14 @@
     "t": 24.0,
     "do": "place",
     "pos": [
-     -120,
-     250,
-     -300
+     -380,
+     175,
+     1260
     ],
     "lookAt": [
-     -420,
-     270,
-     1800
+     -780,
+     235,
+     1750
     ],
     "speed": 0.0,
     "throttle": 0.0
@@ -155,17 +155,33 @@
     "name": "beam_strike"
    },
    {
+    "t": 27.0,
+    "do": "place",
+    "pos": [
+     420,
+     120,
+     1180
+    ],
+    "lookAt": [
+     150,
+     78,
+     790
+    ],
+    "speed": 0.0,
+    "throttle": 0.0
+   },
+   {
     "t": 33.0,
     "do": "place",
     "pos": [
-     60,
-     120,
-     420
+     330,
+     95,
+     900
     ],
-    "rot": [
-     -3,
-     22,
-     0
+    "lookAt": [
+     170,
+     75,
+     735
     ],
     "speed": 0.0,
     "throttle": 0.0
@@ -179,14 +195,14 @@
     "t": 40.0,
     "do": "place",
     "pos": [
-     -40,
-     80,
-     -80
+     470,
+     35,
+     1250
     ],
-    "rot": [
-     1.5,
-     22.0,
-     0
+    "lookAt": [
+     170,
+     70,
+     700
     ],
     "speed": 0.0,
     "throttle": 0.0
@@ -196,7 +212,8 @@
     "do": "event",
     "name": "capital_death"
    }
-  ]
+  ],
+  "hud": false
  },
  "defaults": {
   "width": 1920,
@@ -223,12 +240,12 @@
   {
    "name": "shield_hit",
    "follow": true,
-   "warmup": 2.6334
+   "warmup": 2.5668
   },
   {
    "name": "hull_hit_capital",
    "follow": true,
-   "warmup": 3.3168
+   "warmup": 3.3834
   },
   {
    "name": "bomber_kill",
@@ -278,7 +295,7 @@
   {
    "name": "capital_death_final",
    "follow": true,
-   "warmup": 2.0501
+   "warmup": 2.2001
   }
  ]
 }
