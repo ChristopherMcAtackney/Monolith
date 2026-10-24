@@ -49,6 +49,7 @@ namespace Monolith.Game
         {
             _checks = 0; _fails = 0; Lines.Clear();
             string was = HudStyles.Current.Name;
+            var wasArgs = Environment.GetCommandLineArgs();
             try
             {
                 Fonts();
@@ -56,7 +57,8 @@ namespace Monolith.Game
                 Styles();
                 Geometry();
                 DataInterface();
-                Layout();
+                Layout(1f);
+                ScaleAndOpacity();
                 PauseScreens();
                 Cost();
             }
@@ -66,6 +68,9 @@ namespace Monolith.Game
                 MnLog.Error("HUD selftest threw: " + e);
                 Lines.Add("HUD FAIL: threw " + e.Message);
             }
+            CommandLine.SetArgs(wasArgs);
+            HudStyles.FileOverride = null;
+            HudStyles.Reload();
             HudStyles.Set(was);
             string summary = $"HUD SELFTEST {(_fails == 0 ? "OK" : "FAILED")}: {_checks - _fails} of {_checks} checks pass";
             MnLog.Info(summary);
@@ -364,9 +369,11 @@ namespace Monolith.Game
 
         static bool Overlaps(Rect a, Rect b, float slack) => a.xMin < b.xMax - slack && b.xMin < a.xMax - slack && a.yMin < b.yMax - slack && b.yMin < a.yMax - slack;
 
-        static void Layout()
+        /// <param name="mul">The player's HUD scale on top of the screen's own (1 is the design size).</param>
+        static void Layout(float mul)
         {
-            var L = new HudLines { RecordTexts = true };
+            string at = mul == 1f ? "" : $" at scale {N(mul)}";
+            var L = new HudLines { RecordTexts = true, TypeFloor = 0.72f * mul };      // (the HUD brings the type's floor down with the player's scale)
             var R = new HudRenderer();
             string[] kinds = { "full", "threat", "bare", "menu", "map", "pause" };
             int shots = 0, offScreen = 0, panelOverlap = 0, textOverlap = 0, centre = 0, tiny = 0;
@@ -376,11 +383,11 @@ namespace Monolith.Game
                     foreach (var kind in kinds)
                     {
                         var f = MakeFrame(w, h, kind, w * 0.0007f + h * 0.0003f);
-                        L.Clear(HudRenderer.ScaleFor(w, h), st);
+                        L.Clear(HudRenderer.ScaleFor(w, h) * mul, st);
                         R.Draw(L, f);
                         shots++;
-                        string tag = $"{st.Name} {w}x{h} {kind}";
-                        float s = HudRenderer.ScaleFor(w, h);
+                        string tag = $"{st.Name} {w}x{h} {kind}{at}";
+                        float s = HudRenderer.ScaleFor(w, h) * mul;
                         // 1. nothing leaves the screen (text and every named panel)
                         foreach (var t in L.Texts)
                             if (t.Bounds.xMin < -1f || t.Bounds.yMin < -1f || t.Bounds.xMax > w + 1f || t.Bounds.yMax > h + 1f)
@@ -389,7 +396,7 @@ namespace Monolith.Game
                             if (kv.Key != "banner" && (kv.Value.xMin < -2f || kv.Value.yMin < -2f || kv.Value.xMax > w + 2f || kv.Value.yMax > h + 2f))
                             { offScreen++; if (firstFail.Count < 12) firstFail.Add($"{tag}: panel {kv.Key} leaves the screen {kv.Value}"); }
                         // 2. the type is never tiny
-                        foreach (var t in L.Texts) if (t.Cap < 8.5f) { tiny++; if (firstFail.Count < 12) firstFail.Add($"{tag}: '{t.Text}' is {t.Cap} px tall"); }
+                        foreach (var t in L.Texts) if (t.Cap < 8.5f * mul) { tiny++; if (firstFail.Count < 12) firstFail.Add($"{tag}: '{t.Text}' is {t.Cap} px tall"); }
                         if (kind == "pause" || kind == "map" || kind == "menu") { CheckScreenKinds(R, L, f, tag, s, firstFail, ref textOverlap); continue; }
                         // 3. no two panels overlap
                         for (int i = 0; i < Panels.Length; i++)
@@ -411,11 +418,12 @@ namespace Monolith.Game
                             { centre++; if (firstFail.Count < 12) firstFail.Add($"{tag}: {kv.Key} {kv.Value} enters the middle of the screen"); }
                     }
             foreach (var m in firstFail) MnLog.Info("HUD detail: " + m);
-            Check(offScreen == 0, $"nothing leaves the screen: {shots} frames (3 styles x 8 screen shapes x 6 states), {offScreen} words or panels off screen");
-            Check(tiny == 0, $"no type under 8.5 px tall at any size ({tiny})");
-            Check(panelOverlap == 0, $"no two panels overlap ({panelOverlap} overlaps)");
-            Check(textOverlap == 0, $"no two words overlap ({textOverlap} overlaps)");
-            Check(centre == 0, $"the middle of the screen is clear of panels ({centre} intrusions)");
+            Check(offScreen == 0, $"nothing leaves the screen{at}: {shots} frames (3 styles x 8 screen shapes x 6 states), {offScreen} words or panels off screen");
+            Check(tiny == 0, $"no type under {N(8.5f * mul)} px tall at any size{at} ({tiny})");
+            Check(panelOverlap == 0, $"no two panels overlap{at} ({panelOverlap} overlaps)");
+            Check(textOverlap == 0, $"no two words overlap{at} ({textOverlap} overlaps)");
+            Check(centre == 0, $"the middle of the screen is clear of panels{at} ({centre} intrusions)");
+            if (mul != 1f) return;
 
             // a very long name, a full directive list and a long radio line wrap and stay on the screen
             var longF = MakeFrame(1920f, 1080f, "full", 0.3f);
@@ -444,6 +452,129 @@ namespace Monolith.Game
                     if (Overlaps(L.Texts[i].Bounds, L.Texts[j].Bounds, 2.5f)) { textOverlap++; if (firstFail.Count < 12) firstFail.Add($"{tag}: '{L.Texts[i].Text}' overlaps '{L.Texts[j].Text}'"); }
                 }
             }
+        }
+
+        // ------------------------------------------------------------------------------------------------ the player's scale and opacity
+
+        static bool Near(float a, float b, float tol = 0.002f) => Mathf.Abs(a - b) <= tol;
+
+        static void ScaleAndOpacity()
+        {
+            // the defaults: a clear step back from the design size and full strength, but not too far
+            float ds = HudStyles.DefaultScale, dop = HudStyles.DefaultOpacity;
+            Check(ds >= 0.7f && ds <= 0.92f && dop >= 0.6f && dop <= 0.88f, $"the defaults step the HUD back clearly and not too far: scale {N(ds)}, opacity {N(dop)} (design size and full strength are 1 and 1)");
+
+            // where they come from: the defaults, hud.json, the command line (which wins), the limits, an unreadable file
+            string dir = Path.Combine(Path.GetTempPath(), "mn_hudtest_" + System.Diagnostics.Process.GetCurrentProcess().Id);
+            Directory.CreateDirectory(dir);
+            string file = Path.Combine(dir, "hud.json");
+            var wasArgs = Environment.GetCommandLineArgs();
+            try
+            {
+                CommandLine.SetArgs(new[] { "Monolith.exe" });
+                HudStyles.FileOverride = file;
+                HudStyles.Reload();
+                Check(Near(HudStyles.Scale, ds) && Near(HudStyles.Opacity, dop), $"with no file and no flag the scale and opacity are the defaults ({N(HudStyles.Scale)}, {N(HudStyles.Opacity)})");
+                File.WriteAllText(file, "{ \"style\": \"cipher\", \"textScale\": 1.1, \"scale\": 0.7, \"opacity\": 0.6 }");
+                HudStyles.Reload();
+                Check(Near(HudStyles.Scale, 0.7f) && Near(HudStyles.Opacity, 0.6f) && Near(HudStyles.TextScale, 1.1f) && HudStyles.Current.Name == "cipher", "hud.json's scale, opacity, textScale and style are read (0.7, 0.6, 1.1, cipher)");
+                CommandLine.SetArgs(new[] { "Monolith.exe", "-mnHudScale", "0.95", "-mnHudOpacity", "0.5" });
+                HudStyles.Reload();
+                Check(Near(HudStyles.Scale, 0.95f) && Near(HudStyles.Opacity, 0.5f), "-mnHudScale and -mnHudOpacity win over the file");
+                CommandLine.SetArgs(new[] { "Monolith.exe", "-mnHudScale", "9", "-mnHudOpacity", "0.01" });
+                HudStyles.Reload();
+                Check(Near(HudStyles.Scale, HudStyles.MaxScale) && Near(HudStyles.Opacity, HudStyles.MinOpacity), $"absurd values are held to the limits (scale {N(HudStyles.MinScale)} to {N(HudStyles.MaxScale)}, opacity {N(HudStyles.MinOpacity)} to 1): the HUD can never be made invisible");
+                CommandLine.SetArgs(new[] { "Monolith.exe" });
+                File.WriteAllText(file, "{ this is not json");
+                HudStyles.Reload();
+                Check(Near(HudStyles.Scale, ds) && Near(HudStyles.Opacity, dop), "an unreadable hud.json means the defaults");
+                File.WriteAllText(file, "{ \"scale\": \"big\", \"opacity\": null, \"textScale\": [1] }");
+                HudStyles.Reload();
+                Check(Near(HudStyles.Scale, ds) && Near(HudStyles.Opacity, dop) && Near(HudStyles.TextScale, 1f), "values of the wrong type mean the defaults");
+
+                // saving keeps what the player chose and anything else in the file, and writes the two numbers when the file has none
+                File.WriteAllText(file, "{ \"style\": \"halo\", \"scale\": 0.7, \"opacity\": 0.6, \"note\": \"mine\" }");
+                HudStyles.Reload();
+                var o = HudStyles.SettingsJson(JObject.Parse(File.ReadAllText(file)));
+                Check(Near((float)o["scale"], 0.7f) && Near((float)o["opacity"], 0.6f) && (string)o["note"] == "mine" && (string)o["style"] == "halo", "a save keeps the player's scale, opacity and any other keys");
+                File.WriteAllText(file, "{ \"style\": \"halo\", \"textScale\": 1.0 }");
+                HudStyles.Reload();
+                var o2 = HudStyles.SettingsJson(JObject.Parse(File.ReadAllText(file)));
+                Check(Near((float)o2["scale"], ds) && Near((float)o2["opacity"], dop), "a save writes scale and opacity into a hud.json that has none, so they are there to find and change");
+            }
+            finally
+            {
+                CommandLine.SetArgs(wasArgs);
+                HudStyles.FileOverride = null;
+                HudStyles.Reload();
+                try { Directory.Delete(dir, true); } catch { /* a temp folder */ }
+            }
+
+            // opacity touches every vertex that is not a warning and no vertex that is one
+            var R = new HudRenderer();
+            int inkTotal = 0, warnTotal = 0, bad = 0;
+            foreach (var st in HudStyles.Styles)
+            {
+                var f = MakeFrame(1920f, 1080f, "threat", 0.5f);
+                var full = new HudLines { Opacity = 1f };
+                full.Clear(1f, st); R.Draw(full, f);
+                var half = new HudLines { Opacity = 0.5f };
+                half.Clear(1f, st); R.Draw(half, f);
+                if (full.VertexCount != half.VertexCount) { bad++; continue; }
+                for (int i = 0; i < full.VertexCount; i++)
+                {
+                    var a = full.VertexColor(i); var b = half.VertexColor(i);
+                    bool sameRgb = a.r == b.r && a.g == b.g && a.b == b.b;
+                    if (full.IsWarn(a)) { warnTotal++; if (!sameRgb || a.a != b.a) bad++; }
+                    else { inkTotal++; if (!sameRgb || b.a != (byte)(a.a * 0.5f + 0.5f)) bad++; }
+                }
+            }
+            Check(bad == 0 && inkTotal > 600 && warnTotal > 60, $"opacity 0.5 halves the alpha of every ink, plate and shadow vertex and leaves every warning vertex at full strength ({inkTotal} vertices scaled, {warnTotal} warning vertices untouched, {bad} wrong; 3 styles, a frame with an incoming missile, a lock on you and a lost system)");
+
+            // readable at 1080p at the default scale: the smallest type of each size, and the dimmest text
+            float minLabel = 999f, minBody = 999f, minValue = 999f;
+            string[] kinds = { "full", "threat", "bare", "menu" };
+            var L = new HudLines { RecordTexts = true };
+            foreach (var st in HudStyles.Styles)
+                foreach (var kind in kinds)
+                {
+                    L.Clear(HudRenderer.ScaleFor(1920, 1080) * ds, st);
+                    R.Draw(L, MakeFrame(1920f, 1080f, kind, 0.5f));
+                    foreach (var t in L.Texts)
+                    {
+                        if (t.Role == TextRole.Label) minLabel = Mathf.Min(minLabel, t.Cap);
+                        else if (t.Role == TextRole.Body) minBody = Mathf.Min(minBody, t.Cap);
+                        else if (t.Role == TextRole.Value) minValue = Mathf.Min(minValue, t.Cap);
+                    }
+                }
+            Check(minLabel >= 11f && minBody >= 14f && minValue >= 19f, $"at 1080p and the default scale the smallest type is still readable: label cap {N(minLabel)} px (at least 11), body {N(minBody)} (14), value {N(minValue)} (19); the design sizes are 13, 16.5 and 23");
+            foreach (var st in HudStyles.Styles)
+                Check(st.Dim * dop >= 0.48f, $"{st.Name}: the dimmest text keeps {N(st.Dim * dop * 100f)}% of full brightness at the default opacity (at least 48)");
+
+            // the HUD takes less of the screen and costs no more to build
+            var busy = MakeFrame(1920f, 1080f, "threat", 0.5f);
+            foreach (var st in HudStyles.Styles)
+            {
+                var a = new HudLines(); a.Clear(HudRenderer.ScaleFor(1920, 1080), st); R.Draw(a, busy); a.Areas(out float sa0, out float ta0);
+                var b = new HudLines(); b.Clear(HudRenderer.ScaleFor(1920, 1080) * ds, st); R.Draw(b, busy); b.Areas(out float sa1, out float ta1);
+                float ratio = (sa1 + ta1) / (sa0 + ta0);
+                Check(ratio <= 0.85f && b.VertexCount <= a.VertexCount * 1.02f, $"{st.Name}: at the default scale the HUD covers {N(ratio * 100f)}% of the screen area it did (shapes {N(sa0 / 1e6f)} to {N(sa1 / 1e6f)} Mpx, type {N(ta0 / 1e6f)} to {N(ta1 / 1e6f)} Mpx), {a.VertexCount} to {b.VertexCount} vertices");
+            }
+            foreach (var st in HudStyles.Styles)
+            {
+                double Time(float opacity)
+                {
+                    var c = new HudLines { Opacity = opacity };
+                    for (int i = 0; i < 30; i++) { c.Clear(1f, st); R.Draw(c, busy); }
+                    var sw = Stopwatch.StartNew();
+                    for (int i = 0; i < 200; i++) { c.Clear(1f, st); R.Draw(c, busy); }
+                    return sw.Elapsed.TotalMilliseconds / 200;
+                }
+                double best1 = 1e9, best08 = 1e9;
+                for (int k = 0; k < 5; k++) { best1 = Math.Min(best1, Time(1f)); best08 = Math.Min(best08, Time(dop)); }
+                Check(best08 <= best1 * 1.15 + 0.01, $"{st.Name}: building a busy frame at opacity {N(dop)} takes {best08:0.000} ms against {best1:0.000} ms at full strength (best of 5: the opacity is one compare a vertex)");
+            }
+            Layout(ds);
         }
 
         // ------------------------------------------------------------------------------------------------ the pause screens

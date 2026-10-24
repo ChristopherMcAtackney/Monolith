@@ -44,7 +44,7 @@ namespace Monolith.HudUi
         public bool MapSwitch;
         /// <summary>Show the pad's buttons in the quick menu (false: the keyboard's keys).</summary>
         public bool UsePadGlyphs = true;
-        /// <summary>The 1080p-relative scale of everything, for the player's taste.</summary>
+        /// <summary>A scene's own multiplier on the size of the HUD, on top of the player's (<see cref="HudStyles.Scale"/>, hud.json): 1 leaves it as the player has it.</summary>
         public float Scale = 1f;
 
         public HudFrame Frame => _frame;
@@ -204,15 +204,17 @@ namespace Monolith.HudUi
         string[] _lastOverlay;
         int _lastW, _lastH;
         string _lastStyle;
+        float _lastScale = -1f, _lastOpacity = -1f;
 
         void Frame_()
         {
             float now = Time.unscaledTime;
             string styleName = HudStyles.Current.Name;
-            bool force = _cam.pixelWidth != _lastW || _cam.pixelHeight != _lastH || styleName != _lastStyle || now < _lastBuild || Overlay != _lastOverlay;
+            float scale = Scale * HudStyles.Scale, opacity = HudStyles.Opacity;
+            bool force = _cam.pixelWidth != _lastW || _cam.pixelHeight != _lastH || styleName != _lastStyle || now < _lastBuild || Overlay != _lastOverlay || scale != _lastScale || opacity != _lastOpacity;
             if (!force && now - _lastBuild < MinBuildInterval - 0.0008f) return;
             float dt = _lastBuild < 0f ? 0f : Mathf.Min(now - _lastBuild, 0.25f);
-            _lastBuild = now; _lastW = _cam.pixelWidth; _lastH = _cam.pixelHeight; _lastStyle = styleName; _lastOverlay = Overlay;
+            _lastBuild = now; _lastW = _cam.pixelWidth; _lastH = _cam.pixelHeight; _lastStyle = styleName; _lastOverlay = Overlay; _lastScale = scale; _lastOpacity = opacity;
             _damageFlash = Mathf.MoveTowards(_damageFlash, 0f, dt * 2.2f);
             var f = _frame;
             long a0 = Cost ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
@@ -224,7 +226,11 @@ namespace Monolith.HudUi
             f.DamageFlash = _damageFlash;
             FillFeeds(f);
             long a1 = Cost ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
-            _lines.Clear(HudRenderer.ScaleFor(_cam.pixelWidth, _cam.pixelHeight) * Scale);
+            // The pause, briefing and debrief screens and the battle map are screens the player opens to read: they keep the design size and full strength (the player's scale and opacity are the flight HUD's).
+            bool screen = f.MapOpen || (Overlay != null && Overlay.Length > 0);
+            _lines.Opacity = screen ? 1f : opacity;
+            _lines.TypeFloor = 0.72f * (screen ? Scale : scale);
+            _lines.Clear(HudRenderer.ScaleFor(_cam.pixelWidth, _cam.pixelHeight) * (screen ? Scale : scale));
             _renderer.Draw(_lines, f);
             long a2 = Cost ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
             _lines.Commit();

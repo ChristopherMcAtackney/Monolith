@@ -101,7 +101,46 @@ namespace Monolith.Hud
         };
 
         static HudStyle _current;
-        static float _textScale = -1f;
+        static float _textScale = -1f, _scale = -1f, _opacity = -1f;
+
+        /// <summary>
+        /// How big the whole flight HUD is, against the design size (1 is the 1080p design; the screen's own scale is applied on top): <c>-mnHudScale 0.9</c>, or "scale" in hud.json.
+        /// The type follows it (never under 0.72 of the design size on a small screen); the pause, briefing and debrief screens and the battle map are not part of it (they are screens the
+        /// player opens to read, so they keep the design size and full strength).
+        /// </summary>
+        public static float Scale
+        {
+            get
+            {
+                if (_scale > 0f) return _scale;
+                float v = CommandLine.GetFloat("-mnHudScale", -1f);
+                if (v <= 0f) v = FileNumber("scale", DefaultScale);
+                _scale = Mathf.Clamp(v, MinScale, MaxScale);
+                return _scale;
+            }
+            set => _scale = Mathf.Clamp(value, MinScale, MaxScale);
+        }
+
+        /// <summary>
+        /// How solid the HUD is (1 as authored, lower lets the view show through): <c>-mnHudOpacity 0.8</c>, or "opacity" in hud.json. It scales the alpha of everything the HUD draws except the
+        /// warnings (anything in the style's accent colour: an incoming missile, a lock on you, hull critical, a lost system), which always keep their full strength so they stay the loudest thing on the screen.
+        /// </summary>
+        public static float Opacity
+        {
+            get
+            {
+                if (_opacity > 0f) return _opacity;
+                float v = CommandLine.GetFloat("-mnHudOpacity", -1f);
+                if (v <= 0f) v = FileNumber("opacity", DefaultOpacity);
+                _opacity = Mathf.Clamp(v, MinOpacity, 1f);
+                return _opacity;
+            }
+            set => _opacity = Mathf.Clamp(value, MinOpacity, 1f);
+        }
+
+        /// <summary>The defaults: a sixth smaller than the design and a fifth see-through (measured against the dogfight at 1080p, gauntlet/pieces/hud/history.md round 2).</summary>
+        public const float DefaultScale = 0.86f, DefaultOpacity = 0.80f;
+        public const float MinScale = 0.5f, MaxScale = 1.5f, MinOpacity = 0.25f;
 
         /// <summary>The player's size for all HUD type (1 is the design size): <c>-mnHudText 1.15</c>, or "textScale" in hud.json.</summary>
         public static float TextScale
@@ -110,21 +149,37 @@ namespace Monolith.Hud
             {
                 if (_textScale > 0f) return _textScale;
                 float v = CommandLine.GetFloat("-mnHudText", -1f);
-                if (v <= 0f)
-                {
-                    try { if (File.Exists(SettingsFile)) v = (float?)JObject.Parse(File.ReadAllText(SettingsFile))["textScale"] ?? 1f; }
-                    catch { v = 1f; }
-                }
+                if (v <= 0f) v = FileNumber("textScale", 1f);
                 _textScale = Mathf.Clamp(v <= 0f ? 1f : v, 0.7f, 1.6f);
                 return _textScale;
             }
             set => _textScale = Mathf.Clamp(value, 0.7f, 1.6f);
         }
 
+        /// <summary>Forget what was read (command line, hud.json): the next use reads them again (the checks).</summary>
+        public static void Reload() { _scale = -1f; _opacity = -1f; _textScale = -1f; _current = null; }
+
+        /// <summary>A number from hud.json (the fallback when the file, the key or the value is missing or unreadable).</summary>
+        static float FileNumber(string key, float fallback)
+        {
+            try { var o = ReadFile(); var t = o?[key]; if (t != null && (t.Type == JTokenType.Float || t.Type == JTokenType.Integer)) return (float)t; }
+            catch { /* an unreadable file means the defaults */ }
+            return fallback;
+        }
+
+        static JObject ReadFile()
+        {
+            try { return File.Exists(SettingsFile) ? JObject.Parse(File.ReadAllText(SettingsFile)) : null; }
+            catch (Exception e) { MnLog.Warn("HUD could not read hud.json: " + e.Message); return null; }
+        }
+
         public static IReadOnlyList<HudStyle> Styles => All;
         public static IEnumerable<string> Names { get { foreach (var s in All) yield return s.Name; } }
 
-        public static string SettingsFile => Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "hud.json");
+        public static string SettingsFile => FileOverride ?? Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "hud.json");
+
+        /// <summary>Another file to read and write instead of hud.json (the checks only).</summary>
+        public static string FileOverride;
 
         /// <summary>The style in use: -mnHudStyle, else hud.json, else halo.</summary>
         public static HudStyle Current
@@ -168,15 +223,29 @@ namespace Monolith.Hud
 
         static string ReadSaved()
         {
-            try { return File.Exists(SettingsFile) ? (string)JObject.Parse(File.ReadAllText(SettingsFile))["style"] : null; }
-            catch (Exception e) { MnLog.Warn("HUD could not read hud.json: " + e.Message); return null; }
+            try { return (string)ReadFile()?["style"]; }
+            catch { return null; }
         }
 
         static void Save()
         {
             if (CommandLine.Has("-mnCapture") || Application.isBatchMode) return;
-            try { File.WriteAllText(SettingsFile, new JObject { ["style"] = _current.Name, ["textScale"] = Math.Round(TextScale, 2) }.ToString()); }
+            try { File.WriteAllText(SettingsFile, SettingsJson(ReadFile()).ToString()); }
             catch (Exception e) { MnLog.Warn("HUD could not save hud.json: " + e.Message); }
+        }
+
+        /// <summary>
+        /// What hud.json holds after a save: the style and the type size are written from here; the scale and the opacity are the player's (they are kept as the file has them, and written with the current
+        /// values only when the file has none, so they are there to find and change); whatever else the file holds stays as it is.
+        /// </summary>
+        public static JObject SettingsJson(JObject existing)
+        {
+            var o = existing ?? new JObject();
+            o["style"] = Current.Name;
+            o["textScale"] = Math.Round(TextScale, 2);
+            if (o["scale"] == null) o["scale"] = Math.Round(Scale, 2);
+            if (o["opacity"] == null) o["opacity"] = Math.Round(Opacity, 2);
+            return o;
         }
     }
 }
