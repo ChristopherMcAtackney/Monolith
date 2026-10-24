@@ -41,7 +41,7 @@ rounds running against different reference frames. Measured pieces win when the 
 ## Agent rules (user)
 Sonnet builders and critics by default. Opus only for hard code, and only with the user's OK; the user
 approved Opus for the flight model, the AI and the mission system (2026-10-21). At most two builders at
-once. No timer heartbeats: the lead wakes when an agent finishes. Builders commit
+once. On 2026-10-25 the user OK'd four at once for the brake and guns and the dynamic-music jobs, alongside the Oort mission and the diaspora ships. No timer heartbeats: the lead wakes when an agent finishes. Builders commit
 locally with explicit paths and never push; the lead pushes each checkpoint to origin (user, 2026-10-21).
 Reference clips (The Expanse, FS2 footage) are downloaded with yt-dlp into `reference/` (gitignored,
 critics only), with the user's OK of 2026-10-21.
