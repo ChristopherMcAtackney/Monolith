@@ -7,7 +7,9 @@
     "ambient": { "file": "", "volume": 0 },
     "battle1": { "file": "", "volume": 0 },
     "battle2": { "file": "", "volume": 0 },
-    "battle3": { "file": "", "volume": 0 }
+    "battle3": { "file": "", "volume": 0 },
+    "fight": { "_about": "The tune that carries a fight: your Monolith_Epic_1 plays here until you give this slot a file. It comes in at the first move out of ambient and plays through battles 1 to 3 (they only swell it a little: intensity). Set \"off\": true, or name a mission (\"escort/fight\"), to have the battle tracks above carry the fight instead.",
+      "file": "", "volume": 0, "fadeIn": 3, "fadeOut": 3.4, "underThemes": "pause", "intensity": { "battle1": -1.5, "battle2": 0, "battle3": 1.5 } }
   },
 
   "stings": {

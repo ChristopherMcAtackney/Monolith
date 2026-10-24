@@ -20,6 +20,8 @@ namespace Monolith.Audio
             public bool Loop, Sting, Pending, Dying, Done, Aligned;
             /// <summary>-1 for the base score; the theme's slot (the conductor numbers them) for a theme laid over it.</summary>
             public int Theme = -1;
+            /// <summary>Paused: the gain is faded to nothing and the position stops where it is, until the layer is released (a fight theme under an event theme, or in a lull).</summary>
+            public bool Held;
             /// <summary>For a theme: the factor the base is lowered to while it plays in full (0 silences the base, 0.3 is about -10 dB).</summary>
             public float DuckLin = 1f;
             public long StartClock;
@@ -99,6 +101,34 @@ namespace Monolith.Audio
                         });
                         break;
                     }
+                case CmdType.ThemeHold:
+                    foreach (var l in _layers)
+                    {
+                        if (l.Theme != c.Slot || l.Dying || l.Done) continue;
+                        int fr = Math.Max(1, (int)(c.A * _rate));
+                        if (c.Flag)
+                        {
+                            l.Held = true;
+                            if (!l.Pending) { l.GainTarget = 0f; l.GainStep = l.Gain > 0f ? -l.Gain / fr : 0f; }
+                        }
+                        else
+                        {
+                            if (c.Flag2 && l.Held && l.Gain <= 0.0001f) l.Pos = l.Clip.StartFrame;          // after a long lull it begins again
+                            l.Held = false;
+                            if (!l.Pending) { l.GainTarget = l.Level; l.GainStep = (l.Level - l.Gain) / fr; }
+                        }
+                    }
+                    break;
+                case CmdType.ThemeLevel:
+                    foreach (var l in _layers)
+                    {
+                        if (l.Theme != c.Slot || l.Dying || l.Done) continue;
+                        l.Level = Db.ToLin(c.C2);
+                        if (l.Held || l.Pending) continue;
+                        int fr = Math.Max(1, (int)(c.A * _rate));
+                        l.GainTarget = l.Level; l.GainStep = (l.Level - l.Gain) / fr;
+                    }
+                    break;
                 case CmdType.ThemeStop:
                     // slot -1 stops every theme
                     foreach (var l in _layers)
@@ -153,6 +183,12 @@ namespace Monolith.Audio
             _cmds.Enqueue(new Cmd { Type = CmdType.ThemePlay, Slot = slot, Clip = clip, Quant = quant, A = fadeInSeconds, B = fadeOutSeconds, C2 = levelDb, D = duckLin, Flag = loop });
         }
 
+        /// <summary>Pause a theme (it fades out over <paramref name="fadeSeconds"/> and its position stops) or release it (it fades back in from where it was; <paramref name="restart"/> begins it again from its start).</summary>
+        public void ThemeHold(int slot, bool hold, float fadeSeconds, bool restart = false) => _cmds.Enqueue(new Cmd { Type = CmdType.ThemeHold, Slot = slot, Flag = hold, Flag2 = restart, A = fadeSeconds });
+
+        /// <summary>Move a playing theme to a new level (dB) over <paramref name="fadeSeconds"/>.</summary>
+        public void ThemeLevel(int slot, float levelDb, float fadeSeconds) => _cmds.Enqueue(new Cmd { Type = CmdType.ThemeLevel, Slot = slot, C2 = levelDb, A = fadeSeconds });
+
         /// <summary>Fade a theme out (slot -1: every theme); the base comes back as it goes.</summary>
         public void ThemeStop(int slot, float fadeSeconds) => _cmds.Enqueue(new Cmd { Type = CmdType.ThemeStop, Slot = slot, A = fadeSeconds });
 
@@ -183,6 +219,7 @@ namespace Monolith.Audio
             for (int li = 0; li < _layers.Count; li++)
             {
                 var l = _layers[li];
+                if (l.Held && !l.Pending && l.Gain <= 0f && l.GainStep == 0f) continue;                 // paused: nothing plays and the position stays
                 var clip = l.Clip; var pcm = clip.Pcm; int ch = clip.Channels, frames = clip.Frames;
                 int ls = clip.LoopStart, le = clip.LoopEnd > 0 ? Math.Min(clip.LoopEnd, frames) : frames;
                 float trim = clip.TrimDb == 0f ? 1f : Db.ToLin(clip.TrimDb);
@@ -275,10 +312,11 @@ namespace Monolith.Audio
                     l.Pos = ((double)(ref0 % _loopFrames)) * l.SrcRatio;
                     if (l.Pos >= l.Clip.Frames) l.Pos = 0;
                 }
-                else l.Pos = 0;
+                else l.Pos = l.Clip.StartFrame;
                 l.Gain = l.FadeInFrames > 0 ? 0f : l.Level;
                 l.GainTarget = l.Level;
                 l.GainStep = l.FadeInFrames > 0 ? l.Level / l.FadeInFrames : 0f;
+                if (l.Held) { l.Gain = 0f; l.GainTarget = 0f; l.GainStep = 0f; }
                 int outFrames = l.FadeOutFrames > 0 ? l.FadeOutFrames : Math.Max(l.FadeInFrames, (int)(0.05f * _rate));
                 if (l.Theme < 0)
                 foreach (var o in _layers)

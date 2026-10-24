@@ -13,6 +13,7 @@ namespace Monolith.AudioTools
             {
                 case "mixertest": return MixerTests.Run();
                 case "music": return MusicCmd.Run(args);
+                case "ship": return MusicCmd.Run(new[] { "music", "--ship-only" });          // copy the shipped tracks (the user's fight theme) into the game and list them in the catalog
                 case "sheet": return SheetCmd.Run(args);
                 case "docs": return DocsCmd.Run(args);
                 case "voice": return VoiceCmd.Run(args);

@@ -9,6 +9,7 @@
     "battle3": { "file": "music/battle3.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -20.0, "truePeakDb": -5.6 },
     "death": { "file": "music/death.ogg", "loop": false, "seconds": 27.000, "bpm": 72, "bars": 0, "lufs": -21.0, "truePeakDb": -3.6 },
     "failure": { "file": "music/failure.ogg", "loop": false, "seconds": 27.665, "bpm": 72, "bars": 0, "lufs": -24.0, "truePeakDb": -11.4 },
+    "fight": {"file":"music/fight.mp3","loop":true,"seconds":209.4,"bpm":106.73,"bars":0,"lufs":-12.7,"truePeakDb":-2.1,"volumeDb":-7.0,"startAt":9.019,"loopStart":74.229,"loopEnd":182.165,"loopFade":2.249,"intensityDb":{"battle1":-1.5,"battle2":0.0,"battle3":1.5}},
     "sting_enemy": { "file": "music/sting_enemy.ogg", "loop": false, "seconds": 8.286, "bpm": 112, "bars": 0, "lufs": -19.0, "truePeakDb": -5.8 },
     "sting_enemy_battle": { "file": "music/sting_enemy_battle.ogg", "loop": false, "seconds": 7.786, "bpm": 112, "bars": 0, "lufs": -17.5, "truePeakDb": -4.6 },
     "sting_fail": { "file": "music/sting_fail.ogg", "loop": false, "seconds": 8.500, "bpm": 96, "bars": 0, "lufs": -23.0, "truePeakDb": -9.9 },

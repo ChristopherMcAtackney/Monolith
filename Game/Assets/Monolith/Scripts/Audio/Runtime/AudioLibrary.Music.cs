@@ -127,6 +127,12 @@ namespace Monolith.Audio
                 clip.LoopStart = Mathf.Clamp(Mathf.RoundToInt(cfg.LoopStart * clip.SampleRate), 0, clip.Frames - 1);
                 clip.LoopEnd = cfg.LoopEnd > 0f ? Mathf.Clamp(Mathf.RoundToInt(cfg.LoopEnd * clip.SampleRate), clip.LoopStart + 1, clip.Frames) : 0;
             }
+            if (cfg.StartAt > 0f) clip.StartFrame = Mathf.Clamp(Mathf.RoundToInt(cfg.StartAt * clip.SampleRate), 0, clip.Frames - 1);
+            if (cfg.LoopFade > 0f && !clip.BakeLoopCrossfade(cfg.LoopFade))
+            {
+                string why = $"music.json {cfg.Section}/{cfg.Key}: a {cfg.LoopFade:0.0} s loop cross-fade needs that much audio before loopStart (and a loop at least twice as long); it loops with a plain jump";
+                MusicLog.Add("WARN " + why); MnLog.Warn("AUDIO " + why);
+            }
             uc.Clip = clip;
             string line = $"your music {cfg.Section}/{cfg.Key} <- {path} ({clip.Seconds:0.0} s at {clip.SampleRate} Hz)";
             MusicLog.Add(line); MnLog.Info("AUDIO " + line);
@@ -157,6 +163,18 @@ namespace Monolith.Audio
             var built = FindMusic(builtInTrack, host, out bool bp);
             if (built == null) { pending = bp; return null; }
             return new MusicChoice { Info = built, Cfg = cfg, Name = builtInTrack };
+        }
+
+        /// <summary>
+        /// The fight theme for a mission, or null when it has none (the player turned it off for it, or no sound is there). The player's slot (this mission's "escort/fight", then "fight") first, else the built-in
+        /// track that ships with the game (the user's own Monolith_Epic_1). Its settings are the track's own (catalog) under the player's.
+        /// </summary>
+        public MusicChoice ResolveFight(string mission, MonoBehaviour host, out bool pending)
+        {
+            pending = false;
+            var cfg = UserMusic?.Find("base", mission, "fight");
+            if (cfg != null && cfg.Off) return null;
+            return ResolveMusic("base", mission, "fight", "fight", host, out pending);
         }
 
         /// <summary>The sound for a mission's theme: the player's entry ("escort/lector", then "lector"), else the built-in theme of that name; null when neither exists.</summary>

@@ -52,7 +52,9 @@ namespace Monolith.AudioTools
             }
             string specPath = Path.Combine(Paths.AudioSrc, "music.json");
             var specs = MusicRender.LoadSpecs(specPath);
+            bool shipOnly = args.Contains("--ship-only");
             if (names.Count == 0 || names.Contains("all")) names = specs.Keys.ToList();
+            if (shipOnly) names = new List<string>();                       // MnAudio ship: only copy the shipped tracks and rewrite the catalog
             string midiDir = Path.Combine(Paths.AudioSrc, "midi");
             Directory.CreateDirectory(Paths.Render);
             string outDir = Path.Combine(Paths.StreamingAudio, "music");
@@ -76,7 +78,7 @@ namespace Monolith.AudioTools
                     + (rep.Loop ? $", seam step {rep.LoopSeamStep:0.0000} vs {rep.LoopSeamBaseline:0.0000} elsewhere" : "") + $" ({sw.Elapsed.TotalSeconds:0.0} s)");
                 if (!wavOnly && solo == null && mute == null) Paths.EncodeOgg(wav, Path.Combine(outDir, (spec.Track ?? n) + ".ogg"));
             }
-            if (!wavOnly && solo == null && mute == null)
+            if ((!wavOnly || shipOnly) && solo == null && mute == null)
             {
                 // the runtime catalog: merge with what is already there so rendering one cue does not drop the others
                 string catPath = Path.Combine(outDir, "music.json");
@@ -111,6 +113,23 @@ namespace Monolith.AudioTools
                     themes[th.GetProperty("name").GetString()] = "{ \"track\": \"" + track + "\", \"fadeIn\": " + F("fadeIn", 4) + ", \"fadeOut\": " + F("fadeOut", 6) + ", \"priority\": " + F("priority", 10)
                         + ", \"mode\": \"" + (th.TryGetProperty("mode", out var md) ? md.GetString() : "duck") + "\", \"duckDb\": " + F("duckDb", -10) + ", \"volumeDb\": " + F("volumeDb", 0) + " }";
                 }
+                // the shipped tracks: music that is not rendered here (the user's own fight theme), copied into the game and listed in the catalog with how it plays ("shipped" in audio_src/music.json)
+                var rootSpec = JsonDocument.Parse(File.ReadAllText(specPath), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true }).RootElement;
+                if (rootSpec.TryGetProperty("shipped", out var shipped))
+                    foreach (var sh in shipped.EnumerateObject())
+                    {
+                        if (sh.Name.StartsWith("_")) continue;
+                        var o = sh.Value;
+                        string src = Path.Combine(Paths.AudioSrc, o.GetProperty("source").GetString().Replace('/', Path.DirectorySeparatorChar));
+                        string file = o.GetProperty("file").GetString();
+                        string dst = Path.Combine(Paths.StreamingAudio, file.Replace('/', Path.DirectorySeparatorChar));
+                        Directory.CreateDirectory(Path.GetDirectoryName(dst));
+                        if (!File.Exists(dst) || new FileInfo(dst).Length != new FileInfo(src).Length) File.Copy(src, dst, true);
+                        var node = System.Text.Json.Nodes.JsonNode.Parse(o.GetRawText());
+                        node.AsObject().Remove("source");
+                        entries[sh.Name] = node.ToJsonString();
+                        Console.WriteLine($"  shipped {sh.Name}: {src} -> {dst}");
+                    }
                 string loopSec = entries.ContainsKey("battle1") ? JsonDocument.Parse(entries["battle1"]).RootElement.GetProperty("seconds").GetDouble().ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) : "68.571";
                 var sb = new StringBuilder();
                 sb.Append("{" + Environment.NewLine);

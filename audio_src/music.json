@@ -112,5 +112,18 @@
       "tracks": { "epiano_fm": { "db": -7.0, "pan": -0.15 }, "pad_juno": { "db": -8.0 }, "pad_warm": { "db": -9.0 }, "bass_sub": { "db": -14.0 }, "bell_fm": { "db": -6.0, "pan": 0.25 },
                   "brass_cs80": { "db": -9.0 }, "choir_ahh": { "db": -12.0 }, "drums": { "db": -22.0 } }
     }
+  },
+
+  // Music that is not made here: copied into the game by "MnAudio ship" and listed in the catalog (Game/Assets/StreamingAssets/Audio/music/music.json) with how it plays.
+  "shipped": {
+    // The user's own mission theme (audio_src/user_music/Monolith_Epic_1.mp3, 3:29, 106.7 BPM): the FIGHT THEME. It fades in at the first move out of ambient and carries the fight.
+    // volumeDb brings its -12.7 LUFS down to sit with the score (about -20); startAt skips its 9 s of quiet drone (its entrance is at 15.3 s, two bars after startAt); the loop body is
+    // 48 bars (74.229 to 182.165 s) with its seam cross-faded over one bar (the bar before loopStart blends into the last bar before loopEnd), found by tools/audio/analyse_track.py;
+    // intensityDb is the small swell the battle intensity may give it.
+    "fight": {
+      "source": "user_music/Monolith_Epic_1.mp3", "file": "music/fight.mp3", "loop": true, "seconds": 209.4, "bpm": 106.73, "bars": 0, "lufs": -12.7, "truePeakDb": -2.1,
+      "volumeDb": -7.0, "startAt": 9.019, "loopStart": 74.229, "loopEnd": 182.165, "loopFade": 2.249,
+      "intensityDb": { "battle1": -1.5, "battle2": 0.0, "battle3": 1.5 }
+    }
   }
 }

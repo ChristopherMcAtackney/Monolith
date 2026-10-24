@@ -11,6 +11,10 @@ namespace Monolith.Audio
     /// so a change is a cross-fade that never loses its place. On top of it sit THEMES, tracks tied to a moment of a mission (the Lector arriving): a theme fades in over the base
     /// (the base keeps playing underneath, ducked, or silent when the theme replaces it), takes over, and fades out when its moment ends and the base is back; the higher priority
     /// wins when two are on at once. Stings play over everything.
+    /// The FIGHT THEME (the user's own mission tune, shipped with the game, or the player's in music.json): when the first fight begins (the first move out of ambient) it fades in and carries the whole fight,
+    /// whatever the intensity does (a small swell at battle 3 is all the intensity may do to it); the battle tracks play silently under it, and are what is heard if there is no fight theme. A lull (the music
+    /// back to ambient) pauses it, the next fight picks it up where it left off (or from its start after a long calm); an event theme over it pauses it too (it resumes when the event theme is done), or lowers it
+    /// if the player's slot says "underThemes": "duck". It loops, with its seam cross-faded.
     /// Every slot is the built-in synthesised track unless the player's music.json names a file for it (MP3, WAV or OGG) and says how it fades; a mission may also name its own track
     /// for a base state (the player's file in the Audio folder). A changed track with a known tempo (the built-in score's 112 BPM, or a bpm in the music.json) changes on the beat
     /// or the bar of that tempo; one without is a time-based cross-fade.
@@ -47,6 +51,7 @@ namespace Monolith.Audio
             _mixer.MusicStop(fadeSeconds);
             _playing = null; State = null; Track = null; _wantState = null;
             _themes.Clear(); _current = null;
+            _fightOn = false; _fightChoice = null; _fightHeld = false; _baseNamed = null;
         }
 
         public void OnState(string state, string missionTrack, float now)
@@ -62,6 +67,7 @@ namespace Monolith.Audio
             if (_wantState != null) TryApply(now);
             if (_pendingSting != null) TrySting(now);
             if (_themes.Count > 0) RefreshThemes(now);
+            if (_fightChoice == null && !_fightGaveUp && FightOnNow) SyncFight(now, 0f);
         }
 
         static bool NaN(float v) => float.IsNaN(v);
@@ -100,6 +106,7 @@ namespace Monolith.Audio
             string state = _wantState;
             _wantState = null;
             if (info.Clip == _playing && state == State) return;
+            _baseNamed = choice == null && !string.IsNullOrEmpty(_wantTrack) && name == _wantTrack ? name : null;     // a track the mission names itself is the mission's call: the fight theme stands aside
 
             int from = Rank(State ?? "ambient"), to = Rank(state);
             bool loops = cfg?.Loop ?? info.Loop;
@@ -143,6 +150,91 @@ namespace Monolith.Audio
             State = state; Track = name;
             Log.Add(line);
             MnLog.Info("MUSIC " + line);
+            if (to != 9) SyncFight(now, 0f);
+        }
+
+        // ------------------------------------------------------------------------------------------------ the fight theme
+
+        const int FightSlot = 0;                       // event themes are numbered from 1
+        MusicChoice _fightChoice;
+        bool _fightOn, _fightHeld, _fightGaveUp, _fightDucked;
+        float _fightHeldAt, _fightWantSince = -1f, _fightLevelDb, _fightFadeIn = 3f, _fightFadeOut = 3.4f;
+        float[] _fightSwell = { -1.5f, 0f, 1.5f };
+        string _fightUnder = "pause";
+        float _fightBaseDb;
+        public int FightStarts { get; private set; }
+        public bool FightPlaying => _fightOn && !_fightHeld;
+        public bool FightHeld => _fightOn && _fightHeld;
+        public float FightLevelDb => _fightLevelDb;
+        string _baseNamed;                              // the track the mission names for the base, when it has one and it is there
+        bool FightOnNow => Rank(State ?? "ambient") is >= 1 and <= 3 && _baseNamed == null;
+
+        float FightSwellDb() { int r = Rank(State ?? "battle2"); return r >= 1 && r <= 3 ? _fightSwell[r - 1] : 0f; }
+
+        /// <summary>Start the fight theme at the first fight, pause it in a lull or under an event theme, bring it back, and move it with the intensity. <paramref name="fade"/>: the fade a pause or a return takes (0: the theme's own).</summary>
+        void SyncFight(float now, float fade)
+        {
+            if (!_lib.Ready) return;
+            bool fighting = FightOnNow;
+            if (!_fightOn)
+            {
+                if (!fighting || _fightGaveUp) return;
+                if (_fightWantSince < 0f) _fightWantSince = now;
+                var c = _lib.ResolveFight(MissionId, _host, out bool pending);
+                if (c == null)
+                {
+                    if (pending && now - _fightWantSince < 4f) return;                           // the player's file is loading
+                    _fightGaveUp = true;
+                    Log.Add("no fight theme for this mission: the battle tracks carry the fight"); MnLog.Info("MUSIC " + Log[Log.Count - 1]);
+                    return;
+                }
+                _fightChoice = c;
+                var cfg = c.Cfg; var info = c.Info;
+                _fightFadeIn = cfg != null && !NaN(cfg.FadeIn) ? cfg.FadeIn : 3f;
+                _fightFadeOut = cfg != null && !NaN(cfg.FadeOut) ? cfg.FadeOut : 3.4f;
+                _fightBaseDb = (c.User ? 0f : info.VolumeDb) + (cfg != null ? cfg.VolumeDb : 0f);
+                _fightSwell = cfg != null && cfg.IntensityDb != null ? cfg.IntensityDb : c.User ? new[] { 0f, 0f, 0f } : info.IntensityDb;
+                _fightUnder = cfg != null && cfg.UnderThemes != null ? cfg.UnderThemes : "pause";
+                _fightLevelDb = _fightBaseDb + FightSwellDb();
+                _mixer.ThemePlay(FightSlot, info.Clip, Quant.Now, _fightFadeIn, _fightFadeOut, _fightLevelDb, 0f, cfg?.Loop ?? info.Loop);
+                _fightOn = true; _fightHeld = false; _fightDucked = false; FightStarts++;
+                string line = $"fight theme on ({c.Name}{(info.Source != "built in" ? ", " + info.Source : ", built-in")}; in {_fightFadeIn:0.#} s, {_fightLevelDb:0.#} dB, loops, the base silent under it)";
+                Log.Add(line); MnLog.Info("MUSIC " + line);
+                if (_current != null && _fightUnder == "pause") { _mixer.ThemeHold(FightSlot, true, 0.05f); _fightHeld = true; _fightHeldAt = now; }
+                return;
+            }
+            bool underEvent = _current != null;
+            bool wantHold = !fighting || (underEvent && _fightUnder == "pause");
+            if (wantHold && !_fightHeld)
+            {
+                float f = fade > 0f ? fade : _fightFadeOut;
+                _mixer.ThemeHold(FightSlot, true, f);
+                _fightHeld = true; _fightHeldAt = now;
+                string l = $"fight theme paused ({(fighting ? "under the " + _current.Name + " theme" : _baseNamed != null ? "the mission names its own track, " + _baseNamed : "a lull")}; out over {f:0.#} s, its place kept)";
+                Log.Add(l); MnLog.Info("MUSIC " + l);
+            }
+            else if (!wantHold && _fightHeld)
+            {
+                float f = fade > 0f ? fade : _fightFadeIn;
+                bool restart = !underEvent && now - _fightHeldAt > 60f;                                // after a long calm it begins again; after a pause under an event, or a short lull, it goes on
+                _mixer.ThemeHold(FightSlot, false, f, restart);
+                _fightHeld = false;
+                _mixer.ThemeLevel(FightSlot, _fightLevelDb = _fightBaseDb + FightSwellDb(), f);
+                string l = $"fight theme back (in over {f:0.#} s, {(restart ? "from its start" : "where it left off")})";
+                Log.Add(l); MnLog.Info("MUSIC " + l);
+            }
+            if (fighting && !_fightHeld)
+            {
+                // the intensity may swell or ease it a little; and an event theme with "duck" lowers it
+                float duck = underEvent && _fightUnder == "duck" ? _current.DuckDb : 0f;
+                float want = _fightBaseDb + FightSwellDb() + duck;
+                if (Math.Abs(want - _fightLevelDb) > 0.05f || (underEvent && _fightUnder == "duck") != _fightDucked)
+                {
+                    float f = fade > 0f ? fade : 2.5f;
+                    _mixer.ThemeLevel(FightSlot, _fightLevelDb = want, f);
+                    _fightDucked = underEvent && _fightUnder == "duck";
+                }
+            }
         }
 
         // ------------------------------------------------------------------------------------------------ stings
@@ -194,7 +286,7 @@ namespace Monolith.Audio
 
         readonly List<ActiveTheme> _themes = new List<ActiveTheme>();
         ActiveTheme _current;
-        int _slotCounter;
+        int _slotCounter = 1;                          // 0 is the fight theme
         public int ThemeStarts { get; private set; }
         /// <summary>The theme playing now (its name, e.g. "lector"), or null.</summary>
         public string ThemePlaying => _current != null ? _current.Name : null;
@@ -215,7 +307,7 @@ namespace Monolith.Audio
                 float fo = !NaN(ev.FadeOut) ? ev.FadeOut : cur.FadeOut;
                 string l = $"theme {cur.Name} off (fades out over {fo:0.#} s)";
                 Log.Add(l); MnLog.Info("MUSIC " + l);
-                if (cur == _current) { StopCurrent(fo); RefreshThemes(now); }
+                if (cur == _current) { StopCurrent(fo); RefreshThemes(now); if (_current == null && _fightOn) SyncFight(now, fo); }
                 return;
             }
             if (cur == null) _themes.Add(cur = new ActiveTheme { Name = ev.Name, Mission = ev.Mission, Key = ev.Key });
@@ -226,8 +318,9 @@ namespace Monolith.Audio
 
         public void StopThemes(float fade)
         {
-            if (_themes.Count == 0 && _current == null) return;
+            if (_themes.Count == 0 && _current == null && !_fightOn) return;
             _themes.Clear();
+            _fightOn = false; _fightChoice = null; _fightHeld = false;
             _mixer.ThemeStop(-1, fade);
             if (_current != null) { string l = $"themes off (fade {fade:0.#} s)"; Log.Add(l); MnLog.Info("MUSIC " + l); }
             _current = null;
@@ -274,8 +367,9 @@ namespace Monolith.Audio
                 if (top == null || t.Priority > top.Priority || (t.Priority == top.Priority && t.Since > top.Since)) top = t;
             }
             if (top == _current) return;
+            var leaving = _current;
             if (_current != null) StopCurrent(_current.FadeOut);
-            if (top == null) return;
+            if (top == null) { if (_fightOn) SyncFight(now, leaving != null ? leaving.FadeOut : 0f); return; }
             var info = top.Choice.Info;
             bool loop = top.Choice.Cfg?.Loop ?? info.Loop;
             // on the bar of the music clock when the theme and the base are the same tempo; otherwise now, with its fade-in
@@ -284,6 +378,7 @@ namespace Monolith.Audio
             top.Slot = _slotCounter++;
             _mixer.ThemePlay(top.Slot, info.Clip, q, top.FadeIn, top.FadeOut, top.VolumeDb, duck, loop);
             _current = top; ThemeStarts++;
+            if (_fightOn) SyncFight(now, top.FadeIn);                                                  // the fight theme gives way to it (or is lowered under it)
             string line = $"theme {top.Name} on ({top.Choice.Name}{(info.Source != "built in" ? ", " + info.Source : ", built-in")}; in {top.FadeIn:0.#} s, out {top.FadeOut:0.#} s, priority {top.Priority:0.#}, {(top.Replace ? "replaces the base" : "base ducked " + top.DuckDb.ToString("0.#") + " dB")}, {(q == Quant.Bar ? "on the bar" : "now")})";
             Log.Add(line); MnLog.Info("MUSIC " + line);
         }

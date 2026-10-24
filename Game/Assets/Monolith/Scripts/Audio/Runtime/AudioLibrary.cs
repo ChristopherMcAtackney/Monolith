@@ -26,6 +26,9 @@ namespace Monolith.Audio
         public bool Loop = true;
         public float Seconds, Lufs, Bpm = 112f;
         public int Bars;
+        /// <summary>For a long track that plays through and loops (the fight theme): its level in dB, where the first pass starts, the loop body and the cross-fade across the seam (seconds), and how much louder or quieter it is at each battle intensity.</summary>
+        public float VolumeDb, StartAt, LoopStart, LoopEnd, LoopFade;
+        public float[] IntensityDb = { 0f, 0f, 0f };
     }
 
     public sealed class VoiceClip
@@ -118,10 +121,24 @@ namespace Monolith.Audio
                     {
                         Name = p.Name, File = (string)p.Value["file"], Loop = (bool?)p.Value["loop"] ?? true, Seconds = (float?)p.Value["seconds"] ?? 0f,
                         Lufs = (float?)p.Value["lufs"] ?? 0f, Bpm = (float?)p.Value["bpm"] ?? Bpm, Bars = (int?)p.Value["bars"] ?? 0,
+                        VolumeDb = (float?)p.Value["volumeDb"] ?? 0f, StartAt = (float?)p.Value["startAt"] ?? 0f, LoopStart = (float?)p.Value["loopStart"] ?? 0f, LoopEnd = (float?)p.Value["loopEnd"] ?? 0f, LoopFade = (float?)p.Value["loopFade"] ?? 0f,
                     };
+                    if (p.Value["intensityDb"] is JObject idb) t.IntensityDb = new[] { (float?)idb["battle1"] ?? 0f, (float?)idb["battle2"] ?? 0f, (float?)idb["battle3"] ?? 0f };
                     Music[p.Name] = t;
                     var tt = t;
-                    AddAsset(t.File, Kind.Music, (c, src) => { tt.Clip = c; tt.Source = src; if (c != null) tt.Seconds = c.Seconds; }, loop: t.Loop);
+                    AddAsset(t.File, Kind.Music, (c, src) =>
+                    {
+                        tt.Clip = c; tt.Source = src;
+                        if (c == null) return;
+                        tt.Seconds = c.Seconds;
+                        if (src == "built in" && (tt.LoopEnd > 0f || tt.StartAt > 0f))
+                        {
+                            // the shipped long track: where it starts, where its loop body is, and the seam cross-faded (the player's own file of the same name has its own sidecar)
+                            c.StartFrame = Mathf.RoundToInt(tt.StartAt * c.SampleRate);
+                            c.LoopStart = Mathf.RoundToInt(tt.LoopStart * c.SampleRate); c.LoopEnd = Mathf.RoundToInt(tt.LoopEnd * c.SampleRate);
+                            if (tt.LoopFade > 0f && !c.BakeLoopCrossfade(tt.LoopFade)) MnLog.Warn($"AUDIO {tt.Name}: not enough audio before its loop start for a {tt.LoopFade:0.0} s cross-fade; it loops with a plain jump");
+                        }
+                    }, loop: t.Loop);
                 }
             }
             else Problems.Add("music/music.json is missing");

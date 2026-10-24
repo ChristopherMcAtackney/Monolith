@@ -11,15 +11,27 @@ HOW
   The log (Monolith_audio_log.txt next to the game) says what was read ("AUDIO music.json ...: 12 slots, 4 of your files"), names every mistake in the file ("WARN music.json: ..."), and
   lists every music change and theme as it happens ("MUSIC theme lector on (escort/lector <- your file...)").
 
+YOUR FIGHT THEME (already in: Monolith_Epic_1)
+  Your own mission tune is built in as the fight theme, in every mission. The opening calm is the ambient bed. When the first fight starts (the first move out of ambient) your tune fades in
+  over about 3 seconds from its first bars (it starts nine seconds into the file, two bars before it kicks in, skipping the quiet drone), takes over, and plays for the rest of the fight. The
+  battle 1, 2 and 3 tracks keep running silently underneath, so nothing chops it up: the intensity only swells it a little (battle 1 1.5 dB quieter, battle 3 1.5 dB louder). It loops
+  seamlessly: the last bar of a 48-bar stretch (1:14 to 3:02) is cross-faded into the bar before its start, so a long fight never hears the join (and never hears the end of the file).
+  If the fight dies down (the music goes back to ambient) it pauses, the ambient bed returns, and the next fight picks it up where it left off (from its start again after a calm of a minute or more).
+  An event theme (the Lector's, the destroyer's) wins over it: the fight theme fades out as that theme fades in, waits, and comes back where it was when that theme is done. (If you would
+  rather it kept playing, lower, under them: set "underThemes": "duck" on the fight slot.) Victory, failure and death take over from it as from everything else.
+  A mission that names its own battle track (a "music" action with a track, and that file in your Audio\music folder) keeps it: the fight theme stands aside for that mission's fights.
+  Your own file in the "fight" slot of music.json replaces it; "off": true (for every mission, or one: "escort/fight") gives the fight back to the synthesised battle tracks.
+
 TWO LAYERS
-  BASE   follows the fight, as before: ambient when it is quiet, battle1, battle2, battle3 as more of them are on you. You give each its own track.
+  BASE   follows the fight, as before: ambient when it is quiet, battle1, battle2, battle3 as more of them are on you. You give each its own track. (With the fight theme on, battle1-3 play silently under it;
+         they are what you hear if you turn the fight theme off, or give it no sound.)
   THEMES sit on top of the base, tied to a moment of a mission. The Lector arrives and its theme fades in over the music (a few seconds) and takes over; when the Lector is
          destroyed, or has gone, the theme fades out and the base is back. While a theme plays the base keeps going underneath, ducked (quieter), or silent if the theme "replaces" it, so
          it is still in step when the theme ends. When two themes are on at once the higher "priority" plays and the other waits. Stings (a ship arriving, an objective done or lost) play
          over everything. The ending pieces (victory, failure, death) end every theme.
 
 THE SLOTS
-  base     ambient  battle1  battle2  battle3
+  base     ambient  battle1  battle2  battle3  fight
            A mission's own: put its id first: "escort/battle2" is used in The Crossing only; "battle2" in every mission without its own.
   stings   enemy_arrival  enemy_arrival_battle  friendly_arrival  friendly_arrival_battle  goal_complete  goal_failed
   endings  victory  failure  death
@@ -38,6 +50,9 @@ WHAT YOU CAN SAY ABOUT A SLOT (all optional)
   bpm          the track's tempo, if it starts on the beat (see below);  beatsPerBar (4)
   loopStart, loopEnd   seconds inside the file to loop between (otherwise the whole file; an MP3 starts with a little silence, so a WAV or OGG loops more cleanly)
   themes only: priority (higher wins), mode ("duck" or "replace"), duck (how many dB the base drops by under it, -9)
+  fight only: "off": true (no fight theme: the battle tracks carry the fight); "underThemes": "pause" (default) or "duck"; "intensity": { "battle1": -1.5, "battle2": 0, "battle3": 1.5 } (dB it moves with the fight)
+  your own long track as the fight theme: startAt (seconds into the file where the first pass starts, to skip an intro), loopStart and loopEnd (the stretch that repeats), and loopFade: the seconds over which the
+         end of that stretch is cross-faded into the bar before its start (needs that much music before loopStart), so the repeat has no join. Pick loopStart and loopEnd on bars of the track.
 
 HOW THE FADES WORK
   Base: a harder state comes in quickly (about 0.85 s) and a quieter one slowly (2.4 s in, the old one out over 3.4 s), and only after the fight has stayed quiet for a few seconds. The first

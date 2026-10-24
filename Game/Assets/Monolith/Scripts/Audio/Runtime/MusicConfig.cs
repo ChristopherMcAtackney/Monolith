@@ -18,6 +18,10 @@ namespace Monolith.Audio
         public int BeatsPerBar = 4;
         public float LoopStart, LoopEnd;                               // seconds inside the file
         public float Priority = float.NaN, DuckDb = float.NaN;         // themes
+        public float LoopFade, StartAt;                                // seconds: cross-fade the end of the loop into its lead-in; where the first pass starts
+        public bool Off;                                               // the fight slot: "off": true is no fight theme at all (the intensity tracks play, as before)
+        public string UnderThemes;                                     // the fight slot, under an event theme: "pause" (the default) or "duck"
+        public float[] IntensityDb;                                    // the fight slot: dB at battle1, battle2, battle3 (null: the built-in swell)
         public string Mode;                                            // themes: "duck" or "replace"
         public string Describe() => $"{Section}/{Key}" + (File != null ? " <- " + File : " (built-in sound)");
     }
@@ -30,7 +34,7 @@ namespace Monolith.Audio
     /// </summary>
     public sealed class MusicConfig
     {
-        public static readonly string[] BaseSlots = { "ambient", "battle1", "battle2", "battle3" };
+        public static readonly string[] BaseSlots = { "ambient", "battle1", "battle2", "battle3", "fight" };
         public static readonly string[] StingSlots = { "enemy_arrival", "enemy_arrival_battle", "friendly_arrival", "friendly_arrival_battle", "goal_complete", "goal_failed" };
         public static readonly string[] EndingSlots = { "victory", "failure", "death" };
         public static readonly string[] Sections = { "base", "stings", "endings", "themes" };
@@ -80,6 +84,11 @@ namespace Monolith.Audio
                     slot.Bpm = (float?)o["bpm"] ?? 0f;
                     slot.BeatsPerBar = (int?)o["beatsPerBar"] ?? 4;
                     slot.LoopStart = (float?)o["loopStart"] ?? 0f; slot.LoopEnd = (float?)o["loopEnd"] ?? 0f;
+                    slot.LoopFade = (float?)o["loopFade"] ?? 0f; slot.StartAt = (float?)o["startAt"] ?? 0f;
+                    slot.Off = o["off"] != null && o["off"].Type == JTokenType.Boolean && (bool)o["off"];
+                    slot.UnderThemes = (string)o["underThemes"];
+                    if (slot.UnderThemes != null && slot.UnderThemes != "pause" && slot.UnderThemes != "duck") { c.Problems.Add($"music.json: {section}/{e.Name}: underThemes '{slot.UnderThemes}' should be pause or duck"); slot.UnderThemes = null; }
+                    if (o["intensity"] is JObject idb) slot.IntensityDb = new[] { (float?)idb["battle1"] ?? 0f, (float?)idb["battle2"] ?? 0f, (float?)idb["battle3"] ?? 0f };
                     if (o["priority"] != null) slot.Priority = (float)o["priority"];
                     if (o["duck"] != null) slot.DuckDb = (float)o["duck"];
                     slot.Mode = (string)o["mode"];
