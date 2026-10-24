@@ -83,22 +83,31 @@ namespace Monolith.AudioTools
             l.Add(new SfxDef { Id = "scan_sweep", Bus = "sfx", LevelDb = -15, Spatial = false, PitchVar = 0f, Note = "a scan crawling over the hull (the cabin's go-dark moment)", Build = v => SfxShip.ScanSweep() });
             l.Add(new SfxDef { Id = "earth_horn", Bus = "big", LevelDb = -3, Spatial = false, PitchVar = 0f, Priority = 6f, DuckAmount = 0.5f, DuckSeconds = 6.0f, Note = "a deep Reaper-like horn when an Earth capital ship arrives", Build = v => SfxShip.EarthHorn(true) });
             l.Add(new SfxDef { Id = "earth_horn_small", Bus = "big", LevelDb = -5, Spatial = false, PitchVar = 0f, Priority = 6f, DuckAmount = 0.35f, DuckSeconds = 3.5f, Note = "the same, for a corvette", Build = v => SfxShip.EarthHorn(false) });
-            // ---- the cabin on foot (the cabin system raises the events; see AudioSystem)
-            l.Add(new SfxDef { Id = "step_plate", Variants = 3, Bus = "ui", LevelDb = -17, Spatial = false, PitchVar = 0.05f, Note = "a footfall on the deck plate", Build = v => SfxCabin.Step(0, v) });
-            l.Add(new SfxDef { Id = "step_grating", Variants = 3, Bus = "ui", LevelDb = -17, Spatial = false, PitchVar = 0.05f, Note = "a footfall on grating", Build = v => SfxCabin.Step(1, v) });
-            l.Add(new SfxDef { Id = "step_rung", Variants = 3, Bus = "ui", LevelDb = -18, Spatial = false, PitchVar = 0.05f, Note = "a foot on a rung or riser", Build = v => SfxCabin.Step(2, v) });
-            l.Add(new SfxDef { Id = "seat_open", Bus = "ui", LevelDb = -19, Spatial = false, PitchVar = 0.03f, Note = "the harness opens, the pilot stands", Build = v => SfxCabin.Seat(true) });
-            l.Add(new SfxDef { Id = "seat_close", Bus = "ui", LevelDb = -19, Spatial = false, PitchVar = 0.03f, Note = "the pilot sits, the harness closes", Build = v => SfxCabin.Seat(false) });
-            l.Add(new SfxDef { Id = "breaker_off", LevelDb = -10, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the main breaker out: the displays die", Build = v => SfxCabin.Breaker(false) });
-            l.Add(new SfxDef { Id = "breaker_on", LevelDb = -10, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the main breaker in: the displays boot", Build = v => SfxCabin.Breaker(true) });
-            l.Add(new SfxDef { Id = "scan_hit", LevelDb = -12, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "a scan found the ship", Build = v => SfxCabin.ScanHit() });
-            l.Add(new SfxDef { Id = "breath_in", Variants = 2, Bus = "ui", LevelDb = -26, Spatial = false, PitchVar = 0.04f, Build = v => SfxCabin.Breath(true, v) });
-            l.Add(new SfxDef { Id = "breath_out", Variants = 2, Bus = "ui", LevelDb = -26, Spatial = false, PitchVar = 0.04f, Build = v => SfxCabin.Breath(false, v) });
-            l.Add(new SfxDef { Id = "repair_loop", Loop = true, Bus = "ui", LevelDb = -22, Spatial = false, PitchVar = 0f, Note = "a hand repair: living tech knitting (pitch rises with progress)", Build = v => SfxCabin.RepairLoop() });
-            l.Add(new SfxDef { Id = "repair_done", Bus = "ui", LevelDb = -16, Spatial = false, PitchVar = 0f, Build = v => SfxCabin.RepairDone() });
-            l.Add(new SfxDef { Id = "repair_slip", Bus = "ui", LevelDb = -14, Spatial = false, PitchVar = 0.03f, Build = v => SfxCabin.RepairSlip() });
-            l.Add(new SfxDef { Id = "rack_seat", Bus = "ui", LevelDb = -14, Spatial = false, PitchVar = 0.03f, Note = "a module seated in the weapon rack", Build = v => SfxCabin.RackSeat() });
-            l.Add(new SfxDef { Id = "cabin_rattle", LevelDb = -17, Spatial = false, PitchVar = 0.05f, Note = "loose things shaken by a shove", Build = v => SfxCabin.Rattle() });
+            // ---- the cabin on foot (the cabin system raises the events; see AudioSystem). All close, none positional: this is the room you stand in. No hand foley: there are no hands in the view.
+            l.Add(new SfxDef { Id = "step_plate", Variants = 4, Bus = "ui", LevelDb = -13, Spatial = false, PitchVar = 0.05f, Note = "a boot on the deck plate under artificial gravity", Build = v => SfxCabin.Step(0, v) });
+            l.Add(new SfxDef { Id = "step_grating", Variants = 4, Bus = "ui", LevelDb = -13, Spatial = false, PitchVar = 0.05f, Note = "a boot on grating", Build = v => SfxCabin.Step(1, v) });
+            l.Add(new SfxDef { Id = "step_rung", Variants = 4, Bus = "ui", LevelDb = -14, Spatial = false, PitchVar = 0.05f, Note = "a boot on a rung or riser", Build = v => SfxCabin.Step(2, v) });
+            l.Add(new SfxDef { Id = "seat_open", Bus = "ui", LevelDb = -17, Spatial = false, PitchVar = 0.03f, Note = "the harness opens, the pilot stands", Build = v => SfxCabin.Seat(true) });
+            l.Add(new SfxDef { Id = "seat_close", Bus = "ui", LevelDb = -17, Spatial = false, PitchVar = 0.03f, Note = "the pilot sits, the harness closes", Build = v => SfxCabin.Seat(false) });
+            l.Add(new SfxDef { Id = "breaker_lever", Bus = "ui", LevelDb = -14, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the main breaker's lever sliding down its slot (from the press, until the clunk)", Build = v => SfxCabin.BreakerLever() });
+            l.Add(new SfxDef { Id = "breaker_off", LevelDb = -8, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the main breaker out: the heavy clunk", Build = v => SfxCabin.Breaker(false) });
+            l.Add(new SfxDef { Id = "breaker_on", LevelDb = -8, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the main breaker in: the clunk, the relays", Build = v => SfxCabin.Breaker(true) });
+            l.Add(new SfxDef { Id = "power_down", LevelDb = -14, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the ship powering down: the displays' whine falling away", Build = v => SfxCabin.PowerDown() });
+            l.Add(new SfxDef { Id = "power_up", LevelDb = -14, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "the ship booting: a climbing whine, the displays coming up one by one", Build = v => SfxCabin.PowerUp() });
+            l.Add(new SfxDef { Id = "emergency_hum", Loop = true, Bus = "sfx", LevelDb = -24, Spatial = false, PitchVar = 0f, Note = "the emergency lighting's transformer hum (louder in emergency and blackout)", Build = v => SfxCabin.EmergencyHum() });
+            l.Add(new SfxDef { Id = "scan_hit", LevelDb = -10, Spatial = false, PitchVar = 0f, Priority = 4f, Note = "a scan found the ship", Build = v => SfxCabin.ScanHit() });
+            l.Add(new SfxDef { Id = "scan_miss", LevelDb = -14, Spatial = false, PitchVar = 0f, Priority = 3f, Note = "a scan passed over the dark ship and did not find it", Build = v => SfxCabin.ScanMiss() });
+            l.Add(new SfxDef { Id = "hull_scan", Loop = true, Bus = "sfx", LevelDb = -16, Spatial = false, PitchVar = 0f, Note = "the scan's beam crossing the hull, heard through it (level and pan follow the light)", Build = v => SfxCabin.HullScan() });
+            l.Add(new SfxDef { Id = "breath_in", Variants = 4, Bus = "ui", LevelDb = -19, Spatial = false, PitchVar = 0.04f, Note = "the pilot's breath in", Build = v => SfxCabin.Breath(true, v) });
+            l.Add(new SfxDef { Id = "breath_out", Variants = 4, Bus = "ui", LevelDb = -19, Spatial = false, PitchVar = 0.04f, Note = "the pilot's breath out", Build = v => SfxCabin.Breath(false, v) });
+            l.Add(new SfxDef { Id = "heartbeat", Bus = "ui", LevelDb = -20, Spatial = false, PitchVar = 0.02f, Note = "the pilot's heart, heard in the dark while a scan is on", Build = v => SfxCabin.Heartbeat() });
+            l.Add(new SfxDef { Id = "panel_open", Bus = "ui", LevelDb = -14, Spatial = false, PitchVar = 0.03f, Note = "a repair panel's hatch opening", Build = v => SfxCabin.PanelOpen() });
+            l.Add(new SfxDef { Id = "repair_loop", Loop = true, Bus = "ui", LevelDb = -19, Spatial = false, PitchVar = 0f, Note = "a hand repair: living tech knitting into the hull (pitch rises with progress)", Build = v => SfxCabin.RepairLoop() });
+            l.Add(new SfxDef { Id = "repair_done", Bus = "ui", LevelDb = -15, Spatial = false, PitchVar = 0f, Build = v => SfxCabin.RepairDone() });
+            l.Add(new SfxDef { Id = "repair_slip", Bus = "ui", LevelDb = -13, Spatial = false, PitchVar = 0.03f, Build = v => SfxCabin.RepairSlip() });
+            l.Add(new SfxDef { Id = "rack_pull", Bus = "ui", LevelDb = -15, Spatial = false, PitchVar = 0.03f, Note = "the weapon rack letting a module go (from the press)", Build = v => SfxCabin.RackPull() });
+            l.Add(new SfxDef { Id = "rack_seat", Bus = "ui", LevelDb = -12, Spatial = false, PitchVar = 0.03f, Note = "a module seated in the weapon rack", Build = v => SfxCabin.RackSeat() });
+            l.Add(new SfxDef { Id = "cabin_rattle", LevelDb = -15, Spatial = false, PitchVar = 0.05f, Note = "loose things shaken by a shove", Build = v => SfxCabin.Rattle() });
             // ---- interface
             l.Add(new SfxDef { Id = "ui_click", Bus = "ui", LevelDb = -16, Spatial = false, PitchVar = 0f, Build = v => SfxShip.UiClick() });
             l.Add(new SfxDef { Id = "ui_select", Bus = "ui", LevelDb = -15, Spatial = false, PitchVar = 0f, Build = v => SfxShip.UiSelect() });

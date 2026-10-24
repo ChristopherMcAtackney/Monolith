@@ -20,7 +20,9 @@
     "earth": "earth_warden",
     "#earth": "earth_warden",
     "#tamsin": "tamsin",
-    "#command": "mercy"
+    "#command": "mercy",
+    "#lector": "earth_lector",
+    "#warden": "earth_warden"
   },
   "defaults": {
     "wingmanVoices": [
@@ -36,6 +38,10 @@
   },
   "voices": {"mercy": "crew", "tamsin": "crew", "sable2": "crew", "sable3": "crew", "sable1": "crew", "lantern": "crew", "wick": "alien", "earth_warden": "earth", "earth_lector": "earth"},
   "clips": [
+    { "voice": "earth_lector", "text": "Wreckage. The fallen leave their dead everywhere.", "norm": "WRECKAGE. THE FALLEN LEAVE THEIR DEAD EVERYWHERE.", "intensity": "calm", "file": "vo/earth_lector/cabin_lector_blind.ogg", "seconds": 10.64, "lufs": -21.0 },
+    { "voice": "earth_lector", "text": "Biologics in the dark. We will find you. We always have.", "norm": "BIOLOGICS IN THE DARK. WE WILL FIND YOU. WE ALWAYS HAVE.", "intensity": "calm", "file": "vo/earth_lector/cabin_lector_here.ogg", "seconds": 10.38, "lufs": -21.0 },
+    { "voice": "earth_lector", "text": "Sweeping for life.", "norm": "SWEEPING FOR LIFE.", "intensity": "calm", "file": "vo/earth_lector/cabin_lector_sweep.ogg", "seconds": 7.28, "lufs": -21.0 },
+    { "voice": "earth_lector", "text": "Biologic. Sable one. I see you. All of you.", "norm": "BIOLOGIC. SABLE ONE. I SEE YOU. ALL OF YOU.", "intensity": "calm", "file": "vo/earth_lector/cabin_spotted.ogg", "seconds": 10.41, "lufs": -21.0 },
     { "voice": "earth_lector", "text": "The Mercy will be cleansed.", "norm": "THE MERCY WILL BE CLEANSED.", "intensity": "calm", "file": "vo/earth_lector/earth_bombers_01.ogg", "seconds": 7.83, "lufs": -21.0 },
     { "voice": "earth_lector", "text": "Your ark is a coffin. We will close it.", "norm": "YOUR ARK IS A COFFIN. WE WILL CLOSE IT.", "intensity": "calm", "file": "vo/earth_lector/earth_bombers_02.ogg", "seconds": 8.95, "lufs": -21.0 },
     { "voice": "earth_lector", "text": "Biologics. You were us, once.", "norm": "BIOLOGICS. YOU WERE US, ONCE.", "intensity": "calm", "file": "vo/earth_lector/earth_wave_01.ogg", "seconds": 9.12, "lufs": -21.0 },
@@ -105,6 +111,15 @@
     { "voice": "sable2", "text": "Coming back in. Nice and boring.", "norm": "COMING BACK IN. NICE AND BORING.", "intensity": "tense", "file": "vo/sable2/ack_form_02_tense.ogg", "seconds": 2.02, "lufs": -21.5 },
     { "voice": "sable2", "text": "On your wing.", "norm": "ON YOUR WING.", "intensity": "frantic", "file": "vo/sable2/ack_form_03_frantic.ogg", "seconds": 1.07, "lufs": -19.5 },
     { "voice": "sable2", "text": "On your wing.", "norm": "ON YOUR WING.", "intensity": "tense", "file": "vo/sable2/ack_form_03_tense.ogg", "seconds": 0.95, "lufs": -21.5 },
+    { "voice": "sable2", "text": "Drones, three of them, low on your port side. Whenever you\u0027re ready.", "norm": "DRONES, THREE OF THEM, LOW ON YOUR PORT SIDE. WHENEVER YOU\u0027RE READY.", "intensity": "frantic", "file": "vo/sable2/cabin_choir_in_frantic.ogg", "seconds": 3.25, "lufs": -19.5 },
+    { "voice": "sable2", "text": "That\u0027s the last of them. Sable flight, form up.", "norm": "THAT\u0027S THE LAST OF THEM. SABLE FLIGHT, FORM UP.", "intensity": "calm", "file": "vo/sable2/cabin_clear.ogg", "seconds": 4.15, "lufs": -23.0 },
+    { "voice": "sable2", "text": "Port drive\u0027s back. Whatever you did, do it again.", "norm": "PORT DRIVE\u0027S BACK. WHATEVER YOU DID, DO IT AGAIN.", "intensity": "tense", "file": "vo/sable2/cabin_engine_back_tense.ogg", "seconds": 2.86, "lufs": -21.5 },
+    { "voice": "sable2", "text": "Lector\u0027s coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.", "norm": "LECTOR\u0027S COMING OUT OF THE ICE. EVERYBODY DARK. GET UP AND PULL YOUR BREAKER, SABLE 1. NOW.", "intensity": "tense", "file": "vo/sable2/cabin_go_dark_tense.ogg", "seconds": 4.90, "lufs": -21.5 },
+    { "voice": "sable2", "text": "Sable 1, you\u0027re venting. Port drive\u0027s gone. Somebody out there has very good aim.", "norm": "SABLE 1, YOU\u0027RE VENTING. PORT DRIVE\u0027S GONE. SOMEBODY OUT THERE HAS VERY GOOD AIM.", "intensity": "frantic", "file": "vo/sable2/cabin_hit_frantic.ogg", "seconds": 3.51, "lufs": -19.5 },
+    { "voice": "sable2", "text": "It looked right through us. Nobody breathe yet.", "norm": "IT LOOKED RIGHT THROUGH US. NOBODY BREATHE YET.", "intensity": "calm", "file": "vo/sable2/cabin_missed.ogg", "seconds": 3.27, "lufs": -23.0 },
+    { "voice": "sable2", "text": "Get your power back, Sable 1. Breaker. Then get that engine seated. I\u0027ll cover.", "norm": "GET YOUR POWER BACK, SABLE 1. BREAKER. THEN GET THAT ENGINE SEATED. I\u0027LL COVER.", "intensity": "frantic", "file": "vo/sable2/cabin_power_up_frantic.ogg", "seconds": 3.48, "lufs": -19.5 },
+    { "voice": "sable2", "text": "Quiet out here. I don\u0027t like it. It never means nothing.", "norm": "QUIET OUT HERE. I DON\u0027T LIKE IT. IT NEVER MEANS NOTHING.", "intensity": "calm", "file": "vo/sable2/cabin_quiet.ogg", "seconds": 4.10, "lufs": -23.0 },
+    { "voice": "sable2", "text": "That\u0027s torn it. Drones inbound. Heads up.", "norm": "THAT\u0027S TORN IT. DRONES INBOUND. HEADS UP.", "intensity": "frantic", "file": "vo/sable2/cabin_spotted_reply_frantic.ogg", "seconds": 2.13, "lufs": -19.5 },
     { "voice": "sable2", "text": "Target\u0027s dead in the water.", "norm": "TARGET\u0027S DEAD IN THE WATER.", "intensity": "tense", "file": "vo/sable2/disabled_01_tense.ogg", "seconds": 1.42, "lufs": -21.5 },
     { "voice": "sable2", "text": "Engines gone. It\u0027s not going anywhere.", "norm": "ENGINES GONE. IT\u0027S NOT GOING ANYWHERE.", "intensity": "tense", "file": "vo/sable2/disabled_02_tense.ogg", "seconds": 2.08, "lufs": -21.5 },
     { "voice": "sable2", "text": "Mercy\u0027s gone.", "norm": "MERCY\u0027S GONE.", "intensity": "frantic", "file": "vo/sable2/dogfight_lost_capital_frantic.ogg", "seconds": 1.07, "lufs": -19.5 },

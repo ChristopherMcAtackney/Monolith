@@ -124,15 +124,16 @@ namespace Monolith.Audio
             }
             _queue.RemoveAt(0);
             if (Silent()) return;
-            if (Time.unscaledTime - p.Born > 8f) { Dropped++; Log.Add("dropped (stale): " + p.Display); return; }
+            if (Time.unscaledTime - p.Born > 12f) { Dropped++; Log.Add("dropped (stale): " + p.Display); return; }
 
-            Clip clip = slotClip; string what = null; bool other = false;
+            Clip clip = slotClip; string what = null; bool other = false, earth = false;
             if (clip != null) { FromSlot++; what = p.Slot; }
             else
             {
                 var vc = Resolve(p.Display, out _, out other);
                 if (vc != null)
                 {
+                    earth = vc.Voice != null && vc.Voice.StartsWith("earth", StringComparison.Ordinal);
                     clip = vc.Clip; what = vc.File + (vc.Source != "built in" ? " (yours)" : ""); if (vc.Source != "built in") FromUser++; if (other) OtherVoice++;
                     if (vc.Intensity == 2) FranticPlayed++; else if (vc.Intensity == 1) TensePlayed++; else CalmPlayed++;
                 }
@@ -141,7 +142,8 @@ namespace Monolith.Audio
             {
                 Voiced++;
                 _mixer.Play(clip, new PlayParams { Gain = 1f, Pan = 0f, Pitch = 1f, Bus = Bus.Voice, Priority = 9f });
-                _busyUntil = now + clip.Seconds + 0.18f;
+                // Earth's clips end in a long hall (3.4 s of reverb tail): the next line may start in it, or the crew would wait out the god's echo
+                _busyUntil = now + (earth ? Mathf.Max(1.5f, clip.Seconds - 3.0f) : clip.Seconds + 0.18f);
                 string line = $"{p.Display} -> {what} ({clip.Seconds:0.0} s){(other ? " [another voice]" : "")}";
                 Log.Add(line);
                 MnLog.Info("VOICE " + line);

@@ -133,6 +133,14 @@ the player's own files override and give back, every effect plays, a scripted ba
 `-mnAudioUser dir`, `-mnAudioLog` (a status line every 5 s: voices, audio-thread load, loudness, ducking). The offline tools (music from MIDI, effects, radio voices, the audio sheet): `tools/audio/README.md`;
 the build `tools/audio/make_playtest.ps1` makes the audio playtest folder. Volumes: F5/F6 music, F7/F8 effects, F3/F4 voice, - and = master, F2 mute (saved to `audio.json` beside the game).
 
+**Voicing a mission (every radio line needs a recording).** A radio line with no recording plays as a squelch: the playtester hears clicks and no voice. So a mission that is written without voicing its lines
+FAILS two checks (`-mnAudioSelfTest` and `-mnMissionSelfTest`, which read every built-in mission's messages and inline `radio` and `callOut` lines and name each one that its speaker has no clip for).
+One command voices them (needs WSL with Trap Door's Breeze install, `tools/audio/README.md`; the GPU does 5 to 25 s a line, resumable, only the new or changed lines):
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools\audio\voice.ps1` (add `-Plan` to see what it would make). It gathers the lines (`audio_src/voice/collect_lines.py`), generates the missing clips, makes the radio versions and the index
+(`Game/Assets/StreamingAssets/Audio/vo`), and rewrites `AUDIO_LIST.txt`. Then rebuild the player and run `tools\audio\check.ps1`; commit `audio_src/voice/voice_lines.json`, `Game/Assets/StreamingAssets/Audio/vo` and `AUDIO_LIST.txt`.
+Two things only the mission author knows: a new callsign needs a line in `audio_src/voice/cast.json` (`speakers` maps the name before the colon to a voice; a voice is a text description of who, accent and delivery; the check names an uncast speaker), and each message
+should have an intensity in `INTENSITY` in `collect_lines.py` (calm, tense or frantic, with the reason: the event that fires it and the music at that moment; an untagged message is guessed from its `priority` and reported). Earth's voices are always calm.
+
 ## Blender
 
 `tools\blender.ps1 <script.py> [-Blend file.blend] [-TimeoutMin 20] [-- script args]` runs

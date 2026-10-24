@@ -381,7 +381,14 @@ namespace Monolith.Game
                     else if (otherVoice) other++;
                 }
                 Check(lines.Count >= 100, $"{lines.Count} lines gathered from the built-in missions and the wingmen's acknowledgements");
-                Check(missing.Count == 0, $"every line has a clip ({lines.Count - missing.Count} of {lines.Count}; {other} use another voice's recording of the same words)" + (missing.Count > 0 ? ": " + string.Join(" | ", missing.Take(6)) : ""));
+                Check(missing.Count == 0, $"every line has a clip ({lines.Count - missing.Count} of {lines.Count}; {other} use another voice's recording of the same words)" + (missing.Count > 0 ? ": " + string.Join(" | ", missing.Take(6)) + " -> " + VoiceCoverage.Fix : ""));
+                // and by the speaker's own voice: a line voiced only by somebody else's recording is a line nobody has voiced
+                var gaps = VoiceCoverage.Unvoiced(out int looked);
+                Check(gaps.Count == 0 && other == 0, $"every radio line of every mission in the build ({string.Join(", ", MissionLibrary.BuiltIn())}) is voiced by its own speaker ({looked} speaker and line pairs, {other} on another voice)" + (gaps.Count > 0 ? ": " + string.Join(" | ", gaps.Take(6)) + " -> " + VoiceCoverage.Fix : ""));
+                // the check itself works: a mission with a line nobody voiced, and a speaker nobody is cast as, is caught
+                const string unvoiced = "{ \"messages\": [ { \"id\": \"a\", \"from\": \"Sable 2\", \"text\": \"This line has never been recorded by anybody.\" }, { \"id\": \"b\", \"from\": \"Zed\", \"text\": \"Copy.\" } ], \"events\": [ { \"do\": [ { \"do\": \"callOut\", \"text\": \"Nor has this one.\" } ] } ] }";
+                var caught = VoiceCoverage.Unvoiced(out _, ("negative_control", unvoiced));
+                Check(caught.Count == gaps.Count + 5 && caught.Any(g => g.Contains("never been recorded")) && caught.Any(g => g.Contains("nobody is cast as 'Zed'")) && caught.Any(g => g.Contains("Nor has this one")), $"an unvoiced line, an uncast speaker and an unvoiced callOut are each caught ({caught.Count - gaps.Count} found in the negative control)");
                 // intensity: every line is tagged calm, tense or frantic from its mission context; a line made at two intensities plays the one the music state asks for
                 var crew = rig.Sys.Lib.Voices.Where(v => !v.Voice.StartsWith("earth")).ToList();
                 int nCalm = crew.Count(v => v.Intensity == 0), nTense = crew.Count(v => v.Intensity == 1), nFrantic = crew.Count(v => v.Intensity == 2);
@@ -542,23 +549,100 @@ namespace Monolith.Game
                 Check(id == 0 && rig.Sys.CuesMissing == before + 1, "an unknown cue is refused and logged, not thrown");
             }
 
+            /// <summary>Magnitude of one frequency (a single DFT bin) in a window of a channel: the 100 Hz hum, say, whatever else is playing.</summary>
+            static float Tone(float[] x, int from, int n, float hz)
+            {
+                from = Mathf.Clamp(from, 0, x.Length); n = Mathf.Clamp(n, 0, x.Length - from);
+                double re = 0, im = 0, w = 2.0 * Math.PI * hz / R;
+                for (int i = 0; i < n; i++) { re += x[from + i] * Math.Cos(w * i); im -= x[from + i] * Math.Sin(w * i); }
+                return n > 0 ? (float)(2.0 * Math.Sqrt(re * re + im * im) / n) : 0f;
+            }
+
             IEnumerator Cabin()
             {
-                Say("== the cabin's events");
+                Say("== the cabin: its events and its board");
+                const int Tk = R / Sim.Hz;                          // samples a tick
+                // 1. every event the cabin documents makes its sound (the real vocabulary, with a board in the world as there is in the game)
                 var rig = NewRig();
                 var sys = rig.Sys;
+                var board = new CabinBoard();
+                rig.World.Cabin = board;
                 void Ev(string id, string subject, float value) => GameEvents.Raise(id, subject, value);
                 Ev("cabin_stand", "stand", 0f); Ev("cabin_step", "floor", 0.8f); Ev("cabin_step", "tread", 0.5f); Ev("cabin_step", "riser", 1f);
-                Ev("cabin_power", "off", 0f); Ev("cabin_scan_contact", "hit", 6f); Ev("cabin_creak", "hull", 0.7f); Ev("cabin_breath", "in", 0.8f); Ev("cabin_breath", "out", 0.6f);
+                Ev("cabin_power", "off", 0f); Ev("cabin_scan_contact", "hit", 6f); Ev("cabin_scan_contact", "miss", 6f); Ev("cabin_creak", "hull", 0.7f); Ev("cabin_breath", "in", 0.8f); Ev("cabin_breath", "out", 0.6f);
                 Ev("cabin_loadout", "needle", 1f); Ev("cabin_table", "page", 2f); Ev("cabin_jolt", "hit", 0.6f); Ev("cabin_power", "on", 1f); Ev("cabin_stand", "sit", 1f);
-                Ev("cabin_repair", "start", 0f); rig.Step(0.5f); Ev("cabin_repair", "progress", 0.5f); rig.Step(0.5f); Ev("cabin_repair", "done", 1f);
+                Ev("cabin_repair", "start", 0f); rig.Step(0.5f); yield return null; Ev("cabin_repair", "progress", 0.5f); rig.Step(0.5f); Ev("cabin_repair", "done", 1f);
+                board.Action = "breaker"; rig.Step(0.2f); yield return null; board.Action = "rack"; rig.Step(0.2f); yield return null; board.Action = null;
                 rig.Step(3f);
-                string[] want = { "seat_open", "step_plate", "step_grating", "step_rung", "breaker_off", "scan_hit", "creak_c", "breath_in", "breath_out", "rack_seat", "ui_click", "cabin_rattle", "breaker_on", "seat_close", "repair_done" };
+                string[] want = { "seat_open", "step_plate", "step_grating", "step_rung", "breaker_off", "breaker_on", "power_down", "power_up", "scan_hit", "scan_miss", "creak_c", "breath_in", "breath_out",
+                                  "rack_seat", "ui_click", "cabin_rattle", "seat_close", "panel_open", "repair_done", "breaker_lever", "rack_pull" };
                 var missing = want.Where(w => !sys.CueCounts.ContainsKey(w)).ToList();
-                Check(missing.Count == 0, "every cabin event makes its sound" + (missing.Count > 0 ? ": none for " + string.Join(", ", missing) : ""));
+                Check(missing.Count == 0, "every cabin event and action makes its sound" + (missing.Count > 0 ? ": none for " + string.Join(", ", missing) : ""));
                 var rec = sys.RecordedAudio();
                 var m = LoudnessMeter.Measure(rec);
                 Check(m.PeakDb > -40f && sys.Mixer.ClippedSamples == 0, $"the cabin is heard and does not clip (peak {m.PeakDb:0.0} dBFS)");
+                WriteWav("cabin_events.wav", rec);
+
+                // 2. the emergency hum swells with the lights going out (the 100 Hz of the transformer, measured whatever else plays)
+                rig = NewRig(); sys = rig.Sys; board = new CabinBoard(); rig.World.Cabin = board;
+                Ev("cabin_lights", "normal", 0f); board.Lights = "normal";
+                for (int i = 0; i < 40; i++) { rig.Step(0.1f); yield return null; }
+                float humLit = Tone(sys.RecordedAudio().Ch[0], rig.Tick * Tk - R, R, 100f);
+                Ev("cabin_lights", "blackout", 0f); board.Lights = "blackout"; board.Powered = false;
+                for (int i = 0; i < 60; i++) { rig.Step(0.1f); yield return null; }
+                float humDark = Tone(sys.RecordedAudio().Ch[0], rig.Tick * Tk - R, R, 100f);
+                Check(humDark > humLit * 3f && humDark > 0.0005f, $"the emergency hum comes up when the breaker goes out ({Db(humLit):0.0} dB at 100 Hz lit, {Db(humDark):0.0} dB in the blackout)");
+
+                // 3. the breath is louder in the dark, and in a scan (the energy a breath adds over what was playing before it)
+                float BreathEnergy(string light, float scanLight)
+                {
+                    var r = NewRig(); var sy = r.Sys; var bd = new CabinBoard(); r.World.Cabin = bd;
+                    Ev("cabin_lights", light, 0f); bd.Lights = light; bd.ScanLight = scanLight;
+                    for (int i = 0; i < 80; i++) { r.Step(0.1f); }
+                    int t0 = r.Tick * Tk;
+                    Ev("cabin_breath", "in", 0.7f);
+                    r.Step(1.6f);
+                    int t1 = r.Tick * Tk;
+                    var x = sy.RecordedAudio().Ch[0];
+                    float after = Rms(x, t0, t1 - t0), before = Rms(x, t0 - (t1 - t0), t1 - t0);
+                    float excess = Mathf.Max(after * after - before * before, 1e-12f);
+                    return 10f * Mathf.Log10(excess);
+                }
+                float bLit = BreathEnergy("normal", 0f), bDark = BreathEnergy("dark", 0f), bBlack = BreathEnergy("blackout", 0f), bScan = BreathEnergy("blackout", 1f);
+                Say($"   breath energy over the room: lit {bLit:0.0} dB, dark {bDark:0.0}, blackout {bBlack:0.0}, blackout in a scan {bScan:0.0}");
+                Check(bDark > bLit + 2f && bBlack > bDark + 1f && bScan > bBlack + 0.5f, "your own breathing gets louder as the cabin gets darker, and louder again while a scan crosses");
+                yield return null;
+
+                // 4. a scan crossing the hull is heard through it, on the side the beam is
+                rig = NewRig(); sys = rig.Sys; board = new CabinBoard(); rig.World.Cabin = board;
+                Ev("cabin_lights", "blackout", 0f); board.Lights = "blackout"; board.Powered = false;
+                board.ScanLight = 1f; board.ScanDirShip = new Vector3(1f, 0f, 0.3f);
+                for (int i = 0; i < 40; i++) { rig.Step(0.1f); yield return null; }
+                var rc = sys.RecordedAudio();
+                int w1 = rig.Tick * Tk - R;
+                float lRight = Tone(rc.Ch[0], w1, R, 149.8f), rRight = Tone(rc.Ch[1], w1, R, 149.8f);
+                board.ScanDirShip = new Vector3(-1f, 0f, 0.3f);
+                for (int i = 0; i < 40; i++) { rig.Step(0.1f); yield return null; }
+                rc = sys.RecordedAudio();
+                int w2 = rig.Tick * Tk - R;
+                float lLeft = Tone(rc.Ch[0], w2, R, 149.8f), rLeft = Tone(rc.Ch[1], w2, R, 149.8f);
+                Check(rRight > lRight * 1.4f && lLeft > rLeft * 1.4f, $"the scan's moan through the hull follows the beam (beam to starboard: {Db(lRight):0.0} dB left, {Db(rRight):0.0} dB right; to port: {Db(lLeft):0.0} left, {Db(rLeft):0.0} right)");
+                board.ScanLight = 0f;
+                for (int i = 0; i < 60; i++) { rig.Step(0.1f); yield return null; }
+                float gone = Tone(sys.RecordedAudio().Ch[0], rig.Tick * Tk - R, R, 149.8f);
+                Check(gone < Mathf.Max(lLeft, rRight) * 0.3f, $"and it dies away with the light ({Db(gone):0.0} dB)");
+
+                // 5. the heart, in the dark, faster while a scan crosses
+                int calm = 0, scared = 0;
+                {
+                    var r1 = NewRig(); var b1 = new CabinBoard(); r1.World.Cabin = b1; Ev("cabin_lights", "blackout", 0f); b1.Lights = "blackout";
+                    for (int i = 0; i < 80; i++) { r1.Step(0.1f); yield return null; }
+                    calm = r1.Sys.CueCounts.TryGetValue("heartbeat", out int c) ? c : 0;
+                    var r2 = NewRig(); var b2 = new CabinBoard(); r2.World.Cabin = b2; Ev("cabin_lights", "blackout", 0f); b2.Lights = "blackout"; b2.ScanLight = 1f;
+                    for (int i = 0; i < 80; i++) { r2.Step(0.1f); yield return null; }
+                    scared = r2.Sys.CueCounts.TryGetValue("heartbeat", out int d) ? d : 0;
+                }
+                Check(calm >= 5 && scared > calm + 2, $"a heartbeat in the dark, quicker while a scan crosses ({calm} beats in 8 s, {scared} in a scan)");
                 yield return null;
             }
 

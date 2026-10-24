@@ -37,7 +37,7 @@ namespace Monolith.Audio
     /// master), saved beside the game. In captures it can render without a sound card, in step with the simulation, and record what it made.
     /// </summary>
     [DefaultExecutionOrder(80)]
-    public sealed class AudioSystem : MonoBehaviour
+    public sealed partial class AudioSystem : MonoBehaviour
     {
         public static AudioSystem Active { get; private set; }
 
@@ -473,41 +473,11 @@ namespace Monolith.Audio
             Sub(CombatEvents.BeamFire, e => PlayCue("beam_fire", PosOf(e), 1f));
             Sub(CombatEvents.BeamEnd, e => { var s = World.Ships.Get(e.Entity); if (s != null) PlayCue("beam_end", s.Position, 0.9f); });
             Sub(CombatEvents.MissileTrack, OnMissileTrack);
-            Sub(MissionEvents.CabinScan, e => PlayLocal("scan_sweep", 0.8f));
-            // The cabin (a system of its own: the ids are its documented vocabulary, matched by name so the audio does not depend on its assembly).
-            Sub("cabin_lights", e => { _cabinState = e.Subject ?? "normal"; });
-            Sub("cabin_step", e => PlayLocal(e.Subject == "tread" ? "step_grating" : e.Subject == "riser" ? "step_rung" : "step_plate", 0.45f + 0.55f * Mathf.Clamp01(e.Value)));
-            Sub("cabin_stand", e => { if (e.Subject == "stand" && e.Value < 0.5f) PlayLocal("seat_open"); else if (e.Subject == "sit" && e.Value >= 0.5f) PlayLocal("seat_close"); });
-            Sub("cabin_power", e => PlayLocal(e.Subject == "off" ? "breaker_off" : "breaker_on"));
-            Sub("cabin_scan_contact", e => { if (e.Subject == "hit") PlayLocal("scan_hit"); });
-            Sub("cabin_creak", e => { _cabinOwnsCreaks = true; float v = Mathf.Clamp01(e.Value); PlayLocal("creak_" + (char)('a' + (v < 0.3f ? 0 : v < 0.6f ? 1 : v < 0.85f ? 2 : 3)), 0.45f + 0.55f * v); });
-            Sub("cabin_breath", e => PlayLocal((e.Subject == "out" ? "breath_out" : "breath_in"), 0.5f + 0.5f * Mathf.Clamp01(e.Value)));
-            Sub("cabin_repair", OnRepair);
-            Sub("cabin_loadout", e => PlayLocal("rack_seat"));
-            Sub("cabin_table", e => PlayLocal(e.Subject == "map" ? "ui_select" : "ui_click"));
-            Sub("cabin_jolt", e => PlayLocal("cabin_rattle", 0.3f + 0.7f * Mathf.Clamp01(e.Value)));
+            Sub(MissionEvents.CabinScan, e => PlayLocal("scan_sweep", 0.55f));
+            // The cabin (a system of its own): its events and board are read in AudioSystem.Cabin.cs.
+            SubscribeCabin();
         }
 
-        bool _cabinOwnsCreaks;
-        LoopHandle _repair;
-
-        void OnRepair(GameEvent e)
-        {
-            switch (e.Subject)
-            {
-                case "start":
-                    _repair?.Stop(0.05f);
-                    _repair = StartLoop("repair_loop", Vector3.zero, 1f, false, false);
-                    break;
-                case "progress":
-                    if (_repair != null) SetLocalLoop(_repair, 1f, 0.9f + 0.45f * Mathf.Clamp01(e.Value));
-                    break;
-                case "done": _repair?.Stop(0.15f); _repair = null; PlayLocal("repair_done"); break;
-                case "slip": _repair?.Stop(0.05f); _repair = null; PlayLocal("repair_slip"); break;
-            }
-        }
-
-        string _cabinState = "normal";
 
         void OnJumpIn(GameEvent e)
         {
@@ -588,6 +558,7 @@ namespace Monolith.Audio
             if (!Ready) return;
             EnsureCockpitLoops();
             dt = Mathf.Clamp(dt, 0.001f, 0.1f);
+            UpdateCabin(dt);
             var st = World != null ? World.Ships.Get(World.LocalPlayerShip) : null;
             var me = World != null ? World.Combat.Get(World.LocalPlayerShip) : null;
             bool paused = World != null && World.Sim.TimeScale <= 0.001f && !Options.Offline;

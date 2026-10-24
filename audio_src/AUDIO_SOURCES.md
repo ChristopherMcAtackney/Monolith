@@ -13,4 +13,4 @@ Everything in `Game/Assets/StreamingAssets/Audio` was made for this project. **N
 
 If a free (CC0) library is ever used as a placeholder, it goes in this table with its URL, licence and the files it made, and in the commit that adds it.
 
-Sizes (2026-10-24): music 7.7 MB (13 files), effects 5.5 MB, radio voices 5.2 MB (156 clips: 36 calm, 50 tense, 70 frantic): **18.7 MB in total** (OGG Vorbis at 48 kHz; the effect loops are stored as WAV so their seams are sample-exact). The encoder runs bit-exact (`-fflags +bitexact`) and every render is deterministic, so remaking unchanged sound changes no bytes.
+Sizes (2026-10-24, audio round 2): music 7.7 MB (13 files), effects 7.0 MB (82 cues, 149 files; the cabin added 20 cues, three of them loops stored as WAV), radio voices 5.8 MB (169 clips: 43 calm, 52 tense, 74 frantic): **20.5 MB in total** (OGG Vorbis at 48 kHz; the effect loops are stored as WAV so their seams are sample-exact). The encoder runs bit-exact (`-fflags +bitexact`) and every render is deterministic, so remaking unchanged sound changes no bytes.

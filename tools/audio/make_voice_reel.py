@@ -7,6 +7,7 @@ Each group is: the old calm clip, a pause, the new tense clip (if the line has o
 (the old file, then the new ones, under Game/Assets/StreamingAssets/Audio/). Needs ffmpeg and git on PATH. Not a test: a way to hear the difference.
 """
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -26,11 +27,43 @@ GROUPS = [
 ]
 
 
+def mission_reel(mission, out):
+    """Every line of one mission in the order the mission file lists its messages: a quick listen to a whole mission's voices (as the game plays them, radio and all)."""
+    import re
+    ff = shutil.which('ffmpeg')
+    txt = re.sub(r'(?m)^\s*//.*$', '', open(os.path.join(ROOT, 'Game', 'Assets', 'Monolith', 'Resources', 'Missions', mission + '.mission.json'), encoding='utf-8').read())
+    order = [m['id'] for m in json.loads(txt).get('messages', [])]
+    lines = json.load(open(os.path.join(ROOT, 'audio_src', 'voice', 'voice_lines.json'), encoding='utf-8'))['lines']
+    tmp = tempfile.mkdtemp(prefix='mn_reel_')
+    try:
+        gap = os.path.join(tmp, 'gap.wav')
+        subprocess.check_call([ff, '-y', '-v', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=mono', '-t', '0.6', '-c:a', 'pcm_s16le', gap])
+        parts = []
+        for mid in order:
+            for l in lines:
+                if f'{mission}:{mid}' in l['sources'] and l['voice'] != 'sable3' and l['voice'] != 'sable1':
+                    w = os.path.join(tmp, f'{len(parts)}.wav')
+                    subprocess.check_call([ff, '-y', '-v', 'error', '-i', os.path.join(ROOT, VO + l['file'].replace('.wav', '.ogg')), '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le', w])
+                    parts += [w, gap]
+                    print(f"{mid:16s} {l['voice']:12s} {l['intensity']:8s} {l['text']}")
+                    break
+        lst = os.path.join(tmp, 'list.txt')
+        open(lst, 'w').write(''.join("file '" + p.replace(chr(92), '/') + "'" + chr(10) for p in parts))
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        subprocess.check_call([ff, '-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c:a', 'libmp3lame', '-q:a', '3', out])
+        print('wrote', out)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument('--mission', help='make a reel of every line of this mission instead (in message order)')
     ap.add_argument('--before', default='56fb0fd')
     ap.add_argument('--out', default=os.path.join(ROOT, 'gauntlet', 'captures', 'audio', 'r1', 'clips', 'frantic_reel.mp3'))
     a = ap.parse_args()
+    if a.mission:
+        return mission_reel(a.mission, a.out if a.out != ap.get_default('out') else os.path.join(ROOT, 'gauntlet', 'captures', 'audio', 'r2', 'clips', a.mission + '_voices.mp3'))
     ff = shutil.which('ffmpeg')
     if not ff or not shutil.which('git'):
         sys.exit('needs ffmpeg and git on PATH')

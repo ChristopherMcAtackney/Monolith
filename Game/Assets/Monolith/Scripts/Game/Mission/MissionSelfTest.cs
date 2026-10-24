@@ -34,7 +34,7 @@ namespace Monolith.Game
         public static bool Run()
         {
             _checks = 0; _fails = 0;
-            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("missions", BuiltIn), ("port", Port) };
+            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
             foreach (var (name, t) in tests)
             {
                 try { t(); }
@@ -251,6 +251,15 @@ namespace Monolith.Game
                 Check(r.Runtime.Started && r.Json["checks"] != null && !r.Report.Contains("FAIL  no errors") && !r.Report.Contains("FAIL  no bad numbers"),
                       $"'{n}' runs a minute headless with the AI flying the player: no errors, no bad numbers ({r.Runtime.Log.Entries.Count} timeline entries, {r.Runtime.Radio.Said.Count} radio lines)");
             }
+        }
+
+        // ------------------------------------------------------------------------------------------------ every radio line is voiced
+
+        static void Voices()
+        {
+            // A line with no recording plays as a squelch: the playtester hears clicks and no voice. A mission written without voicing its lines fails here.
+            var gaps = VoiceCoverage.Unvoiced(out int lines);
+            Check(gaps.Count == 0, $"every radio line of every built-in mission has a recording ({lines} speaker and line pairs)" + (gaps.Count > 0 ? ": " + string.Join(" | ", gaps.GetRange(0, Math.Min(6, gaps.Count))) + " -> " + VoiceCoverage.Fix : ""));
         }
 
         // ------------------------------------------------------------------------------------------------ the dogfight's port

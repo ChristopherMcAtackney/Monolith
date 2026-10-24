@@ -1,0 +1,113 @@
+{
+ "scene": "mission",
+ "width": 640,
+ "height": 360,
+ "script": [],
+ "options": {
+  "mission": "cabin",
+  "hud": false,
+  "dust": false,
+  "invulnerable": true,
+  "cabin": {
+   "prelaunch": true,
+   "script": [
+    {
+     "t": 1.0,
+     "do": "face",
+     "at": "table"
+    },
+    {
+     "t": 2.5,
+     "do": "walk",
+     "to": "rack_gun0"
+    },
+    {
+     "do": "face",
+     "at": "rack_gun0"
+    },
+    {
+     "do": "press"
+    },
+    {
+     "do": "wait",
+     "seconds": 3.5
+    },
+    {
+     "do": "walk",
+     "to": [
+      -0.3,
+      -1.05
+     ]
+    },
+    {
+     "do": "face",
+     "yaw": -90.0,
+     "pitch": -4.0
+    },
+    {
+     "do": "wait",
+     "seconds": 1.0
+    },
+    {
+     "do": "walk",
+     "to": "breaker",
+     "via": [
+      [
+       -0.7,
+       -1.0
+      ],
+      [
+       0.7,
+       -1.0
+      ]
+     ],
+     "t": 13.0
+    },
+    {
+     "do": "face",
+     "at": "breaker"
+    },
+    {
+     "do": "press"
+    },
+    {
+     "do": "wait",
+     "seconds": 2.0
+    },
+    {
+     "t": 26.0,
+     "do": "face",
+     "yaw": 6.0,
+     "pitch": 4.0
+    },
+    {
+     "t": 58.0,
+     "do": "walk",
+     "to": "panel_engine",
+     "via": [
+      [
+       0.6,
+       -1.0
+      ]
+     ]
+    },
+    {
+     "do": "face",
+     "at": "panel_engine"
+    },
+    {
+     "do": "use",
+     "seconds": 9.0
+    }
+   ]
+  }
+ },
+ "series": [
+  {
+   "name": "cab",
+   "from": 1.0,
+   "to": 90.0,
+   "step": 3.0
+  }
+ ]
+}

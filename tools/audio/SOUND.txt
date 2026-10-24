@@ -1,8 +1,8 @@
-MONOLITH - SOUND (audio round 1, 2026-10-24)
+MONOLITH - SOUND (audio round 2, 2026-10-24)
 
-Play.bat <mission>         Play.bat escort        Play.bat dogfight window hard
-Missions: escort (The Crossing) and dogfight (The Dogfight). Add "window" for a window and veryeasy/easy/medium/hard/insane for the difficulty.
-Nobody has heard any of this yet. It was built, measured and checked by numbers (loudness, spectrograms, a self-test of 97 checks), never by ear: your ears are the judge.
+Play.bat                   Play.bat escort        Play.bat dogfight window hard
+Play.bat with no mission starts Dead Water (the cabin mission). Missions: cabin (Dead Water), escort (The Crossing) and dogfight (The Dogfight). Add "window" for a window and veryeasy/easy/medium/hard/insane for the difficulty.
+Nobody has heard any of this yet. It was built, measured and checked by numbers (loudness, spectrograms, a self-test of 104 checks), never by ear: your ears are the judge.
 
 WHAT IS NEW
 Everything makes sound now, and all of it was made for this game (nothing from a sound library).
@@ -11,7 +11,7 @@ Everything makes sound now, and all of it was made for this game (nothing from a
             Ambient bed, three battle intensities (they follow how many hostiles are close and on you, as the mission's music rules say), short stings when friends or Earth arrive,
             a sting for a goal done and a goal failed, victory, failure, and your death. The four loops are one 32-bar form at 112 BPM over the same harmony: the music changes on the next
             beat (up) or bar (down) in step with where it was, so it never lurches.
-  Voices    every radio line in both missions and every wingman acknowledgement (140 line and speaker combinations, 156 recordings), made with Trap Door's voice pipeline from voice
+  Voices    every radio line in both missions and every wingman acknowledgement (every line of all three missions, Dead Water's thirteen included, and every wingman acknowledgement: 169 recordings), made with Trap Door's voice pipeline from voice
             *descriptions* (no real person, no cloning) and put through a radio. Accents: Small Mercy's comms officer (South African), Tamsin's captain (Irish), Sable 2 (an Australian man),
             Sable 3 (a Londoner), Sable 1, which is you when no wingman is left to say it (Northern English, Manchester), Lantern (a deep Texan), Wick (an alien: a doubled, ring-modulated,
             whistling voice), and Earth: vast, cold, an octave down with a metallic edge and a long hall, preceded by a power-up swell. No Scottish accent anywhere.
@@ -22,12 +22,21 @@ Everything makes sound now, and all of it was made for this game (nothing from a
             its pauses, sped up, given breaths (a sharp breath in before it, a gasp in the longest gap, a ragged breath out after a shout), and sent through a harder radio: more distortion and a
             little clipping on the shouting, a louder noise bed, a squelch that snaps open and shut, a few brief drop-outs as the signal breaks up. It is also louder (calm -23, tense -21.5,
             frantic -19.5 LUFS). The wingmen's acknowledgements exist in a tense and a frantic take and the game plays the one the music asks for: tense in the quiet and at first contact,
-            frantic in the fight (battle 2 and 3). Earth never panics. 36 calm, 50 tense and 70 frantic recordings.
+            frantic in the fight (battle 2 and 3). Earth never panics. 43 calm, 52 tense and 74 frantic recordings.
+            A mission whose lines nobody has voiced now fails the checks (a line with no recording plays as a squelch: clicks and no voice, which is what Dead Water did in the cabin playtest).
             To hear the difference without playing: frantic_reel.mp3 next to Play.bat (52 s: six lines, each as the old calm read, then the tense one where there is one, then the frantic one).
   Effects   guns (a snap, a falling zap, a thump), the heavy gun, capital turrets, flak, missiles and torpedoes with their hiss as they pass, decoys, the lock tone and the missile warning (sequencer pings),
             shield and hull hits (heavier and with a cabin boom when they are on you), explosions in three sizes, a capital ship's break-up, death and shockwave, beams (charge, crack, roar, the bite, the fall),
             the engine hum (its pitch follows your speed) and the afterburner roar, cabin air, hull alarms when you are hurt, creaks under hits, the jump flash, and a deep horn when an Earth corvette or
             capital ship arrives. Distant versions of the big sounds are duller, smeared and late. The biggest moments (a capital ship dying, a beam firing) pull everything else down for a few seconds.
+
+  The cabin  (stand with View, walk, pull the breaker, repair, load the rack: every sound is the room, the ship or your body; there are no hands in the view, so no hand sounds)
+            Footsteps: a boot on steel deck plate, grating or a rung, a heel and a toe, the plate ringing over the void under it, and a low thrum from the gravity plating that gives under your weight and settles.
+            The harness opens and closes. The breaker: the lever grinding down its slot (from the press), the heavy clunk, then the ship powering down (a whine falling away, relays dropping out) or booting
+            (relays chattering in turn, a climbing whine, the four displays coming up one after another). In the dark: the emergency lighting's transformer hum swells, your own breathing comes up (louder the darker it is, and
+            louder again while a scan crosses), and a heartbeat that quickens when a scan is on you. A scan crossing the hull is a bowed-steel moan that follows the beam from side to side, then a bong through the hull when it finds you
+            or a moan that falls away when it misses. Hull creaks. The repair panel's hatch letting go of its seal, then living tech knitting into the hull under the repair (it climbs in pitch as the repair progresses), a chime when
+            it takes, a hard slip when a hit shakes the work. The weapon rack: the latch, the servo hauling the module out, the module coming free, then the heavy clack, the servo driving the new one home, the latch and a hiss of seals.
 
 WHAT TO LISTEN FOR AND TELL US
   - Does the music feel like Blade Runner / Carpenter / Mass Effect, and does it stay out of the way of the radio? Do the changes between intensities feel right, or too eager or too late?
@@ -37,6 +46,8 @@ WHAT TO LISTEN FOR AND TELL US
   - Do the crew sound properly panicked in a fight and calm only in the quiet? Too much distortion on the shouting, or too little? Do the wingmen's "Copy, going in" sound like a pilot under
     fire? (Listen in the dogfight: the Mercy's calls and Sable 2 and 3 losing each other are the frantic ones.)
   - Is the engine hum something you stop hearing (good) or hate (bad)? The alarm: urgent or annoying?
+  - The cabin: do the footsteps feel like a person on a steel deck? Is the breaker a satisfying heavy clunk, and does the power going down and coming back sound like a ship? In the dark, is the breathing close and a little frightening, or too loud?
+    Does the scan through the hull tell you where the beam is?
   - Do the explosions sound like they have the right weight in a vacuum?
 
 VOLUME (saved next to the game in audio.json)

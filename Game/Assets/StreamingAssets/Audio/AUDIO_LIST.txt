@@ -72,19 +72,28 @@ EFFECTS  (sfx\<name>; "_far" files are the distant versions; _0 _1 _2 are varian
   sfx\scan_sweep                                a scan crawling over the hull (the cabin's go-dark moment)
   sfx\earth_horn                                a deep Reaper-like horn when an Earth capital ship arrives
   sfx\earth_horn_small                          the same, for a corvette
-  sfx\step_plate_0, step_plate_1, step_plate_2  a footfall on the deck plate
-  sfx\step_grating_0, step_grating_1, step_grating_2  a footfall on grating
-  sfx\step_rung_0, step_rung_1, step_rung_2     a foot on a rung or riser
+  sfx\step_plate_0, step_plate_1, step_plate_2, step_plate_3  a boot on the deck plate under artificial gravity
+  sfx\step_grating_0, step_grating_1, step_grating_2, step_grating_3  a boot on grating
+  sfx\step_rung_0, step_rung_1, step_rung_2, step_rung_3  a boot on a rung or riser
   sfx\seat_open                                 the harness opens, the pilot stands
   sfx\seat_close                                the pilot sits, the harness closes
-  sfx\breaker_off                               the main breaker out: the displays die
-  sfx\breaker_on                                the main breaker in: the displays boot
+  sfx\breaker_lever                             the main breaker's lever sliding down its slot (from the press, until the clunk)
+  sfx\breaker_off                               the main breaker out: the heavy clunk
+  sfx\breaker_on                                the main breaker in: the clunk, the relays
+  sfx\power_down                                the ship powering down: the displays' whine falling away
+  sfx\power_up                                  the ship booting: a climbing whine, the displays coming up one by one
+  sfx\emergency_hum                             (loops)  the emergency lighting's transformer hum (louder in emergency and blackout)
   sfx\scan_hit                                  a scan found the ship
-  sfx\breath_in_0, breath_in_1                  
-  sfx\breath_out_0, breath_out_1                
-  sfx\repair_loop                               (loops)  a hand repair: living tech knitting (pitch rises with progress)
+  sfx\scan_miss                                 a scan passed over the dark ship and did not find it
+  sfx\hull_scan                                 (loops)  the scan's beam crossing the hull, heard through it (level and pan follow the light)
+  sfx\breath_in_0, breath_in_1, breath_in_2, breath_in_3  the pilot's breath in
+  sfx\breath_out_0, breath_out_1, breath_out_2, breath_out_3  the pilot's breath out
+  sfx\heartbeat                                 the pilot's heart, heard in the dark while a scan is on
+  sfx\panel_open                                a repair panel's hatch opening
+  sfx\repair_loop                               (loops)  a hand repair: living tech knitting into the hull (pitch rises with progress)
   sfx\repair_done                               
   sfx\repair_slip                               
+  sfx\rack_pull                                 the weapon rack letting a module go (from the press)
   sfx\rack_seat                                 a module seated in the weapon rack
   sfx\cabin_rattle                              loose things shaken by a shove
   sfx\ui_click                                  
@@ -102,6 +111,10 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
   tense on the quiet bed and at first contact, frantic in the fight. Replace one and only that one changes; replace both to change the line everywhere.
   Your recording of a tense or frantic line gets the matching radio treatment (more distortion and a faster squelch as it climbs).
   [earth_lector]  (earth radio)
+    vo\earth_lector\cabin_lector_blind                   Wreckage. The fallen leave their dead everywhere.
+    vo\earth_lector\cabin_lector_here                    Biologics in the dark. We will find you. We always have.
+    vo\earth_lector\cabin_lector_sweep                   Sweeping for life.
+    vo\earth_lector\cabin_spotted                        Biologic. Sable one. I see you. All of you.
     vo\earth_lector\earth_bombers_01                     The Mercy will be cleansed.
     vo\earth_lector\earth_bombers_02                     Your ark is a coffin. We will close it.
     vo\earth_lector\earth_wave_01                        Biologics. You were us, once.
@@ -176,6 +189,15 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable2\ack_form_02_tense                          [tense] Coming back in. Nice and boring.
     vo\sable2\ack_form_03_frantic                        [frantic] On your wing.
     vo\sable2\ack_form_03_tense                          [tense] On your wing.
+    vo\sable2\cabin_choir_in_frantic                     [frantic] Drones, three of them, low on your port side. Whenever you're ready.
+    vo\sable2\cabin_clear                                That's the last of them. Sable flight, form up.
+    vo\sable2\cabin_engine_back_tense                    [tense] Port drive's back. Whatever you did, do it again.
+    vo\sable2\cabin_go_dark_tense                        [tense] Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.
+    vo\sable2\cabin_hit_frantic                          [frantic] Sable 1, you're venting. Port drive's gone. Somebody out there has very good aim.
+    vo\sable2\cabin_missed                               It looked right through us. Nobody breathe yet.
+    vo\sable2\cabin_power_up_frantic                     [frantic] Get your power back, Sable 1. Breaker. Then get that engine seated. I'll cover.
+    vo\sable2\cabin_quiet                                Quiet out here. I don't like it. It never means nothing.
+    vo\sable2\cabin_spotted_reply_frantic                [frantic] That's torn it. Drones inbound. Heads up.
     vo\sable2\disabled_01_tense                          [tense] Target's dead in the water.
     vo\sable2\disabled_02_tense                          [tense] Engines gone. It's not going anywhere.
     vo\sable2\dogfight_lost_capital_frantic              [frantic] Mercy's gone.

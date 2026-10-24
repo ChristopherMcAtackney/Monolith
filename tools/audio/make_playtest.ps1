@@ -7,13 +7,15 @@
 #>
 param(
     [string]$PlaytestRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot)) 'Playtest'),
-    [string]$Date = (Get-Date -Format 'yyyy-MM-dd')
+    [string]$Date = (Get-Date -Format 'yyyy-MM-dd'),
+    [string]$Suffix = 'audio',                 # the folder is Monolith_<date>_<suffix>
+    [string]$DefaultMission = 'escort'         # what Play.bat starts when it is given no mission
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path (Split-Path $PSScriptRoot)
 $build = Join-Path $root 'Game\Builds\Win'
 if (-not (Test-Path (Join-Path $build 'Monolith.exe'))) { throw "no build at $build (run tools\unity.ps1 Monolith.EditorTools.Build.Player)" }
-$out = Join-Path $PlaytestRoot "Monolith_${Date}_audio"
+$out = Join-Path $PlaytestRoot "Monolith_${Date}_$Suffix"
 if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force $out | Out-Null
 Write-Host "copying the build to $out"
@@ -29,23 +31,27 @@ $a = Join-Path $out 'Audio'
 New-Item -ItemType Directory -Force (Join-Path $a 'music'), (Join-Path $a 'sfx'), (Join-Path $a 'vo') | Out-Null
 Copy-Item (Join-Path $root 'Game\Assets\StreamingAssets\Audio\AUDIO_LIST.txt') (Join-Path $out 'AUDIO_LIST.txt')
 Copy-Item (Join-Path $root 'tools\audio\SOUND.txt') (Join-Path $out 'SOUND.txt')
+# the cabin's numbers, editable next to Play.bat (the build reads its own if this is absent)
+$cab = Join-Path $root 'Game\Assets\Monolith\Resources\Cabin\cabin.json'
+if (Test-Path $cab) { Copy-Item $cab (Join-Path $out 'cabin.json') }
 # the voices heard without playing: the old calm reads against the tense and frantic ones (tools\audio\make_voice_reel.py)
 $reel = Join-Path $root 'gauntlet\captures\audio\r1\clips\frantic_reel.mp3'
 if (Test-Path $reel) { Copy-Item $reel (Join-Path $out 'frantic_reel.mp3') }
 
 # the controls the other playtests use, if there are any
-$ctl = Get-ChildItem $PlaytestRoot -Recurse -Filter controls.json -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $out 'controls.json') } | Select-Object -First 1
+$ctl = Get-ChildItem $PlaytestRoot -Recurse -Filter controls.json -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $out 'controls.json') } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($ctl) { Copy-Item $ctl.FullName (Join-Path $out 'controls.json') } elseif (-not (Test-Path (Join-Path $out 'controls.json'))) { Write-Host 'no controls.json found: the game uses its built-in controls' }
 
-@'
+$bat = @'
 @echo off
-rem Monolith with sound. Play.bat <mission> [window] [veryeasy|easy|medium|hard|insane]
-rem   Play.bat escort           The Crossing, fullscreen 1920x1080
+rem Monolith with sound. Play.bat [mission] [window] [veryeasy|easy|medium|hard|insane]
+rem   Play.bat                  @@DEFAULT@@ (the default mission), fullscreen 1920x1080
+rem   Play.bat escort           The Crossing
 rem   Play.bat dogfight window  The Dogfight, in a window
 rem Missions are the .mission.json files in the Missions folder next to this file (read before the built-in ones): edit one and play it again.
 rem Your own music, effects and voices go in the Audio folder (see SOUND.txt). The log, with every line of the radio and every music change, is Monolith_audio_log.txt.
 setlocal
-set "MISSION=escort"
+set "MISSION=@@DEFAULT@@"
 set "MODE=-screen-fullscreen 1"
 set "LEVEL="
 :args
@@ -82,8 +88,11 @@ goto args
 :run
 set "CTL="
 if exist "%~dp0controls.json" set "CTL=-mnControls "%~dp0controls.json""
-start "" "%~dp0Monolith.exe" %MODE% -screen-width 1920 -screen-height 1080 -mnMission "%MISSION%" %LEVEL% %CTL% -mnAudioLog -logFile "%~dp0Monolith_audio_log.txt"
-'@ | Set-Content -Encoding ASCII (Join-Path $out 'Play.bat')
+set "CAB="
+if exist "%~dp0cabin.json" set "CAB=-mnCabin "%~dp0cabin.json""
+start "" "%~dp0Monolith.exe" %MODE% -screen-width 1920 -screen-height 1080 -mnMission "%MISSION%" %LEVEL% %CTL% %CAB% -mnAudioLog -logFile "%~dp0Monolith_audio_log.txt"
+'@
+$bat.Replace('@@DEFAULT@@', $DefaultMission) | Set-Content -Encoding ASCII (Join-Path $out 'Play.bat')
 
 Write-Host "playtest folder: $out"
 Write-Host ("size: {0:N0} MB" -f ((Get-ChildItem $out -Recurse -File | Measure-Object Length -Sum).Sum / 1MB))

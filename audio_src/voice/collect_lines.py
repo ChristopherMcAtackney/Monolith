@@ -55,6 +55,17 @@ INTENSITY = {
     'escort:spool': 'frantic',            # twenty seconds to hold, battle 3
     'escort:away': 'calm',                # they are through
     'escort:lost': 'frantic',             # Tamsin is gone
+    # Dead Water (the cabin mission): ambient and silent running, then the Lector's sweep, then drones
+    'cabin:quiet': 'calm',                # t=6, ambient: the quiet opening
+    'cabin:go_dark': 'tense',             # t=24, ambient: an urgent order to go dark, said low and fast, not shouted
+    'cabin:missed': 'calm',               # the sweep passed over them: a held breath let out
+    'cabin:spotted_reply': 'frantic',     # battle 1: found, drones inbound
+    'cabin:hit': 'frantic',               # the port drive is gone and the ship is venting
+    'cabin:power_up': 'frantic',          # the fight is on and the pilot must be in the cabin
+    'cabin:choir_in': 'frantic',          # three drones on the port side
+    'cabin:engine_back': 'tense',         # relief, still in a fight
+    'cabin:clear': 'calm',                # the last drone is down: the fight is over
+    # (Earth's Lector lines, cabin:lector_here, lector_sweep, lector_blind and spotted, are always calm.)
 }
 # radio.json situation -> the intensities it is made in (a list: made once for each; chosen by the music state at run time)
 SITUATION = {
@@ -64,6 +75,7 @@ SITUATION = {
     'earth_wave': ['calm'], 'earth_bombers': ['calm'], 'won': ['calm'], 'lost_capital': ['frantic'],
 }
 DEFAULT_MESSAGE = 'calm'      # Earth's lines and anything untagged: composed
+UNTAGGED = []                 # mission:message ids that had no entry in INTENSITY (printed at the end: add them, with the reason)
 
 
 def spoken(text, intensity):
@@ -132,7 +144,12 @@ def main():
             voices = voice_of(m.get('from'))
             if m.get('fallbackFrom'):
                 voices += [v for v in voice_of(m['fallbackFrom']) if v not in voices]
-            inten = INTENSITY.get(f'{mid}:{m["id"]}', DEFAULT_MESSAGE)
+            inten = INTENSITY.get(f'{mid}:{m["id"]}')
+            if inten is None:
+                # a mission written after this table: guess (a high-priority message is tense, anything else calm) and say so; Earth's voices ignore it anyway
+                inten = 'tense' if m.get('priority') == 'high' else DEFAULT_MESSAGE
+                if any(CAST['voices'][v].get('intensity') != 'calm' for v in voices):       # Earth's voices are always calm: no need to tag them
+                    UNTAGGED.append(f'{mid}:{m["id"]} -> {inten}')
             for v in voices:
                 add(v, m['text'], f'{mid}:{m["id"]}', f'{mid}_{slug(m["id"])}', [inten])
 
@@ -142,7 +159,7 @@ def main():
                     for v in voice_of(o.get('from')):
                         add(v, o['text'], f'{mid}:inline', f'{mid}_inline_{slug(o["text"])[:24]}', [DEFAULT_MESSAGE])
                 if o.get('do') == 'callOut' and 'text' in o:
-                    for v in CAST['defaults']['wingmanVoices']:
+                    for v in (voice_of(o['from']) if o.get('from') else CAST['defaults']['wingmanVoices']):
                         add(v, o['text'], f'{mid}:callOut', f'{mid}_callout_{slug(o["text"])[:24]}', ['tense'])
                 for x in o.values():
                     walk(x)
@@ -184,6 +201,8 @@ def main():
     for e in entries.values():
         byi[e['intensity']] = byi.get(e['intensity'], 0) + 1
     words = sum(len(e['say'].split()) for e in entries.values())
+    if UNTAGGED:
+        print('  note: no intensity tag for ' + str(len(UNTAGGED)) + ' message(s), guessed: ' + '; '.join(UNTAGGED) + '  (add them to INTENSITY in collect_lines.py with the reason)')
     print(f'{len(entries)} clips, {words} words: ' + ', '.join(f'{k} {v}' for k, v in sorted(by.items())) + ' | ' + ', '.join(f'{k} {v}' for k, v in sorted(byi.items())))
     return 0
 

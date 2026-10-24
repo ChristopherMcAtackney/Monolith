@@ -27,7 +27,7 @@ To keep a long render from locking the build output, copy `bin/Release/net9.0` s
 
 1. **Music.** `python audio_src/compose/build_music.py` writes the MIDI (`score.py` holds the harmony, the themes and the pattern helpers), then `MnAudio music all`. A full render is about 7 minutes.
 2. **Effects.** `MnAudio sfx all` (seconds). The designs are `Sfx/Sfx*.cs`; levels are in `SfxLib.cs`.
-3. **Voices.** Needs WSL with Trap Door's Breeze setup (`~/breeze`, read only; its install scripts are in `TrapDoor3d/tools/tts`). `python audio_src/voice/collect_lines.py` gathers every line in the missions and
+3. **Voices.** One command does all of this for new lines: `powershell -File tools\audio\voice.ps1` (see `tools/PIPELINE.md`, "Voicing a mission"). By hand: needs WSL with Trap Door's Breeze setup (`~/breeze`, read only; its install scripts are in `TrapDoor3d/tools/tts`). `python audio_src/voice/collect_lines.py` gathers every line in the missions and
    `radio.json`; in WSL `bash audio_src/voice/run_voice.sh` generates the dry clips (about 5 to 25 s a line on the 4070 Ti, resumable: it only does new or changed lines; voices are *designed* from text in
    `cast.json`, never cloned; a CUDA fault restarts the run); `MnAudio voice` makes the radio.
    **Every line is tagged calm, tense or frantic** (`collect_lines.py`: from the event that fires it and the music state at that moment; the table is in the script with the reason beside each line;

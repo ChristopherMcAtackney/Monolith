@@ -107,7 +107,9 @@
     "earth": "earth_warden",
     "#earth": "earth_warden",
     "#tamsin": "tamsin",
-    "#command": "mercy"
+    "#command": "mercy",
+    "#lector": "earth_lector",
+    "#warden": "earth_warden"
   },
   "defaults": {
     "wingmanVoices": [
