@@ -156,7 +156,7 @@ namespace Monolith.Juice
         {
             float R = 52f;
             Blast(pos, vel, R, 1f, JuiceCue.ExplosionSmall, false);
-            _fx.SparkBurst(pos, vel, _c.N(14), 80f, 300f, 0.5f, 1.5f, 0.12f, SparkStyle.Metal, 0.4f);
+            _fx.SparkBurst(pos, vel, _c.N(14), 60f, 200f, 0.5f, 1.5f, 0.12f, SparkStyle.Metal, 0.5f);
             Pieces(visual, pos, vel, 5, 22f, 85f, 1.7f, false, 1.2f);
             _debris.Shards(pos, vel, 22, 1.2f, 5.0f, 12f, 55f, hullMat, 1.2f);
             _feel.Impact(pos, 0.42f, 300f, 0.55f, 0.35f, 0.34f, success);
@@ -172,7 +172,7 @@ namespace Monolith.Juice
             Later(0.17f, () => { Blast(second, vel, R, 1.1f, JuiceCue.ExplosionMedium, false); _fx.Vent(second, shipFwd, 4f, 1.2f, 50f); });
             Pieces(visual, pos, vel, 7, 20f, 75f, 2.1f, false, 1.2f);
             _debris.Shards(pos, vel, 32, 1.6f, 7.0f, 12f, 60f, hullMat, 1.2f);
-            _fx.SparkBurst(pos, vel, _c.N(24), 90f, 340f, 0.5f, 1.7f, 0.14f, SparkStyle.Metal, 0.4f);
+            _fx.SparkBurst(pos, vel, _c.N(24), 70f, 260f, 0.5f, 1.7f, 0.14f, SparkStyle.Metal, 0.5f);
             _feel.Impact(pos, 0.62f, 480f, 0.75f, 0.45f, 0.48f, success);
             if (success) _feel.MaybeHitStop(0.7f);
         }
@@ -579,9 +579,9 @@ namespace Monolith.Juice
                 // The opening punch: a blown-out white mass as big as the ship, dense and opaque for its first half second (the fire shader opens a ball dense and
                 // opaque, then breaks it into thin, smeared, cooling fire), so the hull is gone into it. A central ball the whole size of the blast, and lobes through
                 // the space the hull filled; far fewer, far bigger balls than before, so it reads as one mass and not a pile of bursts.
-                _fx.Flash(centre, R * 1.6f, white * 75f, 0.22f, 0.8f, 2.2f, 1.25f, _vel);
+                _fx.Flash(centre, R * 0.9f, Emitters.WarmWhite * 50f, 0.16f, 0.8f, 2.2f, 1.2f, _vel);
                 _fx.Flare(centre, R * 5f, R * 0.30f, Vector3.Lerp(Emitters.WarmWhite, white, 0.5f) * 6f, 0.25f, 2.2f);
-                _fx.Fireball(centre, _vel, R * 0.6f, R * 1.45f, _c.Rng.Range(2.3f, 2.8f), 2.3f, 5.8f, 0f, 0.6f, 0.2f);
+                _fx.Fireball(centre, _vel, R * 0.6f, R * 1.45f, _c.Rng.Range(2.3f, 2.8f), 1.8f, 5.8f, 0f, 0.6f, 0.2f);
                 int balls = Mathf.Min(_c.N(11), 14);
                 for (int i = 0; i < balls; i++)
                 {
@@ -589,15 +589,17 @@ namespace Monolith.Juice
                     off += _c.Rng.OnSphere() * R * 0.15f;
                     float rr = R * _c.Rng.Range(0.55f, 0.95f);
                     _fx.Fireball(centre + off, _vel + off.normalized * R * _c.Rng.Range(0.15f, 0.55f), rr * 0.75f, rr * _c.Rng.Range(1.3f, 1.8f),
-                                 _c.Rng.Range(1.8f, 2.7f), _c.Rng.Range(1.9f, 2.4f), _c.Rng.Range(4.8f, 6.2f), 0f, 0.7f, 0.3f);
+                                 _c.Rng.Range(1.8f, 2.7f), _c.Rng.Range(1.5f, 2.0f), _c.Rng.Range(4.8f, 6.2f), 0f, 0.7f, 0.3f);
                 }
                 // Few sparks, each different; the fine dots of FS2's blasts stay (hundreds, not nine hundred).
-                _fx.SparkBurst(centre, _vel, _c.N(60), 120f, 1100f, 1.0f, 3.2f, 0.3f, SparkStyle.Hot, 0.35f, 1.2f);
-                _fx.SparkBurst(centre, _vel, _c.N(16), 200f, 1500f, 0.8f, 2.2f, 0.3f, SparkStyle.Plasma, 0.35f, 0.9f);
-                _fx.Specks(centre, _vel, R, _c.N(380), 60f + R * 0.4f, 380f + R * 2.4f, 1.0f, 3.4f, 0.28f);
+                _fx.SparkBurst(centre, _vel, _c.N(60), 80f, 60f + R * 3.6f, 1.0f, 3.0f, 0.3f, SparkStyle.Hot, 0.4f, 1.2f);
+                _fx.SparkBurst(centre, _vel, _c.N(16), 120f, 80f + R * 4.2f, 0.8f, 2.2f, 0.3f, SparkStyle.Plasma, 0.4f, 0.9f);
+                _fx.Specks(centre, _vel, R, _c.N(260), R * 0.2f, R * 2.2f, 1.0f, 3.0f, 0.5f);
                 _fx.Embers(centre, _vel, R * 0.9f, _c.N(60), 60f + R * 0.3f, 3f, 8f, 3.2f);
                 // Real light on everything near, starting white-hot and going amber, from a source with a size (a hull shows a broad bright highlight, not a pinprick).
-                _c.Lights.Flash(centre, new Color(1f, 0.88f, 0.70f), 6.0e6f * R * R * _c.Bright, 5200f, 1.6f, 1.3f, new Color(1f, 0.58f, 0.28f), 60f);
+                _c.Lights.Flash(centre, new Color(1f, 0.88f, 0.70f), 5.5e5f * R * R * _c.Bright, 5200f, 2.4f, 1.1f, new Color(1f, 0.56f, 0.26f), 60f);
+                // And a slow ember glow that outlasts it: the fire keeps lighting the wreckage round it while it cools.
+                _c.Lights.Flash(centre, new Color(1f, 0.50f, 0.22f), 1.6e5f * R * R * _c.Bright, 3200f, 5.0f, 0.65f, new Color(0.85f, 0.34f, 0.14f), 90f);
                 _c.Audio.Play(JuiceCue.ExplosionLarge, centre, 1f, _c.DistanceToCamera(centre));
                 _c.Audio.Duck(0.65f, 3.2f);
 

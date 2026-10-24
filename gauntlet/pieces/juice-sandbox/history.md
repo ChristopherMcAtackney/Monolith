@@ -392,3 +392,61 @@ as many particles and far fewer fireballs in a death.
 - Meat bar status: still won (two winning rounds running already); this check guards against regression.
 
 **Gap for round 5:** the dense opening phase should be churning orange-red layers with dark smoky pockets and lobes (not beige); pale and murky only in the cooling phase. Blast light that visibly lights nearby hull fragments in the cooling stills. Kill the far-flung even field of tiny orange dots. Fireball silhouettes that don't read as soft cutouts.
+
+## Round 5 (builder, 2026-10-25)
+
+Beams and bolts untouched. The brief's four gaps, and what I found. Reference frames: FS2 `big_battle_comparison_0083` (the opening of a capital blast: a white-hot core about
+40 per cent of the width, surrounded by layers of churning orange and red fire with dark red-black gaps between billows, a ragged lobed edge, a field of fine sparks thickest near the blast).
+
+### 1. The dots: what they were
+Two things, both mine, and the spark counts were never the cause.
+- **A minimum on-screen width.** The effect shader holds every streak to a minimum width and length in pixels (that is what keeps a far bolt a line). A spark, or one of the 260 to 900 fine
+  specks, a kilometre away is thinner than a pixel, so it was widened to the minimum and drawn at full brightness: every distant spark became the same small bright rectangle, whatever its size.
+- **Speeds that threw them kilometres.** Specks went up to 380 + 2.4 R m/s and sparks up to 140 + 8 R (over 1,000 m/s in a capital blast), with drag that let them travel 10 to 15 blast radii,
+  so they were spread evenly over the whole frame by the time of the cooling still.
+- **Fix.** Sparks and specks (`Particle.Dim`, `t4.y` in the shader) now put on a pixel only the light they really would: a streak thinner than a pixel is dimmed by its coverage (width ratio times length
+  ratio, to the 0.85), so far ones fade out and near ones are bright, which also gives a natural falloff from the blast. Speeds are squared toward the slow end (`pow(F, 2.2)` for specks) and
+  capped at a few radii (sparks 70 + 3.6 R, specks 40 + 2.4 R; the capital blast's specks 0.2 to 2.2 R, 260 of them, bigger, 0.5 m): a few reach far, most stay near the blast.
+  The stills no longer show a field of dots at the corners.
+
+### 2. The opening churns orange-red with dark pockets, not beige (`ShadeFire`)
+The beige was over-exposure: heat x 0.7 x 1.15, a white flash over the whole ball and a 20 per cent grey blend kept every layer above the tonemapper's knee, so orange became cream.
+- Temperature is now `heat * 0.45` times a layered value with large swings from billow to billow (`churn` from two noise channels), so the core is white, then yellow, orange and red layers round it,
+  and dark where gas is thick and cold. The ramp is the same; the values are lower, so the hues survive the tonemapper.
+- **Smoke**: pockets of thick cold gas (a noise channel, only where the temperature is low) dim the fire behind to dark red-brown and thicken as they go, so there is dark smoky contrast.
+- The grey drain applies only while it cools (0.55 x the cooling phase), the opening's brightness boost is 1.12, and the ball's white flash is smaller (0.85 R at 42 units, the capital's 0.9 R at 50 warm white).
+  The capital's central ball is heat 1.8 and its lobes 1.5 to 2.0 (they were 2.3 and 1.9 to 2.4).
+- Extinction 4.6 in the opening (it was 8), so even the dense phase has a ragged edge; 3.4 after.
+
+### 3. Silhouettes: no soft cutout, no square edges
+- **Big lobes**: a low-frequency noise tap shapes the mask and pushes the rim in and out (`lobe`), so the outline is made of billows of different sizes, not a circle with a feathered edge. The density is forced to zero
+  at the sphere's own boundary (a lobe pushed past it used to be cut flat: a hard circle).
+- **Square edges close to the camera (the AI builder's note)**: the quad was aligned to the screen, but a ball off to the side of the view projects to an ellipse on that plane, wider than the quad's circle, so the quad's
+  edge cut it. Fireball quads now face the ball (a basis across the line of sight), where the silhouette is exactly the circle the quad was sized for. The fade at the quad's edge now only applies when the ball is so near that its
+  silhouette is wider than the quad's size cap; before, it started at 0.8 of every quad and carved a square into big balls (the boxy capital blast).
+- Checked with a 90 m and a 70 m blast about 150 m and 125 m from the camera and off to the side: no straight edges.
+
+### 4. Spill on wreckage
+- The final blast's light was 6e6 x R^2 candela: 70 times the Sun at the wreckage, so it blew every fragment out to a flat orange. It is now 5.5e5 x R^2 (2.4 s) plus a slow ember glow (1.6e5 x R^2, 5 s, going to deep orange, sized 90 m)
+  that outlasts it: fragments show gradients, a lit face toward the blast and a dark one away. Fighter and bomber blasts 9e6 to 3e6 x R^2, longer (0.8 + 0.01 R s).
+- The cooling still is shot from where a section's blast-facing side is visible (off the ship's axis): the near fragment is lit orange on that face and the rest are silhouetted dark against the fire.
+
+### Captures (`gauntlet/captures/juice-sandbox/r5/`, from a fresh build, no HUD)
+- Same stills as r4. `capital_death_cooling` is now from farther back and off axis (wreckage in the frame, one lit side visible). `capital_death_internal`, `capital_death_breakup`, `fighter_kill_debris` and the rest as before.
+  `capital_death.mp4`, `shake.mp4`, `perf/`, `perf_repeats/`, `checks/` (all pass).
+- **Best three**: `stills/capital_death_cooling.png` (a churning orange-red fire with dark pockets, wreckage lit on its blast-facing side and silhouetted against the fire), `stills/fighter_kill_fireball.png` (billowing lobes
+  and dark smoke through orange fire, a handful of varied sparks, nothing at the corners), `stills/capital_death_final.png` (the opening: the whole hull swallowed by churning orange-yellow fire).
+
+### Performance (`perf/`; 1920x1080, vsync off, RTX 4070 Ti; the same 18 s run)
+479 fps average, 1% low 205, worst frame 10.8 ms; repeats 476.3 (1% low 188, worst 11.5) and 397.2 (1% low 56, worst 35.7: another builder's Unity was open; the hitch log of round 1 showed the same on a busy machine).
+One more noise tap per march step (the lobe) costs nothing measurable.
+
+### Honest read against the reference frames
+- The opening is orange-yellow with red-brown gaps, closer to FS2's, but the biggest balls are still smoother than FS2's cauliflower: the noise is the same size on every ball, so a 330 m ball has the detail of a 50 m one scaled up.
+- The ball's silhouette is now lobed but has a soft edge everywhere; FS2's has some hard, bright edges where fire meets black, and the Expanse's none.
+- The wreckage spill shows on one near section; most fragments are far enough that they read as dark silhouettes. The hot-glow heat is still not on the baked sections.
+- The opening-to-cooling change is still a quick change of density and colour; I did not look at the clip frame by frame for popping.
+
+### Gotchas found
+- `tools/capture.ps1 -Only a,b` runs the plan from the start for those stills only, so timed stills (a death at 47 s) come out at the wrong game time; capture the whole plan.
+- A shader edit that only changes numbers inside a branch can look like no change at all when the visible edge is made by a different term (the circle was the sphere boundary, not the lump terms); look for what makes the edge before tuning.

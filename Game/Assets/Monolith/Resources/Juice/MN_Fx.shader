@@ -128,6 +128,7 @@ Shader "Hidden/Monolith/Fx"
             float3 wpos;
             float dist = max(length(centre), 0.01);
             float aspect = 1.0;
+            float dim = 1.0;
             float2 local = corner;
             float4 ctr = float4(centre, halfW);
 
@@ -143,6 +144,9 @@ Shader "Hidden/Monolith/Fx"
                 float minPx = _MN_Params.z * (kind > 6.5 ? 5.0 : 1.0);
                 float minHalf = minPx * dist / _MN_Params.y;
                 float hw = max(halfW, minHalf);
+                // Sparks and specks (t4.y = 1): a streak thinner or shorter than a pixel puts only the light it really would on that pixel, so far ones fade out
+                // instead of all turning into the same bright dot (the field of identical orange dots that reached the frame corners).
+                dim = a.t4.y > 0.5 ? pow(saturate(halfW / minHalf) * saturate(max(a.t1.w, 1e-3) / hw), 0.85) : 1.0;
                 len = max(len, hw);
                 wpos = centre + ax * (corner.x * len) + side * (corner.y * hw);
                 local = float2(corner.x * len / hw, corner.y);
@@ -161,12 +165,21 @@ Shader "Hidden/Monolith/Fx"
                 float s, c;
                 sincos(a.t1.w, s, c);
                 float2 rc = float2(c * corner.x - s * corner.y, s * corner.x + c * corner.y);
-                wpos = centre + _MN_CamRight.xyz * (rc.x * halfW * grow) + _MN_CamUp.xyz * (rc.y * hh * grow);
+                float3 bx = _MN_CamRight.xyz, by = _MN_CamUp.xyz;
+                if (kind > 0.5 && kind < 1.5)
+                {
+                    // Face the ball, not the screen: off to the side of the view a ball's silhouette is an ellipse on a screen-aligned plane, and a square quad
+                    // would cut it (square edges on a ball near the camera). On a plane across the line of sight it is a circle that grow covers exactly.
+                    float3 vd = centre / dist;
+                    bx = normalize(cross(_MN_CamUp.xyz, vd));
+                    by = cross(vd, bx);
+                }
+                wpos = centre + bx * (rc.x * halfW * grow) + by * (rc.y * hh * grow);
                 aspect = halfW / max(hh, 1e-3);
             }
 
             o.pos = mul(_MN_Matrix, float4(wpos, 1.0));
-            o.col = a.col;
+            o.col = a.col * dim;
             o.uv = float4(local, kind, a.t0.w);
             o.p = float4(a.t2.y, a.t2.z, a.t2.w, a.t3.w);
             o.q = float4(a.t3.x, a.t3.y, a.t3.z, dot(wpos, _MN_CamFwd.xyz));
@@ -232,7 +245,7 @@ Shader "Hidden/Monolith/Fx"
             float open = (1.0 - smoothstep(0.05, 0.26, age)) * (1.0 - saturate(palette - 1.0));
             float cool = smoothstep(0.30, 0.95, age) * isFire;
             float blurMix = lerp(0.12, 0.55, smoothstep(0.08, 0.60, age)) * (1.0 - saturate(palette - 1.0));
-            float extinction = lerp(3.8, 9.5, open);
+            float extinction = lerp(3.4, 4.6, open);
             float3 sum = 0.0;
             float A = 0.0;
 
@@ -254,15 +267,20 @@ Shader "Hidden/Monolith/Fx"
                 float4 nr = Tex3(rh * (0.42 + 0.10 * r) + off * 0.6 + warp * 0.35);
                 n = lerp(n, nr, blurMix * (1.0 - 0.75 * smoothstep(0.40, 0.90, r)));        // the smear is inside the ball: its silhouette is not combed into spikes
                 float fbm = n.r * 0.55 + n.g * 0.30 + n.b * 0.15;
+                float lobe = Tex3(l * 0.26 + off * 0.5 + float3(0.05, 0.10, 0.0) * age).r - 0.5;     // a few big billows: the silhouette is made of lobes, never a circle
                 float base = 1.0 - r / 0.80;                          // a dense body, and lobes of thinning fire out to the edge of the sphere
-                float mask = base * 1.05 + (fbm - 0.45) * lerp(1.9, 2.5, open) - erode * 1.6 + open * 0.55;
-                float dens = pow(saturate(mask / lerp(0.85, 0.60, open)), lerp(1.6, 1.2, open));   // open: a dense mass; after: a wide feather, the fire thins out into the dark
-                dens *= 1.0 - smoothstep(lerp(0.62, 0.50, open), 1.0, r + 0.40 * (0.45 - fbm));          // the rim is lumpy: a different radius in every direction, never a circle                           // the sphere's own rim never shows
+                float mask = base * 1.05 + (fbm - 0.45) * lerp(1.9, 2.9, open) + lobe * lerp(1.7, 2.4, open) - erode * 1.6 + open * 0.30;
+                float dens = pow(saturate(mask / lerp(0.85, 0.70, open)), lerp(1.6, 1.1, open));   // open: a dense mass; after: a wide feather, the fire thins out into the dark
+                dens *= 1.0 - smoothstep(lerp(0.62, 0.40, open), 0.98, r + 0.50 * (0.45 - fbm) - 0.85 * lobe);
+                dens *= 1.0 - smoothstep(0.78, 1.0, r);                                          // and nothing is left at the sphere's own boundary (a lobe must never be cut flat by it)          // the rim is lumpy: a different radius in every direction
                 if (dens <= 0.0) continue;
 
                 float hotspot = saturate(base) * saturate(base);
-                float T = lerp(0.70, 1.15, open) * heat * life * (0.20 + 0.95 * hotspot + 0.80 * (n.g - 0.45) + 0.45 * (n.a - 0.5) + 0.60 * open * saturate(base)) * lerp(0.45, 1.30, n.b);
-                T = max(T, 0.10 * life);
+                // Churning layers: the temperature varies a lot from one billow to the next (white in the core, yellow, orange and red layers round it, dark
+                // where the gas is thick and cold), so the dense opening is orange-red fire, not one beige mass.
+                float churn = (n.g - 0.45) * 1.55 + (n.a - 0.5) * 1.25;
+                float T = heat * 0.45 * life * saturate(0.26 + 0.95 * hotspot + churn + 0.20 * open) * lerp(0.55, 1.30, n.b);
+                T = max(T, 0.06 * life);
                 float3 ramp = lerp(Incandescent(T), PlasmaRamp(T), saturate(palette));
                 ramp = lerp(ramp, float3(0.78, 0.88, 1.0) * (0.25 + T), saturate(palette - 1.0));
                 float vein = pow(saturate(1.0 - abs(2.0 * n.g - 1.0)), 4.0);
@@ -270,8 +288,12 @@ Shader "Hidden/Monolith/Fx"
                 lum = lerp(lum, 1.0 * (0.7 + 0.5 * vein), saturate(palette - 1.0));      // cool gas is lit, not black: a pale puff, even in front of a fireball
                 // Paler and murkier as it cools: the colour drains toward a warm grey and the light dims; the hot core of the opening stays white.
                 float grey = dot(ramp, float3(0.30, 0.59, 0.11));
-                ramp = lerp(ramp, float3(grey, grey * 0.94, grey * 0.88), (0.20 + 0.50 * cool) * isFire);
-                lum *= lerp(1.0, 0.62, cool) * lerp(1.0, 1.55, open);
+                ramp = lerp(ramp, float3(grey, grey * 0.94, grey * 0.88), 0.55 * cool * isFire);
+                lum *= lerp(1.0, 0.62, cool) * lerp(1.0, 1.12, open);
+                // Smoke: pockets of thick cold gas that block the fire behind them (dark red-brown against the bright layers).
+                float smoke = smoothstep(0.50, 0.80, n.a) * (1.0 - saturate(T * 1.4)) * isFire;
+                lum *= 1.0 - 0.90 * smoke;
+                dens *= 1.0 + 0.8 * smoke;
                 lum *= 1.0 - 0.72 * smoothstep(0.45, 1.0, r);                                                // limb: the rim is cooler and dimmer, so its thin edge never clips to a bright hard line
                 float3 emit = ramp * lum;
                 dens *= lerp(smoothstep(0.10, 0.55, T), 1.0, saturate(palette - 1.0));                       // gas that has cooled thins out instead of hanging as a smooth red cloud
@@ -281,8 +303,13 @@ Shader "Hidden/Monolith/Fx"
                 if (A > 0.985) break;
             }
             // A ball bigger than its quad is cut by the quad: fade it before the cut so no straight edge ever shows.
+            // Only when the ball is so near that its silhouette is wider than its (clamped) quad; otherwise the ball ends inside the quad by itself and fading
+            // from 0.8 of the quad would carve a square into a large ball.
             float2 qc = abs(i.uv.xy);
-            float quadFade = 1.0 - smoothstep(0.80, 1.0, max(qc.x, qc.y));
+            float dC = max(length(centre), 0.01);
+            float fit = rsqrt(max(1.0 - (Rs * Rs) / (dC * dC), 0.06));
+            float silFrac = fit / (min(fit, 3.6) * 1.03);
+            float quadFade = 1.0 - smoothstep(silFrac < 0.99 ? 0.985 : 0.80, 1.0, max(qc.x, qc.y));
             return float4(sum * i.col.rgb * quadFade, A * quadFade);
         }
 

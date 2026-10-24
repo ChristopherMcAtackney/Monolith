@@ -48,6 +48,8 @@ namespace Monolith.Juice
         public float Stretch, MinLen;
         /// <summary>Streaks: 0 = hard and saturated, 1 = a soft smear (motion blur).</summary>
         public float Blur;
+        /// <summary>1 = a streak thinner than a pixel is dimmed to the light it would really put on that pixel (sparks, specks); 0 = held at a minimum width (bolts).</summary>
+        public float Dim;
         public float FadeExp, FadeIn, SizeCurve, Flicker;
         public float Soft, NearStart, NearRange;
         /// <summary>1 = affected by the brightness (flash) setting; 0 = drawn as is (dark scorch).</summary>
@@ -157,7 +159,7 @@ namespace Monolith.Juice
                 float len = Mathf.Max(p.MinLen, speed * p.Stretch);
                 float half = len * 0.5f;
                 // The head sits on the particle; the tail trails behind it.
-                batch.Quad(p.Pos - dir * half, c, p.Kind, p.Seed, new Vector4(dir.x, dir.y, dir.z, half), w, n, p1, p2, p.Soft, p.NearStart, p.NearRange, p.Palette, new Vector4(p.Blur, 0f, 0f, 0f));
+                batch.Quad(p.Pos - dir * half, c, p.Kind, p.Seed, new Vector4(dir.x, dir.y, dir.z, half), w, n, p1, p2, p.Soft, p.NearStart, p.NearRange, p.Palette, new Vector4(p.Blur, p.Dim, 0f, 0f));
             }
             else
             {

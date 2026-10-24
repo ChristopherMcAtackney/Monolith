@@ -365,7 +365,7 @@ namespace Monolith.Juice
                     {
                         b.FireCarry = 0f;
                         Vector3 at = end + b.EndNormal * width * _c.Rng.Range(0.2f, 0.8f) + _c.Rng.OnSphere() * width * 0.45f;
-                        _fx.Fireball(at, tv + b.EndNormal * _c.Rng.Range(20f, 70f), width * 0.5f, width * _c.Rng.Range(1.2f, 1.9f), _c.Rng.Range(0.55f, 0.95f), 1.7f, 5.0f, 0f, 1.5f, 0.3f);
+                        _fx.Fireball(at, tv + b.EndNormal * _c.Rng.Range(20f, 70f), width * 0.5f, width * _c.Rng.Range(1.2f, 1.9f), _c.Rng.Range(0.55f, 0.95f), 2.4f, 5.0f, 0f, 1.5f, 0.3f);
                     }
                     b.BlastCarry += dt * _c.Rng.Range(1.6f, 2.6f);
                     if (b.BlastCarry > 1f)

@@ -240,6 +240,22 @@
    "t": 40.5,
    "do": "event",
    "name": "capital_death"
+  },
+  {
+   "t": 47.5,
+   "do": "place",
+   "pos": [
+    -330,
+    160,
+    1330
+   ],
+   "lookAt": [
+    170,
+    70,
+    700
+   ],
+   "speed": 0.0,
+   "throttle": 0.0
   }
  ],
  "at": [

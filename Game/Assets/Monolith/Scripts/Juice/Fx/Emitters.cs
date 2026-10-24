@@ -121,7 +121,7 @@ namespace Monolith.Juice
                 float lum = Mathf.Exp(_c.Rng.Range(-1.1f, 0.35f));                    // brightness varies widely
                 s.Kind = FxKind.Streak; s.Pos = pos + d * _c.Rng.F() * width * 4f; s.Vel = inherit + d * spd; s.Dir = d; s.Drag = drag * _c.Rng.Range(0.6f, 1.4f);
                 s.Life = _c.Rng.Range(lifeMin, lifeMax);
-                s.W0 = s.W1 = size; s.Stretch = shutter; s.MinLen = Mathf.Max(0.5f, size * _c.Rng.Range(2f, 6f));
+                s.Dim = 1f; s.W0 = s.W1 = size; s.Stretch = shutter; s.MinLen = Mathf.Max(0.5f, size * _c.Rng.Range(2f, 6f));
                 s.P1a = s.P1b = 1.1f; s.P2a = 0.0f; s.P2b = 0.0f; s.Blur = _c.Rng.Range(0.15f, 0.75f);
                 s.C0 = c0 * lum; s.C1 = c1 * lum; s.C2 = c2 * lum; s.FadeExp = 0.5f; s.Seed = _c.Rng.F(); s.Flicker = 0.3f; s.NearStart = 4f; s.NearRange = 14f;
             }
@@ -190,7 +190,7 @@ namespace Monolith.Juice
                 s.Kind = FxKind.Streak; s.Pos = pos + d * _c.Rng.F() * width * 3f; s.Vel = inherit + d * spd; s.Dir = d; s.Drag = drag * _c.Rng.Range(0.5f, 1.5f);
                 s.Life = _c.Rng.Range(lifeMin, lifeMax) * Mathf.Lerp(0.5f, 1f, _c.Rng.F());
                 s.W0 = s.W1 = size; s.Stretch = shutter; s.MinLen = Mathf.Max(0.4f, size * _c.Rng.Range(1.5f, 7f));
-                s.P1a = s.P1b = _c.Rng.Range(0.6f, 1.4f); s.P2a = 0f; s.P2b = 0f; s.Blur = _c.Rng.F() < 0.45f ? _c.Rng.Range(0.55f, 1f) : _c.Rng.Range(0f, 0.35f);
+                s.Dim = 1f; s.P1a = s.P1b = _c.Rng.Range(0.6f, 1.4f); s.P2a = 0f; s.P2b = 0f; s.Blur = _c.Rng.F() < 0.45f ? _c.Rng.Range(0.55f, 1f) : _c.Rng.Range(0f, 0.35f);
                 float k = brightness * lum;
                 s.C0 = c0 * k; s.C1 = c1 * k; s.C2 = c2 * k; s.FadeExp = _c.Rng.Range(0.3f, 0.9f); s.Seed = _c.Rng.F(); s.Flicker = _c.Rng.Range(0.1f, 0.5f); s.NearStart = 4f; s.NearRange = 14f;
             }
@@ -206,9 +206,9 @@ namespace Monolith.Juice
             {
                 ref var s = ref _c.Particles.Add();
                 Vector3 d = _c.Rng.OnSphere();
-                float sp = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 0.8f));
+                float sp = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 2.2f));          // most stay near the blast, a few go far
                 s.Kind = FxKind.Streak; s.Pos = pos + d * radius * 0.2f * _c.Rng.F(); s.Vel = inherit + d * sp; s.Dir = d; s.Drag = 0.55f;
-                s.Life = _c.Rng.Range(lifeMin, lifeMax); s.W0 = s.W1 = size * _c.Rng.Range(0.7f, 1.5f); s.Stretch = _c.Rng.Range(0.004f, 0.012f); s.MinLen = size * 5f;
+                s.Dim = 1f; s.Life = _c.Rng.Range(lifeMin, lifeMax); s.W0 = s.W1 = size * _c.Rng.Range(0.7f, 1.5f); s.Stretch = _c.Rng.Range(0.004f, 0.012f); s.MinLen = size * 5f;
                 s.P1a = s.P1b = 0.3f; s.P2a = 0.8f; s.P2b = 0.5f;
                 s.C0 = V4(new Vector3(1f, 0.93f, 0.72f) * 13f, 7f); s.C1 = V4(new Vector3(1f, 0.5f, 0.12f) * 5f, 1f); s.C2 = V4(new Vector3(0.5f, 0.07f, 0.01f) * 0.6f);
                 s.FadeExp = 0.6f; s.Seed = _c.Rng.F(); s.Flicker = 0.55f; s.NearStart = 4f; s.NearRange = 14f;
@@ -303,9 +303,9 @@ namespace Monolith.Juice
             float life = 0.55f + R * 0.0085f;
             Vector3 core = plasmaFlash ? new Vector3(0.78f, 0.9f, 1f) : WarmWhite;
             // A blown-out core: far brighter than the bloom threshold, so it burns through to white and spills.
-            Flash(pos, R * 1.7f, core * (70f * intensity), 0.10f + R * 0.0006f, 0.85f, 2.4f, 1.25f, inherit);
+            Flash(pos, R * 0.85f, core * (42f * intensity), 0.07f + R * 0.0004f, 0.85f, 2.4f, 1.2f, inherit);
             // The haze: a blast scatters light into everything round it (the show's explosions are mostly a hot core and a huge soft warm veil).
-            Flash(pos, R * 6.5f, new Vector3(1f, 0.74f, 0.42f) * (0.45f * intensity), life * 1.25f, 0f, 1.6f, 1.15f, inherit);
+            Flash(pos, R * 6.5f, new Vector3(1f, 0.62f, 0.30f) * (0.30f * intensity), life * 1.25f, 0f, 1.6f, 1.15f, inherit);
             // A short, faint anamorphic streak: the lens is the one thing that makes one, and it should not outlast the flash it comes from.
             Flare(pos, R * 4.0f, R * 0.14f, Vector3.Lerp(WarmWhite, core, 0.5f) * (11f * intensity), 0.12f + R * 0.0006f, 2.2f);
 
@@ -320,8 +320,8 @@ namespace Monolith.Juice
                          _c.Rng.Range(2.0f, 2.5f), _c.Rng.Range(3.6f, 4.6f) * intensity, 0f);
             }
             int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(18 + R * 0.7f)), 110);                 // a dozen to a few dozen: the show throws about a dozen
-            SparkBurst(pos, inherit, sparks, 40f + R * 1.4f, 140f + R * 8f, 0.5f, 1.3f + R * 0.012f, 0.08f + R * 0.0045f, SparkStyle.Hot, 0.45f, intensity);
-            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(16 + R * 1.0f)), 220), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.05f + R * 0.0012f);
+            SparkBurst(pos, inherit, sparks, 30f + R * 0.9f, 70f + R * 3.6f, 0.5f, 1.3f + R * 0.012f, 0.08f + R * 0.0045f, SparkStyle.Hot, 0.45f, intensity);
+            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(16 + R * 1.0f)), 220), 10f + R * 0.5f, 40f + R * 2.4f, 0.6f, 1.4f + R * 0.012f, 0.05f + R * 0.0012f);
             Embers(pos, inherit, R * 0.6f, _c.N(Mathf.RoundToInt(6 + R * 0.25f)), 10f + R * 0.6f, 1.2f, 2.8f + R * 0.015f, 0.55f + R * 0.03f);
 
             // Light on what is near: a big hot flash, and a longer warm glow (the hulls round the blast light up and the ship in it goes into silhouette).
@@ -329,7 +329,7 @@ namespace Monolith.Juice
             {
                 float b = _c.Bright * intensity;
                 // Starts white-hot (a white light draws a hard bright glint on a hull) and goes amber; it has a size, so the highlight on a plate is broad.
-                _c.Lights.Flash(pos, new Color(1f, 0.90f, 0.72f), 9.0e6f * R * R * b, Mathf.Max(500f, R * 34f), 0.6f + R * 0.008f, 1.25f, new Color(1f, 0.58f, 0.28f), Mathf.Min(R * 0.4f, 40f));
+                _c.Lights.Flash(pos, new Color(1f, 0.90f, 0.72f), 3.0e6f * R * R * b, Mathf.Max(500f, R * 34f), 0.8f + R * 0.010f, 1.1f, new Color(1f, 0.56f, 0.26f), Mathf.Min(R * 0.4f, 40f));
             }
         }
     }
