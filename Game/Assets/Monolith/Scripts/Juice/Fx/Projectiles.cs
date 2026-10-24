@@ -381,6 +381,7 @@ namespace Monolith.Juice
                     float hw = look.HalfWidth * wScale, hwHead = hw;
                     // The player's own bolts start a few metres from the eye (the muzzles are at the bottom corners of the view): they show from a metre out, in full.
                     float nearStart = p.Player ? PlayerNearStart : 18f, nearRange = p.Player ? PlayerNearRange : 55f;
+                    float tailSharp = p.Player ? Mathf.Max(look.TailSharp, 1f) : look.TailSharp;      // a long point at the tail: the part nearest the eye is the thinnest
                     if (p.Player)
                     {
                         // A bolt that leaves a muzzle three metres from the eye must not start behind it, and must not be fatter on screen than a bolt in the distance: the
@@ -392,7 +393,7 @@ namespace Monolith.Juice
                     }
                     var col = look.Colour * bright;
                     add.Quad(head - p.Dir * (len * 0.5f), new Vector4(col.x, col.y, col.z, look.Core * bright), FxKind.Streak, p.Seed,
-                             new Vector4(p.Dir.x, p.Dir.y, p.Dir.z, len * 0.5f), hw, 0f, look.TailSharp, look.TailBright, 0f, nearStart, nearRange);
+                             new Vector4(p.Dir.x, p.Dir.y, p.Dir.z, len * 0.5f), hw, 0f, tailSharp, look.TailBright, 0f, nearStart, nearRange);
                     var hc = look.Colour * (bright * look.HeadStrength);
                     add.Quad(head, new Vector4(hc.x, hc.y, hc.z, 0f), FxKind.Glow, p.Seed, Vector4.zero, hwHead * look.HeadGlow, 0f, 0.55f, 0f, 0f, nearStart, nearRange);
                 }

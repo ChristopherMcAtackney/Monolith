@@ -1,0 +1,31 @@
+{
+ "scene": "mission",
+ "sceneOptions": { "mission": "dogfight", "pilot": "ai", "invulnerable": true, "hud": true },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 3.0 },
+ "stills": [
+  { "name": "game_000", "follow": true, "warmup": 26.0 },
+  { "name": "game_001", "follow": true, "warmup": 0.2 },
+  { "name": "game_002", "follow": true, "warmup": 0.2 },
+  { "name": "game_003", "follow": true, "warmup": 0.2 },
+  { "name": "game_004", "follow": true, "warmup": 0.2 },
+  { "name": "game_005", "follow": true, "warmup": 0.2 },
+  { "name": "game_006", "follow": true, "warmup": 0.2 },
+  { "name": "game_007", "follow": true, "warmup": 0.2 },
+  { "name": "game_008", "follow": true, "warmup": 0.2 },
+  { "name": "game_009", "follow": true, "warmup": 0.2 },
+  { "name": "game_010", "follow": true, "warmup": 0.2 },
+  { "name": "game_011", "follow": true, "warmup": 0.2 },
+  { "name": "game_012", "follow": true, "warmup": 0.2 },
+  { "name": "game_013", "follow": true, "warmup": 0.2 },
+  { "name": "game_014", "follow": true, "warmup": 0.2 },
+  { "name": "game_015", "follow": true, "warmup": 0.2 },
+  { "name": "game_016", "follow": true, "warmup": 0.2 },
+  { "name": "game_017", "follow": true, "warmup": 0.2 },
+  { "name": "game_018", "follow": true, "warmup": 0.2 },
+  { "name": "game_019", "follow": true, "warmup": 0.2 },
+  { "name": "game_020", "follow": true, "warmup": 0.2 },
+  { "name": "game_021", "follow": true, "warmup": 0.2 },
+  { "name": "game_022", "follow": true, "warmup": 0.2 },
+  { "name": "game_023", "follow": true, "warmup": 0.2 }
+ ]
+}
