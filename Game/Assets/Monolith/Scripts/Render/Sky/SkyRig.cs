@@ -178,6 +178,33 @@ namespace Monolith.Sky
             }
         }
 
+        // The cabin (Monolith.Cabin, through GameWorld.Cabin): while the pilot is up the eye opens to the dim cabin (the exposure drops, so lit things outside burn out as they
+        // would), and the sky's cold fill is cut for the lit scene (it would flood the cabin). The sky's own look (stars, Milky Way) is exposure-compensated below, so space
+        // keeps its brightness on screen.
+        float _cabinShift = float.NaN, _cabinAmbient = float.NaN;
+
+        void LateUpdate()
+        {
+            var cab = GameWorld.Current?.Cabin;
+            float shift = cab != null ? cab.ExposureShift : 0f, amb = cab != null ? cab.AmbientScale : 1f;
+            if (Mathf.Approximately(shift, _cabinShift) && Mathf.Approximately(amb, _cabinAmbient)) return;
+            if (float.IsNaN(_cabinShift) && cab == null) { _cabinShift = shift; _cabinAmbient = amb; return; }
+            _cabinShift = shift; _cabinAmbient = amb;
+            ApplyCabinLook(shift, amb);
+        }
+
+        void ApplyCabinLook(float shift, float ambientScale)
+        {
+            var o = Options;
+            float ev = o.ExposureEv100 + (o.Exposure == SkyExposure.Fixed ? shift : 0f);
+            float nitsPerUnit = 1.2f * Mathf.Pow(2f, ev);
+            float lum = Mathf.Max(0.2126f * o.SunColor.r + 0.7152f * o.SunColor.g + 0.0722f * o.SunColor.b, 1e-4f);
+            _sky.nitsPerUnit.Override(nitsPerUnit);
+            _sky.ambientNits.Override(o.AmbientNits * ambientScale);
+            if (_look != null) { _look.SetSun(SunDirection, new Color(o.SunColor.r / lum, o.SunColor.g / lum, o.SunColor.b / lum, 1f), nitsPerUnit); _look.Apply(); }
+            if (_exposure != null && o.Exposure == SkyExposure.Fixed) _exposure.fixedExposure.Override(ev);
+        }
+
         /// <summary>Remove the sky and put the camera back to clearing to black.</summary>
         public void Disable()
         {

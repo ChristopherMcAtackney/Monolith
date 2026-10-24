@@ -46,8 +46,16 @@ game, read first) on the sim at order `Mission`: ships and wings that arrive on 
 `Fx/Jumps` draws `jump_in` and `jump_out`), FS2-style events (a condition tree, delays, repeats, chaining, directives) whose actions bring ships in, send radio, set objectives,
 give AI orders, free or hold beams, change the music state and end the mission, and the pacing timeline. It references Core only: the game
 spawns and orders ships for it through `IMissionHost` (`Game/Mission/GameMissionHost`), and it publishes the directives, objectives, music
-state and result on `GameWorld.Mission` for the HUD. The cabin's conditions and actions go through `ICabin`, a stub for now. `-mnMission
+state and result on `GameWorld.Mission` for the HUD. The cabin's conditions and actions go through `ICabin` (`Monolith.Cabin` implements it; a stub answers in headless runs). `-mnMission
 <name>` plays one (`Game/Mission/MissionScene`). Detail: `Scripts/Mission/README.md`.
+
+**Cabin** (`Monolith.Cabin`, `Scripts/Cabin/`) is the pilot as a person in the ship: hold View and the eye rises out of the seat, the HUD folds into the cabin's own displays, the
+left stick walks a small worn hull with grafted dark biomechanical tech, the right stick looks, and one context button does the physical thing you are looking at: pull the main breaker
+(the ship goes dark and a sweeping scan finds a powered ship and misses a dark one), hold to knit a destroyed part back with your hands, choose the guns and missiles at the weapon
+rack before launch, read the briefing and a retro blip map at the plan table. The ship holds its last heading and speed while the pilot is up. The logic (`CabinSystem`) is plain
+data and maths steppable headless, publishes `GameWorld.Cabin` (`CabinBoard`) for the camera, the sky's exposure and the HUD, and implements the mission's `ICabin`. `CabinRig`
+presents it: the Blender-scripted cabin on its own HDRP light layer, lights set in screen units against the eye's exposure, displays drawn into render textures with the HUD's own
+line drawing, procedural hands with two-bone IK. Numbers in `Resources/Cabin/cabin.json`. Detail: `Scripts/Cabin/README.md`, `art_src/PIPELINE.md`.
 
 **Audio** (`Monolith.Audio`, `Scripts/Audio/`) is the game's own software mixer and everything that plays through it: music, effects and radio voices, with Unity used only as the sound card (`OnAudioFilterRead`). The mixer, a lookahead limiter and a BS.1770 loudness meter are plain C# (`Dsp/`) that the offline tools compile too (`tools/audio`: the analog synth that renders the MIDI score, the sound-effect designs, the radio filter, the checks). `AudioSystem` listens to the game's events (the mission's `music_state` / `music_sting`, `radio_line`, arrivals, decoys, locks, hits on the player) and reads `GameWorld` for the cockpit (engine, afterburner, alarms, lock tone and missile warning); the juice's own effects reach it through `IJuiceAudio` (`Game/Audio/JuiceAudioAdapter`). Five buses with player volumes saved beside the game; voice ducks music and effects, big moments duck the rest. A player's own MP3, WAV or OGG in the `Audio/` folder beside the game replaces any built-in sound by name, live. It can also render without a sound card in step with the sim and record the mix (captures). Detail: `Scripts/Audio/README.md`, `tools/audio/README.md`.
 

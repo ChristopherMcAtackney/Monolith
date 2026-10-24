@@ -1,0 +1,18 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "cabin",
+    "hud": true,
+    "invulnerable": true,
+    "cabin": { "prelaunch": true, "script": [
+      { "t": 1.0, "do": "face", "at": "table" },
+      { "t": 3.0, "do": "walk", "to": "rack_gun0" },
+      { "do": "face", "at": "rack_gun0" },
+      { "do": "wait", "seconds": 60.0 }
+    ] }
+  },
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 4.0 },
+  "perf": [
+    { "name": "cabin_standing", "seconds": 12, "follow": true, "fov": 62 }
+  ]
+}

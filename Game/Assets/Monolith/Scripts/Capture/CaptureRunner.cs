@@ -215,10 +215,27 @@ namespace Monolith.Capture
                 var timings = new FrameTiming[1];
                 var sw = Stopwatch.StartNew();
                 double last = 0;
+                // -mnPerfSync: the camera renders into a target of its own, and each frame waits for the GPU to finish it (a one-pixel read-back queued behind the work). On a
+                // machine whose desktop session is disconnected the window's frames are never rendered or presented, the plain frame time is only the CPU's submit time and the
+                // GPU's timer reads nonsense; this makes each frame cost what it really costs (the CPU's and the GPU's work together, no overlap, no present).
+                bool sync = CommandLine.Has("-mnPerfSync");
+                RenderTexture syncRt = null;
+                if (sync)
+                {
+                    syncRt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "MN_PerfSync" };
+                    syncRt.Create();
+                    cam.targetTexture = syncRt;
+                }
                 while (true)
                 {
                     yield return null;
+                    if (sync)
+                    {
+                        yield return new WaitForEndOfFrame();
+                        UnityEngine.Rendering.AsyncGPUReadback.Request(syncRt, 0, 0, 1, 0, 1, 0, 1, TextureFormat.RGBA32).WaitForCompletion();
+                    }
                     double now = sw.Elapsed.TotalMilliseconds;
+                    if (now - last > 120.0 && ms.Count > 0) MnLog.Info($"PERF hitch: a {now - last:0} ms frame at {now / 1000.0:0.00} s of the run");
                     ms.Add(now - last);
                     last = now;
                     FrameTimingManager.CaptureFrameTimings();
@@ -229,6 +246,8 @@ namespace Monolith.Capture
                     if (now >= p.seconds * 1000.0) break;
                 }
 
+                if (syncRt != null) { cam.targetTexture = null; syncRt.Release(); UnityEngine.Object.Destroy(syncRt); }
+                if (sync && ms.Count > 10) ms.RemoveAt(0);          // the first frame's time includes setting the synced target up
                 var stats = PerfStats.From(ms);
                 r.perf = stats;
                 int ticks = sim.Tick - tick0;
@@ -253,6 +272,7 @@ namespace Monolith.Capture
                     ["gpu"] = SystemInfo.graphicsDeviceName,
                     ["graphicsApi"] = SystemInfo.graphicsDeviceType.ToString(),
                     ["cpu"] = SystemInfo.processorType,
+                    ["gpuSynced"] = sync,
                     ["vSyncCount"] = QualitySettings.vSyncCount,
                     ["unity"] = Application.unityVersion,
                     ["written"] = DateTime.Now.ToString("s"),

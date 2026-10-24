@@ -50,3 +50,6 @@ Game/Assets/StreamingAssets/**/*.meta
 
 # generated clip plans (hundreds of stills each): make them with tools/juice/make_plan.py from gauntlet/shots/specs/audio_r1_*.json
 gauntlet/shots/audio_r1_*_clip.json
+
+# Workbench previews from the model scripts (art_src/PIPELINE.md)
+art_src/*/_preview/

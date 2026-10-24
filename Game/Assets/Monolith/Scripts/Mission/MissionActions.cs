@@ -271,7 +271,7 @@ namespace Monolith.Mission
                 if (s == null) return;
                 rt.Cabin.StartScan(s.Id, _seconds, _range, rt.Now);
                 GameEvents.RaiseAt(MissionEvents.CabinScan, s.Position, s.Forward, "start", _seconds, s.Id);
-                rt.Note("cabin", $"scan sweep from {_from} for {F(_seconds)} s, range {F(_range)} m (stub)");
+                rt.Note("cabin", $"scan sweep from {_from} for {F(_seconds)} s, range {F(_range)} m");
             }
             public override string Describe() => $"scan from {_from} {F(_seconds)}s";
         }
@@ -286,7 +286,7 @@ namespace Monolith.Mission
                 rt.Cabin.CallOut(_prompt);
                 rt.Board.Prompt = _prompt; rt.Board.Version++;
                 GameEvents.Raise(MissionEvents.CabinCallOut, _prompt);
-                rt.Note("cabin", $"call out of the seat: {_prompt} (stub)");
+                rt.Note("cabin", $"call out of the seat: {_prompt}");
             }
             public override string Describe() => $"callOut \"{_prompt}\"";
         }
@@ -305,7 +305,7 @@ namespace Monolith.Mission
                 rt.Cabin.KnockOut(id, p.Name, rt.Now);
                 rt.Host.DestroyPart(id, p.Index);
                 GameEvents.Raise(MissionEvents.CabinKnockOut, p.Name, p.Index + 1, id);
-                rt.Note("cabin", $"{_ship}'s {p.Name} knocked out: it needs a hand repair (stub)");
+                rt.Note("cabin", $"{_ship}'s {p.Name} knocked out: it needs a hand repair");
             }
             public override string Describe() => $"knockOut {_ship} {_part}";
         }
@@ -318,7 +318,7 @@ namespace Monolith.Mission
             {
                 rt.Cabin.SetLights(_state);
                 GameEvents.Raise(MissionEvents.CabinLights, _state);
-                rt.Note("cabin", $"lights {_state} (stub)");
+                rt.Note("cabin", $"lights {_state}");
             }
             public override string Describe() => $"cabinLights {_state}";
         }

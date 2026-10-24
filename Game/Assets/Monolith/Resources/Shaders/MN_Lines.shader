@@ -14,6 +14,7 @@ Shader "Hidden/Monolith/Lines"
         float4x4 _MN_Matrix;
         float4 _MN_Screen;      // width, height, 1/width, 1/height (pixels)
         float _MN_HalfWidth;    // dust: half the streak width in pixels
+        float _MN_Dim;          // hud: 0 (unset) draws as is; 1 fades the line graphics out (the cabin collapses the HUD into its own displays)
 
         #if defined(SHADER_API_D3D11) || defined(SHADER_API_D3D12) || defined(SHADER_API_VULKAN) || defined(SHADER_API_METAL) || defined(SHADER_API_SWITCH) || defined(SHADER_API_PSSL) || defined(SHADER_API_XBOXONE) || defined(SHADER_API_GAMECORE)
             #define MN_REVERSED_Z 1
@@ -126,7 +127,7 @@ Shader "Hidden/Monolith/Lines"
             float4 frag(V i) : SV_Target
             {
                 float a = 1.0 - smoothstep(0.55, 1.0, abs(i.edge));
-                return float4(i.col.rgb, i.col.a * a);
+                return float4(i.col.rgb, i.col.a * a * (1.0 - _MN_Dim));
             }
             ENDHLSL
         }

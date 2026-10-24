@@ -1,0 +1,158 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "cabin",
+    "hud": false,
+    "dust": false,
+    "invulnerable": true,
+    "cabin": {
+      "prelaunch": true,
+      "script": [
+        {
+          "t": 1.0,
+          "do": "face",
+          "at": "table"
+        },
+        {
+          "t": 2.5,
+          "do": "walk",
+          "to": "rack_gun0"
+        },
+        {
+          "do": "face",
+          "at": "rack_gun0"
+        },
+        {
+          "do": "press"
+        },
+        {
+          "do": "wait",
+          "seconds": 3.5
+        },
+        {
+          "do": "walk",
+          "to": [
+            -0.3,
+            -1.05
+          ]
+        },
+        {
+          "do": "face",
+          "yaw": -90.0,
+          "pitch": -4.0
+        },
+        {
+          "do": "wait",
+          "seconds": 1.0
+        },
+        {
+          "do": "walk",
+          "to": "breaker",
+          "via": [
+            [
+              -0.7,
+              -1.0
+            ],
+            [
+              0.7,
+              -1.0
+            ]
+          ],
+          "t": 13.0
+        },
+        {
+          "do": "face",
+          "at": "breaker"
+        },
+        {
+          "do": "press"
+        },
+        {
+          "do": "wait",
+          "seconds": 2.0
+        },
+        {
+          "t": 26.0,
+          "do": "face",
+          "yaw": 6.0,
+          "pitch": 4.0
+        },
+        {
+          "t": 58.0,
+          "do": "walk",
+          "to": "panel_engine",
+          "via": [
+            [
+              0.6,
+              -1.0
+            ]
+          ]
+        },
+        {
+          "do": "face",
+          "at": "panel_engine"
+        },
+        {
+          "do": "use",
+          "seconds": 9.0
+        }
+      ]
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 2.0
+  },
+  "stills": [
+    {
+      "name": "table",
+      "follow": true,
+      "warmup": 1.5,
+      "fov": 62
+    },
+    {
+      "name": "rack",
+      "follow": true,
+      "warmup": 5.0,
+      "fov": 62
+    },
+    {
+      "name": "rack_wide",
+      "follow": true,
+      "warmup": 6.0,
+      "fov": 62
+    },
+    {
+      "name": "breaker_pull",
+      "follow": true,
+      "warmup": 6.8,
+      "fov": 62
+    },
+    {
+      "name": "blackout",
+      "follow": true,
+      "warmup": 4.0,
+      "fov": 62
+    },
+    {
+      "name": "scan_early",
+      "follow": true,
+      "warmup": 20.7,
+      "fov": 62
+    },
+    {
+      "name": "scan_contact",
+      "follow": true,
+      "warmup": 6.5,
+      "fov": 62
+    },
+    {
+      "name": "repair",
+      "follow": true,
+      "warmup": 14.0,
+      "fov": 62
+    }
+  ]
+}

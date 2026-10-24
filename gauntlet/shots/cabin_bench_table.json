@@ -1,0 +1,98 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "cabin",
+  "hud": false,
+  "dust": false,
+  "invulnerable": true,
+  "cabin": {
+   "prelaunch": true,
+   "script": [
+    {
+     "t": 1,
+     "do": "face",
+     "at": "table"
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.5
+ },
+ "stills": [
+  {
+   "name": "s00",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s01",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s02",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s03",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s04",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s05",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s06",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s07",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s08",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s09",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s10",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  },
+  {
+   "name": "s11",
+   "follow": true,
+   "warmup": 0.02,
+   "fov": 62
+  }
+ ]
+}

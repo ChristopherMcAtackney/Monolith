@@ -39,6 +39,8 @@ namespace Monolith.EditorTools
             // Ray tracing (RenderQuality's ray-traced AO and Sun shadows, Direct3D 12 on a DXR GPU only; the asset flag costs nothing elsewhere).
             Set(so, "m_RenderPipelineSettings.supportRayTracing", true);
             Set(so, "m_RenderPipelineSettings.hdShadowInitParams.supportScreenSpaceShadows", true);    // ray-traced Sun shadows are screen-space shadows
+            // Light layers: the cabin is lit by its own lights (a share of the Sun comes in through the canopy as a light of the cabin's own), not by the Sun itself.
+            Set(so, "m_RenderPipelineSettings.supportLightLayers", true);
             // Full float colour: dark gradients and bright bloom are the whole picture here, so no 11-bit shortcut.
             Set(so, "m_RenderPipelineSettings.colorBufferFormat", (int)RenderPipelineSettings.ColorBufferFormat.R16G16B16A16);
             so.ApplyModifiedPropertiesWithoutUndo();

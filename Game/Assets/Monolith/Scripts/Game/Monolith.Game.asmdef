@@ -18,6 +18,7 @@
         "Monolith.ShipArt",
         "Monolith.AI",
         "Monolith.Mission",
+        "Monolith.Cabin",
         "Monolith.Audio",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Core.Runtime",

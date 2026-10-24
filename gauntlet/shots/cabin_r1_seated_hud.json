@@ -1,0 +1,8 @@
+{
+  "scene": "mission",
+  "sceneOptions": { "mission": "escort", "hud": true, "dust": false, "invulnerable": true, "cabin": { "script": [] } },
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 2.0 },
+  "stills": [
+    { "name": "seated_hud", "follow": true, "warmup": 3.0, "fov": 55 }
+  ]
+}

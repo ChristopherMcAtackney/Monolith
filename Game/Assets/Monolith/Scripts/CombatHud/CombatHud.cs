@@ -599,10 +599,13 @@ namespace Monolith.CombatHud
         {
             if (ctx.hdCamera.camera != Camera || Material == null) return;
             float w = ctx.hdCamera.actualWidth, h = ctx.hdCamera.actualHeight;
-            var m = GL.GetGPUProjectionMatrix(Matrix4x4.Ortho(0f, w, h, 0f, -1f, 1f), true);
+            float collapse = HudCollapse.Amount;
+            if (collapse >= 0.999f) return;
+            var m = HudCollapse.Matrix(w, h, collapse);
             CoreUtils.SetRenderTarget(ctx.cmd, ctx.cameraColorBuffer, ClearFlag.None);
             _props.SetMatrix(MatrixId, m);
             _props.SetVector(ScreenId, new Vector4(w, h, 1f / w, 1f / h));
+            _props.SetFloat(HudCollapse.DimId, HudCollapse.Dim(collapse));
             ctx.cmd.DrawMesh(Lines.Mesh, Matrix4x4.identity, Material, 0, 2, _props);
         }
     }

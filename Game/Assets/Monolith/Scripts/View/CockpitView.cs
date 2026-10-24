@@ -78,7 +78,18 @@ namespace Monolith.View
             {
                 float a = _world.Alpha;
                 var rot = ship.RenderRotation(a);
-                transform.SetPositionAndRotation(ship.RenderPosition(a) + rot * _settings.camera.Eye, rot);
+                var cab = _world.Cabin;
+                if (cab != null && cab.OwnsCamera)
+                {
+                    // The pilot is up (Monolith.Cabin): the eye is where the pilot's is in the cabin, and the view is wider the more they stand.
+                    transform.SetPositionAndRotation(ship.RenderPosition(a) + rot * cab.Eye(a), rot * cab.Rot(a));
+                    _cam.fieldOfView = Mathf.Lerp(_settings.camera.fovVertical, cab.Fov > 0f ? cab.Fov : _settings.camera.fovVertical, cab.Stand01);
+                }
+                else
+                {
+                    transform.SetPositionAndRotation(ship.RenderPosition(a) + rot * _settings.camera.Eye, rot);
+                    if (cab != null) _cam.fieldOfView = _settings.camera.fovVertical;
+                }
                 _velocity = ship.Velocity;
             }
             _dust.Update(transform.position, transform.forward, _velocity, _cam.nearClipPlane);

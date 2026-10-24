@@ -1,0 +1,127 @@
+{
+  "format": "monolith-cabin-config/1",
+  "about": "The cabin's numbers: how the pilot walks and looks, how long each physical action takes, what the eye does in each light, the controls. The playtest build reads cabin.json next to Play.bat instead of this one (-mnCabin file), so it can be tuned without a rebuild.",
+  "body": {
+    "shipEye": [
+      0.0,
+      0.4,
+      1.5
+    ],
+    "walkSpeed": 1.25,
+    "backSpeed": 0.9,
+    "strafeSpeed": 1.0,
+    "accel": 9.0,
+    "radius": 0.26,
+    "eyeStand": 1.64,
+    "eyeCrouch": 1.16,
+    "crouchRate": 5.0,
+    "lookYawRate": 140.0,
+    "lookPitchRate": 95.0,
+    "pitchMax": 75.0,
+    "bobHeight": 0.013,
+    "bobSide": 0.007,
+    "strideMeters": 0.62,
+    "stepSmooth": 0.09,
+    "fovStanding": 68.0,
+    "why": "shipEye is view.json's camera eye, so sitting down puts the view exactly where the flight view is. Walk 1.25 m/s is a careful walk in a small space (a normal one is 1.4); the eye 1.64 m is a 1.75 m person; the stride 0.62 m is a short step. Look rates are Outer Wilds-like comfortable turns for a pad; ours."
+  },
+  "timing": {
+    "standHoldSeconds": 0.55,
+    "riseSeconds": 1.7,
+    "lowerSeconds": 1.5,
+    "breakerSeconds": 1.5,
+    "relightSeconds": 2.4,
+    "repairSeconds": 5.0,
+    "repairDecayPerSecond": 0.25,
+    "repairSlipSeconds": 0.7,
+    "repairNeedsLookSeconds": 0.25,
+    "rackSwapSeconds": 1.1,
+    "tapSeconds": 0.35,
+    "coolSeconds": 5.0,
+    "why": "Ours. A hold of about half a second keeps a stray press from standing you up; the repair is 5 s of hold, a few seconds as the design says, and it decays at a quarter per second once let go so a pause costs little. A ship that has just gone dark is still warm for 5 s: a scan crossing in that window still finds it."
+  },
+  "exposure": {
+    "seated": 14.0,
+    "lit": 8.0,
+    "emergency": 6.5,
+    "alert": 6.5,
+    "dark": 7.0,
+    "blackout": 5.0,
+    "openSeconds": 1.8,
+    "closeSeconds": 0.8,
+    "why": "EV100 of the sky's exposure. 14 is the flight view (a sunlit hull mid-tone). The cabin's instrument glow needs about 8 to read; the emergency strips about 6.5; a blackout with only the strips 5. The eye opens into the dark slowly and closes fast into the light."
+  },
+  "light": {
+    "ambientScale": 0.04,
+    "ambientBlackout": 0.25,
+    "instrumentScale": 1.0,
+    "emergencyScale": 1.0,
+    "workScale": 0.0,
+    "flickerSeconds": 0.45,
+    "why": "Every light and glow here is set in screen units (1.0 is white at the eye's exposure), so the cabin reads the same as the eye opens and closes; only the world outside brightens and burns out with it. The Sun comes through the canopy's tinted panes as a spot of the cabin's own, 1.1 units on a mid-grey floor; the sky's cold fill would drown the cabin at the cabin's exposure, so 4 percent of it reaches the lit scene while the pilot is up.",
+    "canopySunUnits": 1.1,
+    "displayUnits": 1.6,
+    "displayUnitsDim": 0.25,
+    "glyphUnits": 1.3,
+    "knitUnits": 1.2,
+    "lampUnits": 3.0,
+    "emergencyLampUnits": 2.2
+  },
+  "scan": {
+    "contactAt": 0.5,
+    "swingDegrees": 75.0,
+    "passSeconds": 3.4,
+    "creakLeadSeconds": 4.0,
+    "why": "A sweep's beam crosses the ship half way through it; the light crawls through the canopy for about three and a half seconds, swinging 75 degrees over the sweep; the hull creaks four seconds before.",
+    "units": 1.7
+  },
+  "rack": {
+    "guns": [
+      "needle",
+      "hammer"
+    ],
+    "missiles": [
+      "missile_heat",
+      "missile_lock",
+      "torpedo_heavy"
+    ],
+    "defaultGuns": [
+      "needle",
+      "hammer"
+    ],
+    "defaultMissiles": [
+      "missile_heat",
+      "missile_lock"
+    ],
+    "why": "The weapons the player's fighter can carry (Resources/Combat/weapons.json ids): two gun bays take either gun, two missile bays take two different types of the three. A mission can offer a different set."
+  },
+  "controls": {
+    "pad": {
+      "move": "leftStick",
+      "look": "rightStick",
+      "context": "buttonSouth",
+      "back": "buttonEast",
+      "standSit": "select",
+      "deadZone": 0.18,
+      "lookExponent": 1.6,
+      "moveExponent": 1.2,
+      "mapDoubleTapSeconds": 0.4
+    },
+    "keyboard": {
+      "forward": "w",
+      "backward": "s",
+      "left": "a",
+      "right": "d",
+      "lookLeft": "leftArrow",
+      "lookRight": "rightArrow",
+      "lookUp": "upArrow",
+      "lookDown": "downArrow",
+      "context": "e",
+      "back": "q",
+      "standSit": "z",
+      "map": "b",
+      "launch": "enter"
+    },
+    "why": "Left stick walks, right stick looks, A is the one context button, B steps back; hold View (Back/Select) to stand up or sit down (a double tap of it is the seat's battle map). Every flight button is free while standing: nothing flies."
+  }
+}

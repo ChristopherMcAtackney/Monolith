@@ -1,0 +1,118 @@
+{
+  "format": "monolith-mission/1",
+  "id": "cabin",
+  "name": "Dead Water",
+  "about": "The cabin's test mission (design section 6), made from data alone. It starts in the cabin: the briefing is on the plan table, the weapon rack is open, you sit down and launch. A quiet drift among the ice; a call to go dark (leave the seat, pull the main breaker); Earth's picket corvette Lector arrives and sweeps for life signs: the sweep misses a dark ship and finds a powered one; then a hit takes the port engine, which only a hand repair can bring back, while Earth's drones come in. Being seen is not a failure: it only changes what the radio says and how soon the drones arrive.",
+  "difficulty": "Medium",
+  "player": "Sable 1",
+  "teams": ["diaspora", "earth"],
+  "arrivalCap": { "team": "earth", "value": [2, 3, 3, 4, 5], "valueWhy": "ours: three interceptors are the whole fight; the cap only matters on the harder levels" },
+  "cabin": {
+    "start": "table",
+    "standAnytime": true,
+    "rack": { "guns": ["needle", "hammer"], "missiles": ["missile_heat", "missile_lock", "torpedo_heavy"], "defaultGuns": ["needle", "hammer"], "defaultMissiles": ["missile_heat", "missile_lock"] }
+  },
+  "music": { "start": "ambient", "auto": true, "tracks": { "ambient": "deadwater_ambient", "battle1": "deadwater_battle_1", "battle2": "deadwater_battle_2" } },
+  "pacing": { "hulls": ["Lector"], "quietRange": 3000 },
+  "briefing": {
+    "title": "Dead Water",
+    "stages": [
+      "Sable flight is holding at the edge of a dead ice field. Ahead is the Lector, Earth's picket corvette, and it sweeps the dark for life signs. It cannot see what is cold. It does not know the difference between a wreck and a crew that is holding its breath.",
+      "When the Lector comes out of the ice, Sable 2 will call it. Get up out of the seat and pull the main breaker at the aft bulkhead. The ship will drift and the lamps go out. Hold still until it has swept past, then power up.",
+      "Load the rack before you sit down. Two guns, two missiles. You will want them afterwards."
+    ],
+    "questions": [
+      { "q": "What are the objectives", "a": "Get through the sweep. Whatever happens next, bring the ship home: Earth's drones will come." },
+      { "q": "What if it sees us", "a": "Then it calls its drones early and says something unkind. Nobody is shot for being seen." },
+      { "q": "What do I load", "a": "Needle and Hammer are the guns. Ember follows what it sees, Lance needs a lock, Anvil is for capital ships. Two missiles only. Choose." }
+    ]
+  },
+  "debriefing": [
+    { "when": { "not": { "detected": "Lector" } }, "text": "The Lector looked straight through you. Cold is a kind of honesty." },
+    { "when": { "detected": "Lector" }, "text": "The Lector saw you. Next time the breaker, before it clears the ice, not after." },
+    { "when": { "objective": "engine" }, "text": "You seated the engine by hand with Earth's drones in your teeth. The ship will remember." },
+    { "when": { "objective": "engine", "is": "failed" }, "text": "The engine never came back." }
+  ],
+
+  "ships": [
+    { "name": "Sable 1", "class": "vanguard_fighter", "team": "diaspora",
+      "arrival": { "at": [0, 0, 0], "rot": [30, 172, 0], "speed": 0.12 },
+      "arrivalWhy": "nose 30 degrees down and turned so the Sun, which is fixed in the sky, comes in through the canopy 40 degrees to starboard and 28 up: a hard shaft across the cabin floor while you stand there" },
+    { "name": "Sable 2", "class": "vanguard_fighter", "team": "diaspora", "ai": "wingman", "wingman": true,
+      "goal": { "order": "guard", "target": "Sable 1" },
+      "arrival": { "near": "Sable 1", "offset": [90, 20, -40], "facing": "Sable 1", "speed": 0.12 } },
+    { "name": "Lector", "class": "earth_corvette", "team": "earth", "hullScale": 0.2,
+      "hullScaleWhy": "ours: a lightly built picket, 16,000 of the Deimos' 80,000",
+      "capital": { "stationary": true, "turretProfile": "earth_turret", "turretWaitScale": 1000, "beamWaitScale": 1000, "holdBeams": true,
+                   "holdBeamsWhy": "ours: the Lector is a listening post here, not the fight: its guns hold their fire (a wait of a thousand times) so a pilot who is up and dark is not shot by something three kilometres away" },
+      "arrival": { "cue": { "event": "Go dark", "delay": 14 }, "near": "Sable 1", "offset": [-2300, 380, 2300], "facing": "Sable 1", "speed": 0.05 },
+      "departure": { "cue": { "event": "Sweep", "delay": 30 }, "to": [-9000, 600, 6000], "jumpAfter": 4 } }
+  ],
+
+  "wings": [
+    { "name": "Choir", "team": "earth", "capped": true,
+      "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 } ],
+      "goal": { "order": "attack", "target": "Sable 1" },
+      "arrival": { "cue": false, "near": "Sable 1", "offset": [1200, 200, 3300], "facing": "Sable 1", "speed": 0.4 },
+      "arrivalWhy": "three and a third kilometres out: about forty seconds at an interceptor's speed, enough for a pilot who has to walk to the aft panel, kneel, hold the module in, reach the breaker and sit down, and not enough to be comfortable" }
+  ],
+
+  "objectives": [
+    { "id": "sweep", "kind": "primary", "text": "Get through the Lector's sweep", "complete": { "event": "Sweep", "delay": 18 } },
+    { "id": "engine", "kind": "primary", "text": "Seat the port engine by hand", "complete": { "and": [ { "event": "Hit" }, { "not": { "needsRepair": "<player>", "part": "engine_port" } } ] }, "fail": { "destroyed": "Sable 1" } },
+    { "id": "choir", "kind": "primary", "text": "Destroy the Choir drones", "complete": { "destroyed": "Choir" } },
+    { "id": "unseen", "kind": "bonus", "text": "Stay unseen by the Lector", "hidden": false, "complete": { "and": [ { "event": "Sweep", "delay": 18 }, { "not": { "detected": "Lector" } } ] }, "fail": { "detected": "Lector" } }
+  ],
+
+  "messages": [
+    { "id": "quiet", "from": "Sable 2", "text": "Quiet out here. I don't like it. It never means nothing.", "seconds": 5 },
+    { "id": "go_dark", "from": "Sable 2", "text": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.", "priority": "high", "seconds": 6 },
+    { "id": "lector_here", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Biologics in the dark. We will find you. We always have.", "seconds": 5 },
+    { "id": "lector_sweep", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Sweeping for life.", "seconds": 3 },
+    { "id": "missed", "from": "Sable 2", "text": "It looked right through us. Nobody breathe yet.", "priority": "high", "seconds": 4 },
+    { "id": "lector_blind", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Wreckage. The fallen leave their dead everywhere.", "seconds": 4 },
+    { "id": "spotted", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Biologic. Sable one. I see you. All of you.", "priority": "high", "seconds": 4 },
+    { "id": "spotted_reply", "from": "Sable 2", "text": "That's torn it. Drones inbound. Heads up.", "priority": "high", "seconds": 4 },
+    { "id": "hit", "from": "Sable 2", "text": "Sable 1, you're venting. Port drive's gone. Somebody out there has very good aim.", "priority": "high", "seconds": 6 },
+    { "id": "power_up", "from": "Sable 2", "text": "Get your power back, Sable 1. Breaker. Then get that engine seated. I'll cover.", "priority": "high", "seconds": 6 },
+    { "id": "choir_in", "from": "Sable 2", "text": "Drones, three of them, low on your port side. Whenever you're ready.", "priority": "high", "seconds": 5 },
+    { "id": "engine_back", "from": "Sable 2", "text": "Port drive's back. Whatever you did, do it again.", "seconds": 4 },
+    { "id": "clear", "from": "Sable 2", "text": "That's the last of them. Sable flight, form up.", "seconds": 4 }
+  ],
+
+  "events": [
+    { "name": "Opening", "when": { "time": 6 }, "do": [ { "do": "radio", "message": "quiet" } ] },
+    { "name": "Go dark", "when": { "time": 24 },
+      "do": [ { "do": "callOut", "from": "Sable 2", "text": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.", "prompt": "Leave the seat" }, { "do": "music", "state": "ambient" } ],
+      "directive": { "text": "Go dark: pull the main breaker", "show": { "powered": true } } },
+    { "name": "Lector here", "when": { "arrived": "Lector" }, "do": [ { "do": "radio", "message": "lector_here" } ] },
+    { "name": "Sweep", "when": { "arrived": "Lector", "delay": 5 },
+      "do": [ { "do": "scan", "from": "Lector", "seconds": 14, "range": 6000 }, { "do": "radio", "message": "lector_sweep" } ],
+      "directive": { "text": "Hold still until the sweep passes", "show": { "powered": false } } },
+    { "name": "Missed", "when": { "and": [ { "event": "Sweep", "delay": 15 }, { "not": { "detected": "Lector" } } ] },
+      "do": [ { "do": "radio", "message": "missed" }, { "do": "radio", "message": "lector_blind" } ] },
+    { "name": "Spotted", "when": { "detected": "Lector" },
+      "do": [ { "do": "radio", "message": "spotted" }, { "do": "radio", "message": "spotted_reply" }, { "do": "music", "state": "battle1", "for": 20 } ] },
+    { "name": "Hit", "when": { "event": "Sweep", "delay": 16 },
+      "do": [ { "do": "knockOut", "ship": "<player>", "part": "engine_port" }, { "do": "radio", "message": "hit" }, { "do": "arrive", "ship": "Choir" }, { "do": "radio", "message": "choir_in" }, { "do": "music", "auto": true } ],
+      "directive": { "text": "Seat the port engine at the aft starboard panel", "show": { "needsRepair": "<player>", "part": "engine_port" } } },
+    { "name": "Power up", "when": { "and": [ { "event": "Hit", "delay": 4 }, { "powered": false } ] },
+      "do": [ { "do": "radio", "message": "power_up" } ],
+      "directive": { "text": "Restore power at the main breaker", "show": { "powered": false } } },
+    { "name": "Engine back", "when": { "and": [ { "event": "Hit" }, { "not": { "needsRepair": "<player>", "part": "engine_port" } } ] }, "do": [ { "do": "radio", "message": "engine_back" } ] },
+    { "name": "Choir down", "when": { "destroyed": "Choir" },
+      "directive": { "text": "Destroy the Choir drones", "show": { "event": "Hit" } },
+      "do": [ { "do": "radio", "message": "clear" } ] },
+    { "name": "Clear", "when": { "and": [ { "destroyed": "Choir" }, { "not": { "needsRepair": "<player>", "part": "engine_port" } } ] }, "delay": 4, "do": [ { "do": "end", "result": "victory", "text": "AREA CLEAR" } ] }
+  ],
+
+  "autoplay": {
+    "seconds": 300, "difficulty": "Medium", "invulnerable": true,
+    "expect": {
+      "result": ["victory"],
+      "fired": ["Opening", "Go dark", "Lector here", "Sweep", "Spotted", "Hit", "Engine back", "Choir down", "Clear"],
+      "notFired": ["Missed"],
+      "order": ["Opening", "Go dark", "Lector here", "Sweep", "Hit", "Choir down", "Clear"]
+    }
+  }
+}

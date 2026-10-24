@@ -12,7 +12,7 @@ missions live in `Resources/Missions/`; the playtest folder's `Missions/` copies
 | `MissionConditions`, `MissionActions` | Every condition and action |
 | `MissionRuntime` | Arrivals, the arrival cap, wing waves, departures, events, objectives, directives, the end, the pacing sample |
 | `MissionRadio`, `MissionLog` | The radio queue and the music state (`MissionMusic`); the timeline (events.csv, pacing.csv) |
-| `MissionHost` | `IMissionHost` (what the game does), `ShipSpawn`, `ShipOrder`, the cabin hook `ICabin` and its stand-in `CabinStub` |
+| `MissionHost` | `IMissionHost` (what the game does), `ShipSpawn`, `ShipOrder`, the cabin hook `ICabin` and its stand-in `CabinStub` (headless runs; the real one is `Monolith.Cabin`'s `CabinSystem`) |
 
 Run: `Monolith.exe -mnMission dogfight` (a name or a path; `-mnDifficulty`, `-mnAutopilot`, `-mnInvulnerable`, `-mnSkipBriefing`,
 `-mnPacingLog dir`), or a capture plan with `"scene": "mission", "sceneOptions": { "mission": "escort", "pilot": "ai" }`. Checks:
@@ -114,9 +114,9 @@ members (`"Choir 2"`) or `"<player>"`. Delays are seconds after the fact first b
 | `beaming` | `{ "beaming": "Warden" }` | it is charging or firing a heavy beam |
 | `autopilot` | `{ "autopilot": true }` | the AI flies the player's ship (soaks, checks: lets a mission tell its autopilot what to go after) |
 | `difficultyAtLeast` | `{ "difficultyAtLeast": "Hard" }` | |
-| `seated`, `powered` | `{ "seated": false }`, `{ "powered": false }` | the pilot out of the seat; the ship dark (**cabin stub**) |
-| `detected` | `{ "detected": "Lector" }`, `{ "detected": "<any>" }` | a scan from that ship found the player (**cabin stub**) |
-| `needsRepair` | `{ "needsRepair": "<player>", "part": "engine_port" }` | a knocked-out part still needs a hand repair (**cabin stub**) |
+| `seated`, `powered` | `{ "seated": false }`, `{ "powered": false }` | the pilot out of the seat; the ship dark (**the cabin**) |
+| `detected` | `{ "detected": "Lector" }`, `{ "detected": "<any>" }` | a scan from that ship found the player (**the cabin**) |
+| `needsRepair` | `{ "needsRepair": "<player>", "part": "engine_port" }` | a knocked-out part (or any destroyed part of the player's ship) still needs a hand repair (**the cabin**) |
 
 ## Actions
 
@@ -133,18 +133,35 @@ members (`"Choir 2"`) or `"<player>"`. Delays are seconds after the fact first b
 | `cond` | `{ "do": "cond", "cases": [ { "if": {...}, "then": [...] }, { "else": [...] } ] }` | the first case that holds |
 | `invulnerable` | `{ "do": "invulnerable", "ship": "Tamsin", "on": true }` | damage never kills it |
 | `log` | `{ "do": "log", "text": "..." }` | a line in the timeline |
-| `scan` | `{ "do": "scan", "from": "Lector", "seconds": 12, "range": 6000 }` | a scan sweep (**cabin stub**: detects the player if powered and in range during it) |
-| `callOut` | `{ "do": "callOut", "text": "Get up. Pull the breaker.", "prompt": "Leave the seat" }` | a radio line and a prompt to leave the seat (**cabin stub**) |
-| `knockOut` | `{ "do": "knockOut", "ship": "<player>", "part": "engine" }` | destroys a part (a name or a kind) so it needs a hand repair (**cabin stub**) |
-| `cabinLights` | `{ "do": "cabinLights", "state": "dark" }` | `normal`, `dark`, `emergency`, `alert` (**cabin stub**) |
+| `scan` | `{ "do": "scan", "from": "Lector", "seconds": 12, "range": 6000 }` | a scan sweep (**the cabin**: the light crawls through the canopy; a powered player in range is found, a dark one is missed; the stub: found if powered and in range) |
+| `callOut` | `{ "do": "callOut", "text": "Get up. Pull the breaker.", "prompt": "Leave the seat" }` | a radio line and a prompt to leave the seat (**the cabin** shows "hold View: stand up" at the seat) |
+| `knockOut` | `{ "do": "knockOut", "ship": "<player>", "part": "engine" }` | destroys a part (a name or a kind) so it needs a hand repair (**the cabin**: at the engine or the arms panel) |
+| `cabinLights` | `{ "do": "cabinLights", "state": "dark" }` | `normal`, `dark`, `emergency`, `alert` (**the cabin**: the instruments' glow and the red strips) |
 
 Built-in: the player's death ends the mission ("SHIP LOST") unless `"playerDeathEnds": false`. Without an `end`, a mission runs on.
 
-## The cabin (stubbed)
+## The cabin
 
-The cabin does not exist yet. Its four conditions and four actions go through `ICabin`; `CabinStub` answers for now: always seated and
-powered (a test can change both), a scan detects a powered player in range, a knock-out destroys the part and it needs repairing (headless runs
-with the AI flying "repair" it after 8 s). The cabin system replaces the stub by passing its own `ICabin` to `MissionRuntime`.
+`Monolith.Cabin` (`Scripts/Cabin/README.md`) is the pilot as a person in the ship; its `CabinSystem` implements `ICabin` and the game
+(`Game/Mission/MissionScene`) passes it to `MissionRuntime`. A mission file can carry a `cabin` block:
+
+```json
+"cabin": { "start": "table", "standAnytime": true,
+           "rack": { "guns": ["needle", "hammer"], "missiles": ["missile_heat", "missile_lock", "torpedo_heavy"],
+                     "defaultGuns": ["needle", "hammer"], "defaultMissiles": ["missile_heat", "missile_lock"] } }
+```
+
+`start: "table"` begins the mission with the sim held, the pilot at the plan table (the briefing on it), the weapon rack open and the loadout
+to choose; sitting down and pressing launch starts the clock. The rack's choice feeds the ship's guns and missiles before launch.
+
+What the conditions and actions do for real: `seated` is false while the pilot is up; `powered` is the main breaker; `detected` is decided when a
+sweep's light crosses the ship (powered, or dark less than five seconds, inside the range); any destroyed part of the player's ship is a
+`needsRepair` until the pilot's hands have knit it (it comes back at 25 percent health); `callOut` puts a "hold View: stand up" prompt at the seat; `scan` sends the
+light through the canopy (with the hull's creak four seconds before); `knockOut` destroys the part for the cabin to hold; `cabinLights` sets the
+glow. A mission never needs the cabin: with `-mnNoCabin`, in an AI-flown run, or from a mission with no use for it, `CabinStub` answers (always
+seated and powered, a scan detects a powered player in range, a knock-out destroys the part and the AI flying "repairs" it after 8 s).
+`Resources/Missions/cabin.mission.json` ("Dead Water") is the test: quiet drift, a call to go dark, the Lector's sweep that misses a dark ship
+and finds a powered one, a hit that takes the port engine while drones come in, a briefing at the plan table and the loadout at the rack.
 
 ## Music, juice, HUD
 

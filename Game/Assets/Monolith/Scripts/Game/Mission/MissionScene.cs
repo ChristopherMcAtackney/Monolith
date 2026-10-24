@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Monolith.AI;
+using Monolith.Cabin;
 using Monolith.CombatHud;
 using Monolith.Core;
 using Monolith.Flight;
@@ -42,6 +43,12 @@ namespace Monolith.Game
         GameMissionHost _host;
         MissionRuntime _rt;
         PlayerKeeper _keeper;
+        // The cabin (Monolith.Cabin): the pilot as a person in the ship. Built for every played mission unless -mnNoCabin or "cabin": false.
+        SkyRig _sky;
+        CabinSystem _cabin;
+        CabinRig _cabinRig;
+        JObject _cabinOpts;
+        bool _cabinOn, _cabinPrelaunch;
         MissionFile _file;
         string _error;
         bool _paused, _briefing, _keepLod0;
@@ -66,7 +73,7 @@ namespace Monolith.Game
             var viewSettings = ViewSettings.Load();
             if (opts != null && opts["dust"] != null && !(bool)opts["dust"]) viewSettings.dust.count = 0;
             var view = CockpitView.Create(world, root.transform, viewSettings);
-            SkyRig.Enable(view.Camera, root.transform);
+            self._sky = SkyRig.Enable(view.Camera, root.transform);
             SkyWarmUp.Attach(view.Camera, root.transform);
             var views = ShipViews.Create(world, root.transform);
             var mats = PlaceholderShips.MakeMaterials();
@@ -98,19 +105,22 @@ namespace Monolith.Game
             self._hud = CombatHud.CombatHud.Create(world, view.Camera, root.transform);
             self._flightHud.enabled = hud; self._hud.enabled = hud;
 
+            // The cabin is on in every played mission (a pad, or a scripted cabin in a capture plan); the AI-flown runs leave it out unless the plan asks.
+            self._cabinOpts = opts?["cabin"] as JObject;
+            self._cabinOn = !CommandLine.Has("-mnNoCabin") && !(opts?["cabin"] != null && opts["cabin"].Type == JTokenType.Boolean && !(bool)opts["cabin"]) && (!autopilot || self._cabinOpts != null);
             if (self._file != null) self.StartMission();
             if (!autopilot && self._file != null)
             {
                 var controls = ControlsConfig.Load(out string source);
                 self._pad = new PlayerPilot(world, world.LocalPlayerShip, controls);
-                world.Pilots.Attach(world.LocalPlayerShip, new StopWhenDead(world, self._pad));
+                world.Pilots.Attach(world.LocalPlayerShip, self.WrapPilot());
                 MnLog.Info($"MISSION controls from {source}; {PlayerPilot.Devices()}");
                 if (!CommandLine.Has("-mnCapture")) { Cursor.visible = false; Cursor.lockState = CursorLockMode.Locked; }
             }
             self._keepLod0 = Opt("lod0", null);
             if (opts?["spectate"] is JObject spec) DogfightSpectator.Attach(world, view.Camera, root.transform, spec);
-            // The briefing first (paused), unless the AI flies or this is a capture or a check.
-            if (self._file != null && self._pad != null && !CommandLine.Has("-mnCapture") && !CommandLine.Has("-mnSkipBriefing")) self.SetBriefing(true);
+            // The briefing first (paused), unless the AI flies or this is a capture or a check. A mission that starts in the cabin briefs at the plan table instead.
+            if (self._file != null && self._pad != null && !CommandLine.Has("-mnCapture") && !CommandLine.Has("-mnSkipBriefing") && !self._cabinPrelaunch) self.SetBriefing(true);
 
             int fps = CommandLine.GetInt("-mnFps", 0);
             if (fps > 0 && !CommandLine.Has("-mnCapture")) { QualitySettings.vSyncCount = 0; Application.targetFrameRate = fps; }
@@ -120,6 +130,7 @@ namespace Monolith.Game
 
         void OnDestroy()
         {
+            DestroyCabin();
             _jumps?.Dispose();
             _rt?.Dispose();
             _host?.Dispose();
@@ -128,7 +139,8 @@ namespace Monolith.Game
         void StartMission()
         {
             _runs++;
-            _rt = new MissionRuntime(_world, _file, _host, new CabinStub { AutoRepairSeconds = _host.Autopilot ? 8f : -1f });
+            MakeCabin();
+            _rt = new MissionRuntime(_world, _file, _host, _cabin != null ? (ICabin)_cabin : new CabinStub { AutoRepairSeconds = _host.Autopilot ? 8f : -1f });
             _world.Sim.Register(_rt);
             _keeper = new PlayerKeeper(_world, _rig, _rt, _host.PlayerInvulnerable);
             _world.Sim.Register(_keeper);
@@ -147,12 +159,68 @@ namespace Monolith.Game
             if (_nextLevel != _ai.Level) _ai.SetLevel(_nextLevel);
             _world.Sim.Unregister(_rt); _world.Sim.Unregister(_keeper);
             _rt.Dispose();
+            DestroyCabin();
             _host.Clear();
             StartMission();
             _pad?.Attach(_world.LocalPlayerShip);
-            if (_pad != null) _world.Pilots.Attach(_world.LocalPlayerShip, new StopWhenDead(_world, _pad));
+            if (_pad != null) _world.Pilots.Attach(_world.LocalPlayerShip, WrapPilot());
             _hud.Banner = null; _hud.BannerSub = null;
             _flightHud.Overlay = null;
+        }
+
+        // ------------------------------------------------------------------------------------------------ the cabin
+
+        IPilotSource WrapPilot() => _cabin != null ? new CabinPilot(_world, _pad, _cabin, id => _pad.Attach(id)) : (IPilotSource)_pad;
+
+        /// <summary>Build the cabin for this run (a new one each time the mission starts: it is the pilot's state).</summary>
+        void MakeCabin()
+        {
+            if (!_cabinOn || _file == null || _cabin != null) return;
+            try
+            {
+                var cfg = CabinConfig.Load(out string source);
+                var layout = CabinLayout.Load();
+                ICabinInput input = _cabinOpts?["script"] is JArray steps ? new ScriptedCabinInput(steps) : (ICabinInput)new PadCabinInput(cfg);
+                _cabin = new CabinSystem(_world, layout, cfg, input, _host, _file);
+                _world.Sim.Register(_cabin);
+                _cabinRig = CabinRig.Create(_world, _cabin, _world.MainCamera, transform);
+                _cabinRig.SunDirection = () => _sky != null ? _sky.SunDirection : Vector3.up;
+                // A mission that starts in the cabin: the pilot is up at the plan table, the sim is held, the briefing is on the table and the rack is open.
+                bool table = _file.Cabin.Start == "table" || (_cabinOpts != null && (bool?)_cabinOpts["prelaunch"] == true);
+                bool capture = CommandLine.Has("-mnCapture");
+                if (table && !CommandLine.Has("-mnSkipBriefing") && (!_host.Autopilot || capture))   // (the pad is made after the mission starts: a played run is one the AI is not flying)
+                {
+                    _cabin.Prelaunch = true;
+                    _cabinPrelaunch = !capture;
+                    _cabin.StartAtTable();
+                    if (_cabinPrelaunch) { _juice.BaseTimeScale = 0f; _world.Sim.TimeScale = 0f; _cabin.Launched += Launch; }
+                }
+                MnLog.Info($"CABIN on: config {source}, {(input is ScriptedCabinInput ? "scripted" : "pad")}, {(_cabin.Prelaunch ? "starts at the plan table" : "starts seated")}");
+            }
+            catch (Exception e)
+            {
+                MnLog.Error("CABIN could not start (the mission runs without it): " + e);
+                DestroyCabin();
+            }
+        }
+
+        void Launch()
+        {
+            if (!_cabinPrelaunch) return;
+            _cabinPrelaunch = false;
+            _cabin.Prelaunch = false;
+            _cabin.Launched -= Launch;
+            if (!_paused) { _juice.BaseTimeScale = 1f; _world.Sim.TimeScale = 1f; }
+            MnLog.Info("CABIN launch");
+        }
+
+        void DestroyCabin()
+        {
+            if (_cabinRig != null) Destroy(_cabinRig.gameObject);
+            _cabinRig = null;
+            if (_cabin != null) { _world.Sim.Unregister(_cabin); _cabin.Dispose(); }
+            _cabin = null;
+            _cabinPrelaunch = false;
         }
 
         // ------------------------------------------------------------------------------------------------ the frame
@@ -188,8 +256,10 @@ namespace Monolith.Game
             if (_pad.SystemPressed(SystemAction.Pause)) { SetPaused(true); return; }
             if (_rt.Ended)
             {
-                bool again = pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame;
-                bool quit = pad != null && pad.buttonEast.wasPressedThisFrame || kb != null && kb.f10Key.wasPressedThisFrame;
+                // Standing in the cabin, A and B are the context and back buttons (the plan table's pages): sit down to fly again, or use the pause menu.
+                bool standing = _cabin != null && _cabin.Board.State != CabinBoard.Phase.Seated;
+                bool again = !standing && (pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame);
+                bool quit = !standing && (pad != null && pad.buttonEast.wasPressedThisFrame) || kb != null && kb.f10Key.wasPressedThisFrame;
                 if (again) Restart();
                 else if (quit) Application.Quit(0);
             }
@@ -206,7 +276,8 @@ namespace Monolith.Game
         void SetPaused(bool paused)
         {
             _paused = paused;
-            _juice.BaseTimeScale = paused ? 0f : 1f;
+            if (_cabin != null) _cabin.Paused = paused;
+            _juice.BaseTimeScale = paused || _cabinPrelaunch ? 0f : 1f;
             _flightHud.Overlay = paused ? PauseText() : null;
         }
 
@@ -298,7 +369,7 @@ namespace Monolith.Game
 
     /// <summary>
     /// A test harness's invulnerable player (soaks, the auto-play check, captures): every 5 s of the fight, a player ship below a tenth of its
-    /// hull or with a part destroyed is made whole again, so destroyed engines do not leave it crawling under the guns (the dogfight did the
+    /// hull or with a part destroyed (unless the cabin is holding it for a hand repair) is made whole again, so destroyed engines do not leave it crawling under the guns (the dogfight did the
     /// same). Runs right after the mission runtime.
     /// </summary>
     public sealed class PlayerKeeper : ISimSystem
@@ -314,7 +385,9 @@ namespace Monolith.Game
         {
             if (!_on || _rt.Ended || !_rt.Started || frame.Tick % (5 * Sim.Hz) != 0) return;
             var pc = _w.Combat.Get(_w.LocalPlayerShip);
-            if (pc != null && (pc.Hull01 < 0.1f || pc.Parts.Exists(p => p.Destroyed))) { _rig.Damage.Reset(_w.LocalPlayerShip); pc.Invulnerable = true; }
+            // a part the cabin is holding for the pilot's hands stays down until they have knit it
+            bool held = _rt.Cabin != null && _rt.Cabin.NeedsRepair(_w.LocalPlayerShip, null);
+            if (pc != null && (pc.Hull01 < 0.1f || (!held && pc.Parts.Exists(p => p.Destroyed)))) { _rig.Damage.Reset(_w.LocalPlayerShip); pc.Invulnerable = true; }
         }
     }
 }

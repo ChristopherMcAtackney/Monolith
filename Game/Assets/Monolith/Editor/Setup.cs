@@ -50,6 +50,8 @@ namespace Monolith.EditorTools
             FlightAssets.Ensure(FlightMaterialsDir);
             // Ship models from the art pipeline (art_src): materials, prefabs, LODs, subsystems. A no-op until a model script has run.
             ShipArtSetup.Ensure();
+            // The cabin (art_src/cabin): its materials and prefab. A no-op until the model script has run.
+            CabinArtSetup.Ensure();
 
             EnsureBootScene();
             ConfigurePlayer();

@@ -1,0 +1,76 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "escort",
+    "hud": false,
+    "dust": false,
+    "invulnerable": true,
+    "cabin": {
+      "script": [
+        {
+          "t": 1.0,
+          "do": "stand"
+        },
+        {
+          "do": "face",
+          "yaw": 150,
+          "pitch": -8
+        },
+        {
+          "t": 9.0,
+          "do": "face",
+          "yaw": 15,
+          "pitch": -16
+        },
+        {
+          "t": 13.5,
+          "do": "sit"
+        }
+      ]
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 2.0
+  },
+  "stills": [
+    {
+      "name": "seated",
+      "follow": true,
+      "warmup": 0.5,
+      "fov": 55
+    },
+    {
+      "name": "rising",
+      "follow": true,
+      "warmup": 2.2,
+      "fov": 58
+    },
+    {
+      "name": "standing_aft",
+      "follow": true,
+      "warmup": 3.5,
+      "fov": 62
+    },
+    {
+      "name": "standing_fore",
+      "follow": true,
+      "warmup": 5.0,
+      "fov": 62
+    },
+    {
+      "name": "sitting",
+      "follow": true,
+      "warmup": 3.4,
+      "fov": 60
+    },
+    {
+      "name": "seated_again",
+      "follow": true,
+      "warmup": 4.0,
+      "fov": 55
+    }
+  ]
+}

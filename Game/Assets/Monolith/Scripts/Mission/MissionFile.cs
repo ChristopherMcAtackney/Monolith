@@ -33,6 +33,7 @@ namespace Monolith.Mission
         public List<MessageDef> Messages = new List<MessageDef>();
         public List<EventDef> Events = new List<EventDef>();
         public AutoplayDef Autoplay = new AutoplayDef();
+        public CabinDef Cabin = new CabinDef();
 
         // ------------------------------------------------------------------------------------------------ the parts of a file
 
@@ -44,6 +45,19 @@ namespace Monolith.Mission
         }
 
         public sealed class DebriefDef { public Cond When; public string Text; }
+
+        /// <summary>
+        /// How the mission uses the cabin (design section 6). <see cref="Start"/> "seat" (the default) starts the mission as the flight scenes do; "table" starts it in the
+        /// cabin, standing at the plan table before launch: the briefing is on the table, the weapon rack is open, and the pilot sits down and launches when ready.
+        /// <see cref="StandAnytime"/> false stops the pilot getting up unless the mission calls for it. The rack offers <see cref="RackGuns"/> and <see cref="RackMissiles"/>
+        /// (weapon ids) and starts loaded with the defaults (the cabin's own when absent).
+        /// </summary>
+        public sealed class CabinDef
+        {
+            public string Start = "seat";
+            public bool StandAnytime = true;
+            public List<string> RackGuns, RackMissiles, DefaultGuns, DefaultMissiles;
+        }
 
         public sealed class MusicDef
         {
@@ -251,6 +265,21 @@ namespace Monolith.Mission
                 foreach (var h in m.Pacing.Hulls) ctx.CheckShip(h, pa.Where + ".hulls", false);
                 m.Pacing.QuietRange = pa.Float("quietRange", 2500f);
                 pa.Done();
+            }
+            var cb = r.Obj("cabin");
+            if (cb != null)
+            {
+                m.Cabin.Start = cb.Str("start", "seat");
+                if (m.Cabin.Start != "seat" && m.Cabin.Start != "table") errors.Add($"{cb.Where}.start: '{m.Cabin.Start}' (seat or table)");
+                m.Cabin.StandAnytime = cb.Bool("standAnytime", true);
+                var rk = cb.Obj("rack");
+                if (rk != null)
+                {
+                    m.Cabin.RackGuns = rk.Strings("guns"); m.Cabin.RackMissiles = rk.Strings("missiles");
+                    m.Cabin.DefaultGuns = rk.Strings("defaultGuns"); m.Cabin.DefaultMissiles = rk.Strings("defaultMissiles");
+                    rk.Done();
+                }
+                cb.Done();
             }
             var cap = r.Obj("arrivalCap");
             if (cap != null)

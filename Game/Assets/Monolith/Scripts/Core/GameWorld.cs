@@ -67,5 +67,8 @@ namespace Monolith.Core
 
         /// <summary>The running mission's directives, objectives, music state and result, or null (owner: Mission; the HUD reads it).</summary>
         public MissionBoard Mission;
+
+        /// <summary>The cabin's published state (where the pilot is, the view, the lights, the HUD's collapse), or null when there is no cabin (owner: Cabin).</summary>
+        public CabinBoard Cabin;
     }
 }
