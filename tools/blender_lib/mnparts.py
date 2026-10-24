@@ -157,7 +157,7 @@ def gun_turret(K, sb, fr, key, s=1.0, barrels=2, barrel_len=4.6, barrel_r=0.26, 
 
 # ------------------------------------------------------------------------------------------------ engines
 
-def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0, s=1.0, bell_segs=40, bell_n=10, plume_shells=8, plume_segs=18):
+def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0, s=1.0, bell_segs=40, bell_n=10, plume_shells=8, plume_segs=18, plume_len=1.0):
     """A recessed engine in the show's manner: small, hard and hot. A chrome bell flaring from a throat into the hull, dark inside with an ember glow
     near the throat, and a flat white-blue combustion disc at the throat that blooms; a short, tapering flare of nested additive shells streams out of
     the lip (its own part, ``plume``, so a wreck loses it, and the runtime ``EngineGlow`` flickers and scales it). ``fr``: origin at the hull face,
@@ -202,7 +202,7 @@ def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0
         pts = []
         for i in range(6):
             tt = i / 5
-            pts.append((max(exit_r * r0 * ((1.0 - tt ** 0.9) * (1.0 + 0.10 * math.sin(tt * math.pi))), 0.01), y_lip + exit_r * ln * tt))
+            pts.append((max(exit_r * r0 * ((1.0 - tt ** 0.9) * (1.0 + 0.10 * math.sin(tt * math.pi))), 0.01), y_lip + exit_r * ln * plume_len * tt))
         plume.lathe(pts, fr, PLUME, segs=plume_segs, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0))
         plume.lathe(pts, fr, PLUME, segs=plume_segs, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0), flip=True)
     # ---- wreck: the bell torn open on one side, dead and dark with a few embers; no gradient

@@ -77,6 +77,17 @@ dmg.SubsystemChanged += (sub, from, to) => { /* explosion, radio line, objective
 
 Scorch decals come from one atlas (4 x 4: small scorches, blasts, craters, streaks). Damaged-state frame cost on the corvette: about 3% (see the piece history).
 
+## Small ships: the fighter kit (`mnfighter`, `art_src\earth_fighters`)
+
+Fighters (10 to 20 m) are built from the same kit at a different scale, with `toolslender_lib\mnfighter.py`: `solid()` (a bevelled, plated, flat-faced solid from a quad: wings, fins, pods; `lod2=False` leaves it out of LOD2), `hull()` (loft stations plus plating and rails), `taper`, `band`, `whip` (antennas), `collar`, `hoop`, and the subsystem builders `fighter_engine` (the capital bell, a fifth the size, with a short flare: `plume_len`), `needle_gun` (primary, `heavy=True` for the fat gun), `sensor_eye`, `missile_rack`, `comms_array`. `dark_paint()` swaps the paint batches for matte black tones; `PLATING` and `WEAR_STYLE` are the small-plate styles. `damage_points()` and `add_site()` place the scorch points and breach sites. One script per class (`build_earth_<class>.py`, `-- --preview` for Workbench renders under `_preview`, gitignored).
+
+Conventions the fighters add to the contract:
+
+- A gun mount is `SUB_mount_<name>` (kind `mount`), with the tag `gun:primary` or `gun:heavy` in the manifest; `ShipArtVisual` reads the tag to know which weapon's muzzle the part is, and `ShipCombatFactory` maps the kind to the combat flags (`PrimaryOffline` and `HeavyOffline`).
+- A ship def (`Resources\Combat\ships\<id>.json`) says what a model part is worth with `partKinds` (hp as a percent of the hull per kind: engine, mount, sensors, launcher, comms). When it is present the data's stand-in `parts` are not used with a model; they stay for the headless lab, where there is no model.
+- Manifest keys: `scorchScale` (hit radii are set for capital hulls; a fighter's scorch is a fraction of that), `damagePoints`, `lodScreenHeights`, `engineLights` (per engine: `z`, `candela`, `range`, `fade`, `radius`) and `engineFollowsShip` (the glow follows the world ship's throttle and afterburner; set by `ShipArtSetup` on `EngineGlow.FollowShip`).
+- Wiring a model into a mission needs nothing: `GameMissionHost` uses `ShipArtCatalog.Exists(class)`. The hand-written scenes (`DogfightBattle.SpawnFighter`, `CombatRange.SpawnDrone` with the `model` and `def` fields in `range.json`, the juice sandbox slots) say it themselves. Hull break-up sections are baked by `JuiceSetup.BakeSections` for every ShipArt prefab (run it after `Setup.Project` whenever a model changes).
+
 ## Adding a ship
 
 1. Copy `art_src\earth_corvette`, rename. Reuse `earth_hull` textures for Earth ships; a new faction gets its own `art_src\<set>` script (copy it, change the look: albedo, trim pieces, markings, emissive colours).

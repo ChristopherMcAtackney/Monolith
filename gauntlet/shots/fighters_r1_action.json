@@ -9,9 +9,9 @@
   "spectate": {
    "ship": "Choir 1",
    "offset": [
-    11,
-    5,
-    -46
+    9,
+    4,
+    -38
    ],
    "look": "target"
   }
@@ -24,34 +24,77 @@
  },
  "stills": [
   {
-   "name": "act_t16",
+   "name": "act_00",
    "follow": true,
-   "warmup": 16.0
+   "fov": 52,
+   "warmup": 14.0
   },
   {
-   "name": "act_t19",
+   "name": "act_01",
    "follow": true,
-   "warmup": 3.0
+   "fov": 52,
+   "warmup": 2.5
   },
   {
-   "name": "act_t22",
+   "name": "act_02",
    "follow": true,
-   "warmup": 3.0
+   "fov": 52,
+   "warmup": 2.5
   },
   {
-   "name": "act_t25",
+   "name": "act_03",
    "follow": true,
-   "warmup": 3.0
+   "fov": 52,
+   "warmup": 2.5
   },
   {
-   "name": "act_t28",
+   "name": "act_04",
    "follow": true,
-   "warmup": 3.0
+   "fov": 52,
+   "warmup": 2.5
   },
   {
-   "name": "act_t31",
+   "name": "act_05",
    "follow": true,
-   "warmup": 3.0
+   "fov": 52,
+   "warmup": 2.5
+  },
+  {
+   "name": "act_06",
+   "follow": true,
+   "fov": 52,
+   "warmup": 2.5
+  },
+  {
+   "name": "act_07",
+   "follow": true,
+   "fov": 52,
+   "warmup": 2.5
+  },
+  {
+   "name": "act_08",
+   "follow": true,
+   "fov": 52,
+   "warmup": 2.5
+  },
+  {
+   "name": "act_09",
+   "follow": true,
+   "fov": 52,
+   "warmup": 2.5
+  },
+  {
+   "name": "act_10",
+   "follow": true,
+   "fov": 52,
+   "warmup": 2.5
+  },
+  {
+   "name": "act_11",
+   "follow": true,
+   "fov": 52,
+   "warmup": 2.5
   }
- ]
+ ],
+ "perf": []
 }

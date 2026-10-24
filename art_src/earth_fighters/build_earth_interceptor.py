@@ -192,6 +192,7 @@ def main():
     ship.extra["damagePoints"] = F.damage_points(K0.surfaces, 28, SEED)
     ship.extra["lodScreenHeights"] = [0.10, 0.03, 0.006]
     ship.extra["scorchScale"] = 0.11          # hit radii are set for capital hulls; a fighter's scorch is this fraction of that
+    ship.extra["engineFollowsShip"] = True    # the glow follows the ship's throttle and afterburner in a fight
     ship.extra["engineLights"] = {"SUB_engine_P": {"z": 0.55, "candela": 6000.0, "range": 14.0, "fade": 140.0}, "SUB_engine_S": {"z": 0.55, "candela": 6000.0, "range": 14.0, "fade": 140.0}}
     stats = ship.export()
     print(f"[MN] bounds {stats['bounds']}")

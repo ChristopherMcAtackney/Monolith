@@ -280,6 +280,7 @@ namespace Monolith.EditorTools
                     {
                         // A live engine: its glowing core and its flare flicker and follow the throttle (EngineGlow).
                         var glow = t.gameObject.AddComponent<EngineGlow>();
+                        glow.FollowShip = (bool?)raw["engineFollowsShip"] == true;
                         var lights = new List<HDAdditionalLightData>(); var candela = new List<float>();
                         if (raw["engineLights"]?[s.Name] is JObject spec)
                         {

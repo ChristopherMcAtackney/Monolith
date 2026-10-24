@@ -155,6 +155,7 @@ namespace Monolith.View
 
         public void Register(int shipId, Transform visual)
         {
+            if (visual != null) { var h = visual.GetComponent<ShipHandle>() ?? visual.gameObject.AddComponent<ShipHandle>(); h.Id = shipId; }
             _views[shipId] = visual;
             Place(shipId, visual);
         }

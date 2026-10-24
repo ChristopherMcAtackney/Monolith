@@ -1515,6 +1515,7 @@
   0.006
  ],
  "scorchScale": 0.13,
+ "engineFollowsShip": true,
  "engineLights": {
   "SUB_engine_P": {
    "z": 0.7,

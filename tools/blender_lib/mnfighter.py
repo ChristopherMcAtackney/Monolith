@@ -225,7 +225,7 @@ def _stump(K, d, fr, radius, key, plates=4, embers=2, s=0.22):
 
 def fighter_engine(K, sb, fr, key, throat=0.2, exit_r=0.42, length=0.9, s=0.2):
     """A fighter's engine: the capital kit's recessed bell, a fifth the size, drawn with fewer segments and a thinner flare so twenty of them are cheap."""
-    mnparts.engine_nozzle(K, sb, fr, key, throat=throat, exit_r=exit_r, length=length, s=s, bell_segs=20, bell_n=6, plume_shells=4, plume_segs=12)
+    mnparts.engine_nozzle(K, sb, fr, key, throat=throat, exit_r=exit_r, length=length, s=s, bell_segs=20, bell_n=6, plume_shells=4, plume_segs=12, plume_len=0.62)
 
 
 def needle_gun(K, sb, fr, key, length=1.3, r=0.065, heavy=False):
@@ -268,7 +268,7 @@ def sensor_eye(K, sb, fr, key, r=0.28, tall=0.34):
     ax = Frame(fr.p(0, 0, tall * 0.5), fr.u, fr.f)
     head.lathe([(r * 1.12, 0.0), (r * 1.12, tall * 0.35), (r * 0.98, tall * 0.5)], ax, CHROME, segs=16, tile=2.0)
     head.lathe([(r * 0.98, tall * 0.5), (r * 0.7, tall * 0.55), (r * 0.5, tall * 0.74), (r * 0.12, tall * 0.84)], ax, ENGINE, segs=16, rect=(0.0, 1.0, 1.0, 0.52))
-    head.lathe([(r * 1.0, tall * 0.5), (r * 1.0, tall * 0.54), (r * 0.82, tall * 0.54), (r * 0.82, tall * 0.5)], ax, LIGHTS, segs=16, rect=K.light_rect(LIGHT_WHITE))
+    head.lathe([(r * 1.0, tall * 0.5), (r * 1.0, tall * 0.54), (r * 0.9, tall * 0.54), (r * 0.9, tall * 0.5)], ax, LIGHTS, segs=16, rect=K.light_rect(LIGHT_WHITE))
     for sx, ln in ((-1, 0.5), (1, 0.34)):
         K.pipe(fr.p(sx * r * 1.55, -r * 0.5, tall * 0.4), fr.p(sx * r * 1.7, -r * 0.5 - ln * 0.4, tall * 0.4 + ln), r * 0.07, sides=4, mb=head)
     d = sb.variant("destroyed")

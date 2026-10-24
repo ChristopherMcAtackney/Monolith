@@ -1,0 +1,88 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Choir 1",
+   "offset": [
+    7,
+    3,
+    -24
+   ],
+   "look": "target"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "b_00",
+   "follow": true,
+   "fov": 55,
+   "warmup": 11.0
+  },
+  {
+   "name": "b_01",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_02",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_03",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_04",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_05",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_06",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_07",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_08",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  },
+  {
+   "name": "b_09",
+   "follow": true,
+   "fov": 55,
+   "warmup": 1.5
+  }
+ ],
+ "perf": []
+}

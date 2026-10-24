@@ -89,22 +89,20 @@ def damaged(cid):
 
 
 def together():
-    """The three fighters in a loose formation in front of the corvette's bow, a hull length or two away, for scale: the corvette is 374 m, the bomber 20."""
-    sun = (0.70, 0.45, 0.35)
+    """The three fighters flying a loose echelon ahead of the corvette's bow, for scale: the corvette is 374 m (bow at z = +186, hull 37 m off the axis), the
+    interceptor 11 m, the heavy 14, the bomber 19. The Sun lights the starboard side, so the fighters and the hull both carry light."""
+    sun = (0.62, 0.50, -0.40)
     orient, err = M.solve_orientation(sun)
-    R = M.rot(*orient)
-    # corvette at the origin, bow at +z; the fighters hang off its starboard quarter, 60 m out and 120 m forward of the main hull, in one frame
     ships = [
-        {"ship": "earth_corvette", "pos": (0.0, 0.0, 0.0)},
-        {"ship": "earth_interceptor", "pos": (70.0, 12.0, 20.0)},
-        {"ship": "earth_heavy", "pos": (100.0, 4.0, 4.0)},
-        {"ship": "earth_bomber", "pos": (132.0, 14.0, 22.0)},
+        {"ship": "earth_interceptor", "pos": (34.0, 14.0, 226.0)},
+        {"ship": "earth_heavy", "pos": (50.0, 0.0, 210.0)},
+        {"ship": "earth_bomber", "pos": (68.0, 10.0, 238.0)},
     ]
     opts = {"ship": "earth_corvette", "pitch": orient[0], "yaw": orient[1], "roll": orient[2],
-            "ships": [{"ship": s["ship"], "pos": M.world(s["pos"], orient), "rot": list(orient)} for s in ships[1:]]}
-    stills = [M.shot("scale_formation", (150.0, 36.0, -110.0), (95.0, 8.0, 14.0), 36, orient),
-              M.shot("scale_with_corvette", (210.0, 70.0, -260.0), (30.0, 0.0, 0.0), 40, orient),
-              M.shot("scale_close", (118.0, 16.0, -32.0), (100.0, 8.0, 14.0), 40, orient)]
+            "ships": [{"ship": s["ship"], "pos": M.world(s["pos"], orient), "rot": list(orient)} for s in ships]}
+    stills = [M.shot("scale_formation", (150.0, 44.0, 70.0), (30.0, 8.0, 200.0), 42, orient),
+              M.shot("scale_with_corvette", (260.0, 70.0, -40.0), (10.0, 0.0, 170.0), 44, orient),
+              M.shot("scale_close", (98.0, 20.0, 178.0), (50.0, 7.0, 224.0), 34, orient)]
     plan = {"scene": "corvette", "sceneOptions": opts, "defaults": {"width": 1920, "height": 1080, "warmup": 1.5, "perfWarmup": 2.0}, "stills": stills, "perf": []}
     write("fighters_together", plan)
 
