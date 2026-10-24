@@ -322,3 +322,16 @@ and radial); the numbers are within the run-to-run noise of round 2 (478, 456 an
 - The shared tree broke twice while the AI builder had files half edited (a build failed with a script-layout mismatch after `ShipState` changed; later `AiDirector.cs` referenced types that did not exist yet).
   I built and captured in a private git worktree (`git worktree add`, the Library copied with robocopy, my modified files copied over) and removed it afterwards; the commit is from the main tree with explicit paths.
 - A heredoc with apostrophes (`it's`) fails in this shell tool's bash; write the file with the editor tool, then run it.
+
+## Round 3 verdicts (lead, 2026-10-25): one critic per pair
+**Meatiness vs FS2: WON 2/3. This completes the meatiness bar** (round 2 won 3/3; round 3 against different FS2 frames won 2/3).
+- r3a beam_strike vs heavy_beam_fire/fs2/big_battle_comparison_0113: ours meatier (likely). FS2's hairline beams have "no mass or impact".
+- r3b laser_exchange vs gunfire_and_tracers/fs2/clash_of_titans_ii_0140: ours meatier (likely). Fat, white-cored bolts with a spark and debris burst.
+- r3c capital_death_final vs explosion_capital/fs2/clash_of_titans_ii_0179: **FS2 meatier** (likely). Ours is "a pretty firework": a soft, translucent cloud with no white-hot core and no dense mass, while FS2's blown-out core obliterates the target. **Round 3's translucency, done for realism, cost the capital death its weight.**
+
+**Realism vs The Expanse: lost 3/3, but every call dropped from certain to likely.**
+- r3a blast_near_hull vs explosion_small/expanse/7_ATYOm3nNc_0160: a saturated blob with a blown core ringed by evenly sized, evenly spaced dash sparks; lens-flare ring and streak overlaid; the ship shows no specular response to the blast.
+- r3b fighter_kill_fireball vs explosion_small/expanse/7_ATYOm3nNc_0142: hundreds of near-identical razor-sharp orange dashes spread evenly over the frame; a saturated, crisp-edged ball against the show's pale, murky, graded bloom.
+- r3c capital_death_final vs explosion_capital/expanse/7_ATYOm3nNc_0182: a pile of hot sprite bursts with spiky edges and uniform dashes "like a stock particle emitter"; no smoky mass or occlusion.
+
+**Gap for round 4 (lead): resolve realism against meat through time.** Each blast opens dense, opaque and blown-out white for its first moments (the meat critic's obliterating core), then breaks into translucent, motion-blurred, cooling fringe (the realism critic's fire). Sparks: far fewer, varied in size, brightness, length and blur, some dark tumbling debris among them; never an even field of identical dashes. Fire colour: less saturated, paler and murkier as it cools. Specular response to blasts on nearby hulls. Bolts and beams stay as they are, since they won.
