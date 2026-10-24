@@ -158,3 +158,10 @@ and, through SSR, the lit plates beside it. The dish's back is dark ribbed armou
   (7) The shadow side is dark enough that the 1280 JPEG keeps only a hint of the window rows and the engine block: the critic may call it too crushed even though no pixel is zero.
 - **Not done:** reflections of the Sun and stars in the cubemap (a sky-only reflection probe), wear that follows the hull's real geometry (it is per plate), irregular plate outlines, a second ship class of paint (Earth's pale
   command variant), and anything about the destroyer.
+
+## Corvette round 2 verdict (lead, 2026-10-24)
+Fresh blind critic vs The Expanse: **lost 3/3** (likely, certain, certain). Pairs: raking_close vs 7_ATYOm3nNc_0157 (2:1); close_hull vs 7_ATYOm3nNc_0022; shadow_side vs 7_ATYOm3nNc_0046.
+- Progress: pair 1 was only "likely", and the critic admitted its confidence leaned on recognising our ship's design cues across the pairs.
+- Giveaways: the critic still sees no hard key-light break on the hull; wear is a single uniform noise overlay (edge-bordered plates with stamped stripes read as decals, the clean EC-114 stencil has no chipping or paint layers); engine cores don't light the hull around them; the camera look's lens ghosts read as sprites that match nothing lighting the scene; one critic now dislikes the lifted, noisy blue-grey black that earlier sky critics asked for (critics contradict each other: the verdict is the signal).
+- **Method change (lead):** each look round from now on uses three separate critics with one pair each, so recognising our ship in one pair can't decide the others.
+- Round 3 gaps: frame captures so the sunlit faces carry the frame (check the sun really lights what's in shot); wear and paint that vary by material and scale (chipped paint layers at stencils and edges, grime pooling in recesses, not a single overlay); engine glow that lights the hull around the nozzles; ask whether the lens ghosts need toning down in ship shots.
