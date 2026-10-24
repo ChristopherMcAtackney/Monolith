@@ -3,9 +3,11 @@
     "ShipArt/diaspora_cruiser|GameObject",
     "ShipArt/earth_bomber|GameObject",
     "ShipArt/earth_corvette|GameObject",
+    "ShipArt/earth_destroyer|GameObject",
     "ShipArt/earth_fighter|GameObject",
     "ShipArt/earth_heavy|GameObject",
     "ShipArt/earth_interceptor|GameObject",
+    "ShipArt/earth_outpost|GameObject",
     "ShipArt/vanguard_fighter|GameObject"
   ],
   "cabin": [
@@ -20,9 +22,11 @@
     "Juice/Sections/diaspora_cruiser.sections|Mesh",
     "Juice/Sections/earth_bomber.sections|Mesh",
     "Juice/Sections/earth_corvette.sections|Mesh",
+    "Juice/Sections/earth_destroyer.sections|Mesh",
     "Juice/Sections/earth_fighter.sections|Mesh",
     "Juice/Sections/earth_heavy.sections|Mesh",
     "Juice/Sections/earth_interceptor.sections|Mesh",
+    "Juice/Sections/earth_outpost.sections|Mesh",
     "Juice/Sections/vanguard_fighter.sections|Mesh",
     "Juice/MN_Fx|Shader"
   ],
