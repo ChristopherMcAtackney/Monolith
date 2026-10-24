@@ -242,6 +242,7 @@ namespace Monolith.Game
             lines.Add("RT FAST GUN   LB HEAVY GUN   RB FIRE MISSILE   R3 NEXT MISSILE   B DECOYS");
             lines.Add("LT TARGET AHEAD   A NEXT HOSTILE   VIEW NEAREST ATTACKER   Y TAP NEXT PART");
             lines.Add("L3 AFTERBURNER   X MATCH SPEED   D-PAD THROTTLE PRESETS");
+            lines.Add("SOUND  F3 F4 VOICE   F5 F6 MUSIC   F7 F8 EFFECTS   - AND + MASTER   F2 SOUND OFF");
             return lines.ToArray();
         }
 

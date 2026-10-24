@@ -4,4 +4,13 @@
 export HF_HUB_OFFLINE=1
 export PYTHONPATH="$HOME/breeze/breeze-tts"
 cd "$HOME/breeze/breeze-tts"
-exec "$HOME/breeze/.venv/bin/python" -u "$(dirname "$(readlink -f "$0")")/gen_voice.py" "$@"
+here="$(dirname "$(readlink -f "$0")")"
+# a CUDA context error (exit 3) is not recoverable in-process but the run is resumable: start again, up to six times
+for attempt in 1 2 3 4 5 6; do
+  "$HOME/breeze/.venv/bin/python" -u "$here/gen_voice.py" "$@"
+  code=$?
+  [ "$code" -ne 3 ] && exit "$code"
+  echo "run_voice: CUDA error, restarting (attempt $attempt)"
+  sleep 8
+done
+exit 3

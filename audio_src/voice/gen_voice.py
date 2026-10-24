@@ -13,7 +13,7 @@ the reverb of Earth's voices, the alien texture; then ffmpeg encodes OGG into Ga
 
 Voices are DESIGNED from the text descriptions in cast.json (voice design only: no real person is named or cloned). manifest.json (next
 to the clips) records per clip the spoken text, the voice and a hash of its settings, so a re-run only generates new or changed lines.
-Each line is generated as up to three takes (seeds 42, 43, 44); a take that is silent, clipped off at the length cap, or implausibly
+Each line is generated at its tagged intensity (calm, tense or frantic; collect_lines.py tags them, cast.json says how each is asked for) as up to three takes (seeds 42, 43, 44); a take that is silent, clipped off at the length cap, or implausibly
 slow or fast for its words is rejected and the next seed tried; the best of the takes is kept. The Breeze weights and everything made
 with them are for non-commercial use only (see AUDIO_SOURCES.md).
 """
@@ -41,12 +41,22 @@ def log(msg):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
-def voice_hash(v):
-    return hashlib.sha1(json.dumps({k: v[k] for k in ('instruction', 'cfg', 'seed')}, sort_keys=True).encode()).hexdigest()[:12]
+def effective_instruction(v, intensity):
+    """What the model is told about the speaker. Calm: the voice's full instruction (a composed, deadpan read). Tense or frantic: the voice's
+    identity (who, accent, timbre) plus the delivery for that intensity, because the calm instruction's own words ('calm', 'unhurried', 'never
+    shouting') would fight the delivery."""
+    if intensity == 'calm' or 'identity' not in v:
+        return v['instruction']
+    delivery = v.get('delivery', {}).get(intensity) or CAST['intensity'][intensity]
+    return v['identity'] + ' ' + delivery
+
+
+def voice_hash(v, intensity='calm'):
+    return hashlib.sha1(json.dumps({'instruction': effective_instruction(v, intensity), 'cfg': v['cfg'], 'seed': v['seed']}, sort_keys=True).encode()).hexdigest()[:12]
 
 
 class FakeSynth:
-    def synth(self, voice, text, out, seed, max_seconds):
+    def synth(self, voice, text, out, seed, max_seconds, instruction):
         import numpy as np
         import soundfile as sf
         sr = 24000
@@ -83,9 +93,9 @@ class BreezeSynth:
                            repetition_penalty=REPETITION_PENALTY)
         self.runtime = self._Runtime(self.model, self.audio_tokenizer, cfg, tokenizer=self.tokenizer)
 
-    def synth(self, voice, text, out, seed, max_seconds):
+    def synth(self, voice, text, out, seed, max_seconds, instruction):
         import soundfile as sf
-        request = {'id': 'single-request', 'text': text, 'speaker': 'S0', 'instruction': voice['instruction']}
+        request = {'id': 'single-request', 'text': text, 'speaker': 'S0', 'instruction': instruction}
         template = self._select_template_name(request)
         self._set_all_seeds(seed)
         inputs = self._prepare_inputs(self.tokenizer, self.audio_tokenizer, self.model, [request], self._get_template(template),
@@ -152,10 +162,12 @@ def speech_stats(path):
     return float((idx[-1] - idx[0] + 1) * win / sr), float(len(x) / sr), float((np.abs(x) > 0.999).mean())
 
 
-def budget(text):
-    """(floor, accept, cap) seconds of speech for a line: these designed voices run about 0.35 to 0.7 s a word."""
+def budget(text, intensity='calm'):
+    """(floor, accept, cap) seconds of speech for a line: these designed voices run about 0.35 to 0.7 s a word when calm; a frantic read must be
+    quicker (a take that drags is rejected, so the faster of three tries is kept)."""
     words = max(1, len(re.findall(r"[A-Za-z']+", text)))
-    return 0.14 * words + 0.15, 0.85 * words + 1.0, 1.5 * (0.85 * words + 1.0)
+    per, extra = {'calm': (0.85, 1.0), 'tense': (0.65, 0.9), 'frantic': (0.52, 0.8)}[intensity]
+    return 0.12 * words + 0.15, per * words + extra, 1.6 * (per * words + extra)
 
 
 def main():
@@ -178,12 +190,12 @@ def main():
         lines = [l for l in lines if l['voice'] == args.only]
     mp = out / 'manifest.json'
     manifest = json.loads(mp.read_text(encoding='utf-8')) if mp.exists() else {'files': {}}
-    vh = {k: voice_hash(v) for k, v in CAST['voices'].items()}
+    vh = {(k, i): voice_hash(v, i) for k, v in CAST['voices'].items() for i in ('calm', 'tense', 'frantic')}
 
     todo, ok = [], 0
     for l in lines:
         e = manifest['files'].get(l['file'])
-        if not args.force and e and (out / l['file']).exists() and e['say'] == l['say'] and e['voice_hash'] == vh[l['voice']]:
+        if not args.force and e and (out / l['file']).exists() and e['say'] == l['say'] and e['voice_hash'] == vh[(l['voice'], l['intensity'])]:
             ok += 1
         else:
             todo.append(l)
@@ -201,19 +213,21 @@ def main():
         log('fake synth' if args.fake_synth else 'loading model')
         synth = FakeSynth() if args.fake_synth else BreezeSynth(args.model)
     failures = []
+    fatal = False
     t0 = time.time()
     total_audio = 0.0
     for i, l in enumerate(todo, 1):
         voice = CAST['voices'][l['voice']]
         path = out / l['file']
         path.parent.mkdir(parents=True, exist_ok=True)
-        floor, accept, cap = budget(l['say'])
+        floor, accept, cap = budget(l['say'], l['intensity'])
+        instruction = effective_instruction(voice, l['intensity'])
         best = None
         t1 = time.time()
         try:
             for seed in SEEDS:
                 take = path.parent / f'_take{seed}_{path.name}'
-                retry_oom(l['file'], lambda: synth.synth(voice, l['say'], take, seed + (voice['seed'] - 42), cap), on_oom=synth.reset)
+                retry_oom(l['file'], lambda: synth.synth(voice, l['say'], take, seed + (voice['seed'] - 42), cap, instruction), on_oom=synth.reset)
                 speech, total, clipped = speech_stats(take)
                 good = floor <= speech <= accept and clipped < 0.002 and total < cap - 0.05
                 log(f"    {l['file']} seed {seed + voice['seed'] - 42}: {speech:.2f}s speech of {total:.2f}s (budget {floor:.2f}-{accept:.2f}, cap {cap:.2f}) {'ok' if good else 'REJECT'}")
@@ -230,9 +244,14 @@ def main():
         except Exception as e:  # noqa: BLE001
             failures.append((l['file'], f'{type(e).__name__}: {str(e)[:200]}'))
             log(f"FAILED {l['file']}: {type(e).__name__}: {str(e)[:200]}")
+            if 'CUDA error' in str(e) and not is_oom(e):
+                # a CUDA context error is sticky: every clip after it would fail at once. Stop; the run is resumable (run_voice.sh retries).
+                log('CUDA context lost: stopping so that a fresh process can resume')
+                fatal = True
+                break
             continue
         total_audio += best[4]
-        manifest['files'][l['file']] = {'voice': l['voice'], 'say': l['say'], 'voice_hash': vh[l['voice']], 'seed': best[1],
+        manifest['files'][l['file']] = {'voice': l['voice'], 'say': l['say'], 'intensity': l['intensity'], 'voice_hash': vh[(l['voice'], l['intensity'])], 'seed': best[1],
                                         'speech_seconds': round(best[3], 2), 'seconds': round(best[4], 2), 'plausible': bool(best[0] == 0)}
         mp.write_text(json.dumps(manifest, indent=1, sort_keys=True), encoding='utf-8')
         log(f"[{i}/{len(todo)}] {l['file']} {time.time() - t1:.1f}s for {best[4]:.1f}s | {l['say']}")
@@ -243,7 +262,7 @@ def main():
     log(f'DONE in {(time.time() - t0) / 60:.1f} min: {len(todo) - len(failures)} generated ({total_audio:.0f}s audio), {len(failures)} failed')
     for f, why in failures:
         log(f'  failed: {f}: {why}')
-    return 1 if failures else 0
+    return 3 if fatal else (1 if failures else 0)
 
 
 if __name__ == '__main__':

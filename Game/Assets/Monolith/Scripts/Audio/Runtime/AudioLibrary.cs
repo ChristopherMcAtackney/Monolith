@@ -33,6 +33,10 @@ namespace Monolith.Audio
         public string Voice, Text, Norm, File, Source = "built in";
         public Clip Clip;
         public float Seconds;
+        /// <summary>How hard the speaker is working: 0 calm, 1 tense, 2 frantic (the index tags it; collect_lines.py decides from the mission context).</summary>
+        public int Intensity;
+        public float Lufs;
+        public static int ParseIntensity(string s) => s == "frantic" ? 2 : s == "tense" ? 1 : 0;
     }
 
     /// <summary>Who speaks as whom (cast.json, copied into the index).</summary>
@@ -84,6 +88,7 @@ namespace Monolith.Audio
             public Kind Kind;
             public Action<Clip, string> Apply;
             public string Voice;               // for radio styling of a player's recording
+            public int Intensity;              // likewise: the radio filter works harder on a frantic line
             public string UserPath;            // the override in use, or null
             public DateTime UserTime;
             public bool IsLoop;
@@ -161,22 +166,22 @@ namespace Monolith.Audio
                 foreach (var p in ((JObject)j["voices"]).Properties()) Cast.VoiceFx[p.Name] = (string)p.Value;
                 foreach (JObject c in (JArray)j["clips"])
                 {
-                    var v = new VoiceClip { Voice = (string)c["voice"], Text = (string)c["text"], Norm = (string)c["norm"], File = (string)c["file"], Seconds = (float?)c["seconds"] ?? 0f };
+                    var v = new VoiceClip { Voice = (string)c["voice"], Text = (string)c["text"], Norm = (string)c["norm"], File = (string)c["file"], Seconds = (float?)c["seconds"] ?? 0f, Intensity = VoiceClip.ParseIntensity((string)c["intensity"]), Lufs = (float?)c["lufs"] ?? -23f };
                     Voices.Add(v);
                     if (!VoicesByText.TryGetValue(v.Norm, out var list)) VoicesByText[v.Norm] = list = new List<VoiceClip>();
                     list.Add(v);
                     var vv = v;
-                    AddAsset(v.File, Kind.Voice, (cl, src) => { vv.Clip = cl; vv.Source = src; if (cl != null) vv.Seconds = cl.Seconds; }, voice: v.Voice);
+                    AddAsset(v.File, Kind.Voice, (cl, src) => { vv.Clip = cl; vv.Source = src; if (cl != null) vv.Seconds = cl.Seconds; }, voice: v.Voice, intensity: v.Intensity);
                 }
             }
             else Problems.Add("vo/index.json is missing");
         }
 
-        void AddAsset(string rel, Kind kind, Action<Clip, string> apply, string voice = null, bool loop = false)
+        void AddAsset(string rel, Kind kind, Action<Clip, string> apply, string voice = null, bool loop = false, int intensity = 0)
         {
             if (string.IsNullOrEmpty(rel)) return;
             // loops are stored as WAV; the others as OGG: either way the catalog says which
-            var a = new Asset { Rel = rel, Kind = kind, Apply = apply, Voice = voice, IsLoop = loop };
+            var a = new Asset { Rel = rel, Kind = kind, Apply = apply, Voice = voice, IsLoop = loop, Intensity = intensity };
             _assets.Add(a);
             _byKey[Key(rel)] = a;
         }
@@ -316,7 +321,7 @@ namespace Monolith.Audio
                     mono[i] = s;
                 }
                 Cast.VoiceFx.TryGetValue(a.Voice ?? "", out var fx);
-                var y = RadioFx.Process(mono, clip.SampleRate, RadioFx.StyleOf(fx), (uint)(path.GetHashCode() & 0xFFFF) + 1u);
+                var y = RadioFx.Process(mono, clip.SampleRate, RadioFx.StyleOf(fx), (uint)(path.GetHashCode() & 0xFFFF) + 1u, -23f + (a.Intensity == 2 ? 3.5f : a.Intensity == 1 ? 1.5f : 0f), (RadioIntensity)a.Intensity);
                 return Clip.FromPcm(PcmBuffer.FromMono(RadioFx.OutRate, y), clip.Name);
             }
             catch (Exception e) { MnLog.Warn("AUDIO radio filter failed on " + path + ": " + e.Message); return clip; }

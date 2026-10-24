@@ -43,11 +43,19 @@ namespace Monolith.AudioTools
             }
             sb.AppendLine();
             sb.AppendLine("RADIO  (vo\\<voice>\\<line>; your recording goes through the game's radio filter unless a .json beside it says { \"radio\": false })");
+            sb.AppendLine("  Each line is tagged calm, tense or frantic by the moment it is said in (the crew under fire is breathless and shouting; the quiet moments and Earth are calm).");
+            sb.AppendLine("  A line made at two intensities (the wingmen's acknowledgements) has a file for each, ending _tense and _frantic, and the game plays the one the music asks for:");
+            sb.AppendLine("  tense on the quiet bed and at first contact, frantic in the fight. Replace one and only that one changes; replace both to change the line everywhere.");
+            sb.AppendLine("  Your recording of a tense or frantic line gets the matching radio treatment (more distortion and a faster squelch as it climbs).");
             var vo = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "vo", "index.json"))).RootElement;
             foreach (var g in vo.GetProperty("clips").EnumerateArray().GroupBy(c => c.GetProperty("voice").GetString()).OrderBy(g => g.Key))
             {
                 sb.AppendLine($"  [{g.Key}]  ({vo.GetProperty("voices").GetProperty(g.Key).GetString()} radio)");
-                foreach (var c in g) sb.AppendLine($"    {Path.ChangeExtension(c.GetProperty("file").GetString(), null).Replace('/', '\\'),-44} {c.GetProperty("text").GetString()}");
+                foreach (var c in g)
+                {
+                    string inten = c.TryGetProperty("intensity", out var ip) ? ip.GetString() : "calm";
+                    sb.AppendLine($"    {Path.ChangeExtension(c.GetProperty("file").GetString(), null).Replace('/', '\\'),-52} {(inten == "calm" ? "" : "[" + inten + "] ")}{c.GetProperty("text").GetString()}");
+                }
             }
             File.WriteAllText(Path.Combine(root, "AUDIO_LIST.txt"), sb.ToString());
             Console.WriteLine("wrote AUDIO_LIST.txt");

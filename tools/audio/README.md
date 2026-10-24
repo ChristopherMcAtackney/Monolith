@@ -29,7 +29,11 @@ To keep a long render from locking the build output, copy `bin/Release/net9.0` s
 2. **Effects.** `MnAudio sfx all` (seconds). The designs are `Sfx/Sfx*.cs`; levels are in `SfxLib.cs`.
 3. **Voices.** Needs WSL with Trap Door's Breeze setup (`~/breeze`, read only; its install scripts are in `TrapDoor3d/tools/tts`). `python audio_src/voice/collect_lines.py` gathers every line in the missions and
    `radio.json`; in WSL `bash audio_src/voice/run_voice.sh` generates the dry clips (about 5 to 25 s a line on the 4070 Ti, resumable: it only does new or changed lines; voices are *designed* from text in
-   `cast.json`, never cloned); `MnAudio voice` makes the radio.
+   `cast.json`, never cloned; a CUDA fault restarts the run); `MnAudio voice` makes the radio.
+   **Every line is tagged calm, tense or frantic** (`collect_lines.py`: from the event that fires it and the music state at that moment; the table is in the script with the reason beside each line;
+   the wingmen's acknowledgements are made twice, tense and frantic). `gen_voice.py` asks the model for that delivery (cast.json `intensity`) and a punctuated version of the text; `MnAudio voice` then
+   directs it (`Tools/VoiceActing.cs`: pauses squeezed, sped up to the pace of someone under fire with ffmpeg's rubberband, pitch up, breaths in and out) and runs the radio at that intensity
+   (`Dsp/Radio.cs`: more drive and clipping, a louder noise bed, a faster squelch, a few dropouts), louder as it climbs (-23, -21.5, -19.5 LUFS).
 4. `MnAudio docs`, then rebuild the player.
 
 New dialogue: add the lines to the mission or `radio.json`, run `collect_lines.py` and `run_voice.sh`, then `MnAudio voice`. A line with no clip still plays as a squelch and is logged

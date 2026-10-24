@@ -1,42 +1,91 @@
 {
   "format": "monolith-voice-cast/1",
-  "about": "Who speaks and how they sound. Voices are DESIGNED from a text description by Breeze-TTS-2 (Trap Door's pipeline, copied: tools/tts there is read-only to us); no real person is named, imitated or cloned. 'fx' picks the radio treatment in tools/audio (Radio.cs): crew = band-limited, a little saturation, squelch in and out; earth = vast, cold, reverberant, machine-edged; alien = a layered, inhuman vocal texture. Speaker names are matched case-insensitively against the radio line's callsign (the part before the colon) and against #Name for voices off the battlefield.",
+  "about": "Who speaks and how they sound. Voices are DESIGNED from a text description by Breeze-TTS-2 (Trap Door's pipeline, copied: tools/tts there is read-only to us); no real person is named, imitated or cloned. 'fx' picks the radio treatment in tools/audio (Radio.cs): crew = band-limited, a little saturation, squelch in and out; earth = vast, cold, reverberant, machine-edged; alien = a layered, inhuman vocal texture. Speaker names are matched case-insensitively against the radio line's callsign (the part before the colon) and against #Name for voices off the battlefield. Intensity (user, 2026-10-24: battles must sound frantic, not calm): every line is tagged calm, tense or frantic from its mission context (see collect_lines.py); a tense or frantic line is generated with the voice's instruction plus the modifier below, a punctuated version of its text, and then sped, pitched up, squeezed of pauses, breathed and distorted (Dsp/Radio.cs). Earth never panics. No Scottish accents; accents in use: South African, Irish, Australian, London, Texan, Northern English, alien.",
   "voices": {
     "mercy": {
-      "who": "The Small Mercy's comms officer (diaspora cruiser)", "fx": "crew", "seed": 42, "cfg": 4.0,
-      "instruction": "A calm, dry, middle-aged woman with a soft Scottish Highland accent, speaking as a warship's communications officer over a ship-to-ship radio. Low, steady and understated, deadpan, with the weary gallows humour of someone who has seen too much. Clear diction, an even pace, never shouting."
+      "who": "The Small Mercy's comms officer (diaspora cruiser)",
+      "fx": "crew",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A calm, dry, middle-aged woman with a South African English accent, speaking as a warship's communications officer over a ship-to-ship radio. Low, steady and understated, deadpan, with the weary gallows humour of someone who has seen too much. Clear diction, an even pace.",
+      "accent": "South African English",
+      "identity": "A middle-aged woman with a South African English accent and a low voice, a warship's communications officer speaking over a ship-to-ship radio. Clear diction."
     },
     "tamsin": {
-      "who": "Captain of the freighter Tamsin", "fx": "crew", "seed": 42, "cfg": 4.0,
-      "instruction": "An older Irish woman with a hoarse, tired voice, the captain of a crippled freighter, speaking tersely over a bad radio. Dry and deadpan, exasperated but in control, slightly breathless, never panicking, never shouting."
+      "who": "Captain of the freighter Tamsin",
+      "fx": "crew",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "An older Irish woman with a hoarse, tired voice, the captain of a crippled freighter, speaking tersely over a bad radio. Dry and deadpan, exasperated but in control, slightly breathless, never panicking, never shouting.",
+      "accent": "Irish",
+      "identity": "An older Irish woman with a hoarse, rough voice, the captain of a crippled freighter, speaking over a bad radio."
     },
     "sable2": {
-      "who": "Sable 2, the player's wingman (diaspora human)", "fx": "crew", "seed": 42, "cfg": 4.0,
-      "instruction": "A young Australian man with a low, relaxed, slightly husky baritone voice, a starfighter pilot speaking quietly and calmly over the radio. Laconic, dry, deadpan and unhurried, understated, with a hint of black humour. Low-pitched and a little tired."
+      "who": "Sable 2, the player's wingman (diaspora human)",
+      "fx": "crew",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A young Australian man with a low, relaxed, slightly husky baritone voice, a starfighter pilot speaking quietly and calmly over the radio. Laconic, dry, deadpan and unhurried, understated, with a hint of black humour. Low-pitched and a little tired.",
+      "accent": "Australian",
+      "identity": "A young Australian man with a low, slightly husky baritone voice, a starfighter pilot speaking over the radio."
     },
     "sable3": {
-      "who": "Sable 3, the player's wingman (diaspora human)", "fx": "crew", "seed": 42, "cfg": 4.0,
-      "instruction": "A young woman with a London accent, a starfighter pilot speaking over the radio, quick, wry and dry. Clipped and calm under pressure, deadpan delivery, understated sarcasm, a little husky."
+      "who": "Sable 3, the player's wingman (diaspora human)",
+      "fx": "crew",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A young woman with a London accent, a starfighter pilot speaking over the radio, quick, wry and dry. Clipped and calm under pressure, deadpan delivery, understated sarcasm, a little husky.",
+      "accent": "London",
+      "identity": "A young woman with a London accent and a slightly husky voice, a starfighter pilot speaking over the radio."
     },
     "sable1": {
-      "who": "Sable 1, the player's own voice when a line falls to them (no wingman left to say it)", "fx": "crew", "seed": 42, "cfg": 4.0,
-      "instruction": "A man in his thirties with a calm, level, slightly weary voice and a plain, neutral accent, a starfighter pilot speaking quietly over the radio. Dry, deadpan and understated, with a hint of black humour; low and steady, never raising his voice."
+      "who": "Sable 1, the player's own voice when a line falls to them (no wingman left to say it)",
+      "fx": "crew",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A man in his thirties with a calm, level, slightly weary voice and a Northern English accent from Manchester, a starfighter pilot speaking quietly over the radio. Dry, deadpan and understated, with a hint of black humour; low and steady.",
+      "accent": "Northern English (Manchester)",
+      "identity": "A man in his thirties with a Northern English accent from Manchester, a starfighter pilot speaking over the radio."
     },
     "lantern": {
-      "who": "Lantern flight leader (diaspora human reinforcement)", "fx": "crew", "seed": 42, "cfg": 4.0,
-      "instruction": "A very deep, low-pitched, gravelly middle-aged American man with a slow Texas drawl, a starfighter squadron leader on the radio. Easygoing, unhurried and dry, with deadpan wry humour, calm, rough and rumbling like gravel."
+      "who": "Lantern flight leader (diaspora human reinforcement)",
+      "fx": "crew",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A very deep, low-pitched, gravelly middle-aged American man with a slow Texas drawl, a starfighter squadron leader on the radio. Easygoing, unhurried and dry, with deadpan wry humour, calm, rough and rumbling like gravel.",
+      "accent": "Texan",
+      "identity": "A very deep, low-pitched, gravelly middle-aged American man with a Texas drawl, a starfighter squadron leader on the radio."
     },
     "wick": {
-      "who": "Wick flight (an alien ally)", "fx": "alien", "seed": 42, "cfg": 4.0,
-      "instruction": "A non-human alien speaking English: a deep, resonant, breathy voice with a strange, layered, whistling and clicking timbre, unhuman cadence and unusual vowels. Slow, deliberate and calm, with a quiet dry amusement. Speaking over a radio."
+      "who": "Wick flight (an alien ally)",
+      "fx": "alien",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A non-human alien speaking English: a deep, resonant, breathy voice with a strange, layered, whistling and clicking timbre, unhuman cadence and unusual vowels. Slow, deliberate and calm, with a quiet dry amusement. Speaking over a radio.",
+      "accent": "alien",
+      "identity": "A non-human alien speaking English: a deep, resonant, breathy voice with a strange, layered, whistling and clicking timbre, unhuman cadence and unusual vowels. Speaking over a radio.",
+      "delivery": {
+        "tense": "Agitated and quicker than usual: the layered, whistling timbre sharpening, an unhuman urgency.",
+        "frantic": "Shrill and agitated, the layered whistling voice cracking and overlapping, fast, an unhuman alarm."
+      }
     },
     "earth_warden": {
-      "who": "Earth, through its corvette the Warden (and any unnamed Earth voice)", "fx": "earth", "seed": 42, "cfg": 4.0,
-      "instruction": "A vast, cold, genderless voice of immense authority, reading scripture aloud. Very deep and resonant, perfectly enunciated, slow and measured, completely without emotion or warmth, contemptuous and serene, like a machine that believes it is a god."
+      "who": "Earth, through its corvette the Warden (and any unnamed Earth voice)",
+      "fx": "earth",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "A vast, cold, genderless voice of immense authority, reading scripture aloud. Very deep and resonant, perfectly enunciated, slow and measured, completely without emotion or warmth, contemptuous and serene, like a machine that believes it is a god.",
+      "accent": "none (a machine god)",
+      "intensity": "calm"
     },
     "earth_lector": {
-      "who": "Earth, through its picket corvette the Lector", "fx": "earth", "seed": 42, "cfg": 4.0,
-      "instruction": "An ancient, hollow, whispering and precise voice, very deep and slow, a priest-machine delivering a sentence. Cold, calm, without any emotion, every syllable perfectly formed and deliberate, faintly metallic, vast and unhurried."
+      "who": "Earth, through its picket corvette the Lector",
+      "fx": "earth",
+      "seed": 42,
+      "cfg": 4.0,
+      "instruction": "An ancient, hollow, whispering and precise voice, very deep and slow, a priest-machine delivering a sentence. Cold, calm, without any emotion, every syllable perfectly formed and deliberate, faintly metallic, vast and unhurried.",
+      "accent": "none (a machine god)",
+      "intensity": "calm"
     }
   },
   "speakers": {
@@ -45,8 +94,14 @@
     "sable 2": "sable2",
     "sable 3": "sable3",
     "sable 1": "sable1",
-    "lantern 1": "lantern", "lantern 2": "lantern", "lantern 3": "lantern", "lantern": "lantern",
-    "wick 1": "wick", "wick 2": "wick", "wick 3": "wick", "wick": "wick",
+    "lantern 1": "lantern",
+    "lantern 2": "lantern",
+    "lantern 3": "lantern",
+    "lantern": "lantern",
+    "wick 1": "wick",
+    "wick 2": "wick",
+    "wick 3": "wick",
+    "wick": "wick",
     "warden": "earth_warden",
     "lector": "earth_lector",
     "earth": "earth_warden",
@@ -55,12 +110,27 @@
     "#command": "mercy"
   },
   "defaults": {
-    "wingmanVoices": ["sable2", "sable3"],
+    "wingmanVoices": [
+      "sable2",
+      "sable3"
+    ],
     "playerVoice": "sable1",
-    "earthVoices": ["earth_warden", "earth_lector"],
+    "earthVoices": [
+      "earth_warden",
+      "earth_lector"
+    ],
     "unknown": "sable2"
   },
   "fills": {
-    "{0}": ["Sable 2", "Sable 3"]
+    "{0}": [
+      "Sable 2",
+      "Sable 3"
+    ]
+  },
+  "intensity": {
+    "about": "Delivery appended to a voice's 'identity' for a tense or frantic line (a calm line uses the voice's full 'instruction'). Per-voice 'delivery' overrides it.",
+    "calm": "",
+    "tense": "Under fire and speaking fast and urgently: tight, clipped and slightly breathless, strain in the voice, louder than normal, still dry underneath, with a flash of grim humour.",
+    "frantic": "Panicked and shouting over the roar of battle, adrenaline pounding: very fast, loud, breathless and clipped, the voice straining and cracking, desperate urgency, gasping between phrases, yelling, yet still with a bitter flash of gallows humour, like a marine in a firefight."
   }
 }

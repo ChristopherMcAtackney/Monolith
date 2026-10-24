@@ -31,6 +31,9 @@ namespace Monolith.Audio
         public readonly List<string> Missing = new List<string>();
         public readonly List<string> Log = new List<string>();
         public Func<string, string> CallsignOf;                // ship id -> callsign (the speaker when the line carries none)
+        /// <summary>How hard the crew is working right now, 0 calm to 2 frantic (from the music state: ambient, battle 1, battles 2 and 3). A line made at several intensities (the wingmen's acknowledgements) plays the one nearest this.</summary>
+        public Func<int> Mood = () => 0;
+        public int FranticPlayed, TensePlayed, CalmPlayed;
         public Func<bool> Silent = () => false;
 
         public RadioDirector(Mixer mixer, AudioLibrary lib, MonoBehaviour host) { _mixer = mixer; _lib = lib; _host = host; }
@@ -46,8 +49,9 @@ namespace Monolith.Audio
         }
 
         /// <summary>Which voice says this line, and which clip (null with no clip anywhere). For the self-test as much as for play.</summary>
-        public VoiceClip Resolve(string display, out string voice, out bool otherVoice)
+        public VoiceClip Resolve(string display, out string voice, out bool otherVoice, int mood = -1)
         {
+            if (mood < 0) mood = Mood();
             Split(display, out var speaker, out var text);
             voice = _lib.Cast.VoiceOf(speaker);
             if (voice == null && speaker.Length > 0)
@@ -59,9 +63,24 @@ namespace Monolith.Audio
             voice ??= _lib.Cast.Unknown;
             otherVoice = false;
             if (!_lib.VoicesByText.TryGetValue(Normalise(text), out var list)) return null;
-            foreach (var c in list) if (c.Voice == voice && c.Clip != null) return c;
-            foreach (var c in list) if (c.Clip != null) { otherVoice = true; return c; }
-            return null;
+            var best = Nearest(list, voice, mood);
+            if (best != null) return best;
+            best = Nearest(list, null, mood);
+            if (best != null) otherVoice = true;
+            return best;
+        }
+
+        /// <summary>The loaded clip of a voice (or of any voice when <paramref name="voice"/> is null) whose intensity is nearest the mood; the more urgent when two are equally near.</summary>
+        static VoiceClip Nearest(List<VoiceClip> list, string voice, int mood)
+        {
+            VoiceClip best = null; int bestD = int.MaxValue;
+            foreach (var c in list)
+            {
+                if (c.Clip == null || (voice != null && c.Voice != voice)) continue;
+                int d = Math.Abs(c.Intensity - mood) * 2 - (c.Intensity > mood ? 1 : 0);
+                if (d < bestD) { bestD = d; best = c; }
+            }
+            return best;
         }
 
         public void OnLine(GameEvent e)
@@ -112,7 +131,11 @@ namespace Monolith.Audio
             else
             {
                 var vc = Resolve(p.Display, out _, out other);
-                if (vc != null) { clip = vc.Clip; what = vc.File + (vc.Source != "built in" ? " (yours)" : ""); if (vc.Source != "built in") FromUser++; if (other) OtherVoice++; }
+                if (vc != null)
+                {
+                    clip = vc.Clip; what = vc.File + (vc.Source != "built in" ? " (yours)" : ""); if (vc.Source != "built in") FromUser++; if (other) OtherVoice++;
+                    if (vc.Intensity == 2) FranticPlayed++; else if (vc.Intensity == 1) TensePlayed++; else CalmPlayed++;
+                }
             }
             if (clip != null)
             {

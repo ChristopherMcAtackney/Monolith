@@ -95,7 +95,7 @@ namespace Monolith.Audio
             ApplyPrefs();
             Lib = options.Library ?? new AudioLibrary();
             Music = new MusicConductor(Mixer, Lib, this);
-            Radio = new RadioDirector(Mixer, Lib, this);
+            Radio = new RadioDirector(Mixer, Lib, this) { Mood = CrewMood };
             if (!options.Offline)
             {
                 if (options.SavePrefs && !options.Silent) AudioPaths.EnsureUserFolder();
@@ -135,6 +135,17 @@ namespace Monolith.Audio
         }
 
         // ------------------------------------------------------------------------------------------------ settings
+
+        /// <summary>How hard the crew is working, from the score: the quiet bed is calm, first contact tense, the fight and the worst of it frantic.</summary>
+        int CrewMood()
+        {
+            switch (Music?.State)
+            {
+                case "battle3": case "battle2": return 2;
+                case "battle1": return 1;
+                default: return 0;
+            }
+        }
 
         public void ApplyPrefs()
         {

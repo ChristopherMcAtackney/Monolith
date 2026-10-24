@@ -2,7 +2,7 @@ MONOLITH - SOUND (audio round 1, 2026-10-24)
 
 Play.bat <mission>         Play.bat escort        Play.bat dogfight window hard
 Missions: escort (The Crossing) and dogfight (The Dogfight). Add "window" for a window and veryeasy/easy/medium/hard/insane for the difficulty.
-Nobody has heard any of this yet. It was built, measured and checked by numbers (loudness, spectrograms, a self-test of 86 checks), never by ear: your ears are the judge.
+Nobody has heard any of this yet. It was built, measured and checked by numbers (loudness, spectrograms, a self-test of 97 checks), never by ear: your ears are the judge.
 
 WHAT IS NEW
 Everything makes sound now, and all of it was made for this game (nothing from a sound library).
@@ -11,10 +11,18 @@ Everything makes sound now, and all of it was made for this game (nothing from a
             Ambient bed, three battle intensities (they follow how many hostiles are close and on you, as the mission's music rules say), short stings when friends or Earth arrive,
             a sting for a goal done and a goal failed, victory, failure, and your death. The four loops are one 32-bar form at 112 BPM over the same harmony: the music changes on the next
             beat (up) or bar (down) in step with where it was, so it never lurches.
-  Voices    every radio line in both missions and every wingman acknowledgement (140 line and speaker combinations, 124 recordings), made with Trap Door's voice pipeline from voice
-            *descriptions* (no real person, no cloning) and put through a radio: Small Mercy's comms officer (a Scottish woman), Tamsin's captain (an Irish woman), Sable 2 (an Australian man),
-            Sable 3 (a Londoner), Sable 1, which is you when no wingman is left to say it, Lantern (a deep Texan), Wick (an alien: a doubled, ring-modulated, whistling voice), and Earth: vast, cold,
-            an octave down with a metallic edge and a long hall, preceded by a power-up swell. The voice ducks the music by 9 dB and the effects by 4.5 dB.
+  Voices    every radio line in both missions and every wingman acknowledgement (140 line and speaker combinations, 156 recordings), made with Trap Door's voice pipeline from voice
+            *descriptions* (no real person, no cloning) and put through a radio. Accents: Small Mercy's comms officer (South African), Tamsin's captain (Irish), Sable 2 (an Australian man),
+            Sable 3 (a Londoner), Sable 1, which is you when no wingman is left to say it (Northern English, Manchester), Lantern (a deep Texan), Wick (an alien: a doubled, ring-modulated,
+            whistling voice), and Earth: vast, cold, an octave down with a metallic edge and a long hall, preceded by a power-up swell. No Scottish accent anywhere.
+            The voice ducks the music by 9 dB and the effects by 4.5 dB.
+  UNDER FIRE THE CREW ARE NOT CALM. Every line is tagged calm, tense or frantic by what fires it and what the music is doing (the table, with the reason for each line, is in
+            audio_src/voice/collect_lines.py). Calm: the quiet opening, the briefing, the end. Tense: orders and relief under fire. Frantic: bad news and danger (a wingman lost, the Mercy hit,
+            bombers inbound, the Mercy gone). A tense or frantic line is asked of the voice model as a strained, fast, breathless read (and written with a shouter's punctuation), then squeezed of
+            its pauses, sped up, given breaths (a sharp breath in before it, a gasp in the longest gap, a ragged breath out after a shout), and sent through a harder radio: more distortion and a
+            little clipping on the shouting, a louder noise bed, a squelch that snaps open and shut, a few brief drop-outs as the signal breaks up. It is also louder (calm -23, tense -21.5,
+            frantic -19.5 LUFS). The wingmen's acknowledgements exist in a tense and a frantic take and the game plays the one the music asks for: tense in the quiet and at first contact,
+            frantic in the fight (battle 2 and 3). Earth never panics. 36 calm, 50 tense and 70 frantic recordings.
   Effects   guns (a snap, a falling zap, a thump), the heavy gun, capital turrets, flak, missiles and torpedoes with their hiss as they pass, decoys, the lock tone and the missile warning (sequencer pings),
             shield and hull hits (heavier and with a cabin boom when they are on you), explosions in three sizes, a capital ship's break-up, death and shockwave, beams (charge, crack, roar, the bite, the fall),
             the engine hum (its pitch follows your speed) and the afterburner roar, cabin air, hull alarms when you are hurt, creaks under hits, the jump flash, and a deep horn when an Earth corvette or
@@ -25,6 +33,8 @@ WHAT TO LISTEN FOR AND TELL US
   - Is any loop tiring? (Each is 68 s. Tell us which, and we will lengthen it or add variants.)
   - Are the guns meaty? The heavy gun? Is anything too loud or too quiet against the rest: guns, hits, explosions, the horn, the alarm?
   - Is every radio voice clear enough, and does it sound like who it is meant to be? Earth's voice: vast and cold, or muddy? Wick: alien, or silly?
+  - Do the crew sound properly panicked in a fight and calm only in the quiet? Too much distortion on the shouting, or too little? Do the wingmen's "Copy, going in" sound like a pilot under
+    fire? (Listen in the dogfight: the Mercy's calls and Sable 2 and 3 losing each other are the frantic ones.)
   - Is the engine hum something you stop hearing (good) or hate (bad)? The alarm: urgent or annoying?
   - Do the explosions sound like they have the right weight in a vacuum?
 
@@ -37,6 +47,7 @@ YOUR OWN SOUND
   crossing_ambient, crossing_battle_1 .. 3: put music\crossing_battle_2.mp3 there and it plays in that mission). A loop that is exactly 68.571 s joins the others in step; any other length
   starts from its beginning on the next bar. Add a file of the same name with .json for loop points: { "loopStart": 3.2, "loopEnd": 48.0, "volume": -2.5 }.
   Radio lines: vo\<voice>\<line>.wav; your recording goes through the game's radio. Add { "radio": false } in a .json beside it if it is already radio-ready.
+  A line made tense and frantic has a file for each (..._tense, ..._frantic); a recording named for one is given that radio treatment (the frantic one gets the harder radio).
 THE LOG
   Monolith_audio_log.txt next to the game lists every music change, every radio line and the clip it played ([MN] VOICE ...), every line that had no clip ([MN][WARN] VOICE no clip ...), and every
   five seconds the number of voices, the audio thread's load and the loudness. Send it with your notes.

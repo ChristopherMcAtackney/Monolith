@@ -5,6 +5,13 @@ namespace Monolith.Audio
     public enum RadioStyle { Crew, Earth, Alien }
 
     /// <summary>
+    /// How hard the speaker is working: a composed read, a tense one, a frantic one. The radio gets harder to listen to as it climbs: more drive
+    /// and flat-topped (clipped) peaks on the shouted syllables, a louder noise bed, a squelch that snaps open and shut, and a signal that breaks up
+    /// for a few tens of milliseconds. Earth never panics, so it ignores this.
+    /// </summary>
+    public enum RadioIntensity { Calm = 0, Tense = 1, Frantic = 2 }
+
+    /// <summary>
     /// The radio: what turns a dry spoken line into something that comes out of a ship's comms. Crew voices are band-limited and a little
     /// saturated with a squelch before and after; Earth's would-be gods are vast, cold and reverberant with a machine edge (doubled an octave
     /// down, a metallic comb, a long hall) and a power-up swell before the first word; alien allies get an inhuman texture (a ring-modulated
@@ -130,7 +137,7 @@ namespace Monolith.Audio
         /// Make a radio line from a dry spoken buffer (mono, any rate). Returns mono at <see cref="OutRate"/>, levelled to about
         /// <paramref name="targetLufs"/> integrated.
         /// </summary>
-        public static float[] Process(float[] dry, int rate, RadioStyle style, uint seed = 1, float targetLufs = -23f)
+        public static float[] Process(float[] dry, int rate, RadioStyle style, uint seed = 1, float targetLufs = -23f, RadioIntensity intensity = RadioIntensity.Calm)
         {
             float[] x = Resample(dry, rate, OutRate);
             x = TrimSilence(x, OutRate);
@@ -139,8 +146,8 @@ namespace Monolith.Audio
             switch (style)
             {
                 case RadioStyle.Earth: y = Earth(x, seed); break;
-                case RadioStyle.Alien: y = Alien(x, seed); break;
-                default: y = Crew(x, seed); break;
+                case RadioStyle.Alien: y = Alien(x, seed, intensity); break;
+                default: y = Crew(x, seed, intensity); break;
             }
             // level to the target loudness
             var m = new LoudnessMeter(OutRate, 1);
@@ -156,23 +163,45 @@ namespace Monolith.Audio
 
         // ------------------------------------------------------------------------------------------------ crew
 
-        static float[] Crew(float[] x, uint seed)
+        /// <summary>The parts of a crew radio that change with intensity: drive, hard clip, band, squelch timing, noise bed, levelling.</summary>
+        struct CrewSet
+        {
+            public float Drive, HardClip, HighPass, LowPass, Presence, PresenceHz, LeadS, TailS, OpenTau, Bed, Flutter, LevelRatio, LevelThresh;
+            public static CrewSet For(RadioIntensity i)
+            {
+                switch (i)
+                {
+                    case RadioIntensity.Tense:
+                        return new CrewSet { Drive = 2.8f, HardClip = 0f, HighPass = 340f, LowPass = 3400f, Presence = 5f, PresenceHz = 1800f, LeadS = 0.10f, TailS = 0.20f, OpenTau = 0.016f, Bed = 0.07f, Flutter = 9f, LevelRatio = 3.4f, LevelThresh = -22.5f };
+                    case RadioIntensity.Frantic:
+                        return new CrewSet { Drive = 3.0f, HardClip = 0.86f, HighPass = 400f, LowPass = 3600f, Presence = 6f, PresenceHz = 2000f, LeadS = 0.05f, TailS = 0.11f, OpenTau = 0.010f, Bed = 0.10f, Flutter = 14f, LevelRatio = 3.2f, LevelThresh = -23f };
+                    default:
+                        return new CrewSet { Drive = 2.2f, HardClip = 0f, HighPass = 320f, LowPass = 3300f, Presence = 3.5f, PresenceHz = 1700f, LeadS = 0.16f, TailS = 0.28f, OpenTau = 0.020f, Bed = 0.05f, Flutter = 6f, LevelRatio = 3.2f, LevelThresh = -22f };
+                }
+            }
+        }
+
+        static float[] Crew(float[] x, uint seed, RadioIntensity inten = RadioIntensity.Calm)
         {
             int R = OutRate;
-            Level(x, R, -22f, 3.2f, 4f, 90f, 6f);
-            var hp1 = Biquad.Make(BiquadType.HighPass, R, 320f, 0.75f); var hp2 = Biquad.Make(BiquadType.HighPass, R, 320f, 0.6f);
-            var lp1 = Biquad.Make(BiquadType.LowPass, R, 3300f, 0.75f); var lp2 = Biquad.Make(BiquadType.LowPass, R, 3600f, 0.6f);
-            var pk = Biquad.Make(BiquadType.Peak, R, 1700f, 0.9f, 3.5f);
+            var set = CrewSet.For(inten);
+            Level(x, R, set.LevelThresh, set.LevelRatio, 4f, 90f, 6f);
+            var hp1 = Biquad.Make(BiquadType.HighPass, R, set.HighPass, 0.75f); var hp2 = Biquad.Make(BiquadType.HighPass, R, set.HighPass, 0.6f);
+            var lp1 = Biquad.Make(BiquadType.LowPass, R, set.LowPass, 0.75f); var lp2 = Biquad.Make(BiquadType.LowPass, R, set.LowPass + 300f, 0.6f);
+            var pk = Biquad.Make(BiquadType.Peak, R, set.PresenceHz, 0.9f, set.Presence);
             var dc = new DcBlock();
             for (int i = 0; i < x.Length; i++)
             {
                 float v = lp2.Process(lp1.Process(hp2.Process(hp1.Process(x[i]))));
                 v = pk.Process(v);
-                x[i] = dc.Process(Dsp.Saturate(v, 2.2f, 0.06f));
+                v = Dsp.Saturate(v, set.Drive, 0.06f);
+                // a shouted syllable overloads the transmitter: flat-topped, with the edge that gives
+                if (set.HardClip > 0f) v = Math.Clamp(v * 1.35f, -set.HardClip, set.HardClip) / set.HardClip;
+                x[i] = dc.Process(v);
             }
             Normalize(x, -4f);
             // the carrier: squelch opens (a click and a burst), a noise bed runs under the line, squelch closes
-            int lead = (int)(0.16 * R), tail = (int)(0.28 * R);
+            int lead = (int)(set.LeadS * R), tail = (int)(set.TailS * R);
             var y = new float[lead + x.Length + tail];
             Array.Copy(x, 0, y, lead, x.Length);
             var bed = Noise(y.Length, seed + 7, 280f, 3200f, R);
@@ -181,16 +210,38 @@ namespace Monolith.Audio
             for (int i = 0; i < y.Length; i++)
             {
                 flutter += (rng.Signed() - flutter) * 0.0008f;
-                float env = i < lead ? 0.55f : i < lead + x.Length ? 0.28f : 0.5f * MathF.Exp(-(i - lead - x.Length) / (0.07f * R));
-                y[i] += bed[i] * env * 0.05f * (1f + flutter * 6f);
+                float env = i < lead ? 0.55f : i < lead + x.Length ? 0.28f : 0.5f * MathF.Exp(-(i - lead - x.Length) / (0.07f * R * (set.TailS / 0.28f)));
+                y[i] += bed[i] * env * set.Bed * (1f + flutter * set.Flutter);
             }
             var open = Noise((int)(0.09 * R), seed + 11, 500f, 3000f, R);
-            for (int i = 0; i < open.Length; i++) { float e = MathF.Exp(-i / (0.02f * R)) * (i < 30 ? i / 30f : 1f); y[i] += open[i] * e * 0.9f + MathF.Sin(i * Dsp.TwoPi * 1750f / R) * MathF.Exp(-i / (0.008f * R)) * 0.28f; }
+            for (int i = 0; i < open.Length; i++) { float e = MathF.Exp(-i / (set.OpenTau * R)) * (i < 30 ? i / 30f : 1f); y[i] += open[i] * e * 0.9f + MathF.Sin(i * Dsp.TwoPi * 1750f / R) * MathF.Exp(-i / (0.008f * R)) * 0.28f; }
             var close = Noise((int)(0.2 * R), seed + 13, 400f, 2800f, R);
             int cat = lead + x.Length;
-            for (int i = 0; i < close.Length; i++) { float e = MathF.Exp(-i / (0.045f * R)); if (cat + i < y.Length) y[cat + i] += close[i] * e * 0.6f; }
+            for (int i = 0; i < close.Length; i++) { float e = MathF.Exp(-i / (0.045f * R * (inten == RadioIntensity.Frantic ? 0.6f : 1f))); if (cat + i < y.Length) y[cat + i] += close[i] * e * 0.6f; }
             if (cat + 10 < y.Length) for (int i = 0; i < 40; i++) y[cat + i] += MathF.Sin(i * Dsp.TwoPi * 1250f / R) * MathF.Exp(-i / 10f) * 0.22f;
+            if (inten != RadioIntensity.Calm) Dropouts(y, lead, x.Length, R, seed, inten, bed);
             return y;
+        }
+
+        /// <summary>The signal breaking up: a few short dips in the voice with a burst of static in each, more of them the more frantic the line.</summary>
+        static void Dropouts(float[] y, int start, int len, int R, uint seed, RadioIntensity inten, float[] bed)
+        {
+            float secs = len / (float)R;
+            bool fr = inten == RadioIntensity.Frantic;
+            int count = fr ? (secs > 3.2f ? 3 : secs > 1.6f ? 2 : secs > 0.8f ? 1 : 0) : (secs > 2.4f ? 1 : 0);
+            var rng = new Rng(seed * 7u + 5u);
+            for (int k = 0; k < count; k++)
+            {
+                int at = start + (int)((0.12f + 0.76f * ((k + rng.Float() * 0.8f) / count)) * len);
+                int n = (int)(rng.Range(fr ? 0.022f : 0.016f, fr ? 0.055f : 0.03f) * R);
+                float dip = fr ? 0.1f : 0.35f;
+                for (int i = 0; i < n && at + i < y.Length; i++)
+                {
+                    float w = MathF.Sin(Dsp.Pi * i / n);                       // a smooth dip so it is a stutter, not a click
+                    float g = 1f - (1f - dip) * MathF.Min(1f, w * 3f);
+                    y[at + i] = y[at + i] * g + bed[at + i] * 0.28f * w;
+                }
+            }
         }
 
         // ------------------------------------------------------------------------------------------------ Earth
@@ -249,13 +300,14 @@ namespace Monolith.Audio
 
         // ------------------------------------------------------------------------------------------------ alien
 
-        static float[] Alien(float[] x, uint seed)
+        static float[] Alien(float[] x, uint seed, RadioIntensity inten = RadioIntensity.Calm)
         {
             int R = OutRate;
+            float urgency = inten == RadioIntensity.Frantic ? 2f : inten == RadioIntensity.Tense ? 1f : 0f;
             Level(x, R, -22f, 2.8f, 5f, 120f, 4f);
             var low = PitchShift(x, -3.2f, R, 40f);
             var dbl = PitchShift(x, 1.7f, R, 34f);
-            int lead = (int)(0.22 * R), tail = (int)(0.5 * R);
+            int lead = (int)((0.22 - 0.06 * urgency) * R), tail = (int)((0.5 - 0.15 * urgency) * R);
             var y = new float[lead + x.Length + tail];
             var dly = new DelayLine((int)(0.05f * R));
             float ph = 0f, wob = 0f;
@@ -269,14 +321,14 @@ namespace Monolith.Audio
                 float d = dly.Read(0.0113f * R);
                 float v = s + d * 0.55f;
                 // ring modulation: an inhuman buzz
-                ph += 66f / R; ph -= MathF.Floor(ph);
+                ph += (66f + 22f * urgency) / R; ph -= MathF.Floor(ph);
                 v = v * 0.66f + v * MathF.Sin(ph * Dsp.TwoPi) * 0.5f;
                 // a resonance that wanders like a throat that does not work the way ours do
                 wob += 0.37f / R; wob -= MathF.Floor(wob);
                 if ((i & 15) == 0) sv.Set(900f + 650f * MathF.Sin(wob * Dsp.TwoPi), 0.8f, R);
                 sv.Process(v);
                 v = v * 0.55f + sv.Band * 0.8f;
-                y[lead + i] = dc.Process(Dsp.Saturate(v, 2.0f, 0.04f));
+                y[lead + i] = dc.Process(Dsp.Saturate(v, 2.0f + 1.4f * urgency, 0.04f));
             }
             // a purr under the line and a scatter of clicks over it
             var purr = Noise(y.Length, seed + 31, 60f, 380f, R);
@@ -285,7 +337,7 @@ namespace Monolith.Audio
             {
                 pph += 29f / R; pph -= MathF.Floor(pph);
                 y[i] += purr[i] * 0.10f * (0.5f + 0.5f * MathF.Sin(pph * Dsp.TwoPi));
-                if (rng.Float() < 14f / R)
+                if (rng.Float() < (14f + 16f * urgency) / R)
                 {
                     float f = rng.Range(1800f, 5200f); float e = 1f;
                     for (int j = 0; j < 280 && i + j < y.Length; j++) { y[i + j] += MathF.Sin(j * Dsp.TwoPi * f / R) * e * 0.05f; e *= 0.985f; }

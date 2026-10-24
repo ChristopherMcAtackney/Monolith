@@ -10,7 +10,7 @@ WAV for the clips). The assembly references Core only; the game wires it in `Gam
 | `Runtime/AudioSystem` | The MonoBehaviour: owns the mixer, library, conductor and radio; listens to the game's events; the cockpit (engine, afterburner, cabin air, alarms, lock tone, missile warning); records in offline mode |
 | `Runtime/AudioLibrary` | Loads the built-in files named by `music.json`, `sfx.json` and `vo/index.json` (OGG through Unity's decoder, WAV by hand), then the player's own files from `Audio/` beside the game, which replace them by name; watches the folder |
 | `Runtime/MusicConductor` | Mission music states and stings to mixer commands, on the beat or bar |
-| `Runtime/RadioDirector` | `radio_line` / `radio_voice` events to clips, with the logged squelch fallback |
+| `Runtime/RadioDirector` | `radio_line` / `radio_voice` events to clips, with the logged squelch fallback; a line made at several intensities (calm, tense, frantic) plays the one nearest the crew's mood, taken from the music state (ambient calm, battle 1 tense, battles 2 and 3 frantic) |
 | `Runtime/Spatializer` | Distance, pan, dullness, Doppler |
 | `Runtime/AudioPrefs`, `AudioOut`, `AudioPaths` | Saved volumes (`audio.json`), the bridge to the sound card, folders |
 | `Game/Audio/` | `AudioRig` (what kind of audio this run gets), `JuiceAudioAdapter` (the `IJuiceAudio` the juice plays its effects through), `AudioSelfTest` |
@@ -33,7 +33,7 @@ state on the next beat (0.85 s fade), a quieter one on the next bar (slow). Stin
 Buses: music, effects (normal, big, interface), voice. Volumes (master, music, effects, voice, mute) are the player's, saved to `audio.json` beside the game
 (F5/F6 music, F7/F8 effects, F3/F4 voice, - and = master, F2 mute; a number shows for a moment). The voice ducks the music by 9 dB and the effects by 4.5 dB (25 ms in, 600 ms out);
 a big moment (a capital ship's death, a beam, an arrival) ducks everything else by up to 55% for up to 3.5 s. A lookahead limiter at -1 dBFS ends the master bus; the self-test proves
-nothing clips. Levels are set by loudness: loops by integrated LUFS (ambient -26, battle 1 -24, 2 -22, 3 -20), radio lines about -23 LUFS, effects by their peak at full scale and a
+nothing clips. Levels are set by loudness: loops by integrated LUFS (ambient -26, battle 1 -24, 2 -22, 3 -20), radio lines -23 LUFS calm, -21.5 tense, -19.5 frantic, effects by their peak at full scale and a
 level in `sfx.json`. `Audio/` beside the game replaces anything by name; see `Audio/README.txt` (made on first run) and `AUDIO_LIST.txt`.
 
 ## Checks

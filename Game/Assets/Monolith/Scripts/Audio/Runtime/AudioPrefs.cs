@@ -9,7 +9,7 @@ namespace Monolith.Audio
     [Serializable]
     public sealed class AudioPrefs
     {
-        public float master = 1.0f, music = 0.75f, effects = 1.0f, voice = 1.0f;
+        public float master = 0.85f, music = 0.75f, effects = 0.9f, voice = 1.0f;
         public bool mute;
 
         [JsonIgnore] public bool Dirty;

@@ -73,22 +73,42 @@ namespace Monolith.Game
                 yield return Load();
                 if (_lib.Ready)
                 {
-                    yield return Files();
-                    yield return Music();
-                    yield return Transitions();
-                    yield return Stings();
-                    yield return Endings();
-                    yield return Radio();
-                    yield return Overrides();
-                    yield return Effects();
-                    yield return Cabin();
-                    yield return Mix();
+                    yield return Guard("Files", Files());
+                    yield return Guard("Music", Music());
+                    yield return Guard("Transitions", Transitions());
+                    yield return Guard("Stings", Stings());
+                    yield return Guard("Endings", Endings());
+                    yield return Guard("Radio", Radio());
+                    yield return Guard("Overrides", Overrides());
+                    yield return Guard("Effects", Effects());
+                    yield return Guard("Cabin", Cabin());
+                    yield return Guard("Mix", Mix());
                     Prefs();
                 }
                 Application.logMessageReceived -= OnLog;
                 Check(_errors == 0, $"no errors in the log ({_errors} seen)");
                 Say(Failures == 0 ? $"AUDIO SELF-TEST PASS ({Checks} checks, {sw.Elapsed.TotalSeconds:0} s)" : $"AUDIO SELF-TEST FAILED: {Failures} of {Checks} checks ({sw.Elapsed.TotalSeconds:0} s)");
                 File.WriteAllText(Path.Combine(_out, "audio_selftest.txt"), _report.ToString());
+            }
+
+            /// <summary>Runs one stage; an exception in it is a failed check, not a hung run (a coroutine that throws just stops, and the player would wait forever).</summary>
+            IEnumerator Guard(string stage, IEnumerator inner)
+            {
+                while (true)
+                {
+                    object current;
+                    try
+                    {
+                        if (!inner.MoveNext()) yield break;
+                        current = inner.Current;
+                    }
+                    catch (Exception e)
+                    {
+                        Check(false, $"{stage} threw {e.GetType().Name}: {e.Message}");
+                        yield break;
+                    }
+                    yield return current;
+                }
             }
 
             int _errors;
@@ -362,6 +382,31 @@ namespace Monolith.Game
                 }
                 Check(lines.Count >= 100, $"{lines.Count} lines gathered from the built-in missions and the wingmen's acknowledgements");
                 Check(missing.Count == 0, $"every line has a clip ({lines.Count - missing.Count} of {lines.Count}; {other} use another voice's recording of the same words)" + (missing.Count > 0 ? ": " + string.Join(" | ", missing.Take(6)) : ""));
+                // intensity: every line is tagged calm, tense or frantic from its mission context; a line made at two intensities plays the one the music state asks for
+                var crew = rig.Sys.Lib.Voices.Where(v => !v.Voice.StartsWith("earth")).ToList();
+                int nCalm = crew.Count(v => v.Intensity == 0), nTense = crew.Count(v => v.Intensity == 1), nFrantic = crew.Count(v => v.Intensity == 2);
+                Say($"   crew clips by intensity: calm {nCalm}, tense {nTense}, frantic {nFrantic}");
+                Check(nCalm > 0 && nTense > 0 && nFrantic > nCalm, $"the crew's lines are tagged by intensity ({nCalm} calm, {nTense} tense, {nFrantic} frantic): the fight is mostly frantic");
+                var rd = rig.Sys.Radio;
+                var ack0 = rd.Resolve("SABLE 2: COPY. GOING IN.", out _, out _, 0); var ack1 = rd.Resolve("SABLE 2: COPY. GOING IN.", out _, out _, 1); var ack2 = rd.Resolve("SABLE 2: COPY. GOING IN.", out _, out _, 2);
+                Check(ack0 != null && ack1 != null && ack2 != null && ack0.Intensity == 1 && ack1.Intensity == 1 && ack2.Intensity == 2, $"an acknowledgement is tense in the quiet and first contact and frantic in the fight ({ack0?.File} / {ack1?.File} / {ack2?.File})");
+                var bad = rd.Resolve("SMALL MERCY: MERCY HERE. HULL'S GOING. ANY TIME NOW.", out _, out _, 0);
+                Check(bad != null && bad.Intensity == 2, $"bad news in the fight is frantic whatever the music is doing ({bad?.File})");
+                var cold = rd.Resolve("WARDEN: BIOLOGICS. YOU WERE US, ONCE.", out _, out _, 2);
+                Check(cold != null && cold.Intensity == 0, $"Earth never panics, even in the worst of it ({cold?.File})");
+                int franticAcks = 0, acks = 0;
+                foreach (var l in lines.Where(x => x.Source.StartsWith("radio.json:ack_")))
+                {
+                    var c = rd.Resolve(l.Display, out _, out _, 2);
+                    if (c == null) continue;
+                    acks++; if (c.Intensity == 2) franticAcks++;
+                }
+                Check(acks > 0 && franticAcks * 2 >= acks, $"in a big fight most acknowledgements are the frantic ones ({franticAcks} of {acks})");
+                float Mean(IEnumerable<float> xs) { var a = xs.ToList(); return a.Count == 0 ? 0f : a.Average(); }
+                float lufsCalm = Mean(crew.Where(v => v.Intensity == 0).Select(v => v.Lufs)), lufsFr = Mean(crew.Where(v => v.Intensity == 2).Select(v => v.Lufs));
+                Check(lufsFr > lufsCalm + 2f, $"shouting is louder than talking ({lufsFr:0.0} against {lufsCalm:0.0} LUFS)");
+                float WordsPerSec(int inten) => Mean(crew.Where(v => v.Intensity == inten && v.Seconds > 0.3f).Select(v => System.Text.RegularExpressions.Regex.Matches(v.Text, "[A-Za-z']+").Count / v.Seconds));
+                Check(WordsPerSec(2) > WordsPerSec(0) * 1.15f, $"and quicker ({WordsPerSec(2):0.0} against {WordsPerSec(0):0.0} words a second, squelch and all)");
                 // speak a few through the whole path
                 string[] sample = { "SABLE 2: COPY. GOING IN.", "SMALL MERCY: MERCY HERE. HULL'S GOING. ANY TIME NOW.", "WARDEN: BIOLOGICS. YOU WERE US, ONCE.", "TAMSIN: BOMBERS ON THE SCOPE. THEY'RE COMING FOR US. PLEASE DON'T LET THEM.", "WICK 1: WICK FLIGHT. LAST ONES IN THE BARREL. MAKE IT COUNT." };
                 foreach (var s in sample)
@@ -405,7 +450,7 @@ namespace Monolith.Game
                     var voice = new PcmBuffer(24000, 1, 24000);
                     var rng = new Rng(3);
                     for (int i = 0; i < voice.Frames; i++) voice.Ch[0][i] = 0.3f * Mathf.Sin(2f * Mathf.PI * 180f * i / 24000f) * (0.6f + 0.4f * Mathf.Sin(i * 0.002f)) + 0.02f * rng.Signed();
-                    Wav.Write(Path.Combine(scratch, "vo", "sable2", "ack_attack_01.wav"), voice, 16, false);
+                    Wav.Write(Path.Combine(scratch, "vo", "sable2", "ack_attack_01_frantic.wav"), voice, 16, false);
                     // an MP3 and an OGG as well: whatever the player's DAW exports
                     string tests = Path.Combine(Application.streamingAssetsPath, "AudioTest");
                     File.Copy(Path.Combine(tests, "tone_440.mp3"), Path.Combine(scratch, "music", "battle1.mp3"));
@@ -428,7 +473,7 @@ namespace Monolith.Game
                     float hz = zc / ((b3 - a3) / (float)R);
                     Check(Mathf.Abs(hz - 330f) < 8f, $"a 44.1 kHz file keeps its pitch through the 48 kHz mixer ({hz:0} Hz, 330 expected)");
                     Check(bt.Source != "built in" && bt.Clip.Frames == R * 2 && bt.Clip.LoopStart == R / 2 && bt.Clip.LoopEnd == R * 3 / 2 && Mathf.Abs(bt.Clip.TrimDb + 3f) < 0.01f, $"your battle2.wav replaces the built-in track, with its loop points and trim from the sidecar ({bt.Source})");
-                    var vc = lib2.Voices.First(v => v.File == "vo/sable2/ack_attack_01.ogg");
+                    var vc = lib2.Voices.First(v => v.File == "vo/sable2/ack_attack_01_frantic.ogg");
                     var vm = LoudnessMeter.Measure(PcmFrom(vc.Clip));
                     Check(vc.Source != "built in" && vc.Clip.Seconds > 1.0f && vm.Integrated > -30f && vm.Integrated < -17f, $"your recording replaces the clip and goes through the radio ({vc.Clip.Seconds:0.00} s, {vm.Integrated:0.0} LUFS)");
                     // a track the mission names: the player's file plays, a name with no file falls back to the built-in state track at once and says so
