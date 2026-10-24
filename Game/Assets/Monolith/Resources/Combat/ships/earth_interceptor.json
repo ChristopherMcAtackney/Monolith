@@ -1,0 +1,154 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "earth_interceptor",
+  "name": "Seraph interceptor",
+  "sizeClass": "fighter",
+  "note": "FS2 reference class; a light fighter. Copied for Seraph interceptor (Earth's side in the dogfight); every fs2 number still names the FS2 ship it came from.",
+  "defense": {
+    "hull": {
+      "value": 180,
+      "unit": "hp",
+      "fs2": "ships:GTF Ulysses|$Hitpoints"
+    },
+    "shield": {
+      "value": 380,
+      "unit": "hp (FS2 total over four quadrants; the bubble gets shieldBubbleScale of it)",
+      "fs2": "ships:GTF Ulysses|$Shields"
+    },
+    "powerOutput": {
+      "value": 2.0,
+      "unit": "FS2 power output",
+      "fs2": "ships:GTF Ulysses|$Power Output"
+    },
+    "weaponEnergy": {
+      "value": 80,
+      "unit": "energy",
+      "fs2": "ships:GTF Ulysses|$Max Weapon Eng"
+    },
+    "decoys": {
+      "value": 25,
+      "unit": "decoys",
+      "fs2": "ships:GTF Ulysses|$Countermeasures"
+    }
+  },
+  "geometry": {
+    "about": "One box about the hull (wings included); the shield bubble is derived from it like the juice's.",
+    "boxes": [
+      {
+        "centre": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          4.2,
+          1.8,
+          5.46
+        ]
+      }
+    ],
+    "boundRadius": 8.44
+  },
+  "arms": {
+    "primary": "needle",
+    "primaryHardpoints": [
+      [
+        -2.9,
+        -0.35,
+        3.38
+      ],
+      [
+        2.9,
+        -0.35,
+        3.38
+      ]
+    ],
+    "missiles": {
+      "missile_heat": 4
+    },
+    "decoys": 25,
+    "heavy": "hammer",
+    "heavyHardpoints": [
+      [
+        0,
+        -0.9,
+        4.03
+      ]
+    ]
+  },
+  "partsSource": "hpPercent: a share of the hull, FS2's way (ships.tbl GTF Ulysses $Subsystem: engines 35, weapons 20, sensors 10); two engine pods split the engines' share, each gun mount takes the weapons' share",
+  "parts": [
+    {
+      "name": "engine_port",
+      "kind": "engine",
+      "pos": [
+        -1.7,
+        0,
+        -5.2
+      ],
+      "radius": 1.6,
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "hpPercent": 17.5
+    },
+    {
+      "name": "engine_starboard",
+      "kind": "engine",
+      "pos": [
+        1.7,
+        0,
+        -5.2
+      ],
+      "radius": 1.6,
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "hpPercent": 17.5
+    },
+    {
+      "name": "mount_needle",
+      "kind": "mount",
+      "gun": "primary",
+      "pos": [
+        0,
+        -0.36,
+        2.86
+      ],
+      "radius": 1.8,
+      "hpPercent": 20
+    },
+    {
+      "name": "sensors",
+      "kind": "sensors",
+      "pos": [
+        0,
+        1.4,
+        1.56
+      ],
+      "radius": 1.3,
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "hpPercent": 10
+    },
+    {
+      "name": "mount_hammer",
+      "kind": "mount",
+      "gun": "heavy",
+      "pos": [
+        0,
+        -0.8,
+        4.29
+      ],
+      "radius": 1.2,
+      "hpPercent": 20
+    }
+  ]
+}

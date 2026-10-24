@@ -144,6 +144,10 @@ namespace Monolith.Input
                 if (Key(kb, k.powerShields) > 0f) buttons |= ControlButtons.PowerShields;
                 if (Key(kb, k.powerEngines) > 0f) buttons |= ControlButtons.PowerEngines;
                 if (Key(kb, k.powerBalanced) > 0f) buttons |= ControlButtons.PowerBalanced;
+                if (Key(kb, k.orderAttack) > 0f) buttons |= ControlButtons.OrderAttack;
+                if (Key(kb, k.orderDisable) > 0f) buttons |= ControlButtons.OrderDisable;
+                if (Key(kb, k.orderCover) > 0f) buttons |= ControlButtons.OrderCover;
+                if (Key(kb, k.orderForm) > 0f) buttons |= ControlButtons.OrderForm;
                 if (Key(kb, k.matchSpeed) > 0f) buttons |= ControlButtons.MatchSpeed;
                 if (Key(kb, k.targetNext) > 0f) buttons |= ControlButtons.TargetNext;
                 if (Key(kb, k.targetAhead) > 0f) buttons |= ControlButtons.TargetReticle;

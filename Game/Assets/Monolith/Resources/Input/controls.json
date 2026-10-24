@@ -61,7 +61,7 @@
       "quit": "buttonEast"
     },
     "quickMenuHoldSeconds": 0.25,
-    "combatWhy": "Combat additions to the Squadrons-style layout the user has flown, nothing moved: RT fire the fast gun, LB the heavy gun, RB the selected missile (lock-on weapons fire once the tone is steady), B decoys, A next hostile, LT the ship in the reticle, X match speed. New: R3 (click the aim stick) steps to the next missile type, View (back) targets the nearest attacker, Y tapped steps through the target's parts (nearest the nose first, then the whole ship) and Y held opens the quick menu: D-pad up = favour guns, left = favour shields, right = favour engines, down = balanced; A, B, X, LB = the wingman orders (attack my target, disable my target, cover me, form up), reserved for the AI builder. While the menu is open the buttons it names do only what the menu says."
+    "combatWhy": "Combat additions to the Squadrons-style layout the user has flown, nothing moved: RT fire the fast gun, LB the heavy gun, RB the selected missile (lock-on weapons fire once the tone is steady), B decoys, A next hostile, LT the ship in the reticle, X match speed. New: R3 (click the aim stick) steps to the next missile type, View (back) targets the nearest attacker, Y tapped steps through the target's parts (nearest the nose first, then the whole ship) and Y held opens the quick menu: D-pad up = favour guns, left = favour shields, right = favour engines, down = balanced; A, B, X, LB = the wingman orders (attack my target, disable my target, cover me, form up; F1 to F4 on the keyboard). While the menu is open the buttons it names do only what the menu says."
   },
   "keyboard": {
     "pitchDown": "w",
@@ -99,6 +99,10 @@
     "powerGuns": "6",
     "powerShields": "5",
     "powerEngines": "7",
-    "powerBalanced": "8"
+    "powerBalanced": "8",
+    "orderAttack": "f1",
+    "orderDisable": "f2",
+    "orderCover": "f3",
+    "orderForm": "f4"
   }
 }

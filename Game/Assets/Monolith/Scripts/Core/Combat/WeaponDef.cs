@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Monolith.Core
 {
-    public enum WeaponKind { Gun, Flak, HeatMissile, LockMissile, Torpedo, Decoy }
+    public enum WeaponKind { Gun, Flak, HeatMissile, LockMissile, Torpedo, Decoy, Beam }
 
     /// <summary>
     /// One weapon, from Resources/Combat/weapons.json (format "monolith-weapons/1"). FS2's tables are the model: every number carries the
@@ -59,8 +59,21 @@ namespace Monolith.Core
         /// <summary>A decoy fools missiles inside this range at the moment it is released, metres.</summary>
         public float DecoyRange;
 
-        /// <summary>How far the weapon reaches: speed x life.</summary>
-        public float Range => Speed * Life;
+        // Beams (capital turrets, fired through FireRequest): they charge, burn for Life seconds sweeping the target, then end.
+        /// <summary>Seconds the beam charges before it fires (FS2 +Warmup).</summary>
+        public float BeamWarmup;
+        /// <summary>Seconds the beam takes to fade after it stops (FS2 +Warmdown; the juice draws the fade).</summary>
+        public float BeamWarmdown;
+        /// <summary>How far a beam reaches, metres (FS2 +Weapon Range).</summary>
+        public float BeamRange;
+        /// <summary>Seconds between damage ticks while a beam burns: each tick does <see cref="Damage"/> to whatever it touches.</summary>
+        public float BeamDamageInterval = 0.17f;
+        /// <summary>Parts within this many metres of where the beam touches a hull take its part damage (the beam is fat).</summary>
+        public float BeamCutRadius = 18f;
+
+        /// <summary>How far the weapon reaches: speed x life (a beam: its range).</summary>
+        public float Range => Kind == WeaponKind.Beam ? BeamRange : Speed * Life;
+        public bool IsBeam => Kind == WeaponKind.Beam;
         public float TurnRate => TurnTime > 0.01f ? 2f * Mathf.PI / TurnTime : 100f;
         public bool IsGuided => Kind == WeaponKind.HeatMissile || Kind == WeaponKind.LockMissile || Kind == WeaponKind.Torpedo;
         public bool NeedsLock => LockTime > 0f;
@@ -144,9 +157,15 @@ namespace Monolith.Core
                     Hp = f.Float("hp", 0f, 100000f, 0f),
                     DecoyChance = f.Float("decoyChance", 0f, 1f, 0f),
                     DecoyRange = f.Float("decoyRange", 0f, 5000f, 0f),
+                    BeamWarmup = f.Float("beamWarmupMs", 0f, 60000f, 0f) * 0.001f,
+                    BeamWarmdown = f.Float("beamWarmdownMs", 0f, 60000f, 0f) * 0.001f,
+                    BeamRange = f.Float("beamRange", 0f, 100000f, 0f),
+                    BeamDamageInterval = f.Float("beamDamageInterval", 0.02f, 5f, 0.17f),
+                    BeamCutRadius = f.Float("beamCutRadius", 0f, 500f, 18f),
                 };
                 f.RejectUnknown();
                 if (def.Kind != WeaponKind.Decoy && def.Speed <= 0f) throw new InvalidDataException($"{w}: speed must be above 0");
+                if (def.Kind == WeaponKind.Beam && def.BeamRange <= 0f) throw new InvalidDataException($"{w}: a beam needs a beamRange");
                 list.Add(def);
             }
             if (list.Count == 0) throw new InvalidDataException($"{where}: no weapons");
@@ -163,7 +182,8 @@ namespace Monolith.Core
                 case "lock": return WeaponKind.LockMissile;
                 case "torpedo": return WeaponKind.Torpedo;
                 case "decoy": return WeaponKind.Decoy;
-                default: throw new InvalidDataException($"{where}: kind '{s}' is not gun, flak, heat, lock, torpedo or decoy");
+                case "beam": return WeaponKind.Beam;
+                default: throw new InvalidDataException($"{where}: kind '{s}' is not gun, flak, heat, lock, torpedo, decoy or beam");
             }
         }
     }

@@ -136,7 +136,14 @@ namespace Monolith.Damage
             var c = _world.Combat.Get(r.Ship);
             if (c == null || !c.Alive || c.Ship == null || r.Amount <= 0f) return;
             bool partOnly = r.ShieldMult <= 0f && r.HullMult <= 0f;
-            float remaining = r.Amount;
+            // The difficulty's mercy on the player (FS2: weapon hits on the player's ship are scaled by the skill level; collisions are not).
+            float amount = r.Amount, partScale = 1f;
+            if (r.Ship == _world.LocalPlayerShip && r.Kind != DamageKind.Collision && r.Kind != DamageKind.Debug)
+            {
+                amount *= _world.PlayerDamageScale;
+                partScale = _world.PlayerPartDamageScale;
+            }
+            float remaining = amount;
 
             if (r.Attacker != GameWorld.NoShip && r.Attacker != c.Id) { c.LastAttacker = r.Attacker; c.LastAttackerTime = _now; }
             c.TimeSinceDamage = 0f;
@@ -145,24 +152,24 @@ namespace Monolith.Damage
             // 1. The shield bubble takes it first.
             if (!r.BypassShield && c.Shield > 0f && r.ShieldMult > 0f)
             {
-                float onShield = r.Amount * r.ShieldMult;
+                float onShield = amount * r.ShieldMult;
                 c.TimeSinceShieldHit = 0f;
                 if (onShield <= c.Shield)
                 {
                     c.Shield -= onShield;
-                    GameEvents.RaiseAt(CombatEvents.HitShield, r.Point, r.Direction, r.Weapon, r.Amount, c.Id, r.Attacker);
+                    GameEvents.RaiseAt(CombatEvents.HitShield, r.Point, r.Direction, r.Weapon, amount, c.Id, r.Attacker);
                     return;
                 }
                 // It breaks the bubble and the rest goes through.
-                remaining = r.Amount * (1f - c.Shield / onShield);
+                remaining = amount * (1f - c.Shield / onShield);
                 c.Shield = 0f;
-                GameEvents.RaiseAt(CombatEvents.HitShield, r.Point, r.Direction, r.Weapon, r.Amount - remaining, c.Id, r.Attacker);
+                GameEvents.RaiseAt(CombatEvents.HitShield, r.Point, r.Direction, r.Weapon, amount - remaining, c.Id, r.Attacker);
                 GameEvents.RaiseAt(CombatEvents.ShieldDown, r.Point, r.Direction, r.Weapon, 0f, c.Id, r.Attacker);
             }
 
             // 2. The part nearest the impact.
             int partIndex = r.Part >= 0 && r.Part < c.Parts.Count ? r.Part : r.Part == -2 ? -1 : NearestPart(c, r.Point);
-            if (partIndex >= 0 && r.SubsystemMult > 0f) DamagePart(c, c.Parts[partIndex], remaining * r.SubsystemMult, r.Attacker);
+            if (partIndex >= 0 && r.SubsystemMult > 0f) DamagePart(c, c.Parts[partIndex], remaining * r.SubsystemMult * partScale, r.Attacker);
 
             // 3. The hull.
             if (!partOnly)

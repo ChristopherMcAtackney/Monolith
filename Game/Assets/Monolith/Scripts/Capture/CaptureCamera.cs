@@ -5,8 +5,10 @@ using UnityEngine.Rendering;
 namespace Monolith.Capture
 {
     /// <summary>
-    /// Pins a camera to the pose a shot asks for. The pose is re-applied right before the camera renders, so gameplay
-    /// camera scripts cannot move the critic's camera. Dispose to stop pinning and put the camera back.
+    /// Pins a camera to the pose a shot asks for. The pose is re-applied after every other script's LateUpdate and right before
+    /// the camera renders, so gameplay camera scripts cannot move the critic's camera (HDRP takes the camera's matrices before
+    /// beginCameraRendering, so a camera a script moves every frame, the cockpit view, needs the late re-apply). Dispose to stop
+    /// pinning and put the camera back.
     /// </summary>
     public sealed class CaptureCamera : IDisposable
     {
@@ -34,8 +36,15 @@ namespace Monolith.Capture
             _follow = shot.follow == true;
 
             RenderPipelineManager.beginCameraRendering += OnBeginCamera;
+            if (!_follow)
+            {
+                _pin = new GameObject("CapturePin").AddComponent<CapturePin>();
+                _pin.Owner = this;
+            }
             Apply();
         }
+
+        CapturePin _pin;
 
         public string Description => _follow ? $"{_cam.name} following the game (fov {_fov:0.#})" :
             $"{_cam.name} pos {_pose.position.x:0.###},{_pose.position.y:0.###},{_pose.position.z:0.###} " +
@@ -58,6 +67,7 @@ namespace Monolith.Capture
             if (!_active) return;
             _active = false;
             RenderPipelineManager.beginCameraRendering -= OnBeginCamera;
+            if (_pin != null) UnityEngine.Object.Destroy(_pin.gameObject);
             if (_cam != null)
             {
                 if (!_follow) _cam.transform.SetPositionAndRotation(_restorePose.position, _restorePose.rotation);
@@ -66,5 +76,13 @@ namespace Monolith.Capture
         }
 
         static Vector3 V3(float[] a) => new Vector3(a[0], a[1], a[2]);
+    }
+
+    /// <summary>Re-applies a shot's pose after every other LateUpdate (the cockpit view, the shake, the sky warm-up).</summary>
+    [DefaultExecutionOrder(30000)]
+    sealed class CapturePin : MonoBehaviour
+    {
+        public CaptureCamera Owner;
+        void LateUpdate() => Owner?.Apply();
     }
 }

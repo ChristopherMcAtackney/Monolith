@@ -1,0 +1,106 @@
+{
+  "format": "monolith-ai/1",
+  "about": "The AI's numbers (design section 7 and the appendix's AI skill note). Pilot profiles are FS2's AI classes: four skill knobs per difficulty level (accuracy 0..1; evasion, courage, patience 0..100), copied from FS2's ai.tbl where named in 'fs2' ('ai.tbl <class> <field>') or ours with a 'source'. The difficulty tables are the per-skill-level arrays FS2's own code keeps (aicode.cpp, ship.cpp). How each knob is used is in Scripts/AI/README.md.",
+  "difficulty": {
+    "levels": ["Very easy", "Easy", "Medium", "Hard", "Insane"],
+    "default": 2,
+    "tables": {
+      "turnTimeScale":      { "value": [3.0, 2.2, 1.6, 1.3, 1.0], "unit": "x turn time, Earth's side only", "fs2": "aicode.cpp Turn_time_skill_level_scale (applied to ships not on the player's team)" },
+      "aimingError":        { "value": [3.0, 2.2, 1.3, 0.7, 0.2], "unit": "x the aim error", "fs2": "aicode.cpp Aiming_error" },
+      "inRangeTime":        { "value": [2.0, 1.4, 0.75, 0.0, -1.0], "unit": "s added to the time a pilot needs on a target before its aim settles", "fs2": "aicode.cpp In_range_time" },
+      "retargetSeconds":    { "value": [15, 12, 9, 6, 3], "unit": "s, longest wait before a pilot looks for a better target (half of it at shortest)", "source": "FS2 aicode.cpp ai_frame: the next enemy re-choice comes 3 x (5 - skill level) x 0.5..1 s later" },
+      "cmeasureChance":     { "value": [0.2, 0.3, 0.5, 0.9, 1.1], "unit": "chance per missile, scaled by evasion", "fs2": "aicode.cpp Cmeasure_fire_chance" },
+      "hostileFireDelay":   { "value": [4.0, 2.5, 1.75, 1.25, 1.0], "unit": "x every weapon's fire wait, Earth's AI ships and turrets", "fs2": "ship.cpp Ship_fire_delay_scale_hostile" },
+      "friendlyFireDelay":  { "value": [2.0, 1.4, 1.25, 1.1, 1.0], "unit": "x every weapon's fire wait, our side's AI ships and turrets", "fs2": "ship.cpp Ship_fire_delay_scale_friendly" },
+      "maxPlayerAttackers": { "value": [2, 3, 4, 5, 99], "unit": "Earth fighters on the player at once", "fs2": "aicode.cpp Skill_level_max_attackers" },
+      "maxPlayerHomers":    { "value": [2, 3, 4, 7, 99], "unit": "missiles homing on the player at once", "fs2": "aicode.cpp Max_allowed_player_homers" },
+      "predictDelay":       { "value": [2.0, 1.5, 1.333, 0.5, 0.0], "unit": "s an Earth pilot's picture of its target is out of date (it aims from that picture)", "fs2": "aicode.cpp Skill_level_delay (ai_set_positions keeps the enemy's position this long before refreshing it)" },
+      "playerDamageScale":  { "value": [0.25, 0.5, 0.65, 0.85, 1.0], "unit": "x weapon damage to the player's ship", "fs2": "shiphit.cpp Skill_level_player_damage_scale" },
+      "playerPartDamageScale": { "value": [0.2, 0.4, 0.6, 0.8, 1.0], "unit": "x damage to the player's ship's parts, on top", "fs2": "shiphit.cpp Skill_level_subsys_damage_scale" }
+    }
+  },
+  "tuning": {
+    "aimErrorMetres":      { "value": 10.0, "unit": "m of aim error at accuracy 0 and aiming error 1", "source": "ours, from FS2's set_predicted_enemy_pos ((1 - accuracy) x 4 x a random vector, up to 5x when the target has only just come into range); in metres here, calibrated with the arena" },
+    "turretAimError":      { "value": 0.03, "unit": "x range (m) per (1 - accuracy) x aiming error", "source": "ours: turret bolts scatter more the further the target is, so a weaving fighter at range is safe and a slow one close in is not" },
+    "flakSpreadMetres":    { "value": 35.0, "unit": "m", "source": "ours: FS2 jitters flak aim so bursts bracket the target; this is the radius for a gunner of accuracy 0.5, smaller for better gunners" },
+    "flakLeadSeconds":     { "value": 0.5, "unit": "s", "source": "ours: flak is aimed up to this far along the target's path past the intercept, so the bursts open in front of it (design section 7: flak bursts in the player's path)" },
+    "peelHullNoCourage":   { "value": 0.5, "unit": "hull fraction", "source": "ours: a pilot with no courage (and not fearless) pulls out of the fight at half hull" },
+    "peelHullFullCourage": { "value": 0.15, "unit": "hull fraction", "source": "ours: a pilot with full courage stays in until 15% hull (design section 7: courage is how long a pilot stays in a fight when hurt)" },
+    "peelMaxSeconds":      { "value": 30.0, "unit": "s", "source": "ours: a pilot that has pulled out comes back after this long at most (the diaspora's ships mend slowly while out of the fight)" },
+    "patienceHoldSeconds": { "value": 0.25, "unit": "s at patience 100", "source": "ours: design section 7, patience is how long a pilot holds a firing line before shooting (FS2 dogfight firing windows are short: longer holds lose more shots than they save)" },
+    "patienceConeBlend":   { "value": 0.5, "unit": "0..1", "source": "ours: a patient pilot narrows FS2's firing cone (aicode.cpp: dot > 0.90 + accuracy/10 - radius/distance) towards the target's own size by this much at patience 100" },
+    "tailRange":           { "value": 900.0, "unit": "m", "source": "ours: 'on the tail' for the measurements: within this range" },
+    "tailNoseDegrees":     { "value": 30.0, "unit": "deg", "source": "ours: 'on the tail': the target is within this angle of the chaser's nose" },
+    "tailAspectDegrees":   { "value": 60.0, "unit": "deg", "source": "ours: 'on the tail': the chaser is within this angle of the target's tail" },
+    "avoidMargin":         { "value": 30.0, "unit": "m", "source": "ours: fighters keep this far (plus their own size) off a capital hull's boxes" },
+    "avoidLookAheadMin":   { "value": 1.5, "unit": "s", "source": "ours: how far ahead a fighter checks its path against capital hulls, at low speed" },
+    "avoidLookAheadMax":   { "value": 4.0, "unit": "s", "source": "ours: and at high speed (FS2 predicts collisions up to 4 s ahead in ai_chase)" },
+    "gunRangeFraction":    { "value": 0.9, "unit": "x a gun's reach", "source": "ours: pilots open fire when the bolt would arrive within this share of its life" },
+    "sensorRange":         { "value": 8000.0, "unit": "m", "source": "ours: how far a pilot looks for targets" },
+    "flakEnvelope":        { "value": 1100.0, "unit": "m from the hull", "source": "ours: an enemy capital ship's guns reach about this far (flak 1,125 m, turret lasers 1,375 m); a pilot who fears for itself does not chase a fighter into it unless ordered to (fearless drones do)" }
+  },
+  "profiles": {
+    "drone": {
+      "about": "Earth's drone fighters, the bulk of their waves: Captain-class aim, Lieutenant-class evasion and patience, and no fear (design section 7: courage zero, no breaking off when hurt).",
+      "fearless": true,
+      "accuracy": { "value": [0.5, 0.55, 0.6, 0.65, 0.7], "fs2": "ai.tbl Captain $accuracy" },
+      "evasion":  { "value": [0, 10, 20, 30, 40], "fs2": "ai.tbl Lieutenant $evasion" },
+      "courage":  { "value": 0, "source": "design section 7: Earth's drones have FS2's courage at zero (they are fearless: courage has nothing to act on)" },
+      "patience": { "value": [0, 10, 20, 30, 40], "fs2": "ai.tbl Lieutenant $patience" }
+    },
+    "drone_heavy": {
+      "about": "Earth's heavier drones, escorts for bombers: Captain-class throughout, fearless.",
+      "fearless": true,
+      "accuracy": { "value": [0.5, 0.55, 0.6, 0.65, 0.7], "fs2": "ai.tbl Captain $accuracy" },
+      "evasion":  { "value": [10, 20, 30, 40, 50], "fs2": "ai.tbl Captain $evasion" },
+      "courage":  { "value": 0, "source": "design section 7: a drone" },
+      "patience": { "value": [10, 20, 30, 40, 50], "fs2": "ai.tbl Captain $patience" }
+    },
+    "drone_bomber": {
+      "about": "Earth's bomber drones: they press their torpedo runs and hardly jink.",
+      "fearless": true,
+      "accuracy": { "value": [0.4, 0.45, 0.5, 0.55, 0.6], "fs2": "ai.tbl Lieutenant $accuracy" },
+      "evasion":  { "value": [0, 0, 5, 10, 15], "source": "ours: a bomber on its run holds its line" },
+      "courage":  { "value": 0, "source": "design section 7: a drone" },
+      "patience": { "value": [20, 30, 40, 50, 60], "fs2": "ai.tbl Major $patience" }
+    },
+    "ascended_ace": {
+      "about": "One of Earth's ascended aces, for later (design section 7): General-class in every knob, and on every difficulty it turns and fires at its ship's full rate (FS2's easy-level handicaps do not apply) and never breaks off for fear.",
+      "fearless": true,
+      "unhandicapped": true,
+      "accuracy": { "value": [0.8, 0.85, 0.9, 0.95, 1.0], "fs2": "ai.tbl General $accuracy" },
+      "evasion":  { "value": [40, 50, 60, 80, 100], "fs2": "ai.tbl General $evasion" },
+      "courage":  { "value": [40, 50, 60, 80, 100], "fs2": "ai.tbl General $courage" },
+      "patience": { "value": [40, 50, 60, 80, 100], "fs2": "ai.tbl General $patience" }
+    },
+    "wingman": {
+      "about": "The player's wingmen, diaspora pilots: Major-class. They pull out when badly hurt, mend, and come back.",
+      "accuracy": { "value": [0.6, 0.65, 0.7, 0.75, 0.8], "fs2": "ai.tbl Major $accuracy" },
+      "evasion":  { "value": [20, 30, 40, 50, 60], "fs2": "ai.tbl Major $evasion" },
+      "courage":  { "value": [20, 30, 40, 50, 60], "fs2": "ai.tbl Major $courage" },
+      "patience": { "value": [20, 30, 40, 50, 60], "fs2": "ai.tbl Major $patience" }
+    },
+    "autopilot": {
+      "about": "Flies the player's own ship in soaks and captures (never in play): Colonel-class (an invulnerable ship never pulls out).",
+      "accuracy": { "value": [0.7, 0.75, 0.8, 0.85, 0.9], "fs2": "ai.tbl Colonel $accuracy" },
+      "evasion":  { "value": [30, 40, 50, 70, 90], "fs2": "ai.tbl Colonel $evasion" },
+      "courage":  { "value": [30, 40, 50, 70, 90], "fs2": "ai.tbl Colonel $courage" },
+      "patience": { "value": [30, 40, 50, 70, 90], "fs2": "ai.tbl Colonel $patience" }
+    },
+    "earth_turret": {
+      "about": "Earth's capital-ship gunners (turrets use accuracy only).",
+      "fearless": true,
+      "accuracy": { "value": [0.5, 0.55, 0.6, 0.65, 0.7], "fs2": "ai.tbl Captain $accuracy" },
+      "evasion":  { "value": 0, "source": "unused by turrets" },
+      "courage":  { "value": 0, "source": "unused by turrets" },
+      "patience": { "value": 0, "source": "unused by turrets" }
+    },
+    "diaspora_turret": {
+      "about": "Our capital ships' gunners (turrets use accuracy only).",
+      "accuracy": { "value": [0.6, 0.65, 0.7, 0.75, 0.8], "fs2": "ai.tbl Major $accuracy" },
+      "evasion":  { "value": 0, "source": "unused by turrets" },
+      "courage":  { "value": 0, "source": "unused by turrets" },
+      "patience": { "value": 0, "source": "unused by turrets" }
+    }
+  }
+}

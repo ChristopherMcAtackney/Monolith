@@ -32,6 +32,10 @@ namespace Monolith.Core
         /// <summary>Speed along the nose, m/s.</summary>
         public float ForwardSpeed;
         public float TopSpeed, AfterburnerSpeed;
+        /// <summary>The class's best turn rates, rad/s (pitch, yaw, roll), and its turn-rate time constant in seconds (owner: Flight, set at spawn).
+        /// An AI flies the ship with them the way FS2's AI reads its ship's physics.</summary>
+        public Vector3 TurnRate = new Vector3(2f, 2f, 1.2f);
+        public float TurnLag = 0.35f;
         /// <summary>The throttle setting flight used this tick (0..1): the pilot's, or the matched target speed.</summary>
         public float Throttle;
         public bool MatchingSpeed;

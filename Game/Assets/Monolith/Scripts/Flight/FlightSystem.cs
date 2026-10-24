@@ -52,6 +52,8 @@ namespace Monolith.Flight
                 TopSpeed = cls.TopSpeed,
                 AfterburnerSpeed = cls.HasAfterburner ? cls.AfterburnerSpeed : cls.TopSpeed,
                 FuelMax = cls.HasAfterburner ? cls.AfterburnerFuel : 0f,
+                TurnRate = cls.MaxTurnRate,
+                TurnLag = cls.RotDamp,
             };
             var e = new Entry { Model = model, State = state };
             Publish(e, true);

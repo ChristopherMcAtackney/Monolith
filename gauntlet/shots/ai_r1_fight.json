@@ -1,0 +1,111 @@
+{
+  "scene": "dogfight",
+  "sceneOptions": {
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false,
+    "juice": {
+      "effects": {
+        "screenFlash": false
+      }
+    },
+    "spectate": {
+      "ship": "Choir 1",
+      "offset": [
+        9,
+        4,
+        -42
+      ],
+      "look": "target"
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "fight_t30",
+      "follow": true,
+      "warmup": 30.0
+    },
+    {
+      "name": "fight_t32",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t34",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t36",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t38",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t40",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t42",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t44",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t46",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t48",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t50",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t52",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t54",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t56",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t58",
+      "follow": true,
+      "warmup": 2.0
+    },
+    {
+      "name": "fight_t60",
+      "follow": true,
+      "warmup": 2.0
+    }
+  ]
+}

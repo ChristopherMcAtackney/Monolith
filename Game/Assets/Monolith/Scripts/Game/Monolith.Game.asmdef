@@ -16,6 +16,7 @@
         "Monolith.CombatHud",
         "Monolith.Juice",
         "Monolith.ShipArt",
+        "Monolith.AI",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime"

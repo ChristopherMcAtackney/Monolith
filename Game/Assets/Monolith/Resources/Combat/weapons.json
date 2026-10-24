@@ -151,6 +151,26 @@
         "lifeMax":       { "value": 2.0,  "unit": "s",   "fs2": "Type One|$Lifetime Max" },
         "decoyRange":    { "value": 350,  "unit": "m",   "source": "ours: missiles closer than this when it is released may be fooled (each missile rolls once per decoy)" }
       }
+    },
+    "beam_slash": {
+      "name": "Slash beam",
+      "kind": "beam",
+      "role": "capital-ship heavy beam: charges for three seconds, then a slash across the target ship's hull, cutting the parts it crosses; fired from a capital's beam turret at other capital ships (the AI's turret gunnery fires it through a FireRequest)",
+      "fs2Weapon": "TerSlash",
+      "fields": {
+        "speed":         { "value": 1000, "unit": "m/s (unused: a beam is instant)", "fs2": "TerSlash|$Velocity" },
+        "fireWait":      { "value": 10.0, "unit": "s between firings (after the burn)", "fs2": "TerSlash|$Fire Wait" },
+        "damage":        { "value": 350,  "unit": "hp per damage tick", "fs2": "TerSlash|$Damage" },
+        "shieldMult":    { "value": 1.0,  "unit": "x", "fs2": "TerSlash|$Shield Factor" },
+        "hullMult":      { "value": 1.0,  "unit": "x", "fs2": "TerSlash|$Armor Factor" },
+        "subsystemMult": { "value": 1.0,  "unit": "x", "fs2": "TerSlash|$Subsystem Factor" },
+        "life":          { "value": 2.0,  "unit": "s of burn", "fs2": "TerSlash|+Life" },
+        "beamWarmupMs":  { "value": 3000, "unit": "ms of charge before it fires", "fs2": "TerSlash|+Warmup" },
+        "beamWarmdownMs":{ "value": 1500, "unit": "ms of fade after it stops", "fs2": "TerSlash|+Warmdown" },
+        "beamRange":     { "value": 4000, "unit": "m", "fs2": "TerSlash|+Weapon Range" },
+        "beamDamageInterval": { "value": 0.17, "unit": "s between damage ticks", "source": "ours: FS2's beams apply their $Damage over and over at short intervals while they touch (about six times a second); this is that interval" },
+        "beamCutRadius": { "value": 30, "unit": "m", "source": "ours: parts this close to where the beam touches take its part damage. At least as wide as the juice draws the beam (16 m half-width, swelling to about 30 m when seen from far off), so a part the beam visibly cuts off is also destroyed in combat and its turret goes silent" }
+      }
     }
   }
 }

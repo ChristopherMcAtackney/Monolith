@@ -1,0 +1,43 @@
+{
+  "format": "monolith-dogfight/1",
+  "about": "The dogfight (-mnScene dogfight): a loop to playtest the fighting, not the mission. The player and two wingmen against waves of Earth's drones near Earth's corvette (turrets, flak and beams live) and our cruiser, which a bomber wing comes for. Waves arrive on FS2's rule: the next when the current one is two-thirds destroyed, a few seconds later, never more Earth fighters alive than the level's cap. Win: the Warden destroyed and every wave cleared. Lose: your ship, or the Small Mercy. Positions in metres; the Mercy sits near the origin heading +z, the Warden about three kilometres ahead.",
+  "difficulty": "Medium",
+  "player": { "ship": "vanguard_fighter", "callsign": "Sable 1", "pos": [-120, 60, 350], "rot": [0, 12, 0], "speedFraction": 0.5, "throttle": 0.6 },
+  "wingmen": [
+    { "ship": "vanguard_fighter", "callsign": "Sable 2", "profile": "wingman", "ammo": { "missile_heat": 4, "missile_lock": 2, "torpedo_heavy": 0 }, "ammoWhy": "ours: a wingman's rack is a Myrmidon's (4 heat-seekers, 2 lock-ons), not the player's test-everything load" },
+    { "ship": "vanguard_fighter", "callsign": "Sable 3", "profile": "wingman", "ammo": { "missile_heat": 4, "missile_lock": 2, "torpedo_heavy": 0 } }
+  ],
+  "friendly": {
+    "ship": "diaspora_cruiser", "callsign": "Small Mercy", "pos": [0, -80, 0], "rot": [0, 0, 0],
+    "hull": { "length": 460, "width": 110, "height": 90, "seed": 23 },
+    "orders": { "standoff": 2900, "band": 400, "bearing": 70, "throttle": 0.3, "turretProfile": "diaspora_turret", "turretWaitScale": 1.3, "beamWaitScale": 2.0, "holdBeams": true,
+                "holdBeamsWhy": "ours, FS2's beam-lock: the Mercy's beams stay quiet until the player has silenced the Warden's two beam turrets; then they come free and finish it (a slash beam cuts every part it crosses, so freed from the start it would strip the Warden before the player could)" }
+  },
+  "corvette": {
+    "ship": "earth_corvette", "callsign": "Warden", "pos": [900, 60, 3000], "rot": [0, -115, 0], "hullScale": 0.5,
+    "hullScaleWhy": "ours: 40,000 of the Deimos' 80,000, so the player's two torpedoes, the heavy gun on its parts and the Mercy's beams can finish it inside the loop",
+    "orders": { "standoff": 2700, "band": 400, "bearing": 65, "throttle": 0.3, "turretProfile": "earth_turret", "turretWaitScale": 1.5, "beamWaitScale": 4.0,
+                "weapons": { "SUB_aaf_F01": "beam_slash", "SUB_aaf_F03": "beam_slash" } },
+    "weaponsWhy": "the model's two forward dorsal anti-fighter turrets are its beam cannons (the model tags them 'beam'; FS2's Deimos carries two slash beams): destroy them and the Warden's beams go quiet"
+  },
+  "waveCap": { "value": [3, 4, 6, 8, 10], "source": "ours: at most this many of Earth's fighters alive at once per level (design section 7: a small cap per difficulty); bombers and their escort come on top" },
+  "nextWaveAt": { "value": 0.66, "source": "FS2's campaign: most enemy wings arrive when the previous wing is 66% destroyed (design appendix, 'Slaying Ravana')" },
+  "waveDelay": { "value": 5.0, "source": "ours: seconds between the trigger and the arrival (FS2's relays come 6 to 18 s after the event)" },
+  "firstWaveAt": { "value": 4.0, "source": "ours: a short breath before the first wave" },
+  "arrivals": [ [-2400, 300, 2600], [2900, -200, 1000], [-1900, 500, -1700], [2300, 400, 4200], [-3100, -100, 700], [600, -600, 4600] ],
+  "arrivalsWhy": "ours: Earth's waves jump in round the fight, from the flanks and behind as well as past the Warden, so the dogfight comes to the player and the Mercy rather than sitting under the Warden's guns",
+  "waves": [
+    { "name": "Choir",    "ships": [ { "class": "earth_interceptor", "profile": "drone", "count": 3 } ] },
+    { "name": "Psalm",    "ships": [ { "class": "earth_interceptor", "profile": "drone", "count": 3 }, { "class": "earth_interceptor", "profile": "drone", "count": 1, "goal": "capital" } ] },
+    { "name": "Canticle", "ships": [ { "class": "earth_interceptor", "profile": "drone", "count": 3 }, { "class": "earth_fighter", "profile": "drone", "count": 1 } ] },
+    { "name": "Litany",   "ships": [ { "class": "earth_interceptor", "profile": "drone", "count": 3 }, { "class": "earth_fighter", "profile": "drone", "count": 2, "goal": "capital" } ] },
+    { "name": "Vespers",  "ships": [ { "class": "earth_fighter", "profile": "drone", "count": 3 }, { "class": "earth_interceptor", "profile": "drone", "count": 2 } ] },
+    { "name": "Requiem",  "ships": [ { "class": "earth_interceptor", "profile": "drone", "count": 4 }, { "class": "earth_fighter", "profile": "drone", "count": 2 } ] }
+  ],
+  "bombers": {
+    "name": "Censer", "withWave": 2, "delay": 20, "pos": [-3300, 300, -900],
+    "bomber": { "class": "earth_bomber", "profile": "drone_bomber", "count": 3, "torpedoes": 2 },
+    "escort": { "class": "earth_heavy", "profile": "drone_heavy", "count": 2, "name": "Vigil" },
+    "torpedoesWhy": "ours: two torpedoes each in the dogfight (FS2's Artemis carries more); three bombers' worth is two thirds of the Mercy's hull if every one lands"
+  }
+}

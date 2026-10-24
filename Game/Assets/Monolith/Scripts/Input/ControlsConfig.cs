@@ -73,6 +73,8 @@ namespace Monolith.Input
                 targetNext, targetAhead, primaryFire, why;
             public string secondaryFire, missileFire, countermeasure, cycleMissile, subsystemNext, targetAttacker,
                 powerGuns, powerShields, powerEngines, powerBalanced;
+            /// <summary>The wingman orders (the pad's quick menu A, B, X, LB): attack my target, disable my target, cover me, form up.</summary>
+            public string orderAttack, orderDisable, orderCover, orderForm;
             public SystemButtons system = new SystemButtons();
         }
 

@@ -58,5 +58,11 @@ namespace Monolith.Core
 
         /// <summary>The ship the local player flies, or <see cref="NoShip"/> (owner: Game/GameRoot).</summary>
         public int LocalPlayerShip = NoShip;
+
+        /// <summary>
+        /// The difficulty's share of weapon damage the local player's ship takes, and on top of that of the damage to its parts (FS2's
+        /// Skill_level_player_damage_scale and Skill_level_subsys_damage_scale; owner: AI, from the difficulty level; Damage reads them).
+        /// </summary>
+        public float PlayerDamageScale = 1f, PlayerPartDamageScale = 1f;
     }
 }

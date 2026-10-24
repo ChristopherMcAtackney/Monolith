@@ -1,0 +1,45 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "diaspora_cruiser",
+  "name": "Diaspora cruiser (placeholder)",
+  "sizeClass": "capital",
+  "note": "Our side's capital ship in the dogfight (the bombers' target). A placeholder hull (Game/PlaceholderShips.Hull 460 x 110 x 90 m) with no part models: its turrets, beams, engines and bridge are combat parts placed on the hull boxes. Hull and turret shares are the GTCv Deimos' (ships.tbl): about eight minutes of the Warden's beams on Medium, or twelve torpedo hits. The rest ours.",
+  "defense": {
+    "hull":        { "value": 80000, "unit": "hp", "fs2": "ships:GTCv Deimos|$Hitpoints" },
+    "shield":      { "value": 0, "unit": "hp", "source": "FS2 design appendix: capital ships have no shield" },
+    "powerOutput": { "value": 100, "unit": "power", "fs2": "ships:GTCv Deimos|$Power Output" },
+    "weaponEnergy":{ "value": 100, "unit": "energy", "fs2": "ships:GTCv Deimos|$Max Weapon Eng" },
+    "decoys":      { "value": 0, "unit": "decoys", "fs2": "ships:GTCv Deimos|$Countermeasures" }
+  },
+  "geometry": {
+    "about": "Boxes round the placeholder hull: engine block, the plated body, the blunt nose, the dorsal spine. Unity axes, nose +z.",
+    "boxes": [
+      { "centre": [0, 0, -209], "half": [44, 32, 21] },
+      { "centre": [0, 0, -20],  "half": [52, 40, 168] },
+      { "centre": [0, 0, 189],  "half": [37, 30, 41] },
+      { "centre": [0, 50, -30], "half": [6, 12, 150] }
+    ],
+    "boundRadius": 240
+  },
+  "arms": { "missiles": {}, "decoys": 0 },
+  "partsSource": "hpPercent: turrets 0.833% of hull each (ships.tbl GTCv Deimos $Subsystem turretNN 0.833); engines and sensors 5% (Deimos engineNN/sensors 5); bridge and reactor ours",
+  "parts": [
+    { "name": "flak_port_fore",  "kind": "flak", "weapon": "flak_gun", "pos": [-53, 10, 60],  "forward": [-1, 0, 0], "radius": 4, "hpPercent": 0.833 },
+    { "name": "flak_port_aft",   "kind": "flak", "weapon": "flak_gun", "pos": [-53, 10, -90], "forward": [-1, 0, 0], "radius": 4, "hpPercent": 0.833 },
+    { "name": "flak_stbd_fore",  "kind": "flak", "weapon": "flak_gun", "pos": [53, 10, 60],   "forward": [1, 0, 0],  "radius": 4, "hpPercent": 0.833 },
+    { "name": "flak_stbd_aft",   "kind": "flak", "weapon": "flak_gun", "pos": [53, 10, -90],  "forward": [1, 0, 0],  "radius": 4, "hpPercent": 0.833 },
+    { "name": "gun_dorsal_fore", "kind": "aaf", "weapon": "turret_laser", "pos": [0, 41, 110],  "forward": [0, 1, 0],  "radius": 4.5, "hpPercent": 0.833 },
+    { "name": "gun_dorsal_mid",  "kind": "aaf", "weapon": "turret_laser", "pos": [-30, 41, -40], "forward": [0, 1, 0],  "radius": 4.5, "hpPercent": 0.833 },
+    { "name": "gun_dorsal_aft",  "kind": "aaf", "weapon": "turret_laser", "pos": [30, 41, -150], "forward": [0, 1, 0],  "radius": 4.5, "hpPercent": 0.833 },
+    { "name": "gun_ventral_fore","kind": "aaf", "weapon": "turret_laser", "pos": [0, -41, 90],   "forward": [0, -1, 0], "radius": 4.5, "hpPercent": 0.833 },
+    { "name": "gun_ventral_mid", "kind": "aaf", "weapon": "turret_laser", "pos": [30, -41, -60], "forward": [0, -1, 0], "radius": 4.5, "hpPercent": 0.833 },
+    { "name": "gun_ventral_aft", "kind": "aaf", "weapon": "turret_laser", "pos": [-30, -41, -160],"forward": [0, -1, 0], "radius": 4.5, "hpPercent": 0.833 },
+    { "name": "beam_fore",       "kind": "turret", "weapon": "beam_slash", "pos": [0, 44, 150],  "forward": [0, 1, 0],  "radius": 7, "hpPercent": 1.5 },
+    { "name": "beam_aft",        "kind": "turret", "weapon": "beam_slash", "pos": [0, -44, -120],"forward": [0, -1, 0], "radius": 7, "hpPercent": 1.5 },
+    { "name": "engine_port",     "kind": "engine", "pos": [-30, 0, -232], "forward": [0, 0, -1], "radius": 14, "hpPercent": 5 },
+    { "name": "engine_stbd",     "kind": "engine", "pos": [30, 0, -232],  "forward": [0, 0, -1], "radius": 14, "hpPercent": 5 },
+    { "name": "bridge",          "kind": "bridge", "pos": [0, 32, 150],   "forward": [0, 0, 1],  "radius": 12, "hpPercent": 2 },
+    { "name": "reactor",         "kind": "reactor","pos": [0, 30, -150],  "forward": [0, 1, 0],  "radius": 10, "hpPercent": 2 },
+    { "name": "sensors",         "kind": "sensors","pos": [0, 62, 40],    "forward": [0, 1, 0],  "radius": 8,  "hpPercent": 5 }
+  ]
+}

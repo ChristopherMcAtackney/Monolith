@@ -1,0 +1,82 @@
+{
+  "scene": "dogfight",
+  "sceneOptions": {
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false,
+    "juice": {
+      "effects": {
+        "screenFlash": false
+      }
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "duel_t3",
+      "warmup": 3.0,
+      "pos": [
+        -330,
+        40,
+        -650
+      ],
+      "lookAt": [
+        600,
+        -10,
+        1800
+      ],
+      "fov": 38
+    },
+    {
+      "name": "duel_t4",
+      "warmup": 1.0,
+      "pos": [
+        -330,
+        40,
+        -650
+      ],
+      "lookAt": [
+        600,
+        -10,
+        1800
+      ],
+      "fov": 38
+    },
+    {
+      "name": "duel_t5",
+      "warmup": 1.0,
+      "pos": [
+        -330,
+        40,
+        -650
+      ],
+      "lookAt": [
+        600,
+        -10,
+        1800
+      ],
+      "fov": 38
+    },
+    {
+      "name": "duel_t6",
+      "warmup": 1.0,
+      "pos": [
+        -330,
+        40,
+        -650
+      ],
+      "lookAt": [
+        600,
+        -10,
+        1800
+      ],
+      "fov": 38
+    }
+  ]
+}

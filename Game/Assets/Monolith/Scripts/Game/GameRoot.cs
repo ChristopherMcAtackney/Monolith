@@ -42,6 +42,11 @@ namespace Monolith.Game
                 return;
             }
 
+            // AI checks, the AI-against-AI arena and the dogfight soak: headless, on their own worlds; log lines say what happened. Then quit.
+            if (AiSelfTest.Requested) { bool ok = AiSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
+            if (AiArena.Requested) { Application.Quit(AiArena.RunFromCommandLine()); return; }
+            if (DogfightSoak.Requested) { Application.Quit(DogfightSoak.RunFromCommandLine()); return; }
+
             GameEvents.Reset();
             World = new GameWorld(new Sim());
             GameWorld.SetCurrent(World);
@@ -64,6 +69,7 @@ namespace Monolith.Game
             if (string.Equals(scene, FlightPlaytest.SceneName, StringComparison.OrdinalIgnoreCase)) FlightPlaytest.Build(World, flight, transform, sceneOptions);
             else if (string.Equals(scene, JuiceSandbox.SceneName, StringComparison.OrdinalIgnoreCase)) JuiceSandbox.Build(World, flight, transform, sceneOptions);
             else if (string.Equals(scene, CombatRange.SceneName, StringComparison.OrdinalIgnoreCase)) CombatRange.Build(World, flight, combat, transform, sceneOptions);
+            else if (string.Equals(scene, DogfightScene.SceneName, StringComparison.OrdinalIgnoreCase)) DogfightScene.Build(World, flight, combat, transform, sceneOptions);
             else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
             if (CommandLine.Has("-mnCapture"))

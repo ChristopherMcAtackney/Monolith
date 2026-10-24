@@ -102,6 +102,7 @@ namespace Monolith.Weapons
                 if (c.Alive && c.Ship != null) StepShip(c, dt);
             }
             DrainRequests();
+            StepBeams(dt);
             StepProjectiles(dt);
             FinishWarnings(ships);
         }
@@ -216,6 +217,7 @@ namespace Monolith.Weapons
                     origin = part.WorldPosition(c.Ship) + part.WorldForward(c.Ship) * (part.Radius * 0.5f);
                 }
                 else origin = c.Ship.Position + c.Ship.Rotation * r.Origin;
+                if (def.IsBeam) { StartBeam(r, c, part, def); continue; }
                 Vector3 dir = r.AimPoint - origin;
                 dir = dir.sqrMagnitude < 1e-4f ? c.Ship.Forward : dir.normalized;
                 if (def.IsGuided)

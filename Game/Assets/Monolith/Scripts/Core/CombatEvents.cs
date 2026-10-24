@@ -39,6 +39,8 @@ namespace Monolith.Core
     ///   shield_down      ship              attacker                 -                          -                                 -
     ///   collision        ship              other ship               contact point / normal     closing speed m/s                 -
     ///   shot_down        owner of weapon   who shot it down         where                      -                                 weapon id
+    ///   radio_line       speaker (or NoShip)  -                    -                          seconds to show (0 = default)     the line, "SABLE 2: COPY."
+    ///   wing_order       ship that ordered    its target (or NoShip)  -                       1 attack, 2 disable, 3 cover, 4 form   order name
     /// </code>
     /// A ship that wants to break up on screen registers its visual with the juice director; nothing else about it is needed.
     /// </summary>
@@ -70,6 +72,10 @@ namespace Monolith.Core
         public const string ShieldDown = "shield_down";
         public const string Collision = "collision";
         public const string ShotDown = "shot_down";
+        /// <summary>Raised by the AI (wingmen acknowledging orders, crews and Earth on the radio) and missions; the HUD shows the line.</summary>
+        public const string RadioLine = "radio_line";
+        /// <summary>Raised by the AI when a wing takes an order from the quick menu.</summary>
+        public const string WingOrder = "wing_order";
 
         public static readonly string[] All =
         {

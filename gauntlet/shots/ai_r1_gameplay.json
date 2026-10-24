@@ -1,0 +1,91 @@
+{
+  "scene": "dogfight",
+  "sceneOptions": {
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": true
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "cockpit_t15",
+      "follow": true,
+      "warmup": 15.0
+    },
+    {
+      "name": "cockpit_t18",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t21",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t24",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t27",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t30",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t33",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t36",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t39",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t42",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t45",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t48",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t51",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t54",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "cockpit_t57",
+      "follow": true,
+      "warmup": 3.0
+    }
+  ]
+}

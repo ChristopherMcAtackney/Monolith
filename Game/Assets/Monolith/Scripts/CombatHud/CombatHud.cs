@@ -35,6 +35,11 @@ namespace Monolith.CombatHud
 
         struct Notice { public string Text; public float Born; public bool Alert; }
 
+        // Radio lines (radio_line events: wingmen acknowledging orders, the crews, Earth), top centre, newest last.
+        readonly Notice[] _radio = new Notice[3];
+        int _radioNext;
+        string _lastOrder;
+
         /// <summary>Lines at the top left under the class name (the range's score, hints).</summary>
         public string[] Info;
         /// <summary>Shown big in the middle (ship lost, paused...). Null for none.</summary>
@@ -126,6 +131,13 @@ namespace Monolith.CombatHud
                 case CombatEvents.Collision:
                     if (e.Entity == me || e.Other == me) Say("COLLISION", true);
                     break;
+                case CombatEvents.RadioLine:
+                    _radio[_radioNext % _radio.Length] = new Notice { Text = e.Subject, Born = Time.unscaledTime, Alert = e.Value > 0f };
+                    _radioNext++;
+                    break;
+                case CombatEvents.WingOrder:
+                    if (e.Entity == me) _lastOrder = (e.Subject ?? "").ToUpperInvariant();
+                    break;
             }
         }
 
@@ -172,6 +184,7 @@ namespace Monolith.CombatHud
                 Banner = Banner ?? "SHIP LOST";
             }
             DrawNotices(L, s, lw, ink, alert);
+            DrawRadio(L, c, s, lw, ink);
             DrawInfo(L, s, lw, dim);
             DrawBanner(L, c, s, lw, ink, dim);
             if (_damageFlash > 0.01f) DrawEdge(L, w, h, s, new Color(alert.r, alert.g, alert.b, 0.5f * _damageFlash), _damageFlash);
@@ -460,10 +473,11 @@ namespace Monolith.CombatHud
             PowerMode[] modes = { PowerMode.Guns, PowerMode.Shields, PowerMode.Engines, PowerMode.Balanced };
             for (int i = 0; i < 4; i++)
                 L.Text((me.Power == modes[i] ? "> " : "  ") + pw[i], new Vector2(x + 16f * s, y + (42f + i * 26f) * s), 13f * s, lw * 0.85f, me.Power == modes[i] ? ink : dim);
-            L.Text("ORDERS", new Vector2(x + 260f * s, y + 14f * s), 14f * s, lw, dim);
+            L.Text("WING", new Vector2(x + 260f * s, y + 14f * s), 14f * s, lw, ink);
             string[] od = { "A  ATTACK MY TARGET", "B  DISABLE MY TARGET", "X  COVER ME", "LB FORM UP" };
-            for (int i = 0; i < 4; i++) L.Text(od[i], new Vector2(x + 260f * s, y + (42f + i * 26f) * s), 12f * s, lw * 0.75f, dim);
-            L.Text("RESERVED FOR WINGMEN", new Vector2(x + 260f * s, y + 146f * s), 10f * s, lw * 0.7f, dim);
+            string[] key = { "ATTACK", "DISABLE", "COVER", "FORM" };
+            for (int i = 0; i < 4; i++)
+                L.Text((_lastOrder == key[i] ? "> " : "") + od[i], new Vector2(x + 260f * s, y + (42f + i * 26f) * s), 12f * s, lw * 0.75f, _lastOrder == key[i] ? ink : dim);
         }
 
         // ------------------------------------------------------------------------------------------------ text bits
@@ -482,6 +496,23 @@ namespace Monolith.CombatHud
                 float a = Mathf.Clamp01(5f - age) * Mathf.Clamp01(age * 8f + 0.3f);
                 var col = n.Alert ? alert : ink;
                 L.Text(n.Text, new Vector2(24f * s, y), 13f * s, lw * 0.85f, new Color(col.r, col.g, col.b, col.a * a));
+                y += 22f * s;
+            }
+        }
+
+        void DrawRadio(HudLines L, Vector2 c, float s, float lw, Color ink)
+        {
+            float now = Time.unscaledTime;
+            float y = 34f * s;
+            for (int k = _radio.Length - 1; k >= 0; k--)
+            {
+                int idx = _radioNext - 1 - k;
+                if (idx < 0) continue;
+                var n = _radio[idx % _radio.Length];
+                float age = now - n.Born;
+                if (n.Text == null || age > 7f) continue;
+                float a = Mathf.Clamp01((7f - age) * 0.8f) * Mathf.Clamp01(age * 8f + 0.3f);
+                L.Text(n.Text, new Vector2(c.x, y), 13f * s, lw * 0.85f, new Color(ink.r, ink.g, ink.b, ink.a * a), TextAlign.Center);
                 y += 22f * s;
             }
         }

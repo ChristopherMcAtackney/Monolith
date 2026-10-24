@@ -1,0 +1,102 @@
+{
+  "scene": "dogfight",
+  "sceneOptions": {
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false,
+    "juice": {
+      "effects": {
+        "screenFlash": false
+      }
+    },
+    "stress": true,
+    "spectate": {
+      "ship": "Censer 2",
+      "offset": [
+        26,
+        10,
+        -75
+      ],
+      "look": "Small Mercy"
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "bombers_t20",
+      "follow": true,
+      "warmup": 20.0
+    },
+    {
+      "name": "bombers_t23",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t26",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t29",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t32",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t35",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t38",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t41",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t44",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t47",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t50",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t53",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t56",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "bombers_t59",
+      "follow": true,
+      "warmup": 3.0
+    }
+  ]
+}

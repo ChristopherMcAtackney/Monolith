@@ -52,10 +52,20 @@ input.Buttons |= ControlButtons.Countermeasure;                             // r
 ```
 
 Turrets and anything not driven by buttons: `world.Fire.Add(new FireRequest { Ship = id, Part = partIndex, Weapon = "flak_gun", AimPoint = p, Target = t })`
-(the part must be alive; its cooldown is the weapon's wait). `Game/Range/Gunners.cs` is a worked example (emplacements flown through `ControlInput`,
+(the part must be alive; its cooldown is the weapon's wait). `Game/Range/Gunners.cs` is a small worked example (emplacements flown through `ControlInput`,
 a capital's turrets through `FireRequest`). State to read: `ShipCombat` (hull, shield, energy, ammo, lock, incoming missiles, parts, flags,
 `LastAttacker`); `Teams.Hostile(a, b)` says who fights whom. Bring a ship into a fight with `CombatRig.Spawn(state, defId, visual, transform, juice,
 modelParts, hullScale)`; a class with no `Resources/Combat/ships/<id>.json` gets a plain fallback. Dead ships are removed by `ShipReaper` a tick later.
+
+**Heavy beams** are turret weapons too (`kind: "beam"` in `weapons.json`; `beam_slash` is FS2's TerSlash): a `FireRequest` naming a beam and a
+target ship starts the charge (`beam_charge`, the weapon's warm-up), then it burns for its life (`beam_fire`), sweeping a line along the face of
+the target's hull that looks at the muzzle and raising `beam_aim` every tick so the juice draws it where it is, then `beam_end`. Every damage
+interval it hurts the first hostile hull on its line (a fighter that flies through it included) and cuts every part within `beamCutRadius` of
+where it touches (as wide as the juice draws it, so what visibly goes is gone). One beam per ship at a time; the turret is busy for the charge,
+the burn and the fire wait; destroying the turret stops the beam. `WeaponSystem.Beams` lists them, `ClearAll()` empties the field (a reset).
+
+The game's AI (`Scripts/AI/README.md`) is the full worked example: fighters, bombers and wingmen through `ControlInput`, every capital turret and
+beam through `FireRequest`.
 
 ## Showing damage: the visual hook (`Core/Combat/ShipCombat.cs`, `IShipVisual`)
 

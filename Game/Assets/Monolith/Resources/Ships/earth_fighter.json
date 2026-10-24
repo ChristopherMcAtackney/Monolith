@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "earth_fighter",
+  "name": "Dominion fighter",
+  "role": "Earth's medium drone fighter, with lock-on missiles. Flies and fights on the GTF Myrmidon's numbers.",
+  "flight": {
+    "topSpeed": {
+      "value": 75,
+      "unit": "m/s",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Max Velocity (z)"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Rear Velocity; fighters and bombers never reverse"
+    },
+    "rotationTime": {
+      "value": [
+        4.0,
+        3.7,
+        5.0
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Rotation time"
+    },
+    "rotDamp": {
+      "value": 0.35,
+      "unit": "s (turn-rate time constant)",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Rotdamp"
+    },
+    "sideDamp": {
+      "value": 0.2,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Damp"
+    },
+    "forwardAccel": {
+      "value": 2.4,
+      "unit": "s (speed-up time constant)",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Forward accel"
+    },
+    "forwardDecel": {
+      "value": 2.0,
+      "unit": "s (slow-down time constant)",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Forward decel"
+    },
+    "afterburner": {
+      "value": true,
+      "unit": "bool",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Afterburner"
+    },
+    "afterburnerSpeed": {
+      "value": 135,
+      "unit": "m/s",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Max Vel (z)"
+    },
+    "afterburnerAccel": {
+      "value": 0.8,
+      "unit": "s (afterburner speed-up time constant)",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn For accel"
+    },
+    "afterburnerFuel": {
+      "value": 320,
+      "unit": "fuel units",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Fuel"
+    },
+    "afterburnerBurnRate": {
+      "value": 60,
+      "unit": "fuel/s",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Burn Rate"
+    },
+    "afterburnerRechargeRate": {
+      "value": 25,
+      "unit": "fuel/s before rules.afterburnerRechargeScale",
+      "source": "FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Rec Rate"
+    },
+    "mass": {
+      "value": 18000,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model, not ships.tbl); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        14,
+        5,
+        18
+      ],
+      "unit": "m (width, height, length)",
+      "source": "Estimate of the hull's width, height, length; used for knock spin (box inertia) and the targeting radius"
+    }
+  }
+}

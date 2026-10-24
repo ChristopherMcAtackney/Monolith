@@ -35,6 +35,12 @@ dead zones and response curves in `Resources/Input/controls.json` (or `-mnContro
 
 **CombatHud** (`Monolith.CombatHud`) is the plain playtest combat HUD (lead pip, target box and readout, lock, missile warning, shield, hull and energy, power, ammunition, damage you feel, the quick menu) and the lock and warning tones. It reads `GameWorld` only and is kept small so the rough alien-tech HUD can replace it.
 
+**AI** (`Monolith.AI`) flies every computer-controlled ship through its `ControlInput` and fires every capital turret and beam through
+`FireRequest`s, after FS2's AI: fighters and bombers (`AiPilot`: get on the tail with lead, guns and missiles, evade, break off and re-engage,
+peel off by courage, strafe and bomb capital ships, guard, form up), capital helms and turret gunnery (`CapitalAi`), the player's wing and the
+quick-menu orders (`Wing`), measurements (`AiStats`). FS2's four skill knobs per profile and its five difficulty levels are data
+(`Resources/AI/ai.json`); the difficulty also sets `GameWorld.PlayerDamageScale`, which Damage applies. Detail: `Scripts/AI/README.md`.
+
 **View** (`Monolith.View`) is the player's first-person camera at the interpolated ship pose, FS2-style motion dust and
 `ShipViews` (every other ship's visual at its interpolated pose). Settings in `Resources/View/view.json`. No external camera.
 
@@ -58,7 +64,7 @@ through `GameWorld.Knocks`. Sounds are placeholders built in code behind `IJuice
 (`SmokeWorld`: camera, sun, sphere and box) and, with `-mnScene flight` or a plan's `"scene": "flight"`, the flight
 playtest (`FlightPlaytest`: the Sky, placeholder ships from `PlaceholderShips`, layout in `Resources/Flight/playtest.json`) or,
 with `-mnScene juice`, the juice sandbox (`Sandbox/JuiceSandbox`: the fighter, targets, two Earth corvettes as the capital ships, stand-in weapons and
-the panel; `"hud": false` in a plan's `sceneOptions` or `-mnNoHud` leaves the HUD out of look captures) or, with `-mnScene range`, the combat range (`Range/CombatRange`: the real weapons, damage and HUD against drones, emplacements and the real corvette). `Combat/CombatRig` builds the combat systems for every scene and `Combat/CombatSelfTest` checks them. It is the only assembly allowed to reference the others.
+the panel; `"hud": false` in a plan's `sceneOptions` or `-mnNoHud` leaves the HUD out of look captures) or, with `-mnScene range`, the combat range (`Range/CombatRange`: the real weapons, damage and HUD against drones, emplacements and the real corvette), or, with `-mnScene dogfight`, the dogfight (`Dogfight/DogfightScene` and the rules in `DogfightBattle`: the player and two wingmen against Earth's waves, the Warden and the Small Mercy, a bomber wing, a plain win or loss; `AiLab`, `AiArena`, `DogfightSoak` and `AiSelfTest` run the AI headless). `Combat/CombatRig` builds the combat systems for every scene and `Combat/CombatSelfTest` checks them. It is the only assembly allowed to reference the others.
 
 **Editor** (`Monolith.Editor`, namespace `Monolith.EditorTools`, editor only) is scripted project set-up and building:
 `Batch.Run` wrapper, `Setup.Project` (HDRP asset and global settings, colour space, Input System, player settings, the

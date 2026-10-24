@@ -87,6 +87,18 @@ turns absolute times into warm-ups for this scene too (specs in `gauntlet\shots\
 presses every combat control, 18 checks), `python -I tools\combat\check_weapons.py [--out file]` (every number copied from FS2 against FS2's own tables).
 The weapons, damage and AI contract are in `Scripts/Weapons/README.md`.
 
+Dogfight: `-mnScene dogfight` (`Play.bat` in a playtest folder passes it; `-mnDifficulty "Very easy"|Easy|Medium|Hard|Insane` or 0..4, `-mnAutopilot`
+the AI flies your ship, `-mnInvulnerable`, `-mnPacingLog file.csv` writes the pacing when a run ends). A plan with `"scene": "dogfight"` takes
+`sceneOptions` `pilot: "ai"`, `difficulty`, `invulnerable`, `hud`, `dust` (false: no cockpit motion dust, for look shots), `stress` (the first three
+waves and the bomber wing at once, uncapped: the perf run), `lod0`, `juice`, and `spectate: { "ship": callsign, "offset": [x,y,z], "world": false, "look":
+"target"|"ship"|callsign }` (a capture-only camera riding another ship, used with `"follow": true` shots; never the player's ship). Plans:
+`gauntlet/shots/ai_r1_*.json`. AI checks: `Monolith.exe -batchmode -nographics -mnAiSelfTest` (31 checks), `-mnAiArena gauntlet/shots/ai_arena.json
+-mnOut dir [-mnArenaTrace dir]` (AI against AI: wins, kills, time on tail, hit rates by skill, knob sweeps; arena.txt and arena.json),
+`-mnDogfightSoak seconds -mnOut dir [-mnDifficulty x] [-mnSoakMortal] [-mnSoakTrace]` (the dogfight bare, the AI flying an invulnerable player
+ship, loops back to back: stuck ships, hull collisions, errors, pacing per loop; exit 0 on pass). Capture stills with `pos`/`rot`/`lookAt` are now
+pinned after every LateUpdate as well as before rendering (HDRP takes the camera's matrices before `beginCameraRendering`, so in scenes with the
+cockpit camera those shots used to come out from the cockpit).
+
 ## Blender
 
 `tools\blender.ps1 <script.py> [-Blend file.blend] [-TimeoutMin 20] [-- script args]` runs

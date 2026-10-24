@@ -1,0 +1,170 @@
+{
+  "format": "monolith-ai-arena/1",
+  "about": "AI against AI (tools: Monolith.exe -batchmode -nographics -mnAiArena gauntlet/shots/ai_arena.json -mnOut dir). Each match is two sides 1.5 km apart; sweeps change one knob of side A, everything else the profile's. Side A on team 1 and B on team 2 are both Earth's side (FS2's slower turns and guns on easy levels apply to both), so only the knobs differ; a wingman on team 0 is our side. The knob sweeps run at Hard: on Medium Earth's pilots aim from a picture of their target 1.3 s old (FS2's Skill_level_delay), so drone-against-drone fights mostly run out of time and only the hit rates move; on Hard the wins move too.",
+  "runs": 30,
+  "seconds": 180,
+  "seed": 7,
+  "matches": [
+    {
+      "name": "drone v drone, Medium",
+      "a": {
+        "profile": "drone",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 2
+      }
+    },
+    {
+      "name": "ace v drone, Medium",
+      "a": {
+        "profile": "ascended_ace",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 2
+      }
+    },
+    {
+      "name": "ace v two drones, Medium",
+      "a": {
+        "profile": "ascended_ace",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 2,
+        "count": 2
+      }
+    },
+    {
+      "name": "wingman v drone, Medium",
+      "a": {
+        "profile": "wingman",
+        "level": "Medium",
+        "ship": "vanguard_fighter",
+        "team": 0
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 1
+      }
+    },
+    {
+      "name": "drone Insane v drone Very easy",
+      "a": {
+        "profile": "drone",
+        "level": "Insane",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Very easy",
+        "ship": "earth_interceptor",
+        "team": 2
+      }
+    },
+    {
+      "name": "accuracy sweep, Hard",
+      "knob": "accuracy",
+      "values": [
+        0.2,
+        0.5,
+        0.8,
+        1.0
+      ],
+      "a": {
+        "profile": "drone",
+        "level": "Hard",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Hard",
+        "ship": "earth_interceptor",
+        "team": 2
+      }
+    },
+    {
+      "name": "evasion sweep, Hard",
+      "knob": "evasion",
+      "values": [
+        0.0,
+        0.5,
+        1.0
+      ],
+      "a": {
+        "profile": "drone",
+        "level": "Hard",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Hard",
+        "ship": "earth_interceptor",
+        "team": 2
+      }
+    },
+    {
+      "name": "patience sweep, Hard",
+      "knob": "patience",
+      "values": [
+        0.0,
+        0.5,
+        1.0
+      ],
+      "a": {
+        "profile": "drone",
+        "level": "Hard",
+        "ship": "earth_interceptor",
+        "team": 1
+      },
+      "b": {
+        "profile": "drone",
+        "level": "Hard",
+        "ship": "earth_interceptor",
+        "team": 2
+      }
+    },
+    {
+      "name": "courage sweep (wingman v ace)",
+      "knob": "courage",
+      "values": [
+        0.0,
+        0.5,
+        1.0
+      ],
+      "a": {
+        "profile": "wingman",
+        "level": "Medium",
+        "ship": "vanguard_fighter",
+        "team": 0
+      },
+      "b": {
+        "profile": "ascended_ace",
+        "level": "Medium",
+        "ship": "earth_interceptor",
+        "team": 1
+      }
+    }
+  ]
+}
