@@ -67,15 +67,41 @@ def scratches(L, rng, n, length=(30, 260), width=(0.7, 1.5), angle=90.0, spread=
         x1, y1 = x0 + math.cos(a) * ln, y0 + math.sin(a) * ln
         wd = rng.uniform(*width)
         al = rng.uniform(*alpha)
-        draw_segment(L, (x0, y0), (x1, y1), wd, k=al, albedo=(bright, bright, bright * 1.02), metal=metal, height_add=-depth * al, smooth_add=gloss * al)
+        draw_segment(L, (x0, y0), (x1, y1), wd, k=al, albedo=(bright, bright, bright * 1.02), metal=metal, height_add=-depth * al, smooth_add=gloss * al, ao_mul=0.8)
     return L
 
 
 PRIMER = (0.145, 0.118, 0.10)       # the rust-brown undercoat that shows where the top paint has lifted
 
 
+def soft_dot(L, x, y, rx, ry, k, rng, wrap=True, rough=0.28, edge=0.35, **kw):
+    """A small irregular blot (never a square): an ellipse whose outline wobbles, with an anti-aliased soft rim ``edge`` of its radius wide. Drawn again shifted by the
+    canvas size where it crosses an edge, so tiling textures stay seamless. ``kw`` is what ``Layers.paint`` takes (albedo, smooth, ao, height_add ...)."""
+    phi1, phi2, phi3 = rng.uniform(0, math.tau, 3)
+    a1, a2, a3 = rng.uniform(0.4, 1.0) * rough, rng.uniform(0.3, 0.9) * rough, rng.uniform(0.2, 0.7) * rough
+    m = max(rx, ry) * (1.0 + rough * 2.2) + 1.5
+    for ox in ((-L.w, 0, L.w) if wrap else (0,)):
+        if x + ox + m < 0 or x + ox - m > L.w:
+            continue
+        for oy in ((-L.h, 0, L.h) if wrap else (0,)):
+            if y + oy + m < 0 or y + oy - m > L.h:
+                continue
+            x0, x1 = max(int(math.floor(x + ox - m)), 0), min(int(math.ceil(x + ox + m)), L.w)
+            y0, y1 = max(int(math.floor(y + oy - m)), 0), min(int(math.ceil(y + oy + m)), L.h)
+            if x1 <= x0 or y1 <= y0:
+                continue
+            gx = (np.arange(x0, x1, dtype=np.float32) + 0.5 - (x + ox))[None, :]
+            gy = (np.arange(y0, y1, dtype=np.float32) + 0.5 - (y + oy))[:, None]
+            th = np.arctan2(gy / ry, gx / rx)
+            r = np.sqrt((gx / rx) ** 2 + (gy / ry) ** 2) / (1.0 + a1 * np.sin(3 * th + phi1) + a2 * np.sin(5 * th + phi2) + a3 * np.sin(8 * th + phi3))
+            c = np.clip((1.0 - r) / max(edge, 1e-3), 0.0, 1.0).astype(np.float32)
+            if c.max() <= 0:
+                continue
+            L.paint((slice(y0, y1), slice(x0, x1)), c * k, **kw)
+
+
 def chips(L, rng, n, size=(1.5, 5.5), edge_bias=None, bright=0.62, metal=0.9, smooth=0.55, primer=PRIMER):
-    """Layered paint chips: a flake of top paint lifts and shows the primer under it; inside the flake a smaller scrape goes to bare metal."""
+    """Layered paint chips: a flake of top paint lifts and shows the primer under it; inside the flake a smaller scrape goes to bare metal. Irregular blots, not squares."""
     for _ in range(n):
         x, y = rng.uniform(0, L.w), rng.uniform(0, L.h)
         r = rng.uniform(*size)
@@ -83,13 +109,8 @@ def chips(L, rng, n, size=(1.5, 5.5), edge_bias=None, bright=0.62, metal=0.9, sm
             dx, dy = rng.normal(0, r * 0.7, 2)
             rr = r * rng.uniform(0.4, 1.0)
             ar = rng.uniform(0.6, 1.2)
-            for ox in (-L.w, 0, L.w):
-                for oy in (-L.h, 0, L.h):
-                    xx, yy = x + dx + ox, y + dy + oy
-                    if -rr < xx < L.w + rr and -rr < yy < L.h + rr:
-                        L.rect(xx - rr * 1.5, yy - rr * 1.5 * ar, xx + rr * 1.5, yy + rr * 1.5 * ar, albedo=primer, metal=0.15, smooth=0.3, height_add=-0.35)
-                        L.rect(xx - rr * 0.7 + rr * 0.2, yy - rr * 0.7 * ar, xx + rr * 0.7 + rr * 0.2, yy + rr * 0.7 * ar,
-                               albedo=(bright, bright * 0.99, bright * 0.97), metal=metal, smooth=smooth, height_add=-0.3)
+            soft_dot(L, x + dx, y + dy, rr * 1.5, rr * 1.5 * ar, 1.0, rng, albedo=primer, metal=0.15, smooth=0.3, height_add=-0.35)
+            soft_dot(L, x + dx + rr * 0.2, y + dy, rr * 0.7, rr * 0.7 * ar, 1.0, rng, albedo=(bright, bright * 0.99, bright * 0.97), metal=metal, smooth=smooth, height_add=-0.3)
 
 
 def age_layers(L, rng, amount=1.0, grime=0.28):
@@ -125,27 +146,46 @@ PAINT_TONES = {          # name -> sRGB value of the paint: deep black, graphite
 }
 
 
-def make_plate(size=1024, seed=11, tone=0.31):
-    """Matte black armour paint: one satin coat, faintly different from plate to plate, with sparse fine scratches and a few chips down to
-    bare steel. Albedo is the final value (dark charcoal), not a pattern to be tinted."""
+def make_plate(size=2048, seed=11, tone=0.31):
+    """Armour paint over steel, one 12 m tile at 2,048 px (5.9 mm a texel; round 3's tile was 1,024 and smooth: blurred streaks with a few square chips, which is
+    what the critics called smeared). Albedo is the final value, not a pattern to be tinted. Detail at every scale a viewer can stand at: blotches of 5 m down to
+    10 cm, long streaks, orange peel, specks and pits, short scratches in every direction and long ones along the ship, flakes of paint gone to the primer. Smoothness
+    varies widely (repainted patches glossy, grime dull, scratches polished) so a lit face is not one value, and the occlusion channel holds the pits and
+    scratches, which the micro shadows use to shadow the Sun's light across them."""
     rng = rngf(seed)
+    s = size / 1024.0
     tint = (1.0, 1.01, 1.045) if tone < 0.5 else (1.035, 1.012, 0.955)        # dark paints a little cool, light paints a little warm: the key and fill colours then separate
-    L = Layers(size, size, albedo=tuple(min(tone * t, 1.0) for t in tint), metal=0.0, smooth=0.42, ao=1.0)
-    n_big = spectral_noise(size, size, rng, beta=3.2, fmax=5)
-    n_mid = spectral_noise(size, size, rng, beta=2.4, fmin=5, fmax=24)
-    n_fine = spectral_noise(size, size, rng, beta=1.0, fmin=150)
-    n_streak = spectral_noise(size, size, rng, beta=2.0, fmin=2, fmax=60, sx=1.0, sy=0.06)      # long along the image's vertical = the ship's length
-    L.tint_noise(n_big, 0.035)
-    L.tint_noise(n_mid, 0.022)
-    L.tint_noise(n_fine, 0.012)
-    L.tint_noise(n_streak, 0.04)
-    # satin paint: smoothness wanders a little and is duller under the long grime streaks
-    L.smo += 0.035 * n_mid + 0.03 * n_big - 0.07 * np.clip(n_streak, 0, None)
-    # orange peel in the height field (pixels of relief): a fine skin, not stone
-    L.hgt += 0.07 * n_fine + 0.14 * spectral_noise(size, size, rng, beta=1.6, fmin=18, fmax=110)
-    chips(L, rng, 36, size=(0.9, 2.6))
-    scratches(L, rng, 64, length=(60, 480), width=(0.6, 1.0), angle=90, alpha=(0.1, 0.4))
-    scratches(L, rng, 14, length=(20, 100), width=(0.5, 0.9), angle=0, spread=40, alpha=(0.1, 0.35))
+    L = Layers(size, size, albedo=tuple(min(tone * t, 1.0) for t in tint), metal=0.0, smooth=0.44, ao=1.0)
+    n_big = spectral_noise(size, size, rng, beta=3.2, fmax=5)                                    # whole-plate drift, 2.4 m and up
+    n_mid = spectral_noise(size, size, rng, beta=2.4, fmin=5, fmax=24)                           # 0.5 to 2.4 m
+    n_blotch = spectral_noise(size, size, rng, beta=2.2, fmin=24, fmax=120)                      # 10 to 50 cm: touched-up and dirty patches
+    n_peel = spectral_noise(size, size, rng, beta=1.0, fmin=300)                                  # orange peel, 1 cm and finer
+    n_streak = spectral_noise(size, size, rng, beta=2.0, fmin=2, fmax=60, sx=1.0, sy=0.06)       # long along the image's vertical = the ship's length
+    n_hair = spectral_noise(size, size, rng, beta=1.2, fmin=60, fmax=500, sx=1.0, sy=0.03)       # fine lines the paint was rolled in
+    n_gloss = spectral_noise(size, size, rng, beta=2.4, fmin=3, fmax=40)
+    L.tint_noise(n_big, 0.07)
+    L.tint_noise(n_mid, 0.05)
+    L.tint_noise(n_blotch, 0.04)
+    L.tint_noise(n_streak, 0.07)
+    L.tint_noise(n_hair, 0.03)
+    L.tint_noise(n_peel, 0.018)
+    # smoothness: satin paint that wanders widely. Repainted patches are glossier, grime and the long streaks are duller.
+    glossy = smoothstep(0.5, 1.3, n_gloss)
+    L.smo += 0.035 * n_mid + 0.025 * n_big + 0.03 * n_blotch + 0.08 * glossy - 0.06 * np.clip(n_streak, 0, None) - 0.02 * np.clip(n_hair, 0, None)
+    # relief: a fine skin of peel and a gentle undulation (heights are in texels, so scale with the resolution)
+    L.hgt += 0.10 * n_peel + 0.12 * spectral_noise(size, size, rng, beta=1.6, fmin=36, fmax=220) + 0.10 * n_blotch
+    # occlusion: the peel's valleys hold a little shadow
+    L.ao *= 1.0 - 0.05 * np.clip(-n_peel, 0, None) - 0.04 * np.clip(-n_blotch, 0, None)
+    # specks and pits: dust and pinholes, a few millimetres across
+    for kind, count, alb, ao in (("pit", int(1300 * s * s), (0.05, 0.05, 0.055), 0.55), ("dust", int(300 * s * s), (0.62, 0.62, 0.64), 0.9)):
+        xs, ys = rng.uniform(0, size, count), rng.uniform(0, size, count)
+        for x, y in zip(xs, ys):
+            rr = rng.uniform(0.35, 1.0) * s
+            soft_dot(L, x, y, rr, rr * rng.uniform(0.7, 1.3), rng.uniform(0.2, 0.7) * (0.55 if kind == "dust" else 1.0), rng, albedo=alb, ao=ao, smooth=0.25 if kind == "pit" else 0.2, height_add=-0.5 if kind == "pit" else 0.2)
+    chips(L, rng, int(36 * s * s), size=(0.9 * s, 2.6 * s))
+    scratches(L, rng, int(64 * s * s), length=(60 * s, 480 * s), width=(0.6 * s, 1.0 * s), angle=90, alpha=(0.1, 0.4))
+    scratches(L, rng, int(14 * s * s), length=(20 * s, 100 * s), width=(0.5 * s, 0.9 * s), angle=0, spread=40, alpha=(0.1, 0.35))
+    scratches(L, rng, int(260 * s * s), length=(8 * s, 50 * s), width=(0.5 * s, 0.8 * s), angle=0, spread=180, alpha=(0.08, 0.32), gloss=0.22)      # short ones, every direction
     L.ao *= 1.0 - 0.03 * np.clip(n_mid, 0, None)
     return L
 
@@ -170,26 +210,35 @@ def make_chrome(size=512, seed=71):
 
 # ------------------------------------------------------------------------------------------------ detail map
 
-def make_detail(size=512, seed=21):
-    """HDRP detail map: R albedo (0.5 = neutral), G normal Y, B smoothness (0.5 = neutral), A normal X."""
+def make_detail(size=1024, seed=21):
+    """HDRP detail map, one tile every 2 m at 1,024 px (2 mm a texel): R albedo (0.5 = neutral), G normal Y, B smoothness (0.5 = neutral), A normal X.
+    It is the second scale of surface (the plate tile is the first): fine pores, a skin of peel, rolled lines and short scratches, with smoothness that wanders
+    patch to patch so even the finest scale does not shine uniformly."""
     rng = rngf(seed)
+    s = size / 512.0
     L = Layers(size, size, albedo=(0.5, 0.5, 0.5), metal=0, smooth=0.5)
-    h = 0.5 * spectral_noise(size, size, rng, beta=0.8, fmin=40) + 0.8 * spectral_noise(size, size, rng, beta=2.0, fmin=6, fmax=70)
+    h = 0.5 * spectral_noise(size, size, rng, beta=0.8, fmin=80) + 0.8 * spectral_noise(size, size, rng, beta=2.0, fmin=6, fmax=140) + 0.5 * spectral_noise(size, size, rng, beta=1.4, fmin=20, fmax=300, sx=1.0, sy=0.12)
     L.hgt = h
-    for _ in range(90):
+    for _ in range(int(90 * s * s)):
         a = math.radians(90 + rng.normal(0, 25))
-        ln = rng.uniform(20, 160)
+        ln = rng.uniform(20, 160) * s
         x0, y0 = rng.uniform(0, size), rng.uniform(0, size)
-        draw_segment(L, (x0, y0), (x0 + math.cos(a) * ln, y0 + math.sin(a) * ln), rng.uniform(0.6, 1.2), height_add=-0.9, smooth_add=0.2)
-    nrm = mntex.normal_from_height(L.hgt, 0.9)
-    alb = np.clip(0.5 + 0.10 * spectral_noise(size, size, rng, beta=1.2, fmin=4) - 0.20 * np.clip(-(L.hgt - L.hgt.mean()) / 3, 0, 1), 0, 1)
-    smo = np.clip(0.5 + 0.12 * spectral_noise(size, size, rng, beta=1.0, fmin=3) + L.smo * 0 + (L.smo - 0.5), 0, 1)
+        draw_segment(L, (x0, y0), (x0 + math.cos(a) * ln, y0 + math.sin(a) * ln), rng.uniform(0.6, 1.2) * s, height_add=-0.9 * s, smooth_add=0.2)
+    for _ in range(int(120 * s * s)):                                                        # short ones, every direction
+        a = rng.uniform(0, math.tau)
+        ln = rng.uniform(6, 40) * s
+        x0, y0 = rng.uniform(0, size), rng.uniform(0, size)
+        draw_segment(L, (x0, y0), (x0 + math.cos(a) * ln, y0 + math.sin(a) * ln), rng.uniform(0.5, 0.9) * s, height_add=-0.7 * s, smooth_add=0.25)
+    nrm = mntex.normal_from_height(L.hgt, 0.9 / s)
+    alb = np.clip(0.5 + 0.10 * spectral_noise(size, size, rng, beta=1.2, fmin=4) + 0.05 * spectral_noise(size, size, rng, beta=0.8, fmin=100) - 0.20 * np.clip(-(L.hgt - L.hgt.mean()) / (3 * s), 0, 1), 0, 1)
+    smo = np.clip(0.5 + 0.07 * spectral_noise(size, size, rng, beta=2.0, fmin=2, fmax=30) + 0.06 * spectral_noise(size, size, rng, beta=1.0, fmin=30) + (L.smo - 0.5), 0, 1)
     out = np.stack([alb, nrm[:, :, 1], smo, nrm[:, :, 0]], axis=2)
     return mntex.to_u8(out)
 
 
 # ------------------------------------------------------------------------------------------------ trim pieces
-PX = 128    # default pixels per metre in the trim sheet
+DK = 2      # trim sheet density multiplier: round 4 doubled it (4,096 atlas) because hatches, vents and big panels were 48 to 64 px a metre, 1.5 to 2 cm a texel
+PX = 128 * DK    # default pixels per metre in the trim sheet
 
 
 def px(m, density=PX):
@@ -204,7 +253,7 @@ def piece_underlayer():
     return L
 
 
-def piece_edge_wall(tile_m=8.0, h_m=0.25, density=128):
+def piece_edge_wall(tile_m=8.0, h_m=0.25, density=192 * DK):
     """The vertical wall of a raised plate, base in the bottom rows: grime pooled at the foot (a dark soft band with streaks creeping up), paint above it, a few
     scuffs and layered chips toward the top."""
     rng = rngf(32)
@@ -220,7 +269,7 @@ def piece_edge_wall(tile_m=8.0, h_m=0.25, density=128):
     return L
 
 
-def piece_edge_chamfer(tile_m=8.0, h_m=0.25, density=128):
+def piece_edge_chamfer(tile_m=8.0, h_m=0.25, density=192 * DK):
     """The chamfer round a plate's top, start in the bottom rows and the lip at the top: paint, then toward the lip a layer of primer breaking through it, then bare
     metal breaking through that, in bands that come and go."""
     rng = rngf(33)
@@ -228,10 +277,10 @@ def piece_edge_chamfer(tile_m=8.0, h_m=0.25, density=128):
     L = Layers(w, h, albedo=(0.40, 0.405, 0.42), metal=0.0, smooth=0.42, ao=0.9)
     L.tint_noise(spectral_noise(h, w, rng, beta=1.4, fmin=8), 0.06)
     lip = 1.0 - (np.arange(h)[:, None] + 0.5) / h                          # 1 at the lip (top rows), 0 where the chamfer starts (bottom rows)
-    n1 = spectral_noise(h, w, rng, beta=1.3, fmin=10, fmax=200, sy=0.5)
-    n2 = spectral_noise(h, w, rng, beta=1.3, fmin=12, fmax=240, sy=0.5)
-    primer = smoothstep(0.52, 0.80, lip + 0.30 * n1)                      # primer shows through the paint toward the lip, in patches
-    metal = smoothstep(0.80, 0.97, lip + 0.26 * n2)                        # bare metal shows through the primer closer still
+    n1 = spectral_noise(h, w, rng, beta=1.6, fmin=10, fmax=90, sy=0.35)
+    n2 = spectral_noise(h, w, rng, beta=1.6, fmin=12, fmax=100, sy=0.35)
+    primer = blur(smoothstep(0.58, 0.88, lip + 0.22 * n1), 1.4)           # primer shows through the paint toward the lip, in patches
+    metal = blur(smoothstep(0.90, 1.00, lip + 0.16 * n2), 1.2)             # bare metal shows through the primer closer still (the lip only: wide chamfers read as worn edges, not camouflage)
     L.alb = L.alb * (1 - primer[:, :, None]) + np.array(PRIMER)[None, None, :] * primer[:, :, None]
     L.met = L.met * (1 - primer) + 0.15 * primer
     L.alb = L.alb * (1 - metal[:, :, None]) + np.array([0.70, 0.71, 0.74])[None, None, :] * metal[:, :, None]
@@ -241,7 +290,7 @@ def piece_edge_chamfer(tile_m=8.0, h_m=0.25, density=128):
     return L
 
 
-def piece_chrome_brushed(w_m=8.0, h_m=2.0, density=64):
+def piece_chrome_brushed(w_m=8.0, h_m=2.0, density=64 * DK):
     rng = rngf(33)
     w, h = px(w_m, density), px(h_m, density)
     L = Layers(w, h, albedo=(0.86, 0.87, 0.9), metal=1.0, smooth=0.84, ao=1.0)
@@ -259,7 +308,7 @@ def piece_chrome_brushed(w_m=8.0, h_m=2.0, density=64):
     return L
 
 
-def piece_chrome_panel(m=4.0, density=64):
+def piece_chrome_panel(m=4.0, density=64 * DK):
     rng = rngf(34)
     s = px(m, density)
     L = Layers(s, s, albedo=(0.85, 0.86, 0.9), metal=1.0, smooth=0.8, ao=1.0)
@@ -375,7 +424,7 @@ def piece_windows_big(density=PX, seed=45):
     return L, w_m, h_m
 
 
-def piece_vent(w_m=4.0, h_m=2.0, density=64):
+def piece_vent(w_m=4.0, h_m=2.0, density=64 * DK):
     rng = rngf(46)
     w, h = px(w_m, density), px(h_m, density)
     L = Layers(w, h, albedo=(0.2, 0.2, 0.22), metal=0.5, smooth=0.4, ao=0.8)
@@ -392,7 +441,7 @@ def piece_vent(w_m=4.0, h_m=2.0, density=64):
     return L, w_m, h_m
 
 
-def piece_hatch(name, m=2.0, density=64, seed=47, hazard=False):
+def piece_hatch(name, m=2.0, density=64 * DK, seed=47, hazard=False):
     rng = rngf(seed)
     s = px(m, density)
     L = Layers(s, s, albedo=(0.2, 0.2, 0.22), metal=0.5, smooth=0.4, ao=0.8)
@@ -487,7 +536,7 @@ def stencil(L, text, x, y, cell, color=(0.88, 0.9, 0.94), spacing=1.0, gap=0.0, 
     return cx
 
 
-def piece_label_code(density=48):
+def piece_label_code(density=48 * DK):
     """Hull code stencilled in cold white on a black plate: 'EC-114'."""
     rng = rngf(50)
     w_m, h_m = 12.0, 4.0
@@ -507,7 +556,7 @@ def piece_label_code(density=48):
     return L, w_m, h_m
 
 
-def piece_label_emblem(density=48):
+def piece_label_emblem(density=48 * DK):
     """Earth's mark: a thin ring, an inner ring, and one vertical bar through both that runs beyond them. Cold white on black."""
     rng = rngf(51)
     m = 8.0
@@ -529,7 +578,7 @@ def piece_label_emblem(density=48):
     return L, m, m
 
 
-def piece_code(text, seed, w_m=3.2, h_m=1.1, density=48):
+def piece_code(text, seed, w_m=3.2, h_m=1.1, density=48 * DK):
     """A small stencilled panel code (A-14 ...) in cold white on the armour paint, on a slightly raised plate."""
     rng = rngf(seed)
     w, h = px(w_m, density), px(h_m, density)
@@ -544,7 +593,7 @@ def piece_code(text, seed, w_m=3.2, h_m=1.1, density=48):
     return L, w_m, h_m
 
 
-def piece_chevrons(w_m=6.0, h_m=1.2, density=48):
+def piece_chevrons(w_m=6.0, h_m=1.2, density=48 * DK):
     """A band of cold white chevrons on dark paint (Earth's warning band: precise, never hazard yellow)."""
     rng = rngf(58)
     w, h = px(w_m, density), px(h_m, density)
@@ -561,7 +610,7 @@ def piece_chevrons(w_m=6.0, h_m=1.2, density=48):
     return L, w_m, h_m
 
 
-def piece_panel_big(w_m=6.0, h_m=4.0, density=48):
+def piece_panel_big(w_m=6.0, h_m=4.0, density=48 * DK):
     """A large inset access panel: a raised frame, a recessed field with seams and bolt rows and one stencil line."""
     rng = rngf(59)
     w, h = px(w_m, density), px(h_m, density)
@@ -579,7 +628,7 @@ def piece_panel_big(w_m=6.0, h_m=4.0, density=48):
     return L, w_m, h_m
 
 
-def piece_label_stripe(density=48):
+def piece_label_stripe(density=48 * DK):
     """A cold white band with a thinner one beside it, for edges of decks and the flanks of gun galleries."""
     rng = rngf(52)
     w_m, h_m = 12.0, 1.2
@@ -593,7 +642,7 @@ def piece_label_stripe(density=48):
     return L, w_m, h_m
 
 
-def piece_sensor_grid(m=3.0, density=96, seed=53):
+def piece_sensor_grid(m=3.0, density=96 * DK, seed=53):
     rng = rngf(seed)
     s = px(m, density)
     L = Layers(s, s, albedo=(0.2, 0.2, 0.22), metal=0.3, smooth=0.5, ao=0.7)
@@ -613,7 +662,7 @@ def piece_sensor_grid(m=3.0, density=96, seed=53):
     return L, m, m
 
 
-def piece_heat_tiles(m=4.0, density=64, seed=54):
+def piece_heat_tiles(m=4.0, density=64 * DK, seed=54):
     rng = rngf(seed)
     s = px(m, density)
     L = Layers(s, s, albedo=(0.2, 0.2, 0.22), metal=0.1, smooth=0.35, ao=0.8)
@@ -629,7 +678,7 @@ def piece_heat_tiles(m=4.0, density=64, seed=54):
     return L, m, m
 
 
-def piece_radiator(w_m=8.0, h_m=4.0, density=48, seed=55):
+def piece_radiator(w_m=8.0, h_m=4.0, density=48 * DK, seed=55):
     """A radiator vane face: chrome heat pipes between dark fins."""
     rng = rngf(seed)
     w, h = px(w_m, density), px(h_m, density)
@@ -670,7 +719,7 @@ def piece_light_bar(w_m=8.0, density=PX):
     return L, w_m, h_m
 
 
-def piece_burnt(m=4.0, density=64, seed=57):
+def piece_burnt(m=4.0, density=64 * DK, seed=57):
     """Scorched, torn metal: charcoal soot, a few raw bright gashes and a sparse web of glowing cracks. For wrecks and breaches."""
     rng = rngf(seed)
     s = px(m, density)
@@ -692,8 +741,8 @@ def piece_burnt(m=4.0, density=64, seed=57):
 
 # ------------------------------------------------------------------------------------------------ the trim atlas
 
-def make_trim_atlas(size=2048):
-    A = Atlas(size, size, pad=8, albedo=(0.2, 0.2, 0.22))
+def make_trim_atlas(size=4096):
+    A = Atlas(size, size, pad=16, albedo=(0.2, 0.2, 0.22))
     info = {}
 
     def add(name, L, w_m, h_m, strength=1.0, tile_u=False):
@@ -862,7 +911,7 @@ def make_wear_atlas(size=2048):
 
 # ------------------------------------------------------------------------------------------------ paint: stencils, edge chips, edge grime
 
-PAINT_PPM = 96
+PAINT_PPM = 128
 
 
 def _blob(a, rgb, cx, cy, ax, ay, col, rng, hard=1.0):
@@ -998,7 +1047,7 @@ def _paint_piece(kind, text, w_m, h_m, seed):
     raise ValueError(kind)
 
 
-def make_paint_atlas(W=2048, H=1792):
+def make_paint_atlas(W=3072, H=1280):
     """All the alpha-blended paint that lies on plates: stencils and bands that have aged with the coat (chipped, thinned, grimed, primer showing round the
     holes), edge chips (primer and bare metal) and edge grime. One RGBA sheet; the kit places each piece on a plate."""
     pieces = []   # (name, kind, w_m, h_m, builder)

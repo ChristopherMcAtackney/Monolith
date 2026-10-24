@@ -36,6 +36,8 @@ namespace Monolith.Game
             public int forceLod = -1;
             public Fighter fighter;
             public Damage damage;
+            /// <summary>Look-development: names of materials to leave out of the picture (e.g. ["MN_EarthWear", "MN_EarthPaint"] shows the bare plating), to tell which layer makes a mark.</summary>
+            public List<string> hideMaterials;
             /// <summary>Any <see cref="SkyOptions"/> fields to override by name, for look development (e.g. {"AmbientNits": 2000}); the defaults are the game's.</summary>
             public JObject sky;
 
@@ -74,6 +76,13 @@ namespace Monolith.Game
             var sunInShip = Quaternion.Inverse(shipGo.transform.rotation) * rig.SunDirection;
             MnLog.Info($"SHOWCASE sun in the ship's frame (x starboard, y up, z bow): {sunInShip.x:0.000}, {sunInShip.y:0.000}, {sunInShip.z:0.000}");
             if (opts.forceLod >= 0) shipGo.GetComponent<LODGroup>().ForceLOD(opts.forceLod);
+            if (opts.hideMaterials != null && opts.hideMaterials.Count > 0)
+                foreach (var r in shipGo.GetComponentsInChildren<Renderer>(true))
+                {
+                    var mats = r.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++) if (mats[i] != null && opts.hideMaterials.Contains(mats[i].name)) mats[i] = null;
+                    r.sharedMaterials = mats;
+                }
 
             if (opts.damage != null)
             {
