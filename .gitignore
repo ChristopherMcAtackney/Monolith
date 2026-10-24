@@ -38,3 +38,15 @@ __pycache__/
 
 # Claude Code local state
 .claude/
+
+# Audio tooling: build output, renders and raw text-to-speech (the shipped sounds are Game/Assets/StreamingAssets/Audio)
+tools/audio/bin/
+tools/audio/obj/
+audio_src/render/
+audio_src/voice/raw/
+audio_src/voice/*.log
+Game/Assets/StreamingAssets.meta
+Game/Assets/StreamingAssets/**/*.meta
+
+# generated clip plans (hundreds of stills each): make them with tools/juice/make_plan.py from gauntlet/shots/specs/audio_r1_*.json
+gauntlet/shots/audio_r1_*_clip.json

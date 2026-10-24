@@ -50,6 +50,8 @@ namespace Monolith.Game
             if (MissionSelfTest.Requested) { bool ok = MissionSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
             if (MissionAutoPlay.Requested) { Application.Quit(MissionAutoPlay.RunFromCommandLine()); return; }
             if (DogfightPortCheck.Requested) { Application.Quit(DogfightPortCheck.RunFromCommandLine()); return; }
+            // Audio checks: the score, the effects, the radio and the mix, through the real audio system rendered offline. They need frames, so they run as a coroutine and quit when done.
+            if (AudioSelfTest.Requested) { AudioSelfTest.Start(this); return; }
 
             GameEvents.Reset();
             World = new GameWorld(new Sim());
@@ -57,6 +59,7 @@ namespace Monolith.Game
             Sim.Register(World.Pilots);
             gameObject.AddComponent<SimDriver>().Sim = Sim;
 
+            AudioRig.Install(World, transform);
             if (CommandLine.Has("-mnLogEvents")) _eventLog = GameEvents.SubscribeAll(e => MnLog.Info("event " + e));
 
             // Flight and targeting run in every scene; the scene decides whether there are any ships.
@@ -77,6 +80,8 @@ namespace Monolith.Game
             else if (string.Equals(scene, DogfightScene.SceneName, StringComparison.OrdinalIgnoreCase)) DogfightScene.Build(World, flight, combat, transform, sceneOptions);
             else if (string.Equals(scene, MissionScene.SceneName, StringComparison.OrdinalIgnoreCase)) MissionScene.Build(World, flight, combat, transform, sceneOptions);
             else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
+
+            AudioRig.EnsureSystem(World, transform);       // scenes without a juice director get their sound here
 
             if (CommandLine.Has("-mnCapture"))
             {

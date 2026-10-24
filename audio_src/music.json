@@ -1,0 +1,92 @@
+{
+  // The score's mix: one entry per cue. "midi" is in audio_src/midi (made by audio_src/compose/build_music.py, openable in any DAW);
+  // each MIDI track is named after the synth patch that plays it (tools/audio/Synth/Patches.cs; "patch:label" for a second part with the
+  // same patch). "tracks" mixes them: db (re 0 = the patch's calibrated level), pan -1..1, sends (hall, plate, delay, gate: 0..1),
+  // chorus ("I", "II", "I+II", "ens"), sat (insert drive). "lufs" is the integrated loudness the finished cue is levelled to.
+  // "track" is the file/state name in the game (Game/Assets/StreamingAssets/Audio/music/<track>.ogg).
+  "cues": {
+    "ambient": {
+      "midi": "ambient.mid", "loop": true, "bars": 32, "lufs": -26.0, "track": "ambient", "seed": 1,
+      "master": { "hallRt60": 6.5, "hallSize": 1.5, "hallDb": -2, "plateDb": -8, "delayDb": -9, "compThresh": -22, "compRatio": 1.6, "sat": 0.08, "highShelfDb": 4 },
+      "tracks": {
+        "drone_dark": { "db": -6.7 }, "bass_sub": { "db": -15.7 }, "pad_juno": { "db": -5.2 }, "pad_warm": { "db": -6.9 }, "strings_ens": { "db": -8.8 },
+        "choir_ahh": { "db": -13.7 }, "bell_fm": { "db": -7.3, "pan": 0.2 }, "arp_soft": { "db": -6.4, "pan": -0.3 }, "brass_cs80": { "db": 5.8 },
+        "drums": { "db": -28.8 }
+      }
+    },
+    "battle1": {
+      "midi": "battle1.mid", "loop": true, "bars": 32, "lufs": -24.0, "track": "battle1", "seed": 2,
+      "master": { "hallRt60": 5.0, "hallDb": -4, "gateDb": -4, "compThresh": -20, "compRatio": 2.0 },
+      "tracks": {
+        "drone_dark": { "db": -9.6 }, "bass_sub": { "db": -10.6 }, "bass_pulse": { "db": -6.8 }, "pad_juno": { "db": -4.9 }, "pad_warm": { "db": -6.3 },
+        "arp_seq": { "db": -7.7, "pan": -0.25 }, "brass_cs80": { "db": 1.8 }, "brass_dark": { "db": -9.7 }, "choir_ahh": { "db": -15.2 },
+        "bell_fm": { "db": -4.9, "pan": 0.25 }, "sweep": { "db": -10.1 }, "drums": { "db": -19.2 }
+      }
+    },
+    "battle2": {
+      "midi": "battle2.mid", "loop": true, "bars": 32, "lufs": -22.0, "track": "battle2", "seed": 3,
+      "master": { "hallRt60": 4.4, "hallDb": -5, "gateDb": -3, "compThresh": -18, "compRatio": 2.4 },
+      "tracks": {
+        "drone_dark": { "db": -7.3 }, "bass_sub": { "db": -9.8 }, "bass_pulse": { "db": -8.9 }, "bass_moog": { "db": -10.1 }, "pad_juno": { "db": -4.6 }, "pad_warm": { "db": -5.3 },
+        "strings_ens": { "db": -6.9 }, "arp_seq": { "db": -7.3, "pan": -0.3 }, "brass_cs80": { "db": 1.7 }, "brass_dark": { "db": -9.3 }, "brass_stab": { "db": -4.5, "pan": 0.2 },
+        "choir_ahh": { "db": -13.4 }, "lead_prophet": { "db": -5.0, "pan": -0.1 }, "bell_fm": { "db": -3.8, "pan": 0.25 }, "sweep": { "db": -9.3 }, "drums": { "db": -19.9 }
+      }
+    },
+    "battle3": {
+      "midi": "battle3.mid", "loop": true, "bars": 32, "lufs": -20.0, "track": "battle3", "seed": 4,
+      "master": { "hallRt60": 3.8, "hallDb": -6, "gateDb": -2, "compThresh": -16, "compRatio": 2.8, "sat": 0.16 },
+      "tracks": {
+        "drone_dark": { "db": -8.9 }, "bass_sub": { "db": -9.4 }, "bass_pulse": { "db": -8.4 }, "bass_moog": { "db": -9.3 }, "pad_juno": { "db": -4.4 }, "pad_warm": { "db": -4.1 },
+        "strings_ens": { "db": -6.0 }, "arp_seq": { "db": -6.8, "pan": -0.3 }, "arp_seq:hi": { "db": -9.4, "pan": 0.35 }, "brass_cs80": { "db": 1.5 }, "brass_cs80:low": { "db": -3.2 },
+        "brass_dark": { "db": -8.5 }, "brass_stab": { "db": -4.8, "pan": 0.2 }, "choir_ahh": { "db": -12.4 }, "lead_prophet": { "db": -5.9, "pan": -0.1 },
+        "bell_fm": { "db": -3.9, "pan": 0.25 }, "sweep": { "db": -8.1 }, "drums": { "db": -22.0 }
+      }
+    },
+    "friendly_arrival": {
+      "midi": "friendly_arrival.mid", "loop": false, "tail": 3.5, "lufs": -21.0, "track": "sting_friendly", "seed": 21,
+      "master": { "hallRt60": 4.0, "hallDb": -3, "compThresh": -22, "compRatio": 1.5 },
+      "tracks": { "brass_cs80": { "db": -2.8 }, "choir_ahh": { "db": -13.2 }, "strings_ens": { "db": -7.8 }, "bell_fm": { "db": -7.4 }, "bass_sub": { "db": -8.2 }, "drums": { "db": -16.2 } }
+    },
+    "friendly_arrival_battle": {
+      "midi": "friendly_arrival_battle.mid", "loop": false, "tail": 3.0, "lufs": -19.0, "track": "sting_friendly_battle", "seed": 21,
+      "master": { "hallRt60": 3.6, "hallDb": -4, "compThresh": -18, "compRatio": 2.0 },
+      "tracks": { "brass_cs80": { "db": -2.8 }, "choir_ahh": { "db": -13.2 }, "strings_ens": { "db": -7.8 }, "bell_fm": { "db": -7.5 }, "bass_sub": { "db": -8.2 }, "brass_stab": { "db": -7.2 }, "drums": { "db": -19.4 } }
+    },
+    "enemy_arrival": {
+      "midi": "enemy_arrival.mid", "loop": false, "tail": 4.0, "lufs": -19.0, "track": "sting_enemy", "seed": 22,
+      "master": { "hallRt60": 5.5, "hallSize": 1.5, "hallDb": -2, "compThresh": -22, "compRatio": 1.6 },
+      "tracks": { "brass_dark": { "db": -3.7 }, "bass_sub": { "db": -4.8 }, "sweep": { "db": -6.8 }, "pulse_thin": { "db": -3.9 }, "bell_fm": { "db": 0.6 }, "drums": { "db": -12.9 } }
+    },
+    "enemy_arrival_battle": {
+      "midi": "enemy_arrival_battle.mid", "loop": false, "tail": 3.5, "lufs": -17.5, "track": "sting_enemy_battle", "seed": 22,
+      "master": { "hallRt60": 4.6, "hallSize": 1.4, "hallDb": -3, "compThresh": -18, "compRatio": 2.2 },
+      "tracks": { "brass_dark": { "db": -3.9 }, "bass_sub": { "db": -4.8 }, "sweep": { "db": -6.9 }, "pulse_thin": { "db": -3.9 }, "bell_fm": { "db": 0.2 }, "drums": { "db": -17.7 } }
+    },
+    "goal_complete": {
+      "midi": "goal_complete.mid", "loop": false, "tail": 3.0, "lufs": -22.0, "track": "sting_goal", "seed": 23,
+      "master": { "hallRt60": 3.6, "hallDb": -3, "compThresh": -24, "compRatio": 1.4 },
+      "tracks": { "brass_cs80": { "db": -1.4 }, "bell_fm": { "db": -4.4 }, "choir_ahh": { "db": -8.4 }, "bass_sub": { "db": -8.7 }, "drums": { "db": -15.9 } }
+    },
+    "goal_failed": {
+      "midi": "goal_failed.mid", "loop": false, "tail": 3.5, "lufs": -23.0, "track": "sting_fail", "seed": 24,
+      "master": { "hallRt60": 4.5, "hallDb": -2, "compThresh": -24, "compRatio": 1.4 },
+      "tracks": { "bell_fm": { "db": -0.4 }, "brass_dark": { "db": -5.3 }, "bass_sub": { "db": -5.3 }, "drums": { "db": -18.7 } }
+    },
+    "victory": {
+      "midi": "victory.mid", "loop": false, "tail": 6.0, "lufs": -21.0, "track": "victory", "seed": 25,
+      "master": { "hallRt60": 5.2, "hallSize": 1.4, "hallDb": -3, "compThresh": -20, "compRatio": 2.0 },
+      "tracks": { "pad_juno": { "db": -6.3 }, "pad_warm": { "db": -8.4 }, "bass_sub": { "db": -10.2 }, "strings_ens": { "db": -8.7 }, "choir_ahh": { "db": -11.1 }, "brass_cs80": { "db": 0.2 },
+                  "bell_fm": { "db": -8.3 }, "arp_seq": { "db": -11.2 }, "drums": { "db": -19.4 } }
+    },
+    "failure": {
+      "midi": "failure.mid", "loop": false, "tail": 6.0, "lufs": -24.0, "track": "failure", "seed": 26,
+      "master": { "hallRt60": 6.0, "hallSize": 1.5, "hallDb": -2, "compThresh": -24, "compRatio": 1.5 },
+      "tracks": { "pad_juno": { "db": -6.6 }, "brass_dark": { "db": -2.7 }, "bass_sub": { "db": -15.1 }, "choir_ahh": { "db": -8.8 }, "brass_cs80": { "db": 0.3 }, "bell_fm": { "db": -1.9 }, "drums": { "db": -18.2 } }
+    },
+    "death": {
+      "midi": "death.mid", "loop": false, "tail": 7.0, "lufs": -21.0, "track": "death", "seed": 27,
+      "master": { "hallRt60": 7.0, "hallSize": 1.6, "hallDb": -1, "compThresh": -22, "compRatio": 1.8 },
+      "tracks": { "pad_juno": { "db": -5.8 }, "brass_dark": { "db": -3.5 }, "bass_sub": { "db": -0.9 }, "bell_fm": { "db": 1.0 }, "choir_ahh": { "db": -11.7 }, "drums": { "db": -13.9 } }
+    }
+  }
+}

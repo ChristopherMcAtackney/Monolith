@@ -1,0 +1,6 @@
+{
+ "scene": "mission", "width": 1280, "height": 720,
+ "script": [],
+ "options": { "mission": "escort", "pilot": "ai", "invulnerable": true, "hud": true, "dust": false },
+ "series": [ { "name": "esc", "from": 110.0, "to": 124.5, "step": 0.0333333 } ]
+}

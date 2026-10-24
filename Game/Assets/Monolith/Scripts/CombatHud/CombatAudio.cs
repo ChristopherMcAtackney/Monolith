@@ -57,7 +57,7 @@ namespace Monolith.CombatHud
                 else if (def != null && def.NeedsLock && me.Lock == LockPhase.Locked) { gain = 0.16f; freq = 1180f; gate = 0f; }
                 else if (def != null && !def.NeedsLock && me.Lock == LockPhase.Locked) { gain = 0.07f; freq = 520f; gate = 0f; }
             }
-            _gain = _mute ? 0f : gain; _freq = freq; _gateHz = gate; _duty = duty;
+            _gain = _mute || AudioLink.Owned ? 0f : gain; _freq = freq; _gateHz = gate; _duty = duty;
         }
 
         void OnAudioFilterRead(float[] data, int channels)

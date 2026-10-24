@@ -1,0 +1,20 @@
+{
+  "format": "monolith-music/1",
+  "about": "The score. Loops share one length and one harmony so the music changes on a beat. A file with the same name in the Audio folder beside the game (music/<track>.mp3, .wav or .ogg) replaces a track; a sidecar <track>.json may give loopStart, loopEnd (seconds) and volume (dB).",
+  "bpm": 112, "beatsPerBar": 4, "loopSeconds": 68.571,
+  "tracks": {
+    "ambient": { "file": "music/ambient.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -26.0, "truePeakDb": -10.0 },
+    "battle1": { "file": "music/battle1.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -24.0, "truePeakDb": -9.7 },
+    "battle2": { "file": "music/battle2.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -22.0, "truePeakDb": -7.9 },
+    "battle3": { "file": "music/battle3.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -20.0, "truePeakDb": -5.6 },
+    "death": { "file": "music/death.ogg", "loop": false, "seconds": 27.000, "bpm": 72, "bars": 0, "lufs": -21.0, "truePeakDb": -3.6 },
+    "failure": { "file": "music/failure.ogg", "loop": false, "seconds": 27.665, "bpm": 72, "bars": 0, "lufs": -24.0, "truePeakDb": -11.4 },
+    "sting_enemy": { "file": "music/sting_enemy.ogg", "loop": false, "seconds": 8.286, "bpm": 112, "bars": 0, "lufs": -19.0, "truePeakDb": -5.8 },
+    "sting_enemy_battle": { "file": "music/sting_enemy_battle.ogg", "loop": false, "seconds": 7.786, "bpm": 112, "bars": 0, "lufs": -17.5, "truePeakDb": -4.6 },
+    "sting_fail": { "file": "music/sting_fail.ogg", "loop": false, "seconds": 8.500, "bpm": 96, "bars": 0, "lufs": -23.0, "truePeakDb": -9.9 },
+    "sting_friendly": { "file": "music/sting_friendly.ogg", "loop": false, "seconds": 8.320, "bpm": 112, "bars": 0, "lufs": -21.0, "truePeakDb": -8.6 },
+    "sting_friendly_battle": { "file": "music/sting_friendly_battle.ogg", "loop": false, "seconds": 7.820, "bpm": 112, "bars": 0, "lufs": -19.0, "truePeakDb": -5.1 },
+    "sting_goal": { "file": "music/sting_goal.ogg", "loop": false, "seconds": 7.286, "bpm": 112, "bars": 0, "lufs": -22.0, "truePeakDb": -11.4 },
+    "victory": { "file": "music/victory.ogg", "loop": false, "seconds": 29.200, "bpm": 104, "bars": 0, "lufs": -21.0, "truePeakDb": -6.7 }
+  }
+}

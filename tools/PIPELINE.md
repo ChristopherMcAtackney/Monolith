@@ -109,6 +109,12 @@ log and pacing; exit 0 on pass), `-mnDogfightPortCheck seconds -mnOut dir` (the 
 ship's state compared to the bit once a second). `tools\mission.ps1 -Out dir` runs the self-test and every mission's auto-play. The format,
 every condition and action: `Scripts/Mission/README.md`.
 
+Audio: `Monolith.exe -batchmode -nographics -mnAudioSelfTest [-mnOut dir]` (83 checks on the real decoded files through the real audio system rendered offline: files, loops and seams, every state and sting, every state-to-state change on its beat or bar, every radio line has a clip or a logged squelch,
+the player's own files override and give back, every effect plays, a scripted battle never clips; writes `audio_selftest.txt` and the mixes). Flags: `-mnAudioMute` (every path runs, nothing is heard), `-mnNoAudio`, `-mnAudio` (sound in a capture run),
+`-mnAudioCapture file.wav` (render in step with the sim, no sound card, and record: one tick of samples per tick, so a capture run's stills and sound line up; `python tools/audio/make_clip.py` joins them into a clip with sound),
+`-mnAudioUser dir`, `-mnAudioLog` (a status line every 5 s: voices, audio-thread load, loudness, ducking). The offline tools (music from MIDI, effects, radio voices, the audio sheet): `tools/audio/README.md`;
+the build `tools/audio/make_playtest.ps1` makes the audio playtest folder. Volumes: F5/F6 music, F7/F8 effects, F3/F4 voice, - and = master, F2 mute (saved to `audio.json` beside the game).
+
 ## Blender
 
 `tools\blender.ps1 <script.py> [-Blend file.blend] [-TimeoutMin 20] [-- script args]` runs

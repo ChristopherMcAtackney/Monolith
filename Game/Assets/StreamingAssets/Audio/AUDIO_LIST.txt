@@ -1,0 +1,230 @@
+MONOLITH - EVERY SOUND YOU CAN REPLACE
+
+Drop a file with the same name (any of .wav, .ogg, .mp3, in the same folders) into the Audio folder beside Monolith.exe and it plays instead.
+The name is the path below without the extension. Lengths and levels are those of the built-in sound, to match.
+
+MUSIC  (music\<name>)
+  music\ambient                    68.6 s   the quiet bed (a loop)
+  music\battle1                    68.6 s   first contact (a loop)
+  music\battle2                    68.6 s   the fight (a loop)
+  music\battle3                    68.6 s   the worst of it (a loop)
+  music\death                      27.0 s   plays once when you die
+  music\failure                    27.7 s   plays once at a lost mission
+  music\sting_enemy                 8.3 s   Earth arrives, quiet
+  music\sting_enemy_battle          7.8 s   Earth arrives, in battle
+  music\sting_fail                  8.5 s   an objective is lost
+  music\sting_friendly              8.3 s   friendly ship arrives, quiet
+  music\sting_friendly_battle       7.8 s   friendly ship arrives, in battle
+  music\sting_goal                  7.3 s   an objective is done
+  music\victory                    29.2 s   plays once at the win
+  The loops are 68.6 s (112 BPM, 4/4, 32 bars): a loop of that exact length is cross-faded in step with the others; any other length starts from its beginning on the next bar.
+
+EFFECTS  (sfx\<name>; "_far" files are the distant versions; _0 _1 _2 are variants played at random)
+  sfx\laser_light_0, laser_light_1, laser_light_2  +far: laser_light_0_far, laser_light_1_far, laser_light_2_far  friendly fast gun
+  sfx\laser_enemy_0, laser_enemy_1, laser_enemy_2  +far: laser_enemy_0_far, laser_enemy_1_far, laser_enemy_2_far  Earth's fast gun
+  sfx\laser_heavy_0, laser_heavy_1              +far: laser_heavy_0_far, laser_heavy_1_far  heavy gun and capital turrets
+  sfx\laser_turret                              +far: laser_turret_far  a capital turret, from afar
+  sfx\flak_shell                                +far: flak_shell_far  
+  sfx\flak_burst                                +far: flak_burst_far  
+  sfx\missile_launch                            +far: missile_launch_far  
+  sfx\torpedo_launch                            +far: torpedo_launch_far  
+  sfx\missile_hiss                              (loops)  
+  sfx\decoy_launch                              +far: decoy_launch_far  
+  sfx\decoy_success                             +far: decoy_success_far  
+  sfx\near_miss_0, near_miss_1                  
+  sfx\beam_charge                               +far: beam_charge_far  
+  sfx\beam_fire                                 +far: beam_fire_far  
+  sfx\beam_loop                                 (loops)  
+  sfx\beam_impact_loop                          (loops)  
+  sfx\beam_end                                  +far: beam_end_far  
+  sfx\hit_shield_0, hit_shield_1, hit_shield_2  +far: hit_shield_0_far, hit_shield_1_far, hit_shield_2_far  
+  sfx\hit_shield_player_0, hit_shield_player_1, hit_shield_player_2  
+  sfx\hit_hull_0, hit_hull_1, hit_hull_2        +far: hit_hull_0_far, hit_hull_1_far, hit_hull_2_far  
+  sfx\hit_hull_player_0, hit_hull_player_1, hit_hull_player_2  
+  sfx\hit_hull_player_heavy_0, hit_hull_player_heavy_1  
+  sfx\shield_down                               
+  sfx\subsystem_blast                           +far: subsystem_blast_far  
+  sfx\collision                                 
+  sfx\explosion_small_0, explosion_small_1      +far: explosion_small_0_far, explosion_small_1_far  
+  sfx\explosion_medium_0, explosion_medium_1    +far: explosion_medium_0_far, explosion_medium_1_far  
+  sfx\explosion_large                           +far: explosion_large_far  
+  sfx\breakup                                   +far: breakup_far  
+  sfx\shockwave                                 
+  sfx\creak_a                                   hull groan
+  sfx\creak_b                                   hull groan
+  sfx\creak_c                                   hull groan
+  sfx\creak_d                                   hull groan
+  sfx\engine_loop                               (loops)  pitch follows speed
+  sfx\afterburner_loop                          (loops)  
+  sfx\afterburner_on                            
+  sfx\afterburner_off                           
+  sfx\cabin_air                                 (loops)  
+  sfx\alarm_hull                                (loops)  
+  sfx\alarm_beep                                
+  sfx\alarm_beep_low                            
+  sfx\system_fail                               
+  sfx\jump_in                                   +far: jump_in_far  
+  sfx\jump_in_big                               +far: jump_in_big_far  
+  sfx\jump_out                                  +far: jump_out_far  
+  sfx\jump_out_big                              +far: jump_out_big_far  
+  sfx\scan_sweep                                a scan crawling over the hull (the cabin's go-dark moment)
+  sfx\earth_horn                                a deep Reaper-like horn when an Earth capital ship arrives
+  sfx\earth_horn_small                          the same, for a corvette
+  sfx\step_plate_0, step_plate_1, step_plate_2  a footfall on the deck plate
+  sfx\step_grating_0, step_grating_1, step_grating_2  a footfall on grating
+  sfx\step_rung_0, step_rung_1, step_rung_2     a foot on a rung or riser
+  sfx\seat_open                                 the harness opens, the pilot stands
+  sfx\seat_close                                the pilot sits, the harness closes
+  sfx\breaker_off                               the main breaker out: the displays die
+  sfx\breaker_on                                the main breaker in: the displays boot
+  sfx\scan_hit                                  a scan found the ship
+  sfx\breath_in_0, breath_in_1                  
+  sfx\breath_out_0, breath_out_1                
+  sfx\repair_loop                               (loops)  a hand repair: living tech knitting (pitch rises with progress)
+  sfx\repair_done                               
+  sfx\repair_slip                               
+  sfx\rack_seat                                 a module seated in the weapon rack
+  sfx\cabin_rattle                              loose things shaken by a shove
+  sfx\ui_click                                  
+  sfx\ui_select                                 
+  sfx\target_blip                               
+  sfx\lock_acquired                             
+  sfx\lock_lost                                 
+  sfx\power_blip                                
+  sfx\squelch_open                              
+  sfx\squelch_close                             
+
+RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter unless a .json beside it says { "radio": false })
+  [earth_lector]  (earth radio)
+    vo\earth_lector\earth_bombers_01             The Mercy will be cleansed.
+    vo\earth_lector\earth_bombers_02             Your ark is a coffin. We will close it.
+    vo\earth_lector\earth_wave_01                Biologics. You were us, once.
+    vo\earth_lector\earth_wave_02                The fallen return to be unmade.
+    vo\earth_lector\earth_wave_03                Kneel, remnant. Or burn where you are.
+    vo\earth_lector\earth_wave_04                Your blood remembers Earth. Earth does not remember you.
+    vo\earth_lector\escort_incense               Burn it. Burn all of it.
+    vo\earth_lector\escort_lauds                 Every remnant ends. Yours ends here.
+    vo\earth_lector\escort_lector_here           Lector. You carry four hundred biologics. We will count them as they freeze.
+    vo\earth_lector\escort_matins                A vessel of the fallen, crawling home. How touching.
+    vo\earth_lector\escort_prime                 You brought them to us. That was a kindness.
+    vo\earth_lector\escort_spotted               There you are.
+    vo\earth_lector\escort_terce                 The door you run for is a grave. Go on.
+    vo\earth_lector\escort_thurible              Censers, go. Bring me the ark.
+  [earth_warden]  (earth radio)
+    vo\earth_warden\dogfight_earth_bombers       The Mercy will be cleansed.
+    vo\earth_warden\dogfight_earth_wave_1        Biologics. You were us, once.
+    vo\earth_warden\dogfight_earth_wave_2        The fallen return to be unmade.
+    vo\earth_warden\dogfight_earth_wave_3        Kneel, remnant. Or burn where you are.
+    vo\earth_warden\dogfight_earth_wave_4        Your blood remembers Earth. Earth does not remember you.
+    vo\earth_warden\dogfight_earth_wave_5        The dark between the stars was ours before you crawled into it.
+    vo\earth_warden\dogfight_earth_wave_6        This is the last of your kind's courage. Spend it.
+    vo\earth_warden\earth_bombers_02             Your ark is a coffin. We will close it.
+    vo\earth_warden\escort_incense               Burn it. Burn all of it.
+    vo\earth_warden\escort_lauds                 Every remnant ends. Yours ends here.
+    vo\earth_warden\escort_matins                A vessel of the fallen, crawling home. How touching.
+    vo\earth_warden\escort_prime                 You brought them to us. That was a kindness.
+    vo\earth_warden\escort_terce                 The door you run for is a grave. Go on.
+  [lantern]  (crew radio)
+    vo\lantern\escort_lantern                    Lantern flight, jumping in. Sorry we're late. Traffic.
+  [mercy]  (crew radio)
+    vo\mercy\beams_down_02                       That's their big guns gone. Returning the favour.
+    vo\mercy\beams_threat_02                     That's a beam. Somebody shut those turrets up before it cuts us in half.
+    vo\mercy\bombers_02                          Torpedo boats on approach. We'd appreciate the company.
+    vo\mercy\capital_hurt_02                     We're bleeding air down here.
+    vo\mercy\dogfight_beams_down                 Warden's beams are quiet. Ours are free. Thank you.
+    vo\mercy\dogfight_beams_threat               Mercy here. The Warden's charging beams at us. Its two beam turrets, forward, on top. Take them out.
+    vo\mercy\dogfight_bombers                    Bombers inbound on the Mercy. Somebody deal with them.
+    vo\mercy\dogfight_capital_hurt               Mercy here. Hull's going. Any time now.
+    vo\mercy\dogfight_opening                    Sable flight, Warden's three klicks out. Keep the drones off us and we'll all get home.
+  [sable1]  (crew radio)
+    vo\sable1\dogfight_lost_capital              Mercy's gone.
+    vo\sable1\dogfight_sable2_lost               Sable 2 is gone.
+    vo\sable1\dogfight_sable3_lost               Lost Sable 3. Keep flying.
+    vo\sable1\dogfight_won                       That's the lot. Warden's gone.
+    vo\sable1\escort_lector_down                 Lector's breaking up. Shame.
+    vo\sable1\escort_lost                        Tamsin's gone. All of them.
+  [sable2]  (crew radio)
+    vo\sable2\ack_attack_01                      Copy. Going in.
+    vo\sable2\ack_attack_02                      Your target. On it.
+    vo\sable2\ack_attack_03                      Engaging. Don't wait up.
+    vo\sable2\ack_cover_01                       On your six.
+    vo\sable2\ack_cover_02                       Covering you. Try not to make it interesting.
+    vo\sable2\ack_cover_03                       I've got your back. For now.
+    vo\sable2\ack_disable_01                     Copy. Engines only.
+    vo\sable2\ack_disable_02                     Disabling. It can sit there and think about it.
+    vo\sable2\ack_disable_03                     Going for the engines.
+    vo\sable2\ack_form_01                        Forming up.
+    vo\sable2\ack_form_02                        Coming back in. Nice and boring.
+    vo\sable2\ack_form_03                        On your wing.
+    vo\sable2\disabled_01                        Target's dead in the water.
+    vo\sable2\disabled_02                        Engines gone. It's not going anywhere.
+    vo\sable2\dogfight_lost_capital              Mercy's gone.
+    vo\sable2\dogfight_sable2_lost               Sable 2 is gone.
+    vo\sable2\dogfight_sable3_lost               Lost Sable 3. Keep flying.
+    vo\sable2\dogfight_won                       That's the lot. Warden's gone.
+    vo\sable2\escort_lector_down                 Lector's breaking up. Shame.
+    vo\sable2\escort_lector_sweep                Lector's sweeping for life signs. If you had a breaker to pull, now would be the time.
+    vo\sable2\escort_lost                        Tamsin's gone. All of them.
+    vo\sable2\escort_open_sable2                 Five minutes of nothing. I could get used to that.
+    vo\sable2\lost_capital_02                    We lost the Mercy.
+    vo\sable2\no_target_01                       Need a target first, lead.
+    vo\sable2\no_target_02                       Target what, exactly.
+    vo\sable2\no_target_03                       Give me something to shoot.
+    vo\sable2\peel_01                            I'm cut up. Pulling out to mend.
+    vo\sable2\peel_02                            Taking too much. Backing off till it knits.
+    vo\sable2\peel_03                            Hull's open. Give me a minute.
+    vo\sable2\rejoin_01                          Patched enough. Coming back.
+    vo\sable2\rejoin_02                          Back in. Mostly.
+    vo\sable2\rejoin_03                          Knitted. Where do you want me.
+    vo\sable2\wingman_lost_01_sable_3            Sable 3 is gone.
+    vo\sable2\wingman_lost_02_sable_2            Lost Sable 2.
+    vo\sable2\wingman_lost_02_sable_3            Lost Sable 3.
+    vo\sable2\wingman_lost_03_sable_2            Sable 2's gone. Keep flying.
+    vo\sable2\wingman_lost_03_sable_3            Sable 3's gone. Keep flying.
+    vo\sable2\won_02                             Area's quiet. Let's not stay.
+  [sable3]  (crew radio)
+    vo\sable3\ack_attack_01                      Copy. Going in.
+    vo\sable3\ack_attack_02                      Your target. On it.
+    vo\sable3\ack_attack_03                      Engaging. Don't wait up.
+    vo\sable3\ack_cover_01                       On your six.
+    vo\sable3\ack_cover_02                       Covering you. Try not to make it interesting.
+    vo\sable3\ack_cover_03                       I've got your back. For now.
+    vo\sable3\ack_disable_01                     Copy. Engines only.
+    vo\sable3\ack_disable_02                     Disabling. It can sit there and think about it.
+    vo\sable3\ack_disable_03                     Going for the engines.
+    vo\sable3\ack_form_01                        Forming up.
+    vo\sable3\ack_form_02                        Coming back in. Nice and boring.
+    vo\sable3\ack_form_03                        On your wing.
+    vo\sable3\disabled_01                        Target's dead in the water.
+    vo\sable3\disabled_02                        Engines gone. It's not going anywhere.
+    vo\sable3\dogfight_lost_capital              Mercy's gone.
+    vo\sable3\dogfight_sable2_lost               Sable 2 is gone.
+    vo\sable3\dogfight_sable3_lost               Lost Sable 3. Keep flying.
+    vo\sable3\dogfight_won                       That's the lot. Warden's gone.
+    vo\sable3\escort_lector_down                 Lector's breaking up. Shame.
+    vo\sable3\escort_lost                        Tamsin's gone. All of them.
+    vo\sable3\lost_capital_02                    We lost the Mercy.
+    vo\sable3\no_target_01                       Need a target first, lead.
+    vo\sable3\no_target_02                       Target what, exactly.
+    vo\sable3\no_target_03                       Give me something to shoot.
+    vo\sable3\peel_01                            I'm cut up. Pulling out to mend.
+    vo\sable3\peel_02                            Taking too much. Backing off till it knits.
+    vo\sable3\peel_03                            Hull's open. Give me a minute.
+    vo\sable3\rejoin_01                          Patched enough. Coming back.
+    vo\sable3\rejoin_02                          Back in. Mostly.
+    vo\sable3\rejoin_03                          Knitted. Where do you want me.
+    vo\sable3\wingman_lost_01_sable_3            Sable 3 is gone.
+    vo\sable3\wingman_lost_02_sable_2            Lost Sable 2.
+    vo\sable3\wingman_lost_02_sable_3            Lost Sable 3.
+    vo\sable3\wingman_lost_03_sable_2            Sable 2's gone. Keep flying.
+    vo\sable3\wingman_lost_03_sable_3            Sable 3's gone. Keep flying.
+    vo\sable3\won_02                             Area's quiet. Let's not stay.
+  [tamsin]  (crew radio)
+    vo\tamsin\escort_away                        We're through. Drinks are on us. Somebody else is paying.
+    vo\tamsin\escort_open_tamsin                 Tamsin to escort. Drive's cooked and the aft holds are open to space. We make the jump point if nobody shoots at us. Somebody will.
+    vo\tamsin\escort_sable2_lost                 Your wingman's gone. We saw it. Sorry.
+    vo\tamsin\escort_spool                       Spooling what's left of the drive. Keep them off us for twenty seconds.
+    vo\tamsin\escort_tamsin_hurt                 Tamsin here. We're venting from three places now. Hurry it up.
+    vo\tamsin\escort_thurible_ours               Bombers on the scope. They're coming for us. Please don't let them.
+  [wick]  (alien radio)
+    vo\wick\escort_wick                          Wick flight. Last ones in the barrel. Make it count.

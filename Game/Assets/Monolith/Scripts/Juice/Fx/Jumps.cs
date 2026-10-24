@@ -56,7 +56,7 @@ namespace Monolith.Juice
             if (_c.Settings.effects.lights)
                 _c.Lights.Flash(at, new Color(0.62f, 0.8f, 1f), 1.4e6f * r * r * _c.Bright, Mathf.Max(400f, r * 30f), 0.45f + r * 0.004f, 1.6f, null, Mathf.Min(r * 0.4f, 40f));
             float dist = _c.DistanceToCamera(at);
-            _c.Audio.Play(arriving ? JuiceCue.BeamCharge : JuiceCue.Shockwave, at, Mathf.Clamp(0.4f + r / 200f, 0.4f, 1f), dist);
+            _c.Audio.Play(arriving ? JuiceCue.JumpIn : JuiceCue.JumpOut, at, Mathf.Clamp(0.4f + r / 200f, 0.4f, 1f), dist);
             _feel.Impact(at, Mathf.Clamp(r / 300f, 0.05f, 0.35f), 250f + r * 6f, 0.25f, 0.1f, 0.25f);
         }
     }

@@ -136,6 +136,11 @@ namespace Monolith.Juice
 
         static IJuiceAudio CreateAudio(JuiceSettings settings)
         {
+            if (JuiceAudioHooks.Factory != null)
+            {
+                try { var real = JuiceAudioHooks.Factory(settings); if (real != null) return real; }
+                catch (Exception e) { MnLog.Warn("JUICE the audio system could not start: " + e.Message); }
+            }
             // Captures are silent unless -mnAudio is given (nobody wants a battle playing through the speakers during a render run).
             bool dump = CommandLine.Has("-mnDumpSounds");
             if (!dump && !CommandLine.Has("-mnAudioMute") && (CommandLine.Has("-mnNoAudio") || Application.isBatchMode || (CommandLine.Has("-mnCapture") && !CommandLine.Has("-mnAudio")))) return new NullAudio();

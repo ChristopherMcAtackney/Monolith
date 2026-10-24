@@ -11,6 +11,17 @@ namespace Monolith.Juice
         FlakBurst, NearMiss,
         BeamCharge, BeamLoop, BeamImpactLoop,
         BreakUp, UiClick,
+        /// <summary>Added with the audio system: a capital ship's turret, a heavy torpedo leaving the rail, a ship arriving and a ship leaving (gain says how big).</summary>
+        LaserTurret, TorpedoLaunch, JumpIn, JumpOut,
+    }
+
+    /// <summary>
+    /// Where the real audio system plugs in. The composition root sets <see cref="Factory"/>; a juice director that is not handed an audio
+    /// implementation asks it first and falls back to the placeholder synth when it returns null.
+    /// </summary>
+    public static class JuiceAudioHooks
+    {
+        public static System.Func<JuiceSettings, IJuiceAudio> Factory;
     }
 
     /// <summary>A looping sound that can be moved and faded, then stopped (a beam's roar).</summary>

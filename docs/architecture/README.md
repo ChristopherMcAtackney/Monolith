@@ -49,6 +49,8 @@ spawns and orders ships for it through `IMissionHost` (`Game/Mission/GameMission
 state and result on `GameWorld.Mission` for the HUD. The cabin's conditions and actions go through `ICabin`, a stub for now. `-mnMission
 <name>` plays one (`Game/Mission/MissionScene`). Detail: `Scripts/Mission/README.md`.
 
+**Audio** (`Monolith.Audio`, `Scripts/Audio/`) is the game's own software mixer and everything that plays through it: music, effects and radio voices, with Unity used only as the sound card (`OnAudioFilterRead`). The mixer, a lookahead limiter and a BS.1770 loudness meter are plain C# (`Dsp/`) that the offline tools compile too (`tools/audio`: the analog synth that renders the MIDI score, the sound-effect designs, the radio filter, the checks). `AudioSystem` listens to the game's events (the mission's `music_state` / `music_sting`, `radio_line`, arrivals, decoys, locks, hits on the player) and reads `GameWorld` for the cockpit (engine, afterburner, alarms, lock tone and missile warning); the juice's own effects reach it through `IJuiceAudio` (`Game/Audio/JuiceAudioAdapter`). Five buses with player volumes saved beside the game; voice ducks music and effects, big moments duck the rest. A player's own MP3, WAV or OGG in the `Audio/` folder beside the game replaces any built-in sound by name, live. It can also render without a sound card in step with the sim and record the mix (captures). Detail: `Scripts/Audio/README.md`, `tools/audio/README.md`.
+
 **View** (`Monolith.View`) is the player's first-person camera at the interpolated ship pose, FS2-style motion dust and
 `ShipViews` (every other ship's visual at its interpolated pose). Settings in `Resources/View/view.json`. No external camera.
 
@@ -62,7 +64,7 @@ the HDR buffer before post-processing (`Resources/Juice/MN_Fx.shader`); explosio
 `JuiceDirector.RegisterShip` are cut into lit pieces when they die, or, for a ship model that has real parts, handed to it through
 `IJuiceShipDamage` (the Game assembly adapts `ShipDamage` to it: hits scorch the plating, beams blow parts off, a capital ship loses its
 parts one by one and then breaks along cuts baked by `JuiceSetup.BakeSections`); a capital ship dies in stages and its shockwave shoves ships
-through `GameWorld.Knocks`. Sounds are placeholders built in code behind `IJuiceAudio`. Settings (presets, switches, levels) are
+through `GameWorld.Knocks`. Its sounds go through `IJuiceAudio`, which the audio system implements (the code-built placeholders remain as the fallback when there is no audio system). Settings (presets, switches, levels) are
 `juice.json` next to the game, falling back to `Resources/Juice/juice_defaults.json`. Detail: `Scripts/Juice/README.md`.
 
 **ShipArt** (`Monolith.ShipArt`) is how a Blender model becomes a ship in the game. `ShipArtSetup` (editor) turns each model script's output into an HDRP material set, a prefab with a LOD group, a collision proxy and a `ShipSubsystem` on every named part (flak, guns, engines, bridge, sensors, comms, reactor, launchers), each with an intact look, a wreck and debris, plus FX hooks and hull damage sites. `ShipArtCatalog.Instantiate(id)` loads one; `ShipDamage` (`IShipDamage`) is what combat calls to destroy parts and scorch the hull; `EngineGlow` flickers an engine's core, flare and the cold point light it throws on the hull around the nozzle, and follows a throttle. Nothing in it knows game rules. The pipeline, conventions and how to add a ship: `art_src/PIPELINE.md`.

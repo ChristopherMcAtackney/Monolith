@@ -1,0 +1,42 @@
+MONOLITH - SOUND (audio round 1, 2026-10-24)
+
+Play.bat <mission>         Play.bat escort        Play.bat dogfight window hard
+Missions: escort (The Crossing) and dogfight (The Dogfight). Add "window" for a window and veryeasy/easy/medium/hard/insane for the difficulty.
+Nobody has heard any of this yet. It was built, measured and checked by numbers (loudness, spectrograms, a self-test of 86 checks), never by ear: your ears are the judge.
+
+WHAT IS NEW
+Everything makes sound now, and all of it was made for this game (nothing from a sound library).
+  Music     80s epic synth, composed as MIDI and rendered through an analog-style synth: detuned Juno-style pads with chorus, a Yamaha CS-80 style brass (Vangelis), formant choirs,
+            a Moog bass, Tangerine Dream sequencer arpeggios with resonant filter sweeps, a drum machine with gated reverb, big plate and hall reverbs, a deep sub.
+            Ambient bed, three battle intensities (they follow how many hostiles are close and on you, as the mission's music rules say), short stings when friends or Earth arrive,
+            a sting for a goal done and a goal failed, victory, failure, and your death. The four loops are one 32-bar form at 112 BPM over the same harmony: the music changes on the next
+            beat (up) or bar (down) in step with where it was, so it never lurches.
+  Voices    every radio line in both missions and every wingman acknowledgement (140 line and speaker combinations, 124 recordings), made with Trap Door's voice pipeline from voice
+            *descriptions* (no real person, no cloning) and put through a radio: Small Mercy's comms officer (a Scottish woman), Tamsin's captain (an Irish woman), Sable 2 (an Australian man),
+            Sable 3 (a Londoner), Sable 1, which is you when no wingman is left to say it, Lantern (a deep Texan), Wick (an alien: a doubled, ring-modulated, whistling voice), and Earth: vast, cold,
+            an octave down with a metallic edge and a long hall, preceded by a power-up swell. The voice ducks the music by 9 dB and the effects by 4.5 dB.
+  Effects   guns (a snap, a falling zap, a thump), the heavy gun, capital turrets, flak, missiles and torpedoes with their hiss as they pass, decoys, the lock tone and the missile warning (sequencer pings),
+            shield and hull hits (heavier and with a cabin boom when they are on you), explosions in three sizes, a capital ship's break-up, death and shockwave, beams (charge, crack, roar, the bite, the fall),
+            the engine hum (its pitch follows your speed) and the afterburner roar, cabin air, hull alarms when you are hurt, creaks under hits, the jump flash, and a deep horn when an Earth corvette or
+            capital ship arrives. Distant versions of the big sounds are duller, smeared and late. The biggest moments (a capital ship dying, a beam firing) pull everything else down for a few seconds.
+
+WHAT TO LISTEN FOR AND TELL US
+  - Does the music feel like Blade Runner / Carpenter / Mass Effect, and does it stay out of the way of the radio? Do the changes between intensities feel right, or too eager or too late?
+  - Is any loop tiring? (Each is 68 s. Tell us which, and we will lengthen it or add variants.)
+  - Are the guns meaty? The heavy gun? Is anything too loud or too quiet against the rest: guns, hits, explosions, the horn, the alarm?
+  - Is every radio voice clear enough, and does it sound like who it is meant to be? Earth's voice: vast and cold, or muddy? Wick: alien, or silly?
+  - Is the engine hum something you stop hearing (good) or hate (bad)? The alarm: urgent or annoying?
+  - Do the explosions sound like they have the right weight in a vacuum?
+
+VOLUME (saved next to the game in audio.json)
+  F5 / F6   music down / up        F7 / F8   effects down / up        F3 / F4   voice down / up
+  - / =     master down / up       F2        sound off / on
+YOUR OWN SOUND
+  The Audio folder next to Monolith.exe takes MP3, WAV or OGG files and plays them instead of ours, live (no restart: save the file, it swaps in within about two seconds; delete it and ours comes back).
+  AUDIO_LIST.txt lists every sound that can be replaced and what to name it. Music: music\battle2.mp3 and so on, or the names a mission gives its tracks (The Crossing names
+  crossing_ambient, crossing_battle_1 .. 3: put music\crossing_battle_2.mp3 there and it plays in that mission). A loop that is exactly 68.571 s joins the others in step; any other length
+  starts from its beginning on the next bar. Add a file of the same name with .json for loop points: { "loopStart": 3.2, "loopEnd": 48.0, "volume": -2.5 }.
+  Radio lines: vo\<voice>\<line>.wav; your recording goes through the game's radio. Add { "radio": false } in a .json beside it if it is already radio-ready.
+THE LOG
+  Monolith_audio_log.txt next to the game lists every music change, every radio line and the clip it played ([MN] VOICE ...), every line that had no clip ([MN][WARN] VOICE no clip ...), and every
+  five seconds the number of voices, the audio thread's load and the loudness. Send it with your notes.

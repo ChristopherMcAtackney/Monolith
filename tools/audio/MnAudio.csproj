@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The offline audio tools: the analog synth that renders the music from MIDI, the sound-effect designs, the radio filter, the
+       analysis (loudness, spectrograms) and the checks. They compile the same DSP and mixer sources the game uses
+       (Game/Assets/Monolith/Scripts/Audio/Dsp), so what is measured here is what plays there. See tools/audio/README.md. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RootNamespace>Monolith.AudioTools</RootNamespace>
+    <AssemblyName>MnAudio</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TieredPGO>true</TieredPGO>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NoWarn>CS0649;CS0169;CS0414;CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Game\Assets\Monolith\Scripts\Audio\Dsp\**\*.cs" />
+    <Compile Include="Synth\**\*.cs" />
+    <Compile Include="Sfx\**\*.cs" />
+    <Compile Include="Tools\**\*.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>
