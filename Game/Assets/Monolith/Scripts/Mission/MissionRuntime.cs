@@ -755,6 +755,7 @@ namespace Monolith.Mission
         public ShipCombat CombatOf(string name) { var r = Rec(name); return r != null && r.Id != GameWorld.NoShip ? World.Combat.Get(r.Id) : null; }
 
         public bool HasArrived(string name) { var r = Rec(name); return r != null && r.ArrivedAt >= 0f; }
+        public bool HasDeparted(string name) { var r = Rec(name); return r != null && r.DepartedAt >= 0f; }
 
         /// <summary>When a fact became true of a ship, or of every ship of a wing (for arrivals: its first wave, or with any its first ship), or -1.</summary>
         public float Since(string name, Fact fact, bool any)

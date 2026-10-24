@@ -219,6 +219,7 @@ namespace Monolith.Game
                 Check(right && !wrong, "cond runs the first case that holds");
                 Check(Near(At("relay 2 in"), 24f) && rt.RecOf("Relay 4").Present, $"wing waves: the second wave comes 2 s after the first is gone, as Relay 3 and 4 ({F(At("relay 2 in"))})");
                 Check(Near(At("late gone"), 27f) && lab.W.Ships.Get(Id("Late")) == null, $"depart: flies out, jumps after 2 s, leaves the world ({F(At("late gone"))})");
+                Check(At("departed hull") < 0f, "a ship that jumped out reads as neither hurt nor destroyed (hull and subsystem conditions stay false)");
                 Check(At("runner gone") > 25f && lab.W.Ships.Get(Id("Runner")) == null, $"waypoints then depart: the Runner flies its leg and jumps ({F(At("runner gone"))} s)");
                 Check(Near(At("earth count"), 5f), $"teamAlive: Earth reaches 3 ships when Choir comes in ({F(At("earth count"))})");
                 Check(Near(At("hostiles near"), 0f) && Near(At("easy or harder"), 0f) && Near(At("no autopilot"), 0f), "hostilesNear, difficultyAtLeast and autopilot read the world, the level and the pilot");

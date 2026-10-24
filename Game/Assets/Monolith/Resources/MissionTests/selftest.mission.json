@@ -69,6 +69,7 @@
     { "name": "orders", "when": { "time": 21 }, "do": [ { "do": "order", "ship": "Relay", "order": "guard", "target": "Warden", "standing": true }, { "do": "order", "ship": "Sable 2", "order": "form", "target": "<player>" } ] },
     { "name": "leave", "when": { "time": 25 }, "do": [ { "do": "depart", "ship": "Late", "jumpAfter": 2 }, { "do": "order", "ship": "Runner", "order": "waypoints", "path": [[-4000, 500, 8300]], "then": "depart" }, { "do": "invulnerable", "ship": "Mercy", "on": true } ] },
     { "name": "late gone", "when": { "departed": "Late" } },
+    { "name": "departed hull", "when": { "or": [ { "hull": "Late", "below": 50 }, { "subsystem": "Late", "kind": "engine", "destroyed": true } ] } },
     { "name": "runner gone", "when": { "departed": "Runner" } },
     { "name": "earth count", "when": { "teamAlive": "earth", "atLeast": 3 } },
     { "name": "hostiles near", "when": { "hostilesNear": "<player>", "within": 20000 } },

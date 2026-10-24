@@ -260,14 +260,14 @@ namespace Monolith.Mission
             public override string Describe() => $"destroyedPercent {List(_names)} >= {F(_pct)}%";
         }
 
-        /// <summary>FS2's hits-left: hull percentage of a ship that has arrived (a destroyed ship has 0).</summary>
+        /// <summary>FS2's hits-left: hull percentage of a ship that has arrived (a destroyed ship has 0; one that departed is never below or above).</summary>
         sealed class Hull : Cond
         {
             readonly string _ship; readonly float _below, _above;
             public Hull(string ship, float below, float above) { _ship = ship; _below = below; _above = above; }
             public override bool Eval(MissionRuntime rt)
             {
-                if (!rt.HasArrived(_ship)) return false;
+                if (!rt.HasArrived(_ship) || rt.HasDeparted(_ship)) return false;     // a ship that jumped out has no hull to read
                 var c = rt.CombatOf(_ship);
                 float pct = c != null && c.Alive ? c.Hull01 * 100f : 0f;
                 return (_below < 0f || pct < _below) && (_above < 0f || pct > _above);
@@ -285,7 +285,7 @@ namespace Monolith.Mission
             public Subsystem(string ship, List<string> parts, string kind, bool destroyed, float below, float above) { _ship = ship; _parts = parts; _kind = kind; _destroyed = destroyed; _below = below; _above = above; }
             public override bool Eval(MissionRuntime rt)
             {
-                if (!rt.HasArrived(_ship)) return false;
+                if (!rt.HasArrived(_ship) || rt.HasDeparted(_ship)) return false;
                 var c = rt.CombatOf(_ship);
                 bool gone = c == null || !c.Alive;
                 if (_destroyed)
