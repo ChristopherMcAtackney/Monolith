@@ -1,0 +1,75 @@
+{
+ "scene": "loading",
+ "sceneOptions": {
+  "style": "meridian",
+  "keys": [
+   [
+    0.0,
+    0.08,
+    "Starting up",
+    0.35
+   ],
+   [
+    1.5,
+    0.46,
+    "Loading sound",
+    4.0
+   ],
+   [
+    3.5,
+    0.93,
+    "Warming up the sky",
+    12.0
+   ],
+   [
+    5.5,
+    0.46,
+    "Loading sound",
+    10.0
+   ]
+  ]
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.5
+ },
+ "stills": [
+  {
+   "name": "meridian_start_169",
+   "width": 1920,
+   "height": 1080,
+   "warmup": 0.5
+  },
+  {
+   "name": "meridian_middle_169",
+   "width": 1920,
+   "height": 1080,
+   "warmup": 2.0
+  },
+  {
+   "name": "meridian_late_169",
+   "width": 1920,
+   "height": 1080,
+   "warmup": 2.0
+  },
+  {
+   "name": "meridian_middle_219",
+   "width": 2560,
+   "height": 1080,
+   "warmup": 1.5
+  },
+  {
+   "name": "meridian_middle_43",
+   "width": 1440,
+   "height": 1080,
+   "warmup": 0.25
+  },
+  {
+   "name": "meridian_middle_54",
+   "width": 1350,
+   "height": 1080,
+   "warmup": 0.25
+  }
+ ]
+}

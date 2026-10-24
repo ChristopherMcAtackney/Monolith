@@ -112,7 +112,7 @@ namespace Monolith.Audio
             AudioLink.Owned = true;
             Subscribe();
             world?.Sim.Register(new Tick(this));
-            if (!Lib.Ready) { if (options.Offline) Lib.LoadBlocking(); else StartCoroutine(Lib.Load(this)); }
+            if (!Lib.Ready && !Lib.Started) { if (options.Offline) Lib.LoadBlocking(); else StartCoroutine(Lib.Load(this)); }
             MnLog.Info($"AUDIO on: {SampleRate} Hz, {(options.Offline ? "offline (rendered in step with the sim" + (options.RecordPath != null ? ", recording to " + options.RecordPath : "") + ")" : options.Silent ? "silent (every path runs, none is heard)" : "sound card")}, settings from {Prefs.Source}");
         }
 

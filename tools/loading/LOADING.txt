@@ -1,0 +1,32 @@
+MONOLITH - THE LOADING SCREEN
+=============================
+
+Starting the game now opens on your Oort splash picture, with a loading bar in the
+HUD's style and a line saying what it is doing. When it is done the picture fades
+into the mission.
+
+What to look at
+  * Is something on the screen from the moment the game can draw it (about 3.5 s
+    after you start it here; before that it is Unity's own window and logo)?
+  * Does the bar move at about the speed the loading really goes, and do the words
+    say the right thing? (It is never on a timer: every step is real work.)
+  * Is the start smooth when the picture fades? Nothing should stall in the first
+    seconds of flight now (before: stalls of up to 0.8 s as the sky, the effects
+    and the cabin were used for the first time).
+  * Does the picture sit well on your screen? It is never stretched; on a wide
+    screen it has a little black at the sides.
+
+Play.bat [mission] [halo|meridian|cipher] [window] [noloading] [veryeasy|easy|medium|hard|insane]
+  Play.bat                   escort, the style you chose last, fullscreen
+  Play.bat cabin cipher      Dead Water, the bar in the Cipher style
+  Play.bat dogfight window   in a window
+  Play.bat escort noloading  the old start, no screen, to compare the two
+The bar is drawn in whichever HUD style you play with (F9 changes it, hud.json keeps it).
+
+Your own picture: put a file called splash.png in a folder called Loading next to Play.bat
+(Loading\splash.png) and it is used instead. It is never stretched; a 16:9 picture fits best.
+
+Files it writes next to the game: loading_stats.json (how long each step took, so the
+next bar goes at your computer's pace). Delete it any time.
+
+Sandbox.bat still opens the effects sandbox, now behind the same screen.

@@ -1,0 +1,35 @@
+{
+  "ships": [
+    "ShipArt/diaspora_cruiser|GameObject",
+    "ShipArt/earth_bomber|GameObject",
+    "ShipArt/earth_corvette|GameObject",
+    "ShipArt/earth_fighter|GameObject",
+    "ShipArt/earth_heavy|GameObject",
+    "ShipArt/earth_interceptor|GameObject",
+    "ShipArt/vanguard_fighter|GameObject"
+  ],
+  "cabin": [
+    "Cabin/cabin|GameObject"
+  ],
+  "effects": [
+    "Juice/Flip/fire_a|Texture2D",
+    "Juice/Flip/fire_b|Texture2D",
+    "Juice/Flip/fire_c|Texture2D",
+    "Juice/Flip/fire_d|Texture2D",
+    "Juice/Flip/smoke_a|Texture2D",
+    "Juice/Sections/diaspora_cruiser.sections|Mesh",
+    "Juice/Sections/earth_bomber.sections|Mesh",
+    "Juice/Sections/earth_corvette.sections|Mesh",
+    "Juice/Sections/earth_fighter.sections|Mesh",
+    "Juice/Sections/earth_heavy.sections|Mesh",
+    "Juice/Sections/earth_interceptor.sections|Mesh",
+    "Juice/Sections/vanguard_fighter.sections|Mesh",
+    "Juice/MN_Fx|Shader"
+  ],
+  "sky": [
+    "MonolithSky/milkyway|Texture2D",
+    "MonolithSky/stars|TextAsset",
+    "MonolithSky/MonolithSky|Shader",
+    "MonolithLook/MonolithLens|Shader"
+  ]
+}

@@ -85,6 +85,10 @@ namespace Monolith.Juice
         public string Cause => _cause;
         public int Parts => _parts.Count;
         public bool Prepared => _prepared;
+        /// <summary>How far the cabin's cutting has come (0..1), for the loading screen's bar.</summary>
+        public float PrepareProgress => _prepared ? 1f : _prepRoot == null || _prepKids.Count == 0 ? 0f : Mathf.Clamp01(_prepAt / (float)_prepKids.Count);
+        /// <summary>Start cutting the cabin on the next frame instead of after the usual wait (the loading screen does it, so the cutting is done before the mission is shown).</summary>
+        public void PrepareSoon() { if (!_prepared) _framesToPrepare = Mathf.Min(_framesToPrepare, 1); }
 
         public DeathFx(JuiceContext c)
         {

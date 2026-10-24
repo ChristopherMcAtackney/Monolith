@@ -79,6 +79,8 @@ namespace Monolith.Audio
         public int BeatsPerBar = 4;
 
         public bool Ready { get; private set; }
+        /// <summary>Loading has begun (it may not be done): a library started early, by the loading screen, is not started again by the audio system that takes it over.</summary>
+        public bool Started { get; private set; }
         public int FilesLoaded, FilesFailed, Overrides, FilesTotal;
         public readonly List<string> Problems = new List<string>();
         public readonly List<string> OverrideLog = new List<string>();
@@ -241,6 +243,7 @@ namespace Monolith.Audio
         public IEnumerator Load(MonoBehaviour host)
         {
             Ready = false;
+            Started = true;
             try { ReadCatalogs(); }
             catch (Exception e) { Problems.Add("catalogs: " + e.Message); MnLog.Error("AUDIO catalogs: " + e); }
             FilesTotal = _assets.Count;

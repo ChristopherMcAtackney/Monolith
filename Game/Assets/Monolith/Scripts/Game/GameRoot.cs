@@ -2,6 +2,7 @@ using System;
 using Monolith.Capture;
 using Monolith.Core;
 using Monolith.Flight;
+using Monolith.Loading;
 using Monolith.Targeting;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -54,9 +55,23 @@ namespace Monolith.Game
             if (CabinSelfTest.Requested) { bool ok = CabinSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
             // The HUD's checks (type, data interface, layout at every size, geometry, pause screens, cost): headless.
             if (HudSelfTest.Requested) { bool ok = HudSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
+            // The loading screen's checks (the splash's fit, the bar in every style, the honest meter, the held clock, the preload manifest): headless.
+            if (LoadingSelfTest.Requested) { bool ok = LoadingSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
             // Audio checks: the score, the effects, the radio and the mix, through the real audio system rendered offline. They need frames, so they run as a coroutine and quit when done.
             if (AudioSelfTest.Requested) { AudioSelfTest.Start(this); return; }
 
+            // A played start (not a check or a capture) opens behind the loading screen, which builds the same world in steps and warms it up before the player sees it.
+            StartupProbe.Mark("boot scene loaded, building");
+            if (LoadingFlow.Wanted) { StartCoroutine(LoadingFlow.Run(this)); return; }
+            BuildPlay();
+            StartupProbe.FlyableAfterFrames(2);
+        }
+
+        /// <summary>Everything a played start builds: the clock, the world, the systems and the scene. The loading screen calls it between its own steps; without the loading screen it is the whole start.</summary>
+        public void BuildPlay()
+        {
+            StartupProbe.Mark("world build begins");
+            if (StartupProbe.Enabled && CommandLine.Has("-mnStartupDrive")) StartupDrive.Attach();
             GameEvents.Reset();
             World = new GameWorld(new Sim());
             GameWorld.SetCurrent(World);
@@ -83,8 +98,9 @@ namespace Monolith.Game
             else if (string.Equals(scene, CombatRange.SceneName, StringComparison.OrdinalIgnoreCase)) CombatRange.Build(World, flight, combat, transform, sceneOptions);
             else if (string.Equals(scene, DogfightScene.SceneName, StringComparison.OrdinalIgnoreCase)) DogfightScene.Build(World, flight, combat, transform, sceneOptions);
             else if (string.Equals(scene, MissionScene.SceneName, StringComparison.OrdinalIgnoreCase)) MissionScene.Build(World, flight, combat, transform, sceneOptions);
-            else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
+            else if (!ShipShowcase.TryBuild(World, transform, scene, sceneOptions) && !SkyTestWorld.TryBuild(World, transform, scene, sceneOptions) && !LoadingTestWorld.TryBuild(World, transform, scene, sceneOptions)) SmokeWorld.Build(World, transform);
 
+            StartupProbe.Mark("scene built");
             AudioRig.EnsureSystem(World, transform);       // scenes without a juice director get their sound here
 
             if (CommandLine.Has("-mnCapture"))
@@ -97,6 +113,7 @@ namespace Monolith.Game
             }
 
             GameEvents.Raise(EventIds.BootComplete);
+            StartupProbe.Mark("world built");
             var pipeline = GraphicsSettings.currentRenderPipeline;
             MnLog.Info($"BOOT ok: Unity {Application.unityVersion}, {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsDeviceType}), " +
                        $"pipeline {(pipeline != null ? pipeline.GetType().Name : "none")}, {Sim.SystemCount} sim systems at {Sim.Hz} Hz");

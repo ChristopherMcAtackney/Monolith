@@ -31,8 +31,9 @@ namespace Monolith.Hud
         Vtx[] _v = new Vtx[8192];
         int _nv;
         int[] _si = new int[12288], _ti = new int[12288];
-        int _ns, _nt;
-        readonly SubMeshDescriptor[] _subs = new SubMeshDescriptor[2];
+        int _ns, _nt, _ni;
+        int[] _ii = new int[96];
+        readonly SubMeshDescriptor[] _subs = new SubMeshDescriptor[3];
 
         public readonly Mesh Mesh;
         /// <summary>The style everything is drawn in (set by <see cref="Clear"/>) and the screen scale of this frame.</summary>
@@ -54,6 +55,10 @@ namespace Monolith.Hud
         static readonly int KeyId = Shader.PropertyToID("_MN_Key");
         static readonly int FontPId = Shader.PropertyToID("_MN_FontP");
         static readonly int FontTexId = Shader.PropertyToID("_MN_FontTex");
+        static readonly int ImageTexId = Shader.PropertyToID("_MN_ImageTex");
+
+        /// <summary>The picture <see cref="Image"/> draws (one per canvas).</summary>
+        public Texture ImageTexture;
 
         public HudLines()
         {
@@ -65,7 +70,7 @@ namespace Monolith.Hud
         /// <summary>Start a frame: forget everything, and set the style and the screen scale (1 at 1080p) that sizes the glow, the keyline and the type.</summary>
         public void Clear(float scale = 1f, HudStyle style = null)
         {
-            _nv = 0; _ns = 0; _nt = 0; GlyphCount = 0;
+            _nv = 0; _ns = 0; _nt = 0; _ni = 0; GlyphCount = 0;
             Texts.Clear();
             Style = style ?? HudStyles.Current;
             Scale = scale;
@@ -122,13 +127,15 @@ namespace Monolith.Hud
             const MeshUpdateFlags f = MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds;
             Mesh.SetVertexBufferParams(_nv, Layout);
             Mesh.SetVertexBufferData(_v, 0, 0, _nv, 0, f);
-            Mesh.SetIndexBufferParams(_ns + _nt, IndexFormat.UInt32);
+            Mesh.SetIndexBufferParams(_ns + _nt + _ni, IndexFormat.UInt32);
             Mesh.SetIndexBufferData(_si, 0, 0, _ns, f);
             Mesh.SetIndexBufferData(_ti, 0, _ns, _nt, f);
+            if (_ni > 0) Mesh.SetIndexBufferData(_ii, 0, _ns + _nt, _ni, f);
             _subs[0] = new SubMeshDescriptor(0, _ns);
             _subs[1] = new SubMeshDescriptor(_ns, _nt);
-            Mesh.subMeshCount = 2;
-            Mesh.SetSubMeshes(_subs, 0, 2, f);
+            _subs[2] = new SubMeshDescriptor(_ns + _nt, _ni);
+            Mesh.subMeshCount = 3;
+            Mesh.SetSubMeshes(_subs, 0, 3, f);
             Mesh.bounds = new Bounds(Vector3.zero, Vector3.one * 1e6f);
         }
 
@@ -149,6 +156,7 @@ namespace Monolith.Hud
         {
             if (_nv == 0) return;
             SetParams(p);
+            if (_ni > 0) { if (ImageTexture != null) p.SetTexture(ImageTexId, ImageTexture); cmd.DrawMesh(Mesh, Matrix4x4.identity, mat, 2, 5, p); }      // a picture is the backdrop: first
             if (_ns > 0) cmd.DrawMesh(Mesh, Matrix4x4.identity, mat, 0, 3, p);
             if (_nt > 0) cmd.DrawMesh(Mesh, Matrix4x4.identity, mat, 1, 4, p);
         }
@@ -162,6 +170,7 @@ namespace Monolith.Hud
             mat.SetVector(KeyId, new Vector4(KeyPx, Style.KeyAlpha, Style.Bold * Mathf.Max(Scale, 0.72f), 0f));
             mat.SetVector(FontPId, new Vector4(font.AtlasW, font.AtlasH, font.Spread, 0f));
             mat.SetTexture(FontTexId, font.Texture);
+            if (_ni > 0) { if (ImageTexture != null) mat.SetTexture(ImageTexId, ImageTexture); mat.SetPass(5); Graphics.DrawMeshNow(Mesh, Matrix4x4.identity, 2); }
             if (_ns > 0) { mat.SetPass(3); Graphics.DrawMeshNow(Mesh, Matrix4x4.identity, 0); }
             if (_nt > 0) { mat.SetPass(4); Graphics.DrawMeshNow(Mesh, Matrix4x4.identity, 1); }
         }
@@ -188,6 +197,37 @@ namespace Monolith.Hud
         void ShapeQuad(int a, int b, int c, int d)
         {
             _si[_ns++] = a; _si[_ns++] = b; _si[_ns++] = c; _si[_ns++] = c; _si[_ns++] = b; _si[_ns++] = d;
+        }
+
+        /// <summary>
+        /// A picture over the pixel rectangle <paramref name="min"/>..<paramref name="max"/>, showing the part <paramref name="uv"/> of <see cref="ImageTexture"/> (texture space: v up). Where the picture's own edge is inside the
+        /// screen it can fade out over <paramref name="featherU"/> and <paramref name="featherV"/> of its width and height. <paramref name="tint"/> multiplies it and its alpha is how much shows. Drawn under everything else.
+        /// </summary>
+        public void Image(Vector2 min, Vector2 max, Rect uv, float featherU, float featherV, Color tint)
+        {
+            if (tint.a <= 0.003f || ImageTexture == null) return;
+            if (_nv + 4 > _v.Length) System.Array.Resize(ref _v, _v.Length * 2);
+            if (_ni + 6 > _ii.Length) System.Array.Resize(ref _ii, _ii.Length * 2);
+            Color32 c = tint;
+            int a = V(new Vector2(min.x, min.y), uv.xMin, uv.yMax, featherU, featherV, c);
+            int b = V(new Vector2(max.x, min.y), uv.xMax, uv.yMax, featherU, featherV, c);
+            int d = V(new Vector2(min.x, max.y), uv.xMin, uv.yMin, featherU, featherV, c);
+            int e = V(new Vector2(max.x, max.y), uv.xMax, uv.yMin, featherU, featherV, c);
+            _ii[_ni++] = a; _ii[_ni++] = b; _ii[_ni++] = d; _ii[_ni++] = d; _ii[_ni++] = b; _ii[_ni++] = e;
+        }
+
+        /// <summary>A plain colour over a pixel rectangle, in the picture's layer (under every shape and word, over nothing): the backdrop of a full screen picture.</summary>
+        public void Backdrop(Vector2 min, Vector2 max, Color color)
+        {
+            if (color.a <= 0.003f) return;
+            if (_nv + 4 > _v.Length) System.Array.Resize(ref _v, _v.Length * 2);
+            if (_ni + 6 > _ii.Length) System.Array.Resize(ref _ii, _ii.Length * 2);
+            Color32 c = color;
+            int a = V(new Vector2(min.x, min.y), 0f, 0f, -1f, -1f, c);
+            int b = V(new Vector2(max.x, min.y), 0f, 0f, -1f, -1f, c);
+            int d = V(new Vector2(min.x, max.y), 0f, 0f, -1f, -1f, c);
+            int e = V(new Vector2(max.x, max.y), 0f, 0f, -1f, -1f, c);
+            _ii[_ni++] = a; _ii[_ni++] = b; _ii[_ni++] = d; _ii[_ni++] = d; _ii[_ni++] = b; _ii[_ni++] = e;
         }
 
         // ------------------------------------------------------------------------------------------------ shapes
