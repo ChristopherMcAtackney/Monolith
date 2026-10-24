@@ -31,8 +31,8 @@ Run: `Monolith.exe -mnMission dogfight` (a name or a path; `-mnDifficulty`, `-mn
   "ships": [ ... ], "wings": [ ... ], "objectives": [ ... ], "messages": [ ... ], "events": [ ... ],
   "autoplay": { "seconds": 900, "expect": { ... } } }
 ```
-Any field ending in `Why`, and `about` and `note`, is a comment: say where a number came from. The HUD's font has letters, digits and
-`. , : - + / ( ) ' %` only: no question or exclamation marks in text the player sees.
+Any field ending in `Why`, and `about` and `note`, is a comment: say where a number came from. The HUD's fonts have every printable ASCII character (and a few symbols),
+so text the player sees can use mixed case and any punctuation; `-mnHudSelfTest` checks every character in the mission files has a glyph.
 
 **Ships** (single ships) and **wings** (groups whose ships are named `<wing> 1`, `<wing> 2`... across all waves):
 ```json
@@ -168,7 +168,7 @@ and finds a powered one, a hit that takes the port engine while drones come in, 
 The runtime only publishes: `music_state` / `music_sting` and `GameWorld.Mission.Music` (the audio system will play them; auto follows how
 many hostiles are close or on the player), `jump_in` / `jump_out` (`Juice/Fx/Jumps` draws them: a scene attaches it to its juice director with
 `Jumps.Attach`, the mission scene does), `radio_line` (the HUD shows it), the directives and
-objectives on `GameWorld.Mission` (`CombatHud` draws the directives; the scene shows the briefing, the objectives on pause and the debrief).
+objectives on `GameWorld.Mission` (the HUD draws the directives; the scene shows the briefing, the objectives on pause and the debrief on its overlay screen).
 Event ids and fields: `Core/MissionBoard.cs`.
 
 ## Checks

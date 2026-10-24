@@ -13,7 +13,7 @@ namespace Monolith.Game
     /// time <c>t</c> seconds. Held: <c>fire</c> (fast gun), <c>heavy</c>, <c>missile</c> (the fire button), <c>decoy</c>, <c>aim</c>.
     /// One-tick taps: <c>cycle</c> (next missile), <c>select</c> slot, <c>target</c> name [part], <c>targetNext</c>, <c>targetAttacker</c>,
     /// <c>subsystem</c>, <c>power</c> mode. Set-up: <c>place</c>, <c>face</c> (look at a ship from a distance), <c>input</c> (sticks, throttle),
-    /// <c>invulnerable</c>. Checks that write PASS or FAIL lines to the log: <c>expect</c>. Debug: <c>damage</c>, <c>log</c>, <c>say</c>, <c>summary</c>.
+    /// <c>invulnerable</c>, <c>map</c> (the HUD's battle map on or off), <c>menu</c> (the quick menu). Checks that write PASS or FAIL lines to the log: <c>expect</c>. Debug: <c>damage</c>, <c>log</c>, <c>say</c>, <c>summary</c>.
     /// <c>aim</c> steers the nose at the lead point (or the target, or a named part) with the pitch and yaw sticks and can hold the fire button
     /// when lined up: it is the scripted stand-in for a pilot's hands.
     /// </summary>
@@ -144,6 +144,8 @@ namespace Monolith.Game
                 }
                 case "trace": _trace = (bool)(o["on"] ?? true); break;
                 case "menu": _menu = (bool)(o["on"] ?? true); break;
+                case "overlay": _range.ShowPause((bool)(o["on"] ?? true)); break;
+                case "map": if (_range.Hud != null) _range.Hud.MapSwitch = (bool)(o["on"] ?? true); break;
                 case "fire": _fire = (bool)(o["on"] ?? true); break;
                 case "heavy": _heavy = (bool)(o["on"] ?? true); break;
                 case "missile": _missile = (bool)(o["on"] ?? true); break;

@@ -52,6 +52,8 @@ namespace Monolith.Game
             if (DogfightPortCheck.Requested) { Application.Quit(DogfightPortCheck.RunFromCommandLine()); return; }
             // The cabin's checks (the pilot standing, walking, the breaker, scans, the hand repair, the rack; the cabin mission played through).
             if (CabinSelfTest.Requested) { bool ok = CabinSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
+            // The HUD's checks (type, data interface, layout at every size, geometry, pause screens, cost): headless.
+            if (HudSelfTest.Requested) { bool ok = HudSelfTest.Run(); Application.Quit(ok ? 0 : 1); return; }
             // Audio checks: the score, the effects, the radio and the mix, through the real audio system rendered offline. They need frames, so they run as a coroutine and quit when done.
             if (AudioSelfTest.Requested) { AudioSelfTest.Start(this); return; }
 

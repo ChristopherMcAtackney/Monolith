@@ -1,0 +1,73 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    0,
+    300
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.6,
+   "throttle": 0.6
+  },
+  {
+   "t": 0.4,
+   "do": "face",
+   "name": "Reaper 3",
+   "distance": 520,
+   "from": [
+    0.1,
+    0.05,
+    -1
+   ],
+   "speed": 0.62,
+   "throttle": 0.62
+  },
+  {
+   "t": 0.5,
+   "do": "target",
+   "name": "Reaper 3"
+  },
+  {
+   "t": 0.6,
+   "do": "select",
+   "slot": 1
+  },
+  {
+   "t": 0.7,
+   "do": "aim",
+   "at": "target",
+   "gain": 3.5,
+   "holdRange": 480
+  }
+ ],
+ "at": [
+  {
+   "name": "cruise_lock_acquiring",
+   "t": 1.9
+  },
+  {
+   "name": "cruise_lock_locked",
+   "t": 3.6
+  }
+ ]
+}

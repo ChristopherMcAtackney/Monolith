@@ -11,7 +11,7 @@ referencing a system). Numbers are data with sources: `Resources/Combat/weapons.
 | `Monolith.Collision` `CollisionSystem` | 500 | ship against ship and capital hull: bump, knock, damage |
 | `Monolith.Damage` `DamageSystem` | 520 | shields, hull, parts, power choice, self-healing, deaths, what the parts do |
 | `Monolith.Targeting` `AimSystem` | 890 | the lead point and target distance for the HUD |
-| `Monolith.CombatHud` | draws | the plain combat HUD and the lock and missile-warning tones |
+| `Monolith.HudUi` | draws | the HUD (`Scripts/HudUi/README.md`) and the lock and missile-warning stand-in tones |
 
 ## One tick
 

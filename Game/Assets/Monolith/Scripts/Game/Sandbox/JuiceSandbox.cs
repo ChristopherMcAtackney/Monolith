@@ -38,7 +38,7 @@ namespace Monolith.Game
         JuicePanel _panel;
         ShipState _player;
         SandboxPilot _pilot;
-        FlightHud _hud;
+        Monolith.HudUi.PilotHud _hud;
         bool _slowMo, _scripted;
         float _dirtyAt = -1f, _savedAt = -10f;
         string _lastAction = "ready";
@@ -78,7 +78,7 @@ namespace Monolith.Game
             var cls = ShipCatalog.Load(CommandLine.Get("-mnShip", "vanguard_fighter"));
             self._player = flight.Spawn(cls, self._layout * PlayerStart, self._layout, 0.25f * cls.TopSpeed, 0.25f, 0, "Player");
             world.LocalPlayerShip = self._player.Id;
-            if (hud) self._hud = FlightHud.Create(world, view.Camera, root.transform);
+            if (hud) self._hud = Monolith.HudUi.PilotHud.Create(world, view.Camera, root.transform);
 
             // The juice, then everything that raises events for it.
             var settings = JuiceSettings.Load();

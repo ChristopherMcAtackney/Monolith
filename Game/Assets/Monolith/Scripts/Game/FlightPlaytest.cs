@@ -30,7 +30,8 @@ namespace Monolith.Game
         GameWorld _world;
         FlightSystem _flight;
         PlayerPilot _pilot;
-        FlightHud _hud;
+        Monolith.HudUi.PilotHud _hud;
+        HudControls _hudControls;
         PlaytestData _data;
         ShipState _player;
         bool _paused;
@@ -75,7 +76,8 @@ namespace Monolith.Game
                 data.player.speedFraction * playerClass.TopSpeed, data.player.throttle, 0, "Player");
             world.LocalPlayerShip = self._player.Id;
 
-            self._hud = FlightHud.Create(world, view.Camera, root.transform);
+            self._hud = Monolith.HudUi.PilotHud.Create(world, view.Camera, root.transform);
+            self._hudControls = new HudControls(self._hud, ControlsConfig.Load(out _));      // the pause screen's switches; the pad's own controls replace these below
             string pilotKind = CommandLine.Get("-mnPilot", "pad");
             if (!string.IsNullOrEmpty(sceneOptions))
             {
@@ -93,6 +95,7 @@ namespace Monolith.Game
             else
             {
                 var controls = ControlsConfig.Load(out string source);
+                self._hudControls = new HudControls(self._hud, controls);
                 self._pilot = new PlayerPilot(world, self._player.Id, controls);
                 world.Pilots.Attach(self._player.Id, self._pilot);
                 MnLog.Info($"PLAYTEST controls from {source}; {PlayerPilot.Devices()}");
@@ -100,6 +103,7 @@ namespace Monolith.Game
                 Cursor.lockState = CursorLockMode.Locked;
             }
 
+            if (!string.IsNullOrEmpty(sceneOptions) && (bool?)Newtonsoft.Json.Linq.JObject.Parse(sceneOptions)["pauseScreen"] == true) self._hud.Overlay = self.PauseText();       // a capture of the pause screen
             int fps = CommandLine.GetInt("-mnFps", 0);
             if (fps > 0 && !CommandLine.Has("-mnCapture"))
             {
@@ -114,9 +118,12 @@ namespace Monolith.Game
         {
             if (_pilot == null) return;
             _hud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
+            _hudControls.Update(_paused);
 
             if (_paused)
             {
+                _hudControls.UpdatePaused();
+                _hud.Overlay = PauseText();
                 if (_pilot.SystemPressed(SystemAction.Pause) || _pilot.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pilot.SystemPressed(SystemAction.Respawn)) { Respawn(); SetPaused(false); }
                 else if (_pilot.SystemPressed(SystemAction.Quit)) Application.Quit(0);
@@ -130,18 +137,28 @@ namespace Monolith.Game
         {
             _paused = paused;
             _world.Sim.TimeScale = paused ? 0f : 1f;
-            _hud.Overlay = paused ? PauseText : null;
+            _hud.Overlay = paused ? PauseText() : null;
         }
 
-        static readonly string[] PauseText =
+        string[] PauseText()
         {
-            "PAUSED",
-            "START / ESC  RESUME      Y / BACKSPACE  RESPAWN      B / F10  QUIT",
-            "RIGHT STICK  PITCH + YAW         LEFT STICK  THROTTLE + ROLL",
-            "L3  AFTERBURNER (CLICK ON / OFF)         X  MATCH TARGET SPEED",
-            "LT  TARGET AHEAD     A  NEXT TARGET     DPAD  100 / 0 / 33 / 66 %",
-            "VIEW (BACK)  TEST KNOCK: A BIG HIT LOOSENS THE DAMPING FOR 2 S",
-        };
+            var lines = new List<string>
+            {
+                "PAUSED",
+                "START   ESC	RESUME",
+                "Y   BACKSPACE	RESPAWN",
+                "B   F10	QUIT",
+            };
+            lines.AddRange(_hudControls.SettingsLines());
+            lines.Add("#CONTROLS");
+            lines.Add("RIGHT STICK	PITCH AND YAW");
+            lines.Add("LEFT STICK	THROTTLE AND ROLL");
+            lines.Add("L3   X	AFTERBURNER (CLICK ON AND OFF)   MATCH TARGET SPEED");
+            lines.Add("LT   A	TARGET AHEAD   NEXT TARGET");
+            lines.Add("D-PAD	THROTTLE 100 / 0 / 33 / 66 %");
+            lines.Add("VIEW	TEST KNOCK: A BIG HIT LOOSENS DAMPING");
+            return lines.ToArray();
+        }
 
         void Respawn()
         {

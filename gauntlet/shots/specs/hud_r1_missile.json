@@ -1,0 +1,55 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "emplacements": [
+   "Rack 1"
+  ],
+  "noTurrets": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    -140,
+    520
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.5,
+   "throttle": 0.5
+  },
+  {
+   "t": 0.2,
+   "do": "target",
+   "name": "Rack 1"
+  },
+  {
+   "t": 0.6,
+   "do": "select",
+   "slot": 1
+  }
+ ],
+ "at": [
+  {
+   "name": "missile_warning",
+   "t": 7.4
+  },
+  {
+   "name": "missile_closing",
+   "t": 9.3
+  }
+ ]
+}

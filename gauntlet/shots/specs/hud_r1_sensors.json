@@ -1,0 +1,77 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    0,
+    300
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.5,
+   "throttle": 0.5
+  },
+  {
+   "t": 0.4,
+   "do": "face",
+   "name": "Reaper 3",
+   "distance": 520,
+   "from": [
+    0.1,
+    0.05,
+    -1
+   ],
+   "speed": 0.5,
+   "throttle": 0.5
+  },
+  {
+   "t": 0.5,
+   "do": "target",
+   "name": "Reaper 3"
+  },
+  {
+   "t": 1.0,
+   "do": "damage",
+   "ship": "Player",
+   "part": "sensors",
+   "amount": 10,
+   "subsystemMult": 1.0, "shieldMult": 0.0, "hullMult": 0.0
+  },
+  {
+   "t": 2.6,
+   "do": "damage",
+   "ship": "Player",
+   "part": "sensors",
+   "amount": 40,
+   "subsystemMult": 1.0, "shieldMult": 0.0, "hullMult": 0.0
+  }
+ ],
+ "at": [
+  {
+   "name": "sensors_damaged",
+   "t": 2.0
+  },
+  {
+   "name": "sensors_gone",
+   "t": 3.4
+  }
+ ]
+}

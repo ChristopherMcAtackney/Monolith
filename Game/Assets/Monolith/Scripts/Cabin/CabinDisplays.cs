@@ -15,9 +15,8 @@ namespace Monolith.Cabin
     /// </summary>
     public sealed class CabinDisplays : IDisposable
     {
-        static readonly Color Amber = new Color(1.00f, 0.62f, 0.20f, 0.95f);
-        static readonly Color Teal = new Color(0.30f, 0.95f, 0.82f, 0.95f);
-        static readonly Color Red = new Color(1.00f, 0.22f, 0.12f, 0.98f);
+        // The displays share the HUD's style: its typeface, its line and glow, its ink (the plan table and the repair panels in its second tone) and its one warning colour.
+        static Color Red => HudStyles.Current.Warn;
 
         sealed class Disp
         {
@@ -27,7 +26,7 @@ namespace Monolith.Cabin
             public Material Mat;
             public Renderer Renderer;
             public float NextAt, Period;
-            public Color Ink;
+            public bool Teal;
             public bool Cleared;
         }
 
@@ -55,7 +54,7 @@ namespace Monolith.Cabin
                 bool teal = d.Name.Contains("table") || d.Name.Contains("panel");
                 _all.Add(new Disp
                 {
-                    Def = d, RT = rt, Lines = new HudLines(), Mat = mat, Renderer = r, Ink = teal ? Teal : Amber,
+                    Def = d, RT = rt, Lines = new HudLines(), Mat = mat, Renderer = r, Teal = teal,
                     Period = d.Name.Contains("table") ? 1f / 24f : 1f / 12f,
                 });
             }
@@ -99,17 +98,21 @@ namespace Monolith.Cabin
         void Draw(Disp d, float now)
         {
             var L = d.Lines;
-            L.Clear();
             float w = d.Def.W, h = d.Def.H;
-            float lw = Mathf.Max(1.6f, h / 150f);
+            // The display is a small surface seen from a metre or two: its lines and glow are sized by its height, not by a screen's.
+            L.GlowScale = 0.45f;
+            L.Clear(Mathf.Clamp(h / 300f, 0.9f, 2.6f));
+            var style = L.Style;
+            var ink = d.Teal ? style.Ink2 : style.Ink;
+            float lw = L.Lw();
             string n = d.Def.Name;
-            if (n == "DISPLAY_dash") DrawDash(L, w, h, lw, d.Ink, now);
-            else if (n == "DISPLAY_left") DrawParts(L, w, h, lw, d.Ink, now);
-            else if (n == "DISPLAY_right") DrawComms(L, w, h, lw, d.Ink, now);
-            else if (n == "DISPLAY_table") DrawTable(L, w, h, lw, d.Ink, now);
-            else if (n.StartsWith("DISPLAY_rack_", StringComparison.Ordinal)) DrawRack(L, w, h, lw, d.Ink, now, n.Substring(13));
-            else if (n == "DISPLAY_breaker") DrawBreaker(L, w, h, lw, d.Ink, now);
-            else if (n.StartsWith("DISPLAY_panel_", StringComparison.Ordinal)) DrawPanel(L, w, h, lw, d.Ink, now, n.Substring(14));
+            if (n == "DISPLAY_dash") DrawDash(L, w, h, lw, ink, now);
+            else if (n == "DISPLAY_left") DrawParts(L, w, h, lw, ink, now);
+            else if (n == "DISPLAY_right") DrawComms(L, w, h, lw, ink, now);
+            else if (n == "DISPLAY_table") DrawTable(L, w, h, lw, ink, now);
+            else if (n.StartsWith("DISPLAY_rack_", StringComparison.Ordinal)) DrawRack(L, w, h, lw, ink, now, n.Substring(13));
+            else if (n == "DISPLAY_breaker") DrawBreaker(L, w, h, lw, ink, now);
+            else if (n.StartsWith("DISPLAY_panel_", StringComparison.Ordinal)) DrawPanel(L, w, h, lw, ink, now, n.Substring(14));
             L.Commit();
             var prev = RenderTexture.active;
             Graphics.SetRenderTarget(d.RT);
@@ -117,8 +120,7 @@ namespace Monolith.Cabin
             _line.SetMatrix("_MN_Matrix", GL.GetGPUProjectionMatrix(Matrix4x4.Ortho(0f, w, h, 0f, -1f, 1f), true));
             _line.SetVector("_MN_Screen", new Vector4(w, h, 1f / w, 1f / h));
             _line.SetFloat("_MN_Dim", 0f);
-            _line.SetPass(2);
-            Graphics.DrawMeshNow(L.Mesh, Matrix4x4.identity);
+            L.DrawNow(_line);
             Graphics.SetRenderTarget(prev);
         }
 
@@ -133,23 +135,8 @@ namespace Monolith.Cabin
             if (frac > 0.005f) L.Fill(new Vector2(x + 2f, y + 2f), new Vector2(x + 2f + (w - 4f) * Mathf.Clamp01(frac), y + h - 2f), ink);
         }
 
-        public static List<string> Wrap(string text, int cols)
-        {
-            var lines = new List<string>();
-            if (string.IsNullOrEmpty(text)) return lines;
-            foreach (var para in text.Split('\n'))
-            {
-                var words = para.Split(' ');
-                string cur = "";
-                foreach (var word in words)
-                {
-                    if (cur.Length + word.Length + (cur.Length > 0 ? 1 : 0) > cols) { if (cur.Length > 0) lines.Add(cur); cur = word; }
-                    else cur = cur.Length > 0 ? cur + " " + word : word;
-                }
-                lines.Add(cur);
-            }
-            return lines;
-        }
+        /// <summary>Break text into lines no wider than <paramref name="maxWidth"/> pixels at a cap height, in the display's own type.</summary>
+        static List<string> WrapW(HudLines L, string text, float cap, float maxWidth) => L.Wrap(text, cap, L.Style.TrackBody, maxWidth);
 
         static Color Dim(Color c, float k = 0.4f) => new Color(c.r, c.g, c.b, c.a * k);
 
@@ -206,7 +193,7 @@ namespace Monolith.Cabin
             {
                 L.Text("DIRECTIVE", new Vector2(tx, 232f * u), 14f * u, lw * 0.8f, dim);
                 var d0 = m2.Directives[0];
-                var lines = Wrap((d0.Text ?? "").ToUpperInvariant(), 20);
+                var lines = WrapW(L, d0.Text ?? "", 16f * u, w - tx - 24f * u);
                 for (int i = 0; i < Mathf.Min(3, lines.Count); i++) L.Text(lines[i], new Vector2(tx, (254f + i * 22f) * u), 16f * u, lw * 0.9f, ink);
             }
         }
@@ -263,7 +250,7 @@ namespace Monolith.Cabin
             float y = 84f * u;
             for (int i = _radio.Count - 1; i >= 0 && y < h * 0.55f; i--)
             {
-                var lines = Wrap(_radio[i].ToUpperInvariant(), 31);
+                var lines = WrapW(L, _radio[i], 14f * u, w - 56f * u);
                 foreach (var ln in lines) { L.Text(ln, new Vector2(28f * u, y), 14f * u, lw * 0.85f, i == _radio.Count - 1 ? ink : dim); y += 21f * u; }
                 y += 8f * u;
             }
@@ -275,7 +262,7 @@ namespace Monolith.Cabin
             if (m != null && !m.Ended)
                 foreach (var dr in m.Directives)
                 {
-                    var lines = Wrap((dr.Text ?? "").ToUpperInvariant() + (dr.State == MissionBoard.State.Done ? "  DONE" : dr.State == MissionBoard.State.Failed ? "  FAILED" : ""), 31);
+                    var lines = WrapW(L, (dr.Text ?? "") + (dr.State == MissionBoard.State.Done ? "  - done" : dr.State == MissionBoard.State.Failed ? "  - failed" : ""), 14f * u, w - 56f * u);
                     foreach (var ln in lines) { L.Text(ln, new Vector2(28f * u, dy), 14f * u, lw * 0.85f, dr.State == MissionBoard.State.Done ? dim : ink); dy += 21f * u; }
                     dy += 6f * u;
                     if (dy > h - 40f * u) break;
@@ -309,7 +296,7 @@ namespace Monolith.Cabin
                 case CabinSystem.TableKind.Briefing:
                     if (file != null && page.Index < file.Briefing.Stages.Count)
                     {
-                        var lines = Wrap(file.Briefing.Stages[page.Index].ToUpperInvariant(), 44);
+                        var lines = WrapW(L, file.Briefing.Stages[page.Index], 22f * u, w - 96f * u);
                         float y = 120f * u;
                         foreach (var ln in lines) { L.Text(ln, new Vector2(48f * u, y), 22f * u, lw * 1.0f, ink); y += 40f * u; }
                     }
@@ -320,9 +307,9 @@ namespace Monolith.Cabin
                     {
                         var q = file.Briefing.Questions[page.Index];
                         float y = 120f * u;
-                        foreach (var ln in Wrap("> " + q.Key.ToUpperInvariant(), 44)) { L.Text(ln, new Vector2(48f * u, y), 20f * u, lw, dim); y += 34f * u; }
+                        foreach (var ln in WrapW(L, "> " + q.Key, 20f * u, w - 96f * u)) { L.Text(ln, new Vector2(48f * u, y), 20f * u, lw, dim); y += 34f * u; }
                         y += 18f * u;
-                        foreach (var ln in Wrap(q.Value.ToUpperInvariant(), 44)) { L.Text(ln, new Vector2(48f * u, y), 22f * u, lw, ink); y += 40f * u; }
+                        foreach (var ln in WrapW(L, q.Value, 22f * u, w - 96f * u)) { L.Text(ln, new Vector2(48f * u, y), 22f * u, lw, ink); y += 40f * u; }
                     }
                     break;
                 case CabinSystem.TableKind.Objectives:
@@ -335,7 +322,7 @@ namespace Monolith.Cabin
                             if (o.Hidden && o.State != MissionBoard.State.Done) continue;
                             var col = o.State == MissionBoard.State.Failed ? Red : o.State == MissionBoard.State.Done ? dim : ink;
                             L.Text(o.Kind.ToUpperInvariant(), new Vector2(48f * u, y), 14f * u, lw * 0.8f, dim);
-                            foreach (var ln in Wrap(o.Text.ToUpperInvariant() + (o.State == MissionBoard.State.Done ? "  DONE" : o.State == MissionBoard.State.Failed ? "  FAILED" : ""), 40)) { y += 24f * u; L.Text(ln, new Vector2(48f * u, y), 20f * u, lw, col); y += 14f * u; }
+                            foreach (var ln in WrapW(L, o.Text + (o.State == MissionBoard.State.Done ? "  - done" : o.State == MissionBoard.State.Failed ? "  - failed" : ""), 20f * u, w - 96f * u)) { y += 24f * u; L.Text(ln, new Vector2(48f * u, y), 20f * u, lw, col); y += 14f * u; }
                             y += 26f * u;
                         }
                     else if (file != null)
@@ -354,7 +341,7 @@ namespace Monolith.Cabin
                         L.Text((rt.ResultText ?? "").ToUpperInvariant(), new Vector2(48f * u, y), 34f * u, lw * 1.5f, rt.Result == "defeat" ? Red : ink);
                         y += 76f * u;
                         foreach (var raw in rt.Debrief())
-                            foreach (var ln in Wrap(raw.ToUpperInvariant(), 44)) { L.Text(ln, new Vector2(48f * u, y), 18f * u, lw * 0.95f, ink); y += 30f * u; }
+                            foreach (var ln in WrapW(L, raw, 18f * u, w - 96f * u)) { L.Text(ln, new Vector2(48f * u, y), 18f * u, lw * 0.95f, ink); y += 30f * u; }
                     }
                     break;
                 }

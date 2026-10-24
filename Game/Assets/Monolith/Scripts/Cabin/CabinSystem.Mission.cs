@@ -142,9 +142,9 @@ namespace Monolith.Cabin
                 GameEvents.Raise(CabinEvents.Lights, eff);
                 Board.Version++;
             }
-            // The HUD: gone with the view's rise, gone when the ship is dark, gone while the battle map is up.
+            // The HUD: gone with the view's rise and when the ship is dark. The battle map is the HUD's own screen now (it draws it while MapOpen is on and keeps the warnings and the radio up).
             float collapse = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Board.Stand01 / 0.5f));
-            float hudWant = Mathf.Max(collapse, (!Powered || _relightT < Cfg.timing.relightSeconds) ? 1f : 0f, Board.MapOpen ? 1f : 0f);
+            float hudWant = Mathf.Max(collapse, (!Powered || _relightT < Cfg.timing.relightSeconds) ? 1f : 0f);
             if (Paused) hudWant = 0f;
             Board.HudCollapse = Mathf.MoveTowards(Board.HudCollapse, hudWant, dt * (Powered ? 3.0f : 5.0f));
             // The eye's exposure: the flight view's when seated, the cabin's own light when up (it opens slowly into the dark and closes fast into the light).

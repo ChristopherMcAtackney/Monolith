@@ -36,7 +36,7 @@ turns it round; the pause screen flips both (LB flight, RB cabin look, or I and 
 | `CabinPilot` | wraps the player's pilot source: standing or dark, it holds heading and the current speed |
 | `CabinInput` | `PadCabinInput` (pad and keyboard, from `cabin.json`'s `controls`) and `ScriptedCabinInput` (a JSON script: `stand`, `sit`, `walk` (`to`, `via`), `face` (`at`, `yaw`, `pitch`), `press`, `use`, `back`, `map`, `launch`, `wait`, each with an optional `t` start time) for captures and checks |
 | `CabinRig` | the MonoBehaviour that presents it: builds the prefab, the lights and the displays, follows the ship, drives the moving parts (lever, panel doors and modules, rack modules) and the emissives |
-| `CabinLights`, `CabinDisplays`, `CabinOverlay`, `BlipMap`, `Loadout` | the lights, the display render textures (drawn with `HudLines` and `MN_Lines`), the prompts, the table's map, the rack's choice |
+| `CabinLights`, `CabinDisplays`, `CabinOverlay`, `BlipMap`, `Loadout` | the lights, the display render textures (drawn with the HUD kit's canvas, type and style, `Monolith.Hud`: whichever HUD style the player chose, so the displays, the table's map and the HUD read as one), the prompts, the table's map (the kit's `HudMap`), the rack's choice. The seat's battle map is the HUD's own (it keeps the radio and the warnings up); the cabin only turns `MapOpen` on |
 
 `Game/Cabin/CabinSelfTest.cs` is `-mnCabinSelfTest` (below). `Game/Mission/MissionScene.cs` builds the cabin (`MakeCabin`), wraps the pilot,
 holds the sim while a mission starts at the plan table, and passes the cabin to `MissionRuntime` as its `ICabin`.

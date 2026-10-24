@@ -366,6 +366,8 @@ Missions are data files (one file per mission), not C#. A future mission editor 
   become thicker curved arcs, segments of a circle around the reticle, as in FS2's HUD, not thin
   straight lines. The type must be refined and easy to read: the placeholder font is "squished up and
   hard to read". Rough and minimal still holds, but refined; never cramped.
+  **Built (2026-10-24):** the real HUD (`Scripts/HudUi/README.md`) with three switchable styles for the user to pick from (`halo`, `meridian`, `cipher`: colour, typeface, arc thickness and glyph density differ), thick curved gauges either side of
+  the reticle (speed and throttle left; weapon energy and afterburner fuel right), signed-distance-field type in open-licensed fonts (`docs/licences/fonts.md`), an FS2-style radar and the retro battle map in the same style, shared by the cabin's displays.
 - **The player's tech is rough and minimal** (user): "like no spare energy could be spent on unnecessary
   fluff". The HUD, battle map, cabin displays, briefing, debrief and menus share one style: single-colour line graphics,
   blips, terse text. The contrast between spare tech and photoreal spectacle is the point (call).

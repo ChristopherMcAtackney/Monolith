@@ -1,0 +1,54 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     300
+    ],
+    "rot": [
+     0,
+     20,
+     0
+    ],
+    "speed": 0.5,
+    "throttle": 0.5
+   },
+   {
+    "t": 0.3,
+    "do": "target",
+    "name": "Reaper 2"
+   },
+   {
+    "t": 0.8,
+    "do": "map",
+    "on": true
+   }
+  ],
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "battle_map",
+   "follow": true,
+   "warmup": 1.7668
+  }
+ ]
+}
