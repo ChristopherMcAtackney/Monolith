@@ -353,6 +353,10 @@ Missions are data files (one file per mission), not C#. A future mission editor 
 
 - **Photorealistic all round** (user), with FS2's spectacle (user): capital ships that fill the screen,
   beams crossing, planets hanging behind the fight.
+- **HUD direction (user, 2026-10-24):** the two main bars (speed and throttle; afterburner or energy)
+  become thicker curved arcs, segments of a circle around the reticle, as in FS2's HUD, not thin
+  straight lines. The type must be refined and easy to read: the placeholder font is "squished up and
+  hard to read". Rough and minimal still holds, but refined; never cramped.
 - **The player's tech is rough and minimal** (user): "like no spare energy could be spent on unnecessary
   fluff". The HUD, battle map, cabin displays, briefing, debrief and menus share one style: single-colour line graphics,
   blips, terse text. The contrast between spare tech and photoreal spectacle is the point (call).
