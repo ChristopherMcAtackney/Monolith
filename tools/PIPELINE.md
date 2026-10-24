@@ -83,7 +83,7 @@ times into the plan's warm-ups, `tools\juice\sheet.py` and `clip.py` make contac
 `blender -b --factory-startup` (Blender 5.2). `tools\` is put on `sys.path`, `MN_ROOT` is set, and a Python exception gives
 a non-zero exit plus the traceback in the summary. Logs go to `Game\Logs\blender_*.log`. Keep scripts and `.blend` files in
 `art_src\<model>\`; never put `.blend` files under `Game\Assets` (Unity would try to import them with Blender).
-Shared Blender helpers will live in `tools\blender_lib\` when the first model script needs them.
+Shared Blender helpers live in `tools\blender_lib\` (the ship kit: textures, meshes, parts, export, previews); the art pipeline, conventions and how to add a ship are in `art_src\PIPELINE.md`. `tools\ship\make_ship_plan.py` writes capture plans for ship models (`"scene": "corvette"`, `sceneOptions` per `ShipShowcase`: ship id, orientation, a placeholder fighter, damage) in the ship's own frame.
 
 ## Gotchas
 

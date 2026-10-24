@@ -151,3 +151,15 @@ nobody has heard the sounds, and the pad rumble has not been felt.
   `python tools\juice\make_plan.py spec plan`.
 - Checks (player flags): `-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`,
   `-mnShakeLog file.csv`, `-mnJuiceHitchLog`, `-mnAudioMute` (run the sound paths silently).
+
+## Round 1 verdicts (lead, 2026-10-24)
+Two blind critics, each with fresh context.
+
+**Realism vs The Expanse: lost 3/3, all certain.** Pairs: capital_death_final vs explosion_capital/expanse/7wFt319UB2o_0035; bomber_kill_fireball vs explosion_small/expanse/7_ATYOm3nNc_0191 (2:1); laser_exchange vs gunfire_and_tracers/expanse/XuqEX1PnG9I_0002 (2:1).
+- Giveaways: fireballs are smooth, airbrushed sprites with no turbulent volumetric structure or motion blur; blasts and bolts put no hot light on nearby hulls and debris (no spill); sparks are evenly scattered dashes of the same length and brightness, with no depth or blur; bolts are constant-width capsules where the show's tracers are thin, tapered and blurred.
+- Lead's fault: the captures had the HUD on, and the critic called the HUD "an instant giveaway before any of the VFX". Look captures must be HUD-off from now on.
+
+**Meatiness vs FS2's own beam battles: lost 3/3 (certain, likely, certain).** Pairs: beam_strike vs heavy_beam_fire/fs2/big_battle_comparison_0187; laser_exchange vs gunfire_and_tracers/fs2/big_battle_comparison_0110; capital_death_final vs explosion_capital/fs2/big_battle_comparison_0132 (all cropped to 2:1).
+- Giveaways: our beam is a dim green smear, where FS2's is fat and saturated with a white-hot, hard-edged core, flaring edges and a big hit flare; our bolts are short glow-stick dashes with no sustained hammering on a hull; our capital death is a decent burst but small, and the ship stays crisp and readable "like a cutout with a sticker on it", where FS2's fireball swallows the whole hull.
+
+**Both critics point the same way.** Explosions several times bigger and brighter, with a blown-out core, turbulent volumetric structure and real light spill onto nearby surfaces, so the ship disappears into the blast. Beams fat and saturated with a white-hot core, a big flare where they hit, and visible sustained hammering. Sparks and debris with depth and motion blur. These are pointers, not a recipe.
