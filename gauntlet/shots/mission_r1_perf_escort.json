@@ -1,0 +1,7 @@
+{
+  "scene": "mission",
+  "sceneOptions": { "mission": "escort", "pilot": "ai", "invulnerable": true, "hud": true },
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 3.0 },
+  "stills": [ { "name": "t300_before_perf", "follow": true, "warmup": 300.0 } ],
+  "perf": [ { "name": "bombers_and_lector", "follow": true, "warmup": 3.0, "seconds": 30 } ]
+}

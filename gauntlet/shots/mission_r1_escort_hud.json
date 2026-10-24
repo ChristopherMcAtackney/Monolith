@@ -1,0 +1,97 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "escort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": true
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "hud_t003",
+      "follow": true,
+      "warmup": 3.0
+    },
+    {
+      "name": "hud_t030",
+      "follow": true,
+      "warmup": 27.0
+    },
+    {
+      "name": "hud_t060",
+      "follow": true,
+      "warmup": 30.0
+    },
+    {
+      "name": "hud_t090",
+      "follow": true,
+      "warmup": 30.0
+    },
+    {
+      "name": "hud_t115",
+      "follow": true,
+      "warmup": 25.0
+    },
+    {
+      "name": "hud_t130",
+      "follow": true,
+      "warmup": 15.0
+    },
+    {
+      "name": "hud_t160",
+      "follow": true,
+      "warmup": 30.0
+    },
+    {
+      "name": "hud_t200",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t240",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t280",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t320",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t360",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t400",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t440",
+      "follow": true,
+      "warmup": 40.0
+    },
+    {
+      "name": "hud_t470",
+      "follow": true,
+      "warmup": 30.0
+    },
+    {
+      "name": "hud_t500",
+      "follow": true,
+      "warmup": 30.0
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "escort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false,
+    "spectate": {
+      "ship": "Tamsin",
+      "offset": [
+        110,
+        45,
+        -330
+      ],
+      "look": "ship"
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0
+  },
+  "stills": [
+    {
+      "name": "tamsin_t020.00",
+      "follow": true,
+      "warmup": 20.0
+    },
+    {
+      "name": "tamsin_t070.00",
+      "follow": true,
+      "warmup": 50
+    },
+    {
+      "name": "tamsin_t140.00",
+      "follow": true,
+      "warmup": 70
+    },
+    {
+      "name": "tamsin_t312.00",
+      "follow": true,
+      "warmup": 172
+    },
+    {
+      "name": "tamsin_t400.00",
+      "follow": true,
+      "warmup": 88
+    },
+    {
+      "name": "tamsin_t470.00",
+      "follow": true,
+      "warmup": 70
+    },
+    {
+      "name": "tamsin_t478.90",
+      "follow": true,
+      "warmup": 8.9
+    },
+    {
+      "name": "tamsin_t479.03",
+      "follow": true,
+      "warmup": 0.13
+    },
+    {
+      "name": "tamsin_t479.10",
+      "follow": true,
+      "warmup": 0.07
+    },
+    {
+      "name": "tamsin_t479.30",
+      "follow": true,
+      "warmup": 0.2
+    }
+  ]
+}

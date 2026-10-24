@@ -1,0 +1,107 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "escort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0
+  },
+  "stills": [
+    {
+      "pos": [
+        380,
+        160,
+        6250
+      ],
+      "lookAt": [
+        0,
+        0,
+        6700
+      ],
+      "fov": 55,
+      "name": "tamsin_jump_t470.00",
+      "warmup": 470.0
+    },
+    {
+      "pos": [
+        380,
+        160,
+        6250
+      ],
+      "lookAt": [
+        0,
+        0,
+        6700
+      ],
+      "fov": 55,
+      "name": "tamsin_jump_t478.90",
+      "warmup": 8.9
+    },
+    {
+      "pos": [
+        380,
+        160,
+        6250
+      ],
+      "lookAt": [
+        0,
+        0,
+        6700
+      ],
+      "fov": 55,
+      "name": "tamsin_jump_t479.02",
+      "warmup": 0.12
+    },
+    {
+      "pos": [
+        380,
+        160,
+        6250
+      ],
+      "lookAt": [
+        0,
+        0,
+        6700
+      ],
+      "fov": 55,
+      "name": "tamsin_jump_t479.10",
+      "warmup": 0.08
+    },
+    {
+      "pos": [
+        380,
+        160,
+        6250
+      ],
+      "lookAt": [
+        0,
+        0,
+        6700
+      ],
+      "fov": 55,
+      "name": "tamsin_jump_t479.30",
+      "warmup": 0.2
+    },
+    {
+      "pos": [
+        380,
+        160,
+        6250
+      ],
+      "lookAt": [
+        0,
+        0,
+        6700
+      ],
+      "fov": 55,
+      "name": "tamsin_jump_t480.00",
+      "warmup": 0.7
+    }
+  ]
+}

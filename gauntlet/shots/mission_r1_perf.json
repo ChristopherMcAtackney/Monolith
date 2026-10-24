@@ -1,0 +1,7 @@
+{
+  "scene": "mission",
+  "sceneOptions": { "mission": "dogfight", "pilot": "ai", "invulnerable": true, "hud": true },
+  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 3.0 },
+  "stills": [],
+  "perf": [ { "name": "loop_opening", "follow": true, "warmup": 10.0, "seconds": 30 } ]
+}

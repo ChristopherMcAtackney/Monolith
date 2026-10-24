@@ -1,0 +1,107 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "escort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0
+  },
+  "stills": [
+    {
+      "pos": [
+        -1480,
+        420,
+        4180
+      ],
+      "lookAt": [
+        -1800,
+        250,
+        4600
+      ],
+      "fov": 45,
+      "name": "lector_jump_t112.92",
+      "warmup": 112.92
+    },
+    {
+      "pos": [
+        -1480,
+        420,
+        4180
+      ],
+      "lookAt": [
+        -1800,
+        250,
+        4600
+      ],
+      "fov": 45,
+      "name": "lector_jump_t113.00",
+      "warmup": 0.08
+    },
+    {
+      "pos": [
+        -1480,
+        420,
+        4180
+      ],
+      "lookAt": [
+        -1800,
+        250,
+        4600
+      ],
+      "fov": 45,
+      "name": "lector_jump_t113.15",
+      "warmup": 0.15
+    },
+    {
+      "pos": [
+        -1480,
+        420,
+        4180
+      ],
+      "lookAt": [
+        -1800,
+        250,
+        4600
+      ],
+      "fov": 45,
+      "name": "lector_jump_t113.50",
+      "warmup": 0.35
+    },
+    {
+      "pos": [
+        -1480,
+        420,
+        4180
+      ],
+      "lookAt": [
+        -1800,
+        250,
+        4600
+      ],
+      "fov": 45,
+      "name": "lector_jump_t114.50",
+      "warmup": 1.0
+    },
+    {
+      "pos": [
+        -1480,
+        420,
+        4180
+      ],
+      "lookAt": [
+        -1800,
+        250,
+        4600
+      ],
+      "fov": 45,
+      "name": "lector_jump_t118.00",
+      "warmup": 3.5
+    }
+  ]
+}
