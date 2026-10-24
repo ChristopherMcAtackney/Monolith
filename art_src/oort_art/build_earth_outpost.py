@@ -789,6 +789,81 @@ def approach_beacons(K, ctx):
             lamp(K, ctx.hull, p + n * (h + 0.4), n, LIGHT_AMBER if i % 2 == 0 else LIGHT_WHITE, 3.4 + 0.4 * i)
 
 
+# ------------------------------------------------------------------------------------------------ reading at range (oort-mission round 2)
+# From the player's start, 7.2 km out, a pixel is about 6.5 m: the lamps (1 to 6 m) are dots at best and the rock is a dark lump, so the outpost said "comet with a
+# thing on it". These are lit shapes big enough to cover a pixel and bright enough (the lights material, 150,000 nits) for the bloom to catch: the Eye's two rims as
+# continuous rings of light (a circle of light reads as built, and as an eye), lit bands along the decks' fronts (the part of the station that shows over the rock's
+# brow from the approach: a horizontal line of light under the Eye), a lit strip along the spine's foot where it meets the ice (hidden by the brow from the start;
+# it shows from above and from the flanks), and beacon globes on masts at the spine's ends. They are hull (they stay when parts die) and every LOD carries the rings,
+# so the outpost keeps its eye however far off it is.
+def beacon_rings(K, ctx):
+    """The Eye's rims as two continuous bands of cold light on the ring's face (toward the approach): 6 m from the inner chamfer out, 3 m inside the outer lip.
+    They stand 0.7 m off the flat face, above the plating and the radial ribs; the rim lamps poke through the inner band."""
+    lod = ctx.lod
+    ro, ri, w = RING["ro"], RING["ri"], RING["w"]
+    segs = {0: 112, 1: 56, 2: 24}[lod]
+    ctx.hull.disc(RF, ri + 10.0, w + 0.7, LIGHTS, segs=segs, facing=1.0, rect=K.light_rect(LIGHT_COLD), inner=ri + 4.0)
+    ctx.hull.disc(RF, ro - 3.6, w + 0.7, LIGHTS, segs=segs, facing=1.0, rect=K.light_rect(LIGHT_WHITE), inner=ro - 6.6)
+
+
+def foundation_strip(K, ctx):
+    """A lit strip 3.4 m tall along the spine's front flank just above the shelf, segment by segment (the necks stay dark, so it reads as a run of lit bays), over the
+    plating; the anchor blocks in front of it break it into dashes. From the approach it marks where the station meets the ice."""
+    lod = ctx.lod
+    if lod >= 2:
+        return
+    z0, z1 = ZS + 1.2, ZS + 4.6
+    for name, sts in SPINE.items():
+        if name.startswith("n"):
+            continue
+        xs = np.arange(sts[0]["y"] + 2.0, sts[-1]["y"] - 2.0 + 1e-6, 6.0)
+        for a, b in zip(xs[:-1], xs[1:]):
+            m = 0.5 * (a + b)
+            y = SY + seg_station(name, float(m))["hw"] + 0.55
+            ctx.hull.quad_rect(np.array([b, y, z0]), np.array([a, y, z0]), np.array([a, y, z1]), np.array([b, y, z1]), K.light_rect(LIGHT_COLD), LIGHTS)
+
+
+# the decks' lit bands: (deck, foot above the shelf, height), on each deck's vertical front between its chamfers and clear of its window slit
+DECK_BANDS = [("deckW", 41.6, 2.4), ("deckM1", 42.8, 2.2), ("deckE", 51.6, 2.4), ("deckM2", 39.6, 2.2)]
+
+
+def deck_bands(K, ctx):
+    """A lit band (2.2 to 2.4 m tall) along each deck's front face, over the plating, the length of the deck's straight part."""
+    lod = ctx.lod
+    for name, h, bh in DECK_BANDS:
+        sts = DECKS[name]
+        y0, y1 = sts[1]["y"] + 1.0, sts[2]["y"] - 1.0
+        y = SY + sts[1]["hw"] + 0.5
+        z0, z1 = ZS + h, ZS + h + bh
+        step = 8.0 if lod == 0 else (y1 - y0)
+        xs = np.arange(y0, y1 + 1e-6, step) if lod == 0 else np.array([y0, y1])
+        if xs[-1] < y1 - 0.5:
+            xs = np.append(xs, y1)
+        for a, b in zip(xs[:-1], xs[1:]):
+            ctx.hull.quad_rect(np.array([b, y, z0]), np.array([a, y, z0]), np.array([a, y, z1]), np.array([b, y, z1]), K.light_rect(LIGHT_COLD), LIGHTS)
+
+
+def end_beacons(K, ctx):
+    """Masts at the spine's two ends, each with a beacon globe (9 m across, cold white) at its head, so the station's length is marked by two bright points either
+    side of the Eye."""
+    lod = ctx.lod
+    if lod >= 2:
+        return
+    for x, h in ((-344.0, 46.0), (94.0, 38.0)):
+        top = spine_top(x)
+        p0 = np.array([x, SY, top - 1.0])
+        p1 = np.array([x, SY, top + h])
+        K.pipe(p0, p1, 1.1, mat=PLATE, sides=6 if lod == 0 else 4)
+        if lod == 0:
+            for k in range(3):                                               # guy braces
+                a = k * 2 * math.pi / 3 + 0.4
+                K.pipe(np.array([x + 7.0 * math.cos(a), SY + 7.0 * math.sin(a), top - 0.5]), p1 - Z * (h * 0.45), 0.25, sides=4, caps=False)
+        ctx.hull.box(Frame(p1, Y, Z), (5.0, 5.0, 3.0), PLATE_C, centre=(0, 0, 1.5), chamfer=0.6, tile=4.0)
+        R = 4.5
+        globe = [(max(R * math.sin(math.pi * k / 10), 0.05), -R * math.cos(math.pi * k / 10)) for k in range(11)]
+        ctx.hull.lathe(globe, Frame(p1 + Z * (3.0 + R), Z, Y), LIGHTS, segs=16 if lod == 0 else 8, rect=K.light_rect(LIGHT_WHITE))
+
+
 # ------------------------------------------------------------------------------------------------ guns, flak, arms
 FLAK_SITES = [(-322.0, SY + 16.0, "deckW"), (-300.0, SY - 22.0, "W"), (-188.0, SY + 12.0, "deckM1"), (30.0, SY - 14.0, "deckM2"), (-150.0, SY - 38.0, "E"), (-62.0, SY - 36.0, "E")]
 FLAK_KEEP.extend((x - 9.0, x + 9.0, y - 9.0, y + 9.0) for x, y, _ in FLAK_SITES)
@@ -1018,6 +1093,10 @@ def build(ctx):
     flak(K, ctx)
     pit_guns(K, ctx)
     approach_beacons(K, ctx)
+    beacon_rings(K, ctx)
+    deck_bands(K, ctx)
+    foundation_strip(K, ctx)
+    end_beacons(K, ctx)
     arms(K, ctx)
     vanes(K, ctx)
     boom(K, ctx)

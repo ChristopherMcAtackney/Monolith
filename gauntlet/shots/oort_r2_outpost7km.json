@@ -1,0 +1,68 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "oort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false,
+    "cabin": false
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0
+  },
+  "stills": [
+    {
+      "name": "start_view",
+      "pos": [
+        0,
+        0.4,
+        1.5
+      ],
+      "lookAt": [
+        759.8,
+        630.0,
+        7194.8
+      ],
+      "fov": 55,
+      "warmup": 3.0
+    },
+    {
+      "name": "start_cockpit",
+      "follow": true,
+      "warmup": 0.5
+    },
+    {
+      "name": "money_7km",
+      "pos": [
+        0,
+        40,
+        -120
+      ],
+      "lookAt": [
+        759.8,
+        630.0,
+        7194.8
+      ],
+      "fov": 34,
+      "warmup": 0.5
+    },
+    {
+      "name": "start_tele",
+      "pos": [
+        0,
+        0.4,
+        1.5
+      ],
+      "lookAt": [
+        759.8,
+        630.0,
+        7194.8
+      ],
+      "fov": 12,
+      "warmup": 0.5
+    }
+  ]
+}
