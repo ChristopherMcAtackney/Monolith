@@ -18,6 +18,8 @@ namespace Monolith.Juice
         public float SpinRate;
         public float Age, Life, Heat, HeatLife, HeatPeak;
         public float Radius;
+        /// <summary>Radius (metres) of the hot glow drawn round a piece while it is hot (0 = none): hot metal throws light on the space round it.</summary>
+        public float Halo;
         public Vector3 LocalCentre;
         public readonly List<Vector3> Burn = new List<Vector3>();     // local points that keep burning and venting
         public float BurnLeft, BurnTotal, BurnRate, BurnSize;
@@ -374,6 +376,118 @@ namespace Monolith.Juice
             return p;
         }
 
+
+        // ------------------------------------------------------------------------------------------------ shards: real shapes
+
+        /// <summary>
+        /// The material to cut shards from: the dying ship's own plating (the biggest renderer without a light in its material), so the wreckage looks like the ship.
+        /// </summary>
+        public static Material HullMaterial(Transform visual)
+        {
+            if (visual == null) return null;
+            Material best = null; float bestSize = -1f;
+            foreach (var r in visual.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (r.name.EndsWith("_COL") || r.name.Contains("_LOD1") || r.name.Contains("_LOD2")) continue;
+                var m = r.sharedMaterial;
+                if (m == null || (!m.HasProperty("_BaseColorMap") && !m.HasProperty("_BaseColor"))) continue;
+                if (m.HasProperty(IdEmissive)) { var ec = m.GetColor(IdEmissive); if (ec.r + ec.g + ec.b > 0.01f) continue; }
+                float size = r.bounds.size.sqrMagnitude;
+                if (size > bestSize) { bestSize = size; best = m; }
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// Wreckage with real shapes: torn plates, wedges, struts and chunks (jagged, flat-shaded, each its own size), cut from <paramref name="material"/>, flung from
+        /// <paramref name="centre"/>, tumbling, glowing at the torn edges while hot, with a small halo of its own light. Sizes are in metres.
+        /// </summary>
+        public void Shards(Vector3 centre, Vector3 inherit, int count, float sizeMin, float sizeMax, float speedMin, float speedMax, Material material, float heat = 1f, float life = 20f, Vector3? bias = null)
+        {
+            if (material == null || !_c.Settings.effects.debris) return;
+            count = Mathf.Min(_c.N(count), Mathf.Max(0, 260 - _pieces.Count));
+            for (int i = 0; i < count; i++)
+            {
+                float size = sizeMin * Mathf.Pow(sizeMax / Mathf.Max(0.01f, sizeMin), Mathf.Pow(_c.Rng.F(), 1.8f));      // many small, a few big
+                int kind = _c.Rng.Int(0, 5);
+                var mesh = BuildShard(kind, size);
+                var go = new GameObject("shard");
+                go.transform.SetParent(_root, false);
+                Vector3 dir = _c.Rng.OnSphere();
+                if (bias.HasValue) dir = (dir * 0.7f + bias.Value.normalized).normalized;
+                go.transform.SetPositionAndRotation(centre + dir * size * 0.5f, Quaternion.Euler(_c.Rng.Range(0f, 360f), _c.Rng.Range(0f, 360f), _c.Rng.Range(0f, 360f)));
+                var piece = new DebrisPiece { Go = go, T = go.transform, Group = 2 };
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = go.AddComponent<MeshRenderer>();
+                var copy = new Material(material) { name = material.name + " (heat)" };
+                piece.HeatMats.Add(copy); _heatCopies.Add(copy);
+                mr.sharedMaterial = copy;
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                piece.Rends = new Renderer[] { mr }; piece.Glows = new[] { true };
+                piece.Meshes.Add(mesh);
+                piece.Radius = size; piece.LocalCentre = Vector3.zero;
+                piece.Halo = size * 1.6f + 0.6f;
+                float spd = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 0.9f)) * Mathf.Lerp(1.15f, 0.65f, Mathf.Clamp01(size / Mathf.Max(0.1f, sizeMax)));
+                Launch(piece, inherit + dir * spd, _c.Rng.Range(0.4f, 3.4f) / Mathf.Sqrt(Mathf.Max(0.5f, size)), heat * _c.Rng.Range(0.6f, 1.0f), _c.Rng.Range(1.6f, 3.6f), life);
+                if (size > sizeMax * 0.35f) { piece.TrailRate = 6f; piece.TrailLeft = 1.4f; }
+                _pieces.Add(piece);
+            }
+        }
+
+        Mesh BuildShard(int kind, float size)
+        {
+            // A box's eight corners, pulled about so the shape is torn, not square; kinds are proportions and which corners collapse.
+            float ax, ay, az;
+            switch (kind)
+            {
+                case 0: ax = 0.9f; ay = 0.7f; az = 0.07f; break;       // a plate
+                case 1: ax = 0.8f; ay = 0.6f; az = 0.10f; break;       // a plate, thicker
+                case 2: ax = 1.0f; ay = 0.07f; az = 0.07f; break;      // a strut
+                case 3: ax = 0.55f; ay = 0.5f; az = 0.45f; break;      // a chunk
+                default: ax = 0.8f; ay = 0.55f; az = 0.15f; break;     // a wedge (below)
+            }
+            ax *= size; ay *= size; az *= size;
+            var c = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+            {
+                var sgn = new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f);
+                var v = new Vector3(sgn.x * ax, sgn.y * ay, sgn.z * az);
+                float jit = kind == 2 ? 0.12f : 0.28f;
+                v += new Vector3(_c.Rng.Range(-1f, 1f) * ax, _c.Rng.Range(-1f, 1f) * ay, _c.Rng.Range(-1f, 1f) * az) * jit;
+                c[i] = v;
+            }
+            if (kind == 4) { c[3] = c[1]; c[7] = c[5]; }                      // two corners collapse: a wedge
+            if (kind == 0 || kind == 1) { int t = _c.Rng.Int(0, 8); c[t] = Vector3.Lerp(c[t], c[t ^ 3], 0.55f); }   // one corner torn off toward its neighbour
+            int[][] faces = { new[] { 0, 2, 3, 1 }, new[] { 4, 5, 7, 6 }, new[] { 0, 1, 5, 4 }, new[] { 2, 6, 7, 3 }, new[] { 0, 4, 6, 2 }, new[] { 1, 3, 7, 5 } };
+            var verts = new List<Vector3>(); var norms = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
+            foreach (var f in faces)
+            {
+                for (int t = 0; t < 2; t++)
+                {
+                    Vector3 a = c[f[0]], b = c[f[t + 1]], d = c[f[t + 2]];
+                    Vector3 n = Vector3.Cross(b - a, d - a);
+                    if (n.sqrMagnitude < 1e-8f) continue;
+                    n.Normalize();
+                    if (Vector3.Dot(n, (a + b + d) / 3f) < 0f) { var tmp = b; b = d; d = tmp; n = -n; }      // outward: away from the shard's middle (it is roughly convex)
+                    int baseI = verts.Count;
+                    verts.Add(a); verts.Add(b); verts.Add(d);
+                    norms.Add(n); norms.Add(n); norms.Add(n);
+                    foreach (var v in new[] { a, b, d })
+                    {
+                        // Planar projection along the face's dominant axis, in metres (the hull materials tile in metres).
+                        var an = new Vector3(Mathf.Abs(n.x), Mathf.Abs(n.y), Mathf.Abs(n.z));
+                        uvs.Add(an.x > an.y && an.x > an.z ? new Vector2(v.y, v.z) : an.y > an.z ? new Vector2(v.x, v.z) : new Vector2(v.x, v.y));
+                    }
+                    tris.Add(baseI); tris.Add(baseI + 1); tris.Add(baseI + 2);
+                }
+            }
+            var m = new Mesh { name = "MN_Shard" };
+            m.SetVertices(verts); m.SetNormals(norms); m.SetUVs(0, uvs); m.SetUVs(1, uvs); m.SetTriangles(tris, 0);
+            m.RecalculateTangents();
+            m.RecalculateBounds();
+            return m;
+        }
+
         public void Remove(DebrisPiece p)
         {
             if (p.Dead) return;
@@ -401,6 +515,11 @@ namespace Monolith.Juice
                 {
                     p.Heat = Mathf.Max(0f, p.HeatPeak * Mathf.Pow(1f - Mathf.Clamp01(p.Age / p.HeatLife), 1.6f));
                     ApplyHeat(p);
+                    if (p.Halo > 0f && p.Heat > 0.08f)
+                    {
+                        var hc = new Vector3(1f, 0.46f, 0.14f) * (5.5f * p.Heat * p.Heat * _c.Bright);
+                        _c.Add.Quad(p.T.position, new Vector4(hc.x, hc.y, hc.z, 0f), FxKind.Glow, 0.3f, Vector4.zero, p.Halo * (0.7f + 0.6f * p.Heat), 0f, 0.3f, 0f, 0f, 6f, 20f);
+                    }
                 }
                 if (p.TrailLeft > 0f)
                 {

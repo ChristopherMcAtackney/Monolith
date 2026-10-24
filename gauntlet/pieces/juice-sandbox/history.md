@@ -269,3 +269,56 @@ collections; throwing them whole fixed it (worst frame 75 ms to 14 ms).
 - Giveaways: fireballs are opaque, hard-edged "cauliflower" silhouettes sitting on dead black, where the show's fire is translucent, motion-blurred and edgeless; still almost no warm spill on nearby hulls from a blast that big; sparks sprayed evenly over the whole frame; debris reads as small round grey blobs.
 - **Lead's call on the conflict:** the realism critic also marked our bolts down as "fat green capsules" against the show's small, dotted tracers. The user's bar is "The Expanse with FS2's big, meaty lasers everywhere", and the meatiness critic preferred our thick bolts. So bolts stay thick and bright, and realism is judged on everything else.
 - Gap for round 3: fireball edges that are translucent, soft and motion-blurred, with no hard silhouette; blast spill light that visibly warms nearby hulls (rim and cast); spark distribution concentrated and varied, not an even spray; debris with real shapes; check CameraLook (graded blacks, haze) is on in the juice scene.
+
+## Round 3 (builder, 2026-10-24)
+
+The brief: keep what won the meatiness bar (fat bright bolts, big beams that hit and hammer, a fireball with a hot core and structure) and close the realism gaps the critic
+named: fireball edges, spill light, sparks, debris, and the camera look. Reference frames: Expanse `7_ATYOm3nNc_0147` (a capital blast: translucent amber gas streaked by
+motion, objects showing through it, no edge), `_0141` (a small blast: a hot core in a huge soft haze, thin sparks, a dark chunk silhouetted), `_0112` (dotted tracers, glowing
+debris chunks with their own small halos, a warm dusty haze over everything).
+
+### What changed
+- **Fireball edges are gone.** `ShadeFire` now feathers the density over a wide range (`pow(saturate(mask / 0.85), 1.6)` and a fade toward the sphere's rim, extinction 7.5 to 5.2), so the fire thins
+  out into the dark and stars show through its edge; the rim of the sphere never shows. **Motion blur**: the noise is blended with a second read taken along the direction from the
+  centre (varies round the ball, hardly at all along a ray), mixed in more as the ball ages, so the detail is smeared radially the way a blast flings its fire.
+  The ramp is cooler (`T` x 0.7) so the ball is amber with a white-hot core and visible lobes and dark pockets, not a yellow-white disc; the core stays blown out.
+- **A warm veil round every blast** (`Emitters.Blast`: a soft glow 6.5 radii wide at a third of the core's strength): the show's small blast is mostly a hot core in a big warm haze.
+- **Spill is visible now.** Blast lights are 9e6 x R^2 candela (they were 4e6; the Sky's fill dropped to 2,200 nits with no fill on the lit side, so a shaded hull is dark and shows any warm
+  light), warmer (1, 0.66, 0.34), and last longer (0.6 + 0.008 R seconds, decay 1.25); the final blast is 6e6 x R^2. The `blast_near_hull` still (a 70 m blast beside the corvette, seen from its
+  shaded side) shows the whole near hull warmed orange, brightest on the face toward the blast, falling off along the hull. The kill stills are now shot from the shadow side too.
+- **Sparks are concentrated and varied** (`Emitters.SparkBurst`): three to six jets, each its own cone (6 to 30 degrees), share, speed and brightness, plus a thin scatter (12 per cent), used by every
+  blast, the fighter, bomber and final blast; the camera-facing share applies to the all-round spray only. Beam hammering already used cones.
+- **Debris has real shapes** (`Debris.Shards`): torn plates, thicker plates, struts, chunks and wedges, jagged and flat-shaded, each its own size (many small, a few big), cut from the dying ship's own
+  plating (`ShipLook.HullMat`, found at registration), tumbling, glowing at the edges while hot (heat copy of the material) and throwing a small halo of light of their own. Fighters throw 16 shards of
+  1.2 to 5 m, bombers 26 of 1.6 to 7 m, every part destroyed on a modelled ship 7, a big capital blast 8, the final blast 60 of up to 17 m, and a hit on a capital 2 to 4 flakes. The vent gas that read as
+  round grey blobs is now a soft translucent puff with the same shader, and its colour is lit, not grey.
+- **CameraLook is on in the juice scene** (the log says `LOOK on: intensity 1, glare on, grain 0.014`; `SkyRig.Enable` turns it on by default and the sandbox does not turn it off). The floor shows in the
+  stills: the darkest 5 per cent of a quiet frame is about (1, 2, 4) of 255 and (5, 9, 15) beside a blast. Because the kill stills now look toward the Sun, the glare, dust discs and haze are in them.
+  I did not change the look's own options (they belong to the sky builder).
+- **Kept as they were**: bolt thickness and brightness (the lead's call), beams, the capital death and the real corvette parts and baked cuts.
+- Smaller fixes: the beam ribbon's segments are longer than the ribbon is wide (a segment shorter than that painted a hard vertical bar at close range); the flak burst is a small flash and a soft puff, not
+  a flat white disc ringed by a shock ring; scorch marks and the shockwave's edge glow as in round 2 but fainter.
+
+### Captures (`gauntlet/captures/juice-sandbox/r3/`, from a fresh build, no HUD)
+- `stills/`: the r2 names plus two new ones: `fighter_kill_debris` (about 1.3 s after the kill: the shards, with their halos) and `blast_near_hull` (the spill). The kill and hull-hit stills are now taken
+  from the shadow side, toward the Sun. Contact sheets `overview_a/b/c.png`.
+- `capital_death.mp4` (10.6 s), `capital_death_strip.png`, `capital_death_key_frames/`, `shake.mp4`, `shake_strip.png`, `shake_log.csv`, `checks/` (self-test, panel drive and rumble test pass).
+- **Best three**: `stills/blast_near_hull.png` (spill: a soft-edged amber blast with concentrated spark jets warming the whole near hull), `stills/fighter_kill_fireball.png` (translucent, radially smeared
+  amber fire with a hot core and stars showing through its edge; jets of sparks; plates and wedges inside it), `stills/capital_death_final.png` (the corvette's death with the sections thrown through it).
+
+### Performance (`perf/`, `perf_repeats/`; 1920x1080, vsync off, RTX 4070 Ti; the same 18 s run)
+445.2 fps average, 1% low 133.7, worst frame 14.8 ms; two repeats 427.4 and 455.3 fps, 1% lows 127.9 and 139.9, worst 15.4 and 13.9 ms. The fireball reads the 3D noise twice per step now (isotropic
+and radial); the numbers are within the run-to-run noise of round 2 (478, 456 and 345 fps average then, the last while another builder had Unity open): about 7x headroom at 60 fps.
+
+### Honest read against the reference frames
+- Fireballs are now translucent and edgeless with radial smear, but the smear is a noise trick on a sphere; the show's gas has long streaks across the whole frame (real frame motion blur) that this does
+  not produce, and its blasts are far larger in frame. The core is still blown out more than the show's.
+- Spill is strong on a shaded hull; on a sunlit hull (the camera behind the Sun) it is still drowned, as light should be. The warm veil can look like a coloured fog when several blasts overlap.
+- Shards read as shapes only when close or large; at 170 m the small ones are a few pixels. Their halos help. The vent puffs are still pale clouds.
+- Sparks are concentrated, but every jet is the same kind of streak; the show's sparks include fat slow dots and some with a curve.
+- The shield hit (a pale bubble) and the beam's regular comb of edge teeth are unchanged.
+
+### Gotchas found
+- The shared tree broke twice while the AI builder had files half edited (a build failed with a script-layout mismatch after `ShipState` changed; later `AiDirector.cs` referenced types that did not exist yet).
+  I built and captured in a private git worktree (`git worktree add`, the Library copied with robocopy, my modified files copied over) and removed it afterwards; the commit is from the main tree with explicit paths.
+- A heredoc with apostrophes (`it's`) fails in this shell tool's bash; write the file with the editor tool, then run it.

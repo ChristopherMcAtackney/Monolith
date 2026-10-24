@@ -226,6 +226,7 @@ Shader "Hidden/Monolith/Fx"
             float3 off = float3(seed * 7.13, seed * 3.71, seed * 11.3);
             float erode = age * (0.50 + erodeRate);
             float life = saturate(1.0 - pow(age, 1.45) * 0.88);       // cools slowly at first: most of the ball stays yellow-white
+            float blurMix = saturate(0.45 + 0.35 * age) * (1.0 - saturate(palette - 1.0));
             float3 sum = 0.0;
             float A = 0.0;
 
@@ -238,26 +239,32 @@ Shader "Hidden/Monolith/Fx"
                 float r = sqrt(r2);
 
                 // Turbulence: a warp from a slow low-frequency lookup, then three octaves of Perlin-Worley in one fetch. Big lobes first, fine detail on them.
+                // Motion blur: a blast flings its fire outward, so the detail is smeared along the radius (the noise is read along the direction from the
+                // centre, so it varies round the ball and hardly at all along a ray), mixed in more as the ball ages and the streaks lengthen.
                 float3 q = l * 0.55 + off + float3(0.12, -0.35, 0.08) * age;
                 float3 warp = Tex3(q * 0.5).rgb - 0.5;
                 float4 n = Tex3(q + warp * 0.9);
+                float3 rh = l / max(r, 1e-3);
+                float4 nr = Tex3(rh * (0.95 + 0.22 * r) + off * 0.6 + warp * 0.5);
+                n = lerp(n, nr, blurMix);
                 float fbm = n.r * 0.55 + n.g * 0.30 + n.b * 0.15;
-                float base = 1.0 - r / 0.74;                          // the dense body reaches 0.74 of the sphere; lobes of fire reach out to its edge
-                float mask = base * 1.55 + (fbm - 0.45) * 1.7 - erode * 1.6;
-                float dens = smoothstep(0.0, 0.16, mask);            // a narrow ramp: hard, ragged, cauliflower edges, not an airbrushed fade
+                float base = 1.0 - r / 0.80;                          // a dense body, and lobes of thinning fire out to the edge of the sphere
+                float mask = base * 1.05 + (fbm - 0.45) * 1.9 - erode * 1.6;
+                float dens = pow(saturate(mask / 0.85), 1.6);       // a wide feather: no hard edge anywhere, the fire thins out into the dark
+                dens *= 1.0 - smoothstep(0.62, 1.0, r);             // and the sphere's own rim never shows
                 if (dens <= 0.0) continue;
 
                 float hotspot = saturate(base) * saturate(base);
-                float T = heat * life * (0.22 + 0.95 * hotspot + 0.55 * (n.g - 0.45) + 0.30 * (n.a - 0.5)) * lerp(0.55, 1.20, n.b);
+                float T = 0.70 * heat * life * (0.20 + 0.95 * hotspot + 0.80 * (n.g - 0.45) + 0.45 * (n.a - 0.5)) * lerp(0.45, 1.30, n.b);
                 T = max(T, 0.10 * life);
                 float3 ramp = lerp(Incandescent(T), PlasmaRamp(T), saturate(palette));
                 ramp = lerp(ramp, float3(0.78, 0.88, 1.0) * (0.25 + T), saturate(palette - 1.0));
                 float vein = pow(saturate(1.0 - abs(2.0 * n.g - 1.0)), 4.0);
-                float lum = (0.10 + T * T * 2.0) * (0.75 + 0.60 * vein);
+                float lum = (0.10 + T * T * 1.25) * (0.70 + 0.70 * vein);
                 lum = lerp(lum, 1.0 * (0.7 + 0.5 * vein), saturate(palette - 1.0));      // cool gas is lit, not black: a pale puff, even in front of a fireball
                 float3 emit = ramp * lum;
                 dens *= lerp(smoothstep(0.10, 0.55, T), 1.0, saturate(palette - 1.0));                       // gas that has cooled thins out instead of hanging as a smooth red cloud
-                float a = 1.0 - exp(-dens * 7.5 * dt / (2.0 * Rs));
+                float a = 1.0 - exp(-dens * 5.2 * dt / (2.0 * Rs));
                 sum += (1.0 - A) * emit * a;
                 A += (1.0 - A) * a;
                 if (A > 0.985) break;

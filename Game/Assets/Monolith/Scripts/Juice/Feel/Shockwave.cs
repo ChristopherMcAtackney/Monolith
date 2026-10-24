@@ -72,7 +72,7 @@ namespace Monolith.Juice
                 _c.Trauma.Add(0.78f * fall);
                 _c.Rumble.Pulse(1f * Mathf.Min(1f, fall * 1.6f), 0.75f * Mathf.Min(1f, fall * 1.6f), 0.9f);
                 _c.Audio.Play(JuiceCue.Shockwave, ship.Position, Mathf.Clamp01(0.5f + fall), distance);
-                _c.Hits.EdgeFlash(new Vector3(1f, 0.55f, 0.20f) * (0.28f * fall), 0.35f);
+                _c.Hits.EdgeFlash(new Vector3(1f, 0.55f, 0.20f) * (0.14f * fall), 0.35f);
                 MnLog.Info($"JUICE shockwave reaches the player: {distance:0} m from the blast, strength {fall:0.00}, shove {dv:0.0} m/s");
             }
         }

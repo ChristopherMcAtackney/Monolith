@@ -114,7 +114,7 @@ namespace Monolith.Juice
                 Vector3 d = every ? _c.Rng.OnSphere() : _c.Rng.InCone(dir, coneDeg);
                 // Depth: a share of the sparks fly at the camera (they come out big, long and soft), a share fly away (small and sharp).
                 float pick = _c.Rng.F();
-                if (pick < 0.16f && camDist > 8f) d = (d * 0.55f + toCam * 0.85f).normalized;
+                if (pick < (every ? 0.16f : 0.05f) && camDist > 8f) d = (d * 0.55f + toCam * 0.85f).normalized;
                 float spd = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 1.7f));
                 float size = width * Mathf.Exp(_c.Rng.Range(-0.9f, 0.6f));           // many fine ones, a few thick
                 float shutter = _c.Rng.Range(0.014f, 0.055f);                         // exposure time: longer = a longer streak
@@ -125,6 +125,29 @@ namespace Monolith.Juice
                 s.P1a = s.P1b = 1.1f; s.P2a = 0.0f; s.P2b = 0.0f; s.Blur = _c.Rng.Range(0.15f, 0.75f);
                 s.C0 = c0 * lum; s.C1 = c1 * lum; s.C2 = c2 * lum; s.FadeExp = 0.5f; s.Seed = _c.Rng.F(); s.Flicker = 0.3f; s.NearStart = 4f; s.NearRange = 14f;
             }
+        }
+
+        /// <summary>
+        /// A burst of sparks that is not an even spray: a few jets, each with its own cone, speed and brightness (some thin and fast, some wide and
+        /// slow), and a thin scatter in between. A real blast throws its sparks where the hull tears and where the fire vents, not evenly in every direction.
+        /// </summary>
+        public void SparkBurst(Vector3 pos, Vector3 inherit, int count, float speedMin, float speedMax, float lifeMin, float lifeMax, float width,
+                               SparkStyle style = SparkStyle.Hot, float drag = 0.45f, float brightness = 1f, Vector3? tint = null)
+        {
+            int jets = _c.Rng.Int(3, 7);
+            int scatter = Mathf.RoundToInt(count * 0.12f);
+            var w = new float[jets]; float sum = 0f;
+            for (int j = 0; j < jets; j++) { w[j] = Mathf.Exp(_c.Rng.Range(-0.4f, 1.4f)); sum += w[j]; }
+            for (int j = 0; j < jets; j++)
+            {
+                Vector3 axis = _c.Rng.OnSphere();
+                float cone = _c.Rng.Range(6f, 30f);
+                int n = Mathf.Max(1, Mathf.RoundToInt((count - scatter) * w[j] / sum));
+                float fast = _c.Rng.Range(0.5f, 1.0f);
+                Sparks(pos, inherit, axis, cone, n, speedMin * fast, Mathf.Lerp(speedMin, speedMax, fast), lifeMin, lifeMax * _c.Rng.Range(0.7f, 1.1f), width,
+                       style, drag, brightness * _c.Rng.Range(0.55f, 1.3f), tint);
+            }
+            if (scatter > 0) Sparks(pos, inherit, Vector3.up, 360f, scatter, speedMin, speedMax * 0.6f, lifeMin, lifeMax * 0.8f, width, style, drag, brightness * 0.6f, tint);
         }
 
         /// <summary>
@@ -235,6 +258,8 @@ namespace Monolith.Juice
             Vector3 core = plasmaFlash ? new Vector3(0.78f, 0.9f, 1f) : WarmWhite;
             // A blown-out core: far brighter than the bloom threshold, so it burns through to white and spills.
             Flash(pos, R * 1.7f, core * (70f * intensity), 0.10f + R * 0.0006f, 0.85f, 2.4f, 1.25f, inherit);
+            // The haze: a blast scatters light into everything round it (the show's explosions are mostly a hot core and a huge soft warm veil).
+            Flash(pos, R * 6.5f, new Vector3(1f, 0.74f, 0.42f) * (0.45f * intensity), life * 1.25f, 0f, 1.6f, 1.15f, inherit);
             Flare(pos, R * 7.5f, R * 0.30f, Vector3.Lerp(WarmWhite, core, 0.5f) * (36f * intensity), 0.20f + R * 0.001f);
 
             // The fire: a few big turbulent volumes that overlap and swallow what is behind them, and smaller ones that fly out.
@@ -245,10 +270,10 @@ namespace Monolith.Juice
                 Vector3 off = _c.Rng.OnSphere() * R * (main ? 0.15f : 0.7f) * _c.Rng.F();
                 float rr = R * (main ? _c.Rng.Range(1.0f, 1.25f) : _c.Rng.Range(0.45f, 0.85f));
                 Fireball(pos + off, inherit + off.normalized * R * (main ? 0.25f : 1.0f), rr * 0.55f, rr * _c.Rng.Range(1.3f, 1.6f), life * (main ? 1.2f : _c.Rng.Range(0.7f, 1.1f)),
-                         _c.Rng.Range(2.1f, 2.6f), _c.Rng.Range(4.0f, 5.0f) * intensity, 0f);
+                         _c.Rng.Range(2.0f, 2.5f), _c.Rng.Range(3.6f, 4.6f) * intensity, 0f);
             }
             int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(80 + R * 5f)), 800);
-            Sparks(pos, inherit, Vector3.up, 360f, sparks, 40f + R * 1.4f, 140f + R * 8f, 0.5f, 1.3f + R * 0.012f, 0.08f + R * 0.0045f, SparkStyle.Hot, 0.45f, intensity);
+            SparkBurst(pos, inherit, sparks, 40f + R * 1.4f, 140f + R * 8f, 0.5f, 1.3f + R * 0.012f, 0.08f + R * 0.0045f, SparkStyle.Hot, 0.45f, intensity);
             Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(60 + R * 4f)), 900), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.05f + R * 0.0012f);
             Embers(pos, inherit, R * 0.6f, _c.N(Mathf.RoundToInt(6 + R * 0.25f)), 10f + R * 0.6f, 1.2f, 2.8f + R * 0.015f, 0.55f + R * 0.03f);
             if (ring && R > 60f) Ring(pos, R * 0.4f, R * (2.6f + R * 0.006f), 0.30f + R * 0.003f, BlueWhite * (0.12f * intensity), 0.012f, 2.4f);
@@ -257,7 +282,7 @@ namespace Monolith.Juice
             if (light && _c.Settings.effects.lights)
             {
                 float b = _c.Bright * intensity;
-                _c.Lights.Flash(pos, new Color(1f, 0.80f, 0.55f), 4.0e6f * R * R * b, Mathf.Max(400f, R * 28f), 0.45f + R * 0.006f, 1.6f);
+                _c.Lights.Flash(pos, new Color(1f, 0.66f, 0.34f), 9.0e6f * R * R * b, Mathf.Max(500f, R * 34f), 0.6f + R * 0.008f, 1.25f);
             }
         }
     }

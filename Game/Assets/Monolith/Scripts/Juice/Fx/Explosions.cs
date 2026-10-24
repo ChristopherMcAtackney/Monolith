@@ -41,19 +41,20 @@ namespace Monolith.Juice
             bool success = _c.IsPlayer(e.Other) && e.Other != GameWorld.NoShip;
             var look = _c.LookOf(e.Entity);
             Transform visual = look != null ? look.Visual : null;
+            Material hullMat = look != null && look.HullMat != null ? look.HullMat : Debris.HullMaterial(visual);
 
             // Whatever was shooting at it should stop: the bolts in flight are not ours to hold, but a shield bubble must go.
             if (look != null && look.Shield != null) look.Shield = null;
 
             switch (size)
             {
-                case CombatEvents.SizeBomber: Bomber(pos, vel, visual, success, e); break;
+                case CombatEvents.SizeBomber: Bomber(pos, vel, visual, success, e, hullMat); break;
                 case CombatEvents.SizeCorvette:
                 case CombatEvents.SizeCapital:
                     if (visual != null || size == CombatEvents.SizeCapital) Capital(pos, vel, visual, look, size == CombatEvents.SizeCorvette ? 0.5f : 1f, success, e);
-                    else Fighter(pos, vel, visual, success, e);
+                    else Fighter(pos, vel, visual, success, e, hullMat);
                     break;
-                default: Fighter(pos, vel, visual, success, e); break;
+                default: Fighter(pos, vel, visual, success, e, hullMat); break;
             }
             if (look != null) { look.Visual = null; }
             if (ship != null && look == null) _c.Looks.Remove(e.Entity);
@@ -128,6 +129,7 @@ namespace Monolith.Juice
             var chunks = look.Damage.DestroyPart(name);
             Blast(at + outward * R * 0.2f, shipVel, R, 1.2f, quiet ? JuiceCue.ExplosionSmall : JuiceCue.SubsystemBlast, false);
             _fx.Vent(at, outward, R * 0.22f, 2.2f, 60f, frame);
+            _debris.Shards(at, shipVel, 7, 0.8f, Mathf.Max(2.5f, part.Radius * 0.5f), 25f, 110f, look.HullMat != null ? look.HullMat : Debris.HullMaterial(frame), 1.0f, 24f, outward);
             foreach (var ch in chunks)
             {
                 if (ch.Piece == null) continue;
@@ -150,17 +152,18 @@ namespace Monolith.Juice
 
         // ------------------------------------------------------------------------------------------------ fighters and bombers
 
-        void Fighter(Vector3 pos, Vector3 vel, Transform visual, bool success, in GameEvent e)
+        void Fighter(Vector3 pos, Vector3 vel, Transform visual, bool success, in GameEvent e, Material hullMat)
         {
             float R = 52f;
             Blast(pos, vel, R, 1f, JuiceCue.ExplosionSmall, false);
-            _fx.Sparks(pos, vel, Vector3.up, 360f, _c.N(26), 80f, 300f, 0.5f, 1.5f, 0.12f, SparkStyle.Metal, 0.4f);
+            _fx.SparkBurst(pos, vel, _c.N(26), 80f, 300f, 0.5f, 1.5f, 0.12f, SparkStyle.Metal, 0.4f);
             Pieces(visual, pos, vel, 5, 22f, 85f, 1.7f, false, 1.2f);
+            _debris.Shards(pos, vel, 16, 1.2f, 5.0f, 12f, 55f, hullMat, 1.2f);
             _feel.Impact(pos, 0.42f, 300f, 0.55f, 0.35f, 0.34f, success);
             if (success) _feel.MaybeHitStop(0.5f);
         }
 
-        void Bomber(Vector3 pos, Vector3 vel, Transform visual, bool success, in GameEvent e)
+        void Bomber(Vector3 pos, Vector3 vel, Transform visual, bool success, in GameEvent e, Material hullMat)
         {
             float R = 96f;
             Blast(pos, vel, R * 0.55f, 0.9f, JuiceCue.ExplosionSmall, false);
@@ -168,7 +171,8 @@ namespace Monolith.Juice
             Vector3 second = pos + shipFwd * R * 0.6f;
             Later(0.17f, () => { Blast(second, vel, R, 1.1f, JuiceCue.ExplosionMedium, false); _fx.Vent(second, shipFwd, 4f, 1.2f, 50f); });
             Pieces(visual, pos, vel, 7, 20f, 75f, 2.1f, false, 1.2f);
-            _fx.Sparks(pos, vel, Vector3.up, 360f, _c.N(44), 90f, 340f, 0.5f, 1.7f, 0.14f, SparkStyle.Metal, 0.4f);
+            _debris.Shards(pos, vel, 26, 1.6f, 7.0f, 12f, 60f, hullMat, 1.2f);
+            _fx.SparkBurst(pos, vel, _c.N(44), 90f, 340f, 0.5f, 1.7f, 0.14f, SparkStyle.Metal, 0.4f);
             _feel.Impact(pos, 0.62f, 480f, 0.75f, 0.45f, 0.48f, success);
             if (success) _feel.MaybeHitStop(0.7f);
         }
@@ -244,6 +248,7 @@ namespace Monolith.Juice
             readonly Vector3 _vel;
             readonly ShipLook _look;
             readonly IJuiceShipDamage _dmg;           // the ship's real parts and damage looks, when it has them
+            readonly Material _hullMat;               // its plating, for shards
             DebrisPiece _hull;
             Bounds _bounds;
             Quaternion _rot = Quaternion.identity;
@@ -263,6 +268,7 @@ namespace Monolith.Juice
                                 Transform visual, ShipLook look, Vector3 pos, Vector3 vel, float scale, bool success)
             {
                 _c = c; _fx = fx; _feel = feel; _debris = debris; _waves = waves; _owner = owner; _success = success; _scale = scale; _vel = vel; _centre = pos;
+                _hullMat = look != null && look.HullMat != null ? look.HullMat : Debris.HullMaterial(visual);
                 _look = look; _dmg = look != null && look.Damage != null && look.Damage.Parts.Count > 0 ? look.Damage : null;
                 // The timing has its own random source, so a death takes the same time whatever else is going on (captures rely on it).
                 var timing = new FxRng(77 + (int)(scale * 10f));
@@ -319,6 +325,7 @@ namespace Monolith.Juice
                 _fx.Blast(p + n * R * 0.2f, _vel, R, big ? 1.1f : 0.9f);
                 _fx.Vent(p, n, R * 0.28f, _c.Rng.Range(1.0f, 2.0f), 55f + R, t);
                 if (big && _dmg == null) _fx.Scorch(p, R * 0.8f, 40f, 1f, _vel);
+                if (big) _debris.Shards(p + n * 2f, _vel, 8, 1.5f, 7f, 25f, 110f, _hullMat, 1.0f, 30f, n);
                 float dist = _c.DistanceToCamera(p);
                 _c.Audio.Play(big ? JuiceCue.ExplosionMedium : JuiceCue.ExplosionSmall, p, big ? 0.9f : 0.65f, dist);
                 _feel.Impact(p, big ? 0.10f : 0.055f, 2000f, big ? 0.28f : 0.14f, 0.12f, big ? 0.22f : 0.12f, false);
@@ -580,18 +587,19 @@ namespace Monolith.Juice
                     _fx.Fireball(centre + off, _vel + off.normalized * R * _c.Rng.Range(0.2f, 0.7f), rr * 0.7f, rr * _c.Rng.Range(1.4f, 2.0f),
                                  _c.Rng.Range(1.3f, 2.3f), _c.Rng.Range(1.6f, 2.1f), _c.Rng.Range(4.5f, 6.0f), i < balls / 5 ? 0.25f : 0f, 0.7f, 0.55f);
                 }
-                _fx.Sparks(centre, _vel, Vector3.up, 360f, _c.N(300), 120f, 1100f, 1.0f, 3.2f, 0.3f, SparkStyle.Hot, 0.35f, 1.2f);
-                _fx.Sparks(centre, _vel, Vector3.up, 360f, _c.N(90), 200f, 1500f, 0.8f, 2.2f, 0.3f, SparkStyle.Plasma, 0.35f, 0.9f);
+                _fx.SparkBurst(centre, _vel, _c.N(300), 120f, 1100f, 1.0f, 3.2f, 0.3f, SparkStyle.Hot, 0.35f, 1.2f);
+                _fx.SparkBurst(centre, _vel, _c.N(90), 200f, 1500f, 0.8f, 2.2f, 0.3f, SparkStyle.Plasma, 0.35f, 0.9f);
                 _fx.Specks(centre, _vel, R, _c.N(900), 60f + R * 0.4f, 380f + R * 2.4f, 1.0f, 3.4f, 0.28f);
                 _fx.Embers(centre, _vel, R * 0.9f, _c.N(90), 60f + R * 0.3f, 3f, 8f, 3.2f);
                 _fx.Ring(centre, R * 0.3f, R * 8f, 1.5f, white * 0.07f, 0.008f, 1.8f);
                 // Real light on everything near: the wreckage, and whatever else is in sight, is lit by the blast, not just drawn over.
-                _c.Lights.Flash(centre, new Color(1f, 0.9f, 0.76f), 2.0e6f * R * R * _c.Bright, 5200f, 1.3f, 1.5f);
+                _c.Lights.Flash(centre, new Color(1f, 0.70f, 0.38f), 6.0e6f * R * R * _c.Bright, 5200f, 1.6f, 1.3f);
                 _c.Audio.Play(JuiceCue.ExplosionLarge, centre, 1f, _c.DistanceToCamera(centre));
                 _c.Audio.Duck(0.65f, 3.2f);
 
                 // The ship's remaining parts are flung out through the fireball; everything else shatters and flies: the cuts are spread over the next few frames, behind the flash.
                 ScatterParts(centre, 60f + R * 0.3f, 160f + R * 1.1f, 0.6f);
+                _debris.Shards(centre, _vel, 60, 3f, 17f, 50f, 190f + R * 0.8f, _hullMat, 1.1f, 40f);
                 if (_baked)
                 {
                     foreach (var sec in _sections)

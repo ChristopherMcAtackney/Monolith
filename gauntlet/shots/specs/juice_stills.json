@@ -50,9 +50,9 @@
    "name": "Reaper 1",
    "distance": 170,
    "from": [
+    0.9,
     0.15,
-    0.1,
-    -1
+    0.25
    ]
   },
   {
@@ -80,11 +80,11 @@
    "t": 14.9,
    "do": "face",
    "name": "Resolute",
-   "distance": 330,
+   "distance": 300,
    "from": [
-    -0.5,
-    0.12,
-    -0.85
+    0.6,
+    0.1,
+    0.8
    ]
   },
   {
@@ -98,14 +98,42 @@
    "name": "hull_hit"
   },
   {
+   "t": 16.3,
+   "do": "place",
+   "pos": [
+    330,
+    95,
+    900
+   ],
+   "lookAt": [
+    170,
+    75,
+    735
+   ],
+   "speed": 0.0,
+   "throttle": 0.0
+  },
+  {
+   "t": 16.6,
+   "do": "raise",
+   "id": "explosion",
+   "pos": [
+    120,
+    105,
+    760
+   ],
+   "subject": "large",
+   "value": 70
+  },
+  {
    "t": 18.0,
    "do": "face",
    "name": "Hammer 1",
    "distance": 280,
    "from": [
-    0.1,
-    0.1,
-    -1
+    0.9,
+    0.15,
+    0.2
    ]
   },
   {
@@ -245,7 +273,7 @@
   },
   {
    "name": "flak_barrage",
-   "t": 23.1
+   "t": 22.35
   },
   {
    "name": "beam_charge",
@@ -274,6 +302,14 @@
   {
    "name": "capital_death_final",
    "t": 47.6
+  },
+  {
+   "name": "blast_near_hull",
+   "t": 16.78
+  },
+  {
+   "name": "fighter_kill_debris",
+   "t": 10.9
   }
  ],
  "options": {

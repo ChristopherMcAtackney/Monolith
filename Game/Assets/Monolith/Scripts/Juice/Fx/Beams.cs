@@ -417,7 +417,7 @@ namespace Monolith.Juice
             {
                 Vector3 p = a + u * at;
                 float dist = Vector3.Distance(HullGeometry.ClosestOnSegment(p, b, cam), cam);
-                float step = Mathf.Clamp(dist * 0.55f, 30f, 700f);
+                float step = Mathf.Clamp(dist * 0.55f, Mathf.Max(30f, halfWidth * 2.4f), Mathf.Max(700f, halfWidth * 2.4f));      // a segment is longer than the ribbon is wide, or its pattern would not line up with its neighbours
                 float end = Mathf.Min(total, at + step);
                 if (total - end < step * 0.3f) end = total;
                 float len = end - at;

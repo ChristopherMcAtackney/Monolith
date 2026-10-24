@@ -150,6 +150,8 @@ namespace Monolith.Juice
                 if (s.effects.debris)
                     _fx.Embers(e.Position + n * 0.5f, vel, R * 0.3f, _c.N(Mathf.RoundToInt(3 + 3 * m)), 14f + 30f * big, 0.9f, 2.2f, 0.45f + 0.5f * big);
                 var look = _c.LookOf(e.Entity);
+                if (s.effects.debris && big > 0.3f && look != null && look.HullMat != null)
+                    _c.Debris.Shards(e.Position + n * 0.5f, vel, 2 + Mathf.RoundToInt(2f * m), 0.3f, 1.4f, 25f, 90f, look.HullMat, 0.9f, 12f, n);
                 if (look != null && look.Damage != null)
                 {
                     // A modelled ship paints its own scorch, crater and streak decals on the plating, and opens its damage sites.
@@ -200,14 +202,14 @@ namespace Monolith.Juice
             _projectiles.Consume(e.Position, e.Entity);
             if (s.effects.flak)
             {
-                _fx.Flash(e.Position, R * 1.5f, new Vector3(1f, 0.92f, 0.75f) * 42f, 0.08f, 0.75f, 2f, 1.3f);
-                _fx.Flash(e.Position, R * 4f, Emitters.Orange * 4.5f, 0.26f, 0.08f, 1.8f, 1.4f);
+                _fx.Flash(e.Position, R * 0.8f, new Vector3(1f, 0.92f, 0.75f) * 7f, 0.09f, 0.95f, 2f, 1.3f);
+                _fx.Flash(e.Position, R * 3.2f, Emitters.Orange * 1.3f, 0.26f, 0.0f, 1.8f, 1.4f);
                 _fx.Flare(e.Position, R * 4.2f, R * 0.2f, Emitters.WarmWhite * 12f, 0.12f);
                 _fx.Fireball(e.Position, Vector3.zero, R * 0.55f, R * 1.35f, 0.55f, 2.0f, 4.5f, 0f, 1.2f, 0.5f);
                 _fx.Fireball(e.Position + _c.Rng.OnSphere() * R * 0.35f, Vector3.zero, R * 0.4f, R * 1.0f, 0.48f, 1.9f, 4.0f, 0f, 1.2f, 0.5f);
                 // Shrapnel: a fast, bright, short-lived shell of streaks.
-                _fx.Sparks(e.Position, Vector3.zero, Vector3.up, 360f, _c.N(60), 70f, 260f, 0.16f, 0.5f, 0.1f, SparkStyle.Metal, 0.35f, 1.1f);
-                _fx.Ring(e.Position, R * 0.3f, R * 2.2f, 0.2f, new Vector3(1f, 0.8f, 0.5f) * 0.8f, 0.05f);
+                _fx.SparkBurst(e.Position, Vector3.zero, _c.N(60), 70f, 260f, 0.16f, 0.5f, 0.1f, SparkStyle.Metal, 0.35f, 1.1f);
+                _fx.Ring(e.Position, R * 0.3f, R * 2.2f, 0.2f, new Vector3(1f, 0.8f, 0.5f) * 0.10f, 0.03f);
             }
             if (s.effects.lights) _c.Lights.Flash(e.Position, new Color(1f, 0.75f, 0.45f), 3e8f * _c.Bright, 420f, 0.2f, 2f);
             _c.Audio.Play(JuiceCue.FlakBurst, e.Position, 0.8f, dist);

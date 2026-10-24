@@ -21,6 +21,8 @@ namespace Monolith.Juice
         public ShieldDraw Shield;
         public float ShieldRim;
         public float Radius;
+        /// <summary>The ship's plating (for shards of wreckage that look like the ship), found once at registration.</summary>
+        public Material HullMat;
     }
 
     /// <summary>The shared toolbox every juice module draws on (one per director). Modules never reference each other, only this.</summary>

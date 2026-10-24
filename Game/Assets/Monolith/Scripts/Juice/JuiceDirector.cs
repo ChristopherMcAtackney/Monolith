@@ -158,6 +158,7 @@ namespace Monolith.Juice
             var st = Context.World.Ships.Get(shipId);
             var look = new ShipLook { Id = shipId, Visual = visual, Radius = st != null ? st.Radius : 10f, Damage = damage };
             if (damage != null) HullSections.Warm(damage.HullRenderers);
+            look.HullMat = Debris.HullMaterial(visual);
             if (visual != null)
             {
                 var b = Debris.LocalBounds(visual);

@@ -49,9 +49,9 @@
     "name": "Reaper 1",
     "distance": 170,
     "from": [
+     0.9,
      0.15,
-     0.1,
-     -1
+     0.25
     ]
    },
    {
@@ -79,11 +79,11 @@
     "t": 14.9,
     "do": "face",
     "name": "Resolute",
-    "distance": 330,
+    "distance": 300,
     "from": [
-     -0.5,
-     0.12,
-     -0.85
+     0.6,
+     0.1,
+     0.8
     ]
    },
    {
@@ -97,14 +97,42 @@
     "name": "hull_hit"
    },
    {
+    "t": 16.3,
+    "do": "place",
+    "pos": [
+     330,
+     95,
+     900
+    ],
+    "lookAt": [
+     170,
+     75,
+     735
+    ],
+    "speed": 0.0,
+    "throttle": 0.0
+   },
+   {
+    "t": 16.6,
+    "do": "raise",
+    "id": "explosion",
+    "pos": [
+     120,
+     105,
+     760
+    ],
+    "subject": "large",
+    "value": 70
+   },
+   {
     "t": 18.0,
     "do": "face",
     "name": "Hammer 1",
     "distance": 280,
     "from": [
-     0.1,
-     0.1,
-     -1
+     0.9,
+     0.15,
+     0.2
     ]
    },
    {
@@ -238,9 +266,14 @@
    "warmup": 0.2668
   },
   {
+   "name": "fighter_kill_debris",
+   "follow": true,
+   "warmup": 0.9001
+  },
+  {
    "name": "shield_hit",
    "follow": true,
-   "warmup": 2.5668
+   "warmup": 1.6668
   },
   {
    "name": "hull_hit_capital",
@@ -248,9 +281,14 @@
    "warmup": 3.3834
   },
   {
+   "name": "blast_near_hull",
+   "follow": true,
+   "warmup": 0.8334
+  },
+  {
    "name": "bomber_kill",
    "follow": true,
-   "warmup": 2.6834
+   "warmup": 1.8501
   },
   {
    "name": "bomber_kill_fireball",
@@ -260,12 +298,12 @@
   {
    "name": "flak_barrage",
    "follow": true,
-   "warmup": 4.1501
+   "warmup": 3.4001
   },
   {
    "name": "beam_charge",
    "follow": true,
-   "warmup": 3.1001
+   "warmup": 3.8501
   },
   {
    "name": "beam_strike",
