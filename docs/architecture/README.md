@@ -33,7 +33,6 @@ dead zones and response curves in `Resources/Input/controls.json` (or `-mnContro
 
 **Weapons** (`Monolith.Weapons`) fires from every ship's `ControlInput` buttons (the pad, an AI and a script are the same to it) and from turret `FireRequest`s, and flies every projectile on the tick with swept hit tests: two guns, flak, three missiles (a heat-seeker, a lock-on with a lock tone, a heavy torpedo that can be shot down) and decoys. Weapon numbers are `Resources/Combat/weapons.json`, each copied from FS2's table (checked by `tools/combat/check_weapons.py`) or marked as ours. **Damage** (`Monolith.Damage`) resolves every hit: the shield bubble and its recharge from the power choice, hull, named parts and what losing each one does, self-healing on the player's side, deaths (`ship_destroyed` for the juice). **Collision** (`Monolith.Collision`) bumps ship against ship and against capital hulls through the flight model's knock hook and hurts by speed and mass. Their shared data (`ShipCombat`, `WeaponDef`, ship definitions, hit shapes, the damage and fire queues, the `IShipVisual` the art side implements) lives in Core's `Combat` folder; the AI contract and the details are in `Scripts/Weapons/README.md`.
 
-**CombatHud** (`Monolith.CombatHud`) is the plain playtest combat HUD (lead pip, target box and readout, lock, missile warning, shield, hull and energy, power, ammunition, damage you feel, the quick menu) and the lock and warning tones. It reads `GameWorld` only and is kept small so the rough alien-tech HUD can replace it.
 
 **AI** (`Monolith.AI`) flies every computer-controlled ship through its `ControlInput` and fires every capital turret and beam through
 `FireRequest`s, after FS2's AI: fighters and bombers (`AiPilot`: get on the tail with lead, guns and missiles, evade, break off and re-engage,
@@ -64,9 +63,11 @@ line drawing, procedural hands with two-bone IK. Numbers in `Resources/Cabin/cab
 **View** (`Monolith.View`) is the player's first-person camera at the interpolated ship pose, FS2-style motion dust and
 `ShipViews` (every other ship's visual at its interpolated pose). Settings in `Resources/View/view.json`. No external camera.
 
-**Hud** (`Monolith.Hud`) draws the flight HUD (reticle, speed and throttle, afterburner fuel, target bracket) as line
-graphics after post-processing, so captures show it. Both View and Hud draw through HDRP custom passes with
-`Resources/Shaders/MN_Lines.shader`.
+**Hud** (`Monolith.Hud`) is the drawing kit the player's tech shares: the canvas (`HudLines`: lines, thick arc bands, rings, triangles, cells, and type from a baked signed-distance font atlas, `HudFont`),
+the styles (`HudStyles`: three looks, switchable at run time, `-mnHudStyle`), the radar, the battle map and what is on them, and the custom pass (`HudPass`) that puts a canvas on the finished frame, after post-processing, so captures show it.
+The cabin's displays draw with it too. **HudUi** (`Monolith.HudUi`) is the HUD itself, replacing the placeholder flight and combat HUDs: `HudReader` reads `GameWorld` into a `HudFrame` (the whole interface, plain data), `HudRenderer` draws a frame
+(the layout: two thick curved gauges either side of the reticle, the target card, the radar, arms, directives, radio, the quick menu, the map), `PilotHud` is the component, and the lock and warning tones are `CombatAudio`. Detail: `Scripts/HudUi/README.md`;
+the fonts and their licence: `docs/licences/fonts.md`. Both View and Hud draw through HDRP custom passes with `Resources/Shaders/MN_Lines.shader`.
 
 **Juice** (`Monolith.Juice`) turns combat events into light, fire, sparks, debris, camera shake, pad rumble and sound, and
 knows nothing about who raised them. One HDRP custom pass draws every glow, bolt, beam, spark, fireball and shield ripple in

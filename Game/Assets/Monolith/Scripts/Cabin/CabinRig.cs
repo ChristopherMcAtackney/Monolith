@@ -75,7 +75,7 @@ namespace Monolith.Cabin
                 foreach (var m in r.sharedMaterials) if (m != null && !_mat.ContainsKey(m.name)) _mat[m.name] = m;
             }
             _lights = new CabinLights(_root, _cab.Layout, _cab.Cfg);
-            var shader = Resources.Load<Shader>(FlightHud.ShaderPath) ?? throw new FileNotFoundException($"Resources/{FlightHud.ShaderPath}.shader is missing");
+            var shader = Resources.Load<Shader>(HudPass.ShaderPath) ?? throw new FileNotFoundException($"Resources/{HudPass.ShaderPath}.shader is missing");
             _displays = new CabinDisplays(_world, _cab, _root, shader);
             CabinOverlay.Create(_world, _cab, cam, transform);
             foreach (var id in new[] { "engine", "arms" })

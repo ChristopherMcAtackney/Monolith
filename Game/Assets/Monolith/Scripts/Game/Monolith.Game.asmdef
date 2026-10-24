@@ -13,7 +13,7 @@
         "Monolith.Weapons",
         "Monolith.Damage",
         "Monolith.Collision",
-        "Monolith.CombatHud",
+        "Monolith.HudUi",
         "Monolith.Juice",
         "Monolith.ShipArt",
         "Monolith.AI",

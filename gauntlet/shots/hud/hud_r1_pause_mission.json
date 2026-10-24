@@ -1,0 +1,24 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "escort",
+  "pilot": "ai",
+  "pauseScreen": true,
+  "dust": false,
+  "invulnerable": true,
+  "cabin": false
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "pause_mission",
+   "follow": true,
+   "warmup": 1.5
+  }
+ ]
+}

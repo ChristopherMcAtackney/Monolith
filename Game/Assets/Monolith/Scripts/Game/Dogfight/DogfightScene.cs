@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Monolith.AI;
-using Monolith.CombatHud;
+using Monolith.HudUi;
 using Monolith.Core;
 using Monolith.Flight;
 using Monolith.Hud;
@@ -35,8 +36,9 @@ namespace Monolith.Game
         DogfightBattle _battle;
         AiDirector _ai;
         JuiceDirector _juice;
-        FlightHud _flightHud;
-        CombatHud.CombatHud _hud;
+        PilotHud _hud;
+        HudControls _hudControls;
+        ControlsConfig _controls;
         PlayerPilot _pad;
         bool _paused;
         int _nextLevel;
@@ -88,14 +90,15 @@ namespace Monolith.Game
             self._battle.Ended += s => self.OnEnded(s);
 
             bool hud = !CommandLine.Has("-mnNoHud") && (opts == null || opts["hud"] == null || (bool)opts["hud"]);
-            self._flightHud = FlightHud.Create(world, view.Camera, root.transform);
-            self._flightHud.ShowTarget = false;
-            self._hud = CombatHud.CombatHud.Create(world, view.Camera, root.transform);
-            self._flightHud.enabled = hud; self._hud.enabled = hud;
+            self._hud = PilotHud.Create(world, view.Camera, root.transform);
+            self._hud.enabled = hud;
+            self._hudControls = new HudControls(self._hud, ControlsConfig.Load(out _));      // the pause screen's switches; the pad's own controls replace these below
 
             if (!self._battle.Autopilot)
             {
                 var controls = ControlsConfig.Load(out string source);
+                self._controls = controls;
+                self._hudControls = new HudControls(self._hud, controls);
                 self._pad = new PlayerPilot(world, self._battle.Player.Id, controls);
                 world.Pilots.Attach(self._battle.Player.Id, new StopWhenDead(world, self._pad));
                 MnLog.Info($"DOGFIGHT controls from {source}; {PlayerPilot.Devices()}");
@@ -104,6 +107,7 @@ namespace Monolith.Game
             self._keepLod0 = Opt("lod0", null);
             if (opts?["spectate"] is JObject spec) DogfightSpectator.Attach(world, view.Camera, root.transform, spec);
 
+            if (Opt("pauseScreen", null)) self._hud.Overlay = self.PauseText();       // a capture of the pause screen
             int fps = CommandLine.GetInt("-mnFps", 0);
             if (fps > 0 && !CommandLine.Has("-mnCapture")) { QualitySettings.vSyncCount = 0; Application.targetFrameRate = fps; }
             MnLog.Info($"DOGFIGHT ready at {self._ai.LevelName}: {(self._battle.Autopilot ? "AI flies the player" : "pad")}, hud {hud}");
@@ -148,13 +152,15 @@ namespace Monolith.Game
             }
             UpdateInfo();
             if (_pad == null) return;
-            _flightHud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
+            _hud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
             var pad = Gamepad.current; var kb = Keyboard.current;
+            _hudControls.Update(_paused);
             if (_paused)
             {
+                _hudControls.UpdatePaused();
                 if (pad != null && pad.dpad.left.wasPressedThisFrame || kb != null && kb.leftBracketKey.wasPressedThisFrame) _nextLevel = Mathf.Max(0, _nextLevel - 1);
                 if (pad != null && pad.dpad.right.wasPressedThisFrame || kb != null && kb.rightBracketKey.wasPressedThisFrame) _nextLevel = Mathf.Min(_ai.Data.Difficulty.Count - 1, _nextLevel + 1);
-                _flightHud.Overlay = PauseText();
+                _hud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { SetPaused(false); Restart(); }
                 else if (_pad.SystemPressed(SystemAction.Quit)) Application.Quit(0);
@@ -182,21 +188,32 @@ namespace Monolith.Game
         {
             _paused = paused;
             _juice.BaseTimeScale = paused ? 0f : 1f;
-            _flightHud.Overlay = paused ? PauseText() : null;
+            _hud.Overlay = paused ? PauseText() : null;
         }
 
-        string[] PauseText() => new[]
+        string[] PauseText()
         {
-            "PAUSED",
-            "START RESUME      Y FLY AGAIN      B QUIT",
-            $"D-PAD LEFT/RIGHT  DIFFICULTY {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "  (NEXT RUN)" : ""),
-            "STOP THE BOMBERS. KEEP THE SMALL MERCY ALIVE. TAKE THE WARDEN APART.",
-            "HOLD Y: A ATTACK MY TARGET  B DISABLE MY TARGET  X COVER ME  LB FORM UP",
-            "HOLD Y: D-PAD UP GUNS  LEFT SHIELDS  RIGHT ENGINES  DOWN BALANCED",
-            "RT FAST GUN   LB HEAVY GUN   RB FIRE MISSILE   R3 NEXT MISSILE   B DECOYS",
-            "LT TARGET AHEAD   A NEXT HOSTILE   VIEW NEAREST ATTACKER   Y TAP NEXT PART",
-            "L3 AFTERBURNER   X MATCH SPEED   D-PAD THROTTLE PRESETS",
-        };
+            var lines = new List<string>
+            {
+                "PAUSED",
+                "START	RESUME",
+                "Y	FLY AGAIN",
+                "B	QUIT",
+                $"D-PAD LEFT / RIGHT	DIFFICULTY   {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "   (NEXT RUN)" : ""),
+            };
+            lines.AddRange(_hudControls.SettingsLines());
+            lines.Add("");
+            lines.Add("Stop the bombers. Keep the Small Mercy alive. Take the Warden apart.");
+            lines.Add("#CONTROLS");
+            lines.Add("RT   LB   RB	FAST GUN   HEAVY GUN   FIRE MISSILE");
+            lines.Add("R3   B	NEXT MISSILE   DECOYS");
+            lines.Add("LT   A   VIEW	TARGET AHEAD   NEXT HOSTILE   NEAREST ATTACKER");
+            lines.Add("Y (TAP)	NEXT PART OF THE TARGET");
+            lines.Add("HOLD Y	QUICK MENU: POWER ON THE D-PAD, WING ORDERS ON A  B  X  LB");
+            lines.Add("L3   X	AFTERBURNER   MATCH SPEED");
+            lines.Add("VIEW TWICE   B	BATTLE MAP (NOT PAUSED)");
+            return lines.ToArray();
+        }
 
         void UpdateInfo()
         {

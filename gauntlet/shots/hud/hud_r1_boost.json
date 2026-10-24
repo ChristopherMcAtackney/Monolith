@@ -1,0 +1,60 @@
+{
+ "scene": "range",
+ "sceneOptions": {
+  "script": [
+   {
+    "t": 0.0,
+    "do": "invulnerable",
+    "on": true
+   },
+   {
+    "t": 0.0,
+    "do": "place",
+    "pos": [
+     0,
+     0,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "speed": 0.5,
+    "throttle": 1.0
+   },
+   {
+    "t": 0.3,
+    "do": "target",
+    "name": "Reaper 1"
+   },
+   {
+    "t": 0.6,
+    "do": "input",
+    "throttle": 1.0,
+    "afterburner": true
+   }
+  ],
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "boost_ignition",
+   "follow": true,
+   "warmup": 0.9668
+  },
+  {
+   "name": "boost_hold",
+   "follow": true,
+   "warmup": 1.9001
+  }
+ ]
+}

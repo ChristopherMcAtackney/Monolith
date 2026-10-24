@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Monolith.CombatHud;
+using Monolith.HudUi;
 using Monolith.Core;
 using Monolith.Flight;
 using Monolith.Hud;
@@ -37,8 +37,8 @@ namespace Monolith.Game
         Transform _root;
         RangeData _data;
         JuiceDirector _juice;
-        FlightHud _flightHud;
-        CombatHud.CombatHud _hud;
+        PilotHud _hud;
+        HudControls _hudControls;
         PlayerPilot _pad;
         RangePilot _pilot;
         ShipState _player;
@@ -54,6 +54,13 @@ namespace Monolith.Game
         readonly List<LODGroup> _warmLods = new List<LODGroup>();
 
         public RangeScript Script { get; private set; }
+        /// <summary>The HUD (the script's map step switches its battle map).</summary>
+        public PilotHud Hud => _hud;
+        /// <summary>The HUD's switches (for the pad drive's checks).</summary>
+        public HudControls HudSwitches => _hudControls;
+
+        /// <summary>Show or hide the pause screen without pausing (the script's overlay step, for captures of the screen).</summary>
+        public void ShowPause(bool on) { if (_hud != null) _hud.Overlay = on ? PauseText() : null; }
         public int Kills => _kills;
         public ShipState Player => _player;
         public JuiceDirector Juice => _juice;
@@ -102,16 +109,15 @@ namespace Monolith.Game
 
             // -mnNoHud (or "hud": false in a capture plan's sceneOptions) takes looks without the HUD, as the juice sandbox does.
             bool hud = !CommandLine.Has("-mnNoHud") && (opts == null || opts["hud"] == null || (bool)opts["hud"]);
-            self._flightHud = FlightHud.Create(world, view.Camera, root.transform);
-            self._flightHud.ShowTarget = false;
-            self._hud = CombatHud.CombatHud.Create(world, view.Camera, root.transform);
-            self._flightHud.enabled = hud; self._hud.enabled = hud;
+            self._hud = PilotHud.Create(world, view.Camera, root.transform);
+            self._hud.enabled = hud;
 
             // The pilot: the pad (or a script, for captures), wrapped so a dead ship flies nowhere.
             bool scripted = opts != null && string.Equals((string)opts["pilot"], "scripted", StringComparison.OrdinalIgnoreCase);
             IPilotSource inner;
             if (scripted)
             {
+                self._hudControls = new HudControls(self._hud, ControlsConfig.Load(out _));
                 self.Script = new RangeScript(world, self, (JArray)(opts["script"] ?? new JArray()));
                 world.Sim.Register(self.Script);
                 inner = self.Script;
@@ -120,6 +126,7 @@ namespace Monolith.Game
             else
             {
                 var controls = ControlsConfig.Load(out string source);
+                self._hudControls = new HudControls(self._hud, controls);
                 self._pad = new PlayerPilot(world, self._player.Id, controls);
                 inner = self._pad;
                 MnLog.Info($"RANGE controls from {source}; {PlayerPilot.Devices()}");
@@ -325,9 +332,12 @@ namespace Monolith.Game
         void Update()
         {
             if (_pad == null) return;
-            _flightHud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
+            _hud.Footer = PlayerPilot.HasPad ? null : "NO PAD FOUND - KEYBOARD";
+            _hudControls.Update(_paused);
             if (_paused)
             {
+                _hudControls.UpdatePaused();
+                _hud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { RespawnPlayer(); SetPaused(false); }
                 else if (_pad.SystemPressed(SystemAction.Quit)) Application.Quit(0);
@@ -342,19 +352,30 @@ namespace Monolith.Game
         {
             _paused = paused;
             _juice.BaseTimeScale = paused ? 0f : 1f;
-            _flightHud.Overlay = paused ? PauseText : null;
+            _hud.Overlay = paused ? PauseText() : null;
         }
 
-        static readonly string[] PauseText =
+        string[] PauseText()
         {
-            "PAUSED",
-            "START RESUME      Y RESPAWN      B QUIT",
-            "RT FAST GUN   LB HEAVY GUN   RB FIRE MISSILE   R3 NEXT MISSILE   B DECOYS",
-            "LT TARGET AHEAD   A NEXT HOSTILE   VIEW NEAREST ATTACKER   Y TAP NEXT PART",
-            "HOLD Y: D-PAD UP GUNS  LEFT SHIELDS  RIGHT ENGINES  DOWN BALANCED",
-            "LOCK-ON MISSILES NEED A STEADY TONE; HEAT-SEEKERS NEED ONLY THE TARGET IN FRONT",
-            "L3 AFTERBURNER   X MATCH SPEED   D-PAD THROTTLE PRESETS",
-        };
+            var lines = new List<string>
+            {
+                "PAUSED",
+                "START	RESUME",
+                "Y	RESPAWN",
+                "B	QUIT",
+            };
+            lines.AddRange(_hudControls.SettingsLines());
+            lines.Add("#CONTROLS");
+            lines.Add("RT   LB   RB	FAST GUN   HEAVY GUN   FIRE MISSILE");
+            lines.Add("R3   B	NEXT MISSILE   DECOYS");
+            lines.Add("LT   A   VIEW	TARGET AHEAD   NEXT HOSTILE   NEAREST ATTACKER");
+            lines.Add("Y (TAP)	NEXT PART OF THE TARGET");
+            lines.Add("HOLD Y	QUICK MENU: POWER ON THE D-PAD, WING ORDERS ON A  B  X  LB");
+            lines.Add("L3   X	AFTERBURNER   MATCH SPEED");
+            lines.Add("VIEW TWICE   B	BATTLE MAP (NOT PAUSED)");
+            lines.Add("Lock-on missiles need a steady tone; heat-seekers need only the target in front.");
+            return lines.ToArray();
+        }
 
         // ------------------------------------------------------------------------------------------------ the pieces
 

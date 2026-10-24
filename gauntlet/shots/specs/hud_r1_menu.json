@@ -1,0 +1,62 @@
+{
+ "scene": "range",
+ "width": 1920,
+ "height": 1080,
+ "options": {
+  "pilot": "scripted",
+  "noEmplacements": true,
+  "noTurrets": true
+ },
+ "script": [
+  {
+   "t": 0.0,
+   "do": "invulnerable",
+   "on": true
+  },
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    0,
+    0,
+    300
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.5,
+   "throttle": 0.5
+  },
+  {
+   "t": 0.4,
+   "do": "face",
+   "name": "Reaper 3",
+   "distance": 620,
+   "from": [
+    0.1,
+    0.05,
+    -1
+   ],
+   "speed": 0.5,
+   "throttle": 0.5
+  },
+  {
+   "t": 0.5,
+   "do": "target",
+   "name": "Reaper 3"
+  },
+  {
+   "t": 1.0,
+   "do": "menu",
+   "on": true
+  }
+ ],
+ "at": [
+  {
+   "name": "quick_menu",
+   "t": 1.9
+  }
+ ]
+}
