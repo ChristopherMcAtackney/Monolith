@@ -52,6 +52,8 @@ INTENSITY = {
     'escort:wick': 'tense',
     'escort:sable2_lost': 'tense',        # t=279: sober news, said fast
     'escort:lector_down': 'tense',
+    'escort:hold': 'frantic',             # the Tamsin at the jump point with its drive cold, battle 3, Earth's last wing coming in
+    'escort:terce2': 'calm',              # Earth's last throw: Earth never panics
     'escort:spool': 'frantic',            # twenty seconds to hold, battle 3
     'escort:away': 'calm',                # they are through
     'escort:lost': 'frantic',             # Tamsin is gone
