@@ -167,6 +167,11 @@ This is frame-rate independent, and `tau` (a time constant in seconds) sets how 
 - **Throttle:** forward speed chases throttle × max speed, with separate speed-up and slow-down time
   constants; a "match target speed" control.
 - **Afterburner:** a higher goal speed with a fast ramp, burning a fuel bar that recharges when not in use.
+  **User override (2026-10-24):** boosting felt weak, so the player's side gets more afterburner speed
+  than FS2's numbers, for a really satisfying surge, and a full juice pass on the boost: a widening
+  field-of-view kick (the user saw a high-FOV effect in a test build and wants it for the boost), shake,
+  rumble, an engine roar, speed streaks. The four FS2 reference classes keep FS2's values, so the flight
+  model is still proven against FS2.
 - **Getting knocked about:** big hits, collisions and shockwaves loosen the damping for about 2 s (fading),
   and add rotational shake. The player feels physically shoved.
 - **Collisions:** bump and damage, scaled by speed and mass; grazing a capital ship hurts but is not
