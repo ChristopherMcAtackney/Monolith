@@ -166,6 +166,12 @@ This is frame-rate independent, and `tau` (a time constant in seconds) sets how 
   velocity follows the nose. No strafing, no reverse thrust on fighters (call: as FS2).
 - **Throttle:** forward speed chases throttle × max speed, with separate speed-up and slow-down time
   constants; a "match target speed" control.
+- **Brake (user, 2026-10-24; proposal by the lead):** R3, mirroring L3's boost. A click brakes hard to a
+  full stop with retro thrusters (much faster than the normal slow-down), with its own juice (a forward
+  lurch, the view narrowing slightly, retro flare, a thump and hiss, rumble). It remembers the previous
+  throttle. To move again: push the throttle up as now, click R3 again to resume the previous throttle,
+  or boost with L3 (a boost from a standstill leaves you at cruise afterwards, not stopped). Match target
+  speed (X) stays the way to pace a capital ship and strip its turrets.
 - **Afterburner:** a higher goal speed with a fast ramp, burning a fuel bar that recharges when not in use.
   **User override (2026-10-24):** boosting felt weak, so the player's side gets more afterburner speed
   than FS2's numbers, for a really satisfying surge, and a full juice pass on the boost: a widening
@@ -196,6 +202,8 @@ All of these were proposed and accepted (user approved the list; details are cal
 - **Targeting:** cycle hostiles, target nearest attacker, target the ship in the reticle, cycle
   subsystems on the current target (turrets, beam cannons, engines, hangar, comms array). A lead
   indicator for guns. A terse target box: class, name, hull and shield, distance.
+- **Gun muzzles (user, 2026-10-24):** the player's guns fire from bottom-left and bottom-right of the
+  view, converging on the aim point, so the bolts are seen in full as they travel.
 - **Guns:** energy-based, from the weapon energy pool. Fast-firing anti-fighter gun; slow heavy gun for
   hulls and subsystems. Each weapon has separate damage multipliers against shields, hull and subsystems.
 - **Missiles:** limited ammo. A heat-seeker (fire and forget, easy to dodge); a lock-on missile that
@@ -401,6 +409,14 @@ Missions are data files (one file per mission), not C#. A future mission editor 
 - **Sky and planets (call):** a real star catalogue / Milky Way panorama for the sky (for example NASA
   SVS "Deep Star Maps"; verify licence). Planets later from real NASA and mission imagery (verify licence
   per source; much is public domain). The slice needs the sky and the Sun only.
+- **Dynamic music with the user's own tracks (user, 2026-10-24; design proposed by the lead):** two layers.
+  The base score follows the fight's intensity (ambient, battle 1 to 3, as below). On top of it, theme
+  tracks are tied to mission moments: the Lector's arrival fades its theme in (a few seconds) and takes
+  over, and its defeat or departure fades it out and back to the base. Themes have priorities; stings play
+  over everything. A music.json beside the game maps every slot (base, stings, endings, and per-mission
+  themes) to the user's MP3 files with fade times and volume. Any slot without a file falls back to the
+  synthesised score. Missions switch themes with a theme action on their events. Crossfades are bar-aware
+  when a track's BPM is given, and time-based otherwise.
 - **Music: 80s epic synth (user, 2026-10-23).** Touchstones: Vangelis's Blade Runner, Tangerine Dream,
   John Carpenter, Mass Effect 1's score. Its structure follows FS2's music table: the music follows the
   fight with ambience, three battle intensities, short stings for friendly and enemy arrivals, and
@@ -408,6 +424,10 @@ Missions are data files (one file per mission), not C#. A future mission editor 
   compose it as MIDI (user) and render it through an analog-style synth with a proper 80s sound (call:
   polysynths, chorus, big reverb, gated drums; never plain General MIDI); the user can replace any
   track with their own MP3s later (user). The same 80s feel carries into the atmosphere (user).
+- **Dialogue process (user, 2026-10-24):** every line lives in a spreadsheet the user rewrites
+  (tools/dialogue/export_sheet.py writes design/dialogue/monolith_dialogue.xlsx). No voice file is
+  generated until the user has approved the line. Lines are plain and grounded; the user found some of the
+  first ones "super cheesy".
 - **Radio voices (call):** generated with Trap Door's TTS pipeline, with a radio filter. Diaspora crews
   sound human, with varied accents (no Scottish accents: user, 2026-10-24) and dry humour. **In battle the
   crew sounds frantic and panicked, never calm** (user, 2026-10-24: the first voices sounded "very weirdly
