@@ -64,6 +64,9 @@ YOUR OWN SOUND
   starts from its beginning on the next bar. Add a file of the same name with .json for loop points: { "loopStart": 3.2, "loopEnd": 48.0, "volume": -2.5 }.
   Radio lines: vo\<voice>\<line>.wav; your recording goes through the game's radio. Add { "radio": false } in a .json beside it if it is already radio-ready.
   A line made tense and frantic has a file for each (..._tense, ..._frantic); a recording named for one is given that radio treatment (the frantic one gets the harder radio).
+  The first time the game reads one of your MP3 or OGG files it is decoded (a minute of music takes about a fifth of a second, and the game can do nothing else while it does), and the result is kept as plain sound
+  in a hidden folder, Audio\.pcm, so every later start reads it back at once. Our own sound is kept the same way (Monolith_Data\StreamingAssets\Audio\.pcm, about 240 MB, made when the playtest folder is built).
+  Nothing is lost if you delete those folders: the next start makes them again. A file you change is read again by itself.
 THE LOG
   Monolith_audio_log.txt next to the game lists every music change, every radio line and the clip it played ([MN] VOICE ...), every line that had no clip ([MN][WARN] VOICE no clip ...), and every
   five seconds the number of voices, the audio thread's load and the loudness. Send it with your notes.

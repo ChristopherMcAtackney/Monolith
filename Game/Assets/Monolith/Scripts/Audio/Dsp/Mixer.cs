@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Monolith.Audio
 {
@@ -48,31 +49,52 @@ namespace Monolith.Audio
             return true;
         }
 
+        /// <summary>A sample in -1..1 as 16 bits, rounded to the nearest and clipped. (Written for the load: tens of millions of these, so no calls and no nested loops.)</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short Quantize(float x)
+        {
+            float v = x * 32767f;
+            int s = v >= 0f ? (int)(v + 0.5f) : (int)(v - 0.5f);
+            return (short)(s > 32767 ? 32767 : s < -32768 ? -32768 : s);
+        }
+
+        /// <summary>
+        /// Turn <paramref name="frames"/> frames of interleaved float samples (any number of channels; the first two are kept) into 16 bits at frame <paramref name="dstFrame"/> of
+        /// <paramref name="dst"/> (interleaved, <c>Math.Min(channels, 2)</c> channels). Touches nothing else, so several threads can do different stretches of one clip.
+        /// </summary>
+        public static void Quantize(float[] src, int channels, short[] dst, int dstFrame, int frames)
+        {
+            int ch = Math.Min(channels, 2), o = dstFrame * ch;
+            if (channels == ch)
+            {
+                int n = frames * ch;
+                for (int i = 0; i < n; i++) dst[o + i] = Quantize(src[i]);
+            }
+            else
+                for (int i = 0, b = 0; i < frames; i++, b += channels)
+                    for (int k = 0; k < ch; k++) dst[o++] = Quantize(src[b + k]);
+        }
+
         public static Clip FromPcm(PcmBuffer b, string name)
         {
             int ch = Math.Min(b.Channels, 2);
-            var c = new Clip { Name = name, SampleRate = b.SampleRate, Channels = ch, Pcm = new short[b.Frames * ch] };
-            for (int i = 0; i < b.Frames; i++)
-                for (int k = 0; k < ch; k++)
-                {
-                    float v = b.Ch[k][i] * 32767f;
-                    c.Pcm[i * ch + k] = (short)(v > 32767f ? 32767 : v < -32768f ? -32768 : (int)MathF.Round(v));
-                }
-            return c;
+            var pcm = new short[b.Frames * ch];
+            for (int k = 0; k < ch; k++)
+            {
+                var src = b.Ch[k];
+                int frames = b.Frames;
+                for (int i = 0, o = k; i < frames; i++, o += ch) pcm[o] = Quantize(src[i]);
+            }
+            return new Clip { Name = name, SampleRate = b.SampleRate, Channels = ch, Pcm = pcm };
         }
 
         public static Clip FromInterleaved(float[] data, int channels, int sampleRate, string name)
         {
             int ch = Math.Min(channels, 2);
             int frames = data.Length / channels;
-            var c = new Clip { Name = name, SampleRate = sampleRate, Channels = ch, Pcm = new short[frames * ch] };
-            for (int i = 0; i < frames; i++)
-                for (int k = 0; k < ch; k++)
-                {
-                    float v = data[i * channels + k] * 32767f;
-                    c.Pcm[i * ch + k] = (short)(v > 32767f ? 32767 : v < -32768f ? -32768 : (int)MathF.Round(v));
-                }
-            return c;
+            var pcm = new short[frames * ch];
+            Quantize(data, channels, pcm, 0, frames);
+            return new Clip { Name = name, SampleRate = sampleRate, Channels = ch, Pcm = pcm };
         }
     }
 

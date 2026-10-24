@@ -24,6 +24,12 @@ To keep a long render from locking the build output, copy `bin/Release/net9.0` s
 
 `make_clip.py` joins a capture run's stills to the audio rendered in step with it (a clip with sound).
 
+**Loading time.** Unity decodes an OGG or MP3 inside `GetContent`, synchronously on the main thread (about 700x real time: 2.3 s for the 349 built-in files, in which the game can do nothing else), so the loader (`AudioFileLoader`) keeps what it decodes as plain
+16-bit PCM beside the sound (`Audio\.pcm\<path>.mnpcm`, `PcmCache`; keyed on the source file's length and modification time; the Editor does not use it; `-mnNoAudioCache` turns it off) and reads it back on worker threads: the whole library loads in 0.13 to 0.18 s instead of 5.7 s.
+The copy out of Unity and the 16-bit conversion are on worker threads too (the conversion had been 3.6 s of the main thread). `make_playtest.ps1` makes the cache fresh in the playtest folder (`Monolith.exe -batchmode -nographics -mnAudioSelfTest -mnAudioCacheBuild`: about 240 MB).
+`Monolith.exe -batchmode -nographics -mnAudioSelfTest -mnAudioLoadProbe -mnOut dir` writes `audio_loadprobe.txt`: where the time goes by kind of file, with and without the cache, blocking and as the game loads. `tools\audio\startup_measure.ps1` runs the player three times with the start probe
+(launch to flyable, as the loading screen reports it).
+
 ## Making the sound from scratch
 
 1. **Music.** `python audio_src/compose/build_music.py` writes the MIDI (`score.py` holds the harmony, the themes and the pattern helpers), then `MnAudio music all`. A full render is about 7 minutes.

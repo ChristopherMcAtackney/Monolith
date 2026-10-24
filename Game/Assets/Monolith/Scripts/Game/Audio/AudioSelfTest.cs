@@ -71,17 +71,19 @@ namespace Monolith.Game
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 Application.logMessageReceived += OnLog;
                 // the checks hear the built-in sound: not whatever a player has put in the Audio folder or a music.json beside the game
-                if (!CommandLine.Has("-mnAudioUser"))
+                if (!CommandLine.Has("-mnAudioUser") && !CommandLine.Has("-mnAudioCacheBuild"))
                 {
                     string empty = Path.Combine(Application.temporaryCachePath, "audio_selftest_empty");
                     Directory.CreateDirectory(empty);
                     File.WriteAllText(Path.Combine(empty, "music.json"), "{ \"base\": { \"fight\": { \"off\": true } } }");        // the battle tracks are measured as they are: the fight theme plays over them (its own stage)
                     AudioPaths.OverrideUser(empty);
                 }
+                if (CommandLine.Has("-mnAudioLoadProbe") || CommandLine.Has("-mnAudioCacheBuild")) { yield return LoadProbe(); File.WriteAllText(Path.Combine(_out, "audio_loadprobe.txt"), _report.ToString()); Application.logMessageReceived -= OnLog; yield break; }
                 yield return Load();
                 if (_lib.Ready)
                 {
                     yield return Guard("Files", Files());
+                    yield return Guard("Cache", Cache());
                     yield return Guard("Music", Music());
                     yield return Guard("Transitions", Transitions());
                     yield return Guard("Stings", Stings());
@@ -170,6 +172,80 @@ namespace Monolith.Game
 
             // ------------------------------------------------------------------------------------------------ the checks
 
+            /// <summary>
+            /// -mnAudioLoadProbe: where the time of loading the sound goes. Every file one at a time on this thread (so each part is timed exactly), first with no cache (everything decoded by Unity), then with
+            /// it (the first pass makes what is missing, the second reads it back), then the library the way the game loads it. -mnAudioCacheBuild: just make the cache for every file and stop.
+            /// </summary>
+            IEnumerator LoadProbe()
+            {
+                void Table(string title)
+                {
+                    Say($"   {title}");
+                    Say($"   {"kind",-10}{"files",6}{"MB",8}{"sound s",9}{"request",9}{"content",9}{"getdata",9}{"convert",9}{"wav",6}{"cache",7}{"total ms",10}   (content: Unity's decoding, inside GetContent, on the main thread; convert: waiting for the worker threads; cache: files read back as PCM)");
+                    foreach (var kv in AudioFileLoader.Stats.OrderBy(k => k.Key))
+                    {
+                        var st = kv.Value;
+                        Say($"   {kv.Key,-10}{st.Files,6}{st.Bytes / 1048576.0,8:0.0}{st.Seconds,9:0}{st.RequestMs,9:0}{st.DecodeMs + st.ReadyMs,9:0}{st.GetMs,9:0}{st.CopyMs,9:0}{st.WavMs,6:0}{st.CacheMs,7:0}{st.TotalMs,10:0}   {(st.Cached > 0 ? st.Cached + " from the cache" : "")}");
+                    }
+                }
+                if (CommandLine.Has("-mnAudioCacheBuild"))
+                {
+                    var sw0 = System.Diagnostics.Stopwatch.StartNew();
+                    var lib0 = new AudioLibrary();
+                    lib0.LoadBlocking();
+                    int n = 0; long bytes = 0;
+                    foreach (var f in Directory.Exists(Path.Combine(AudioPaths.BuiltIn, ".pcm")) ? Directory.GetFiles(Path.Combine(AudioPaths.BuiltIn, ".pcm"), "*.mnpcm", SearchOption.AllDirectories) : new string[0]) { n++; bytes += new FileInfo(f).Length; }
+                    Say($"   audio cache: {n} files, {bytes / 1048576.0:0} MB in {Path.Combine(AudioPaths.BuiltIn, ".pcm")}; {PcmCache.Hits} read, {PcmCache.Writes} written, {PcmCache.Failures} could not be written; {lib0.FilesTotal} files in {sw0.ElapsedMilliseconds} ms");
+                    if (lib0.FilesFailed > 0) Check(false, $"{lib0.FilesFailed} files failed to load");
+                    yield break;
+                }
+                Say("== where the time of loading sound goes");
+                AudioFileLoader.Timing = true;
+                bool cacheWas = PcmCache.Enabled;
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                PcmCache.Enabled = false;
+                AudioFileLoader.Stats.Clear();
+                var lib = new AudioLibrary();
+                sw.Restart();
+                lib.LoadBlocking();
+                double plain = sw.Elapsed.TotalMilliseconds;
+                Table("no cache: everything decoded by Unity");
+                Say($"   one at a time, blocking: {plain:0} ms for {lib.FilesTotal} files");
+                yield return null;
+                var libA = new AudioLibrary();
+                sw.Restart();
+                yield return libA.Load(_host);
+                Say($"   as the game loads it without the cache (a frame between): {sw.ElapsedMilliseconds} ms");
+
+                PcmCache.Enabled = cacheWas;
+                if (PcmCache.Usable)
+                {
+                    PcmCache.Hits = PcmCache.Misses = PcmCache.Writes = PcmCache.Failures = 0;
+                    AudioFileLoader.Stats.Clear();
+                    var lib1 = new AudioLibrary();
+                    sw.Restart();
+                    lib1.LoadBlocking();
+                    Say($"   with the cache, first pass: {sw.ElapsedMilliseconds} ms ({PcmCache.Hits} read from it, {PcmCache.Misses} not there or out of date, {PcmCache.Writes} written, {PcmCache.Failures} could not be)");
+                    yield return null;
+                    PcmCache.Hits = PcmCache.Misses = PcmCache.Writes = PcmCache.Failures = 0;
+                    AudioFileLoader.Stats.Clear();
+                    var lib2 = new AudioLibrary();
+                    sw.Restart();
+                    lib2.LoadBlocking();
+                    double cached = sw.Elapsed.TotalMilliseconds;
+                    Table("with the cache");
+                    Say($"   one at a time, blocking: {cached:0} ms for {lib2.FilesTotal} files ({PcmCache.Hits} read from the cache, {PcmCache.Misses} decoded)");
+                    yield return null;
+                    var lib3 = new AudioLibrary();
+                    sw.Restart();
+                    yield return lib3.Load(_host);
+                    Say($"   as the game loads it with the cache (a frame between): {sw.ElapsedMilliseconds} ms");
+                }
+                else Say("   (no cache in this run: the Editor does not use it, or -mnNoAudioCache)");
+                AudioFileLoader.Timing = false;
+            }
+
             IEnumerator Load()
             {
                 Say("== loading every file (decoded by Unity, as in the game)");
@@ -179,6 +255,50 @@ namespace Monolith.Game
                 Check(_lib.Ready, $"the library loaded in {sw.ElapsedMilliseconds} ms");
                 Check(_lib.FilesFailed == 0, $"{_lib.FilesTotal} files, {_lib.FilesFailed} failed");
                 foreach (var p in _lib.Problems) Say("   problem: " + p);
+            }
+
+            /// <summary>The decoded-sound cache: kept after the first decode, read back the same, ignored and made again when the sound changes or the cache is damaged, harmless where it cannot be written.</summary>
+            IEnumerator Cache()
+            {
+                Say("== the cache of decoded sound (read by worker threads next time: Unity's decoder cannot leave the main thread)");
+                if (!PcmCache.Usable) { Say("   (off in this run: the Editor does not use it, or -mnNoAudioCache)"); yield break; }
+                string dir = Path.Combine(Application.temporaryCachePath, "audio_selftest_cache_" + DateTime.Now.Ticks);
+                Directory.CreateDirectory(dir);
+                string original = AudioPaths.User;
+                AudioPaths.OverrideUser(dir);
+                try
+                {
+                    string src = Path.Combine(dir, "test.ogg");
+                    File.Copy(Path.Combine(AudioPaths.BuiltIn, "music", "sting_goal.ogg"), src);
+                    string cp = PcmCache.PathFor(src);
+                    int hits = PcmCache.Hits, misses = PcmCache.Misses, fails = PcmCache.Failures;
+                    var a = new LoadResult(); yield return AudioFileLoader.Load(src, "a", a);
+                    Check(a.Clip != null && File.Exists(cp) && PcmCache.Misses == misses + 1 && PcmCache.Hits == hits, $"a file decoded once is kept as PCM ({(File.Exists(cp) ? new FileInfo(cp).Length / 1024 : 0)} KB for a {new FileInfo(src).Length / 1024} KB ogg, in {Path.GetFileName(Path.GetDirectoryName(cp))})");
+                    var b = new LoadResult(); yield return AudioFileLoader.Load(src, "b", b);
+                    bool same = a.Clip != null && b.Clip != null && a.Clip.Pcm.Length == b.Clip.Pcm.Length && a.Clip.SampleRate == b.Clip.SampleRate && a.Clip.Channels == b.Clip.Channels && a.Clip.Pcm.AsSpan().SequenceEqual(b.Clip.Pcm);
+                    Check(PcmCache.Hits == hits + 1 && same, $"and next time it is read back, sample for sample the same ({(b.Clip != null ? b.Clip.Frames : 0)} frames at {(b.Clip != null ? b.Clip.SampleRate : 0)} Hz)");
+                    // the sound changed: the cache is out of date and is ignored, then made again
+                    File.SetLastWriteTimeUtc(src, File.GetLastWriteTimeUtc(src).AddSeconds(7));
+                    hits = PcmCache.Hits;
+                    var c = new LoadResult(); yield return AudioFileLoader.Load(src, "c", c);
+                    var c2 = new LoadResult(); yield return AudioFileLoader.Load(src, "c2", c2);
+                    Check(c.Clip != null && PcmCache.Hits == hits + 1 && c2.Clip != null && c2.Clip.Pcm.AsSpan().SequenceEqual(a.Clip.Pcm), "a file that has changed since is decoded again, and its cache made again");
+                    // damaged: cut in half, then rubbish
+                    using (var fs = new FileStream(cp, FileMode.Open, FileAccess.ReadWrite)) fs.SetLength(fs.Length / 2);
+                    var d = new LoadResult(); yield return AudioFileLoader.Load(src, "d", d);
+                    File.WriteAllBytes(cp, new byte[200]);
+                    var e = new LoadResult(); yield return AudioFileLoader.Load(src, "e", e);
+                    var f = new LoadResult(); yield return AudioFileLoader.Load(src, "f", f);
+                    Check(d.Clip != null && e.Clip != null && f.Clip != null && d.Clip.Pcm.AsSpan().SequenceEqual(a.Clip.Pcm) && e.Clip.Pcm.AsSpan().SequenceEqual(a.Clip.Pcm) && f.Clip.Pcm.AsSpan().SequenceEqual(a.Clip.Pcm), "a cache that is cut short or is rubbish is ignored: the sound still loads, and the cache is repaired");
+                    // nowhere to write it (the .pcm folder is a file): the sound loads all the same
+                    string src2 = Path.Combine(dir, "sub", "test2.ogg");
+                    Directory.CreateDirectory(Path.GetDirectoryName(src2));
+                    File.Copy(Path.Combine(AudioPaths.BuiltIn, "music", "sting_fail.ogg"), src2);
+                    File.WriteAllText(Path.Combine(dir, ".pcm", "sub"), "in the way");
+                    var g = new LoadResult(); yield return AudioFileLoader.Load(src2, "g", g);
+                    Check(g.Clip != null && g.Clip.Frames > R && PcmCache.Failures > fails, "where the cache cannot be written the sound loads all the same (and the failure is counted)");
+                }
+                finally { AudioPaths.OverrideUser(original); try { Directory.Delete(dir, true); } catch (Exception) { } }
             }
 
             IEnumerator Files()
@@ -192,6 +312,27 @@ namespace Monolith.Game
                     "cabin_air", "alarm_hull", "alarm_beep", "system_fail", "jump_in", "jump_in_big", "jump_out", "jump_out_big", "earth_horn", "earth_horn_small", "scan_sweep", "ui_click", "ui_select", "target_blip",
                     "lock_acquired", "lock_lost", "power_blip", "squelch_open", "squelch_close",
                     "step_plate", "step_grating", "step_rung", "seat_open", "seat_close", "breaker_off", "breaker_on", "scan_hit", "breath_in", "breath_out", "repair_loop", "repair_done", "repair_slip", "rack_seat", "cabin_rattle" };
+                // the loader copies the decoded sound out of Unity in pieces and quantises them on worker threads: it must be exactly what one whole copy gives (a piece is 131072 frames: a track has 25)
+                {
+                    string file = Path.Combine(AudioPaths.BuiltIn, "music", "battle2.ogg");
+                    short[] whole = null; int wch = 0;
+                    using (var req = UnityEngine.Networking.UnityWebRequestMultimedia.GetAudioClip(new Uri(file).AbsoluteUri, AudioType.OGGVORBIS))
+                    {
+                        var op = req.SendWebRequest();
+                        while (!op.isDone) yield return null;
+                        var ac = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(req);
+                        while (ac.loadState == AudioDataLoadState.Loading) yield return null;
+                        var all = new float[ac.samples * ac.channels];
+                        ac.GetData(all, 0);
+                        wch = ac.channels;
+                        whole = Clip.FromInterleaved(all, ac.channels, ac.frequency, "whole").Pcm;
+                        UnityEngine.Object.Destroy(ac);
+                    }
+                    var got = _lib.Music["battle2"].Clip.Pcm;
+                    int diff = 0, first = -1;
+                    for (int i = 0; i < Math.Min(whole.Length, got.Length); i++) if (whole[i] != got[i]) { diff++; if (first < 0) first = i; }
+                    Check(whole.Length == got.Length && diff == 0, $"the pieces add up to the whole: battle2.ogg loaded in pieces is the same {whole.Length / wch} frames as one copy ({diff} samples differ{(first >= 0 ? ", first at " + first : "")})");
+                }
                 var missing = cues.Where(c => !_lib.Has(c)).ToList();
                 Check(missing.Count == 0, $"{cues.Length} effects are there" + (missing.Count > 0 ? ": missing " + string.Join(", ", missing) : ""));
                 // loops are all one length, and each closes on itself

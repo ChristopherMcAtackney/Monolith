@@ -192,6 +192,7 @@ namespace Monolith.Game
                 meter.Report("sound", lib.FilesTotal > 0 ? Mathf.Min(0.999f, (float)lib.FilesLoaded / lib.FilesTotal) : 0f);
                 yield return null;
             }
+            meter.Finish("sound");                  // the step is the decode, not the wait for the rest of the load to come round to it (its time sets the next bar's weight)
         }
 
         /// <summary>Wait for the sound to be decoded (it has been since the load began, so this is usually over already), then end the step.</summary>

@@ -23,7 +23,19 @@ robocopy $build $out /E /NFL /NDL /NJH /NJS /NP /XD Monolith_BurstDebugInformati
 # A Unity build does not delete a streaming file that has since been removed from the project (a sound taken out of the game lingers in Builds\Win and plays in the playtest): the
 # built-in sound in the playtest is made exactly the project's, and nothing else.
 $projAudio = Join-Path $root 'Game\Assets\StreamingAssets\Audio'
-robocopy $projAudio (Join-Path $out 'Monolith_Data\StreamingAssets\Audio') /MIR /XF *.meta /NFL /NDL /NJH /NJS /NP | Out-Null
+robocopy $projAudio (Join-Path $out 'Monolith_Data\StreamingAssets\Audio') /MIR /XF *.meta /XD .pcm /NFL /NDL /NJH /NJS /NP | Out-Null
+
+# the decoded-sound cache (Audio\.pcm: the sound as plain PCM, which a start reads in a fifth of a second instead of the 2.3 s Unity takes to decode it on the main thread; Scripts/Audio/Runtime/PcmCache.cs),
+# made fresh here so the first start in this folder is as quick as the next ones (it would make it itself otherwise, a start slower, once)
+$pcm = Join-Path $out 'Monolith_Data\StreamingAssets\Audio\.pcm'
+if (Test-Path $pcm) { Remove-Item -Recurse -Force $pcm }
+$warm = Join-Path $env:TEMP 'mn_audio_cache_build'
+New-Item -ItemType Directory -Force $warm | Out-Null
+$p = Start-Process -FilePath (Join-Path $out 'Monolith.exe') -ArgumentList @('-batchmode', '-nographics', '-mnAudioSelfTest', '-mnAudioCacheBuild', '-mnOut', $warm, '-logFile', (Join-Path $warm 'cache.log')) -PassThru -Wait -WindowStyle Hidden
+if ((Test-Path $pcm)) {
+    $files = Get-ChildItem $pcm -Recurse -File -Filter *.mnpcm
+    Write-Host ("audio cache: {0} files, {1:0} MB" -f $files.Count, (($files | Measure-Object Length -Sum).Sum / 1MB))
+} else { Write-Host "the audio cache was not made (exit $($p.ExitCode)); the first start will make it" }
 
 # the missions, to edit without a build
 $m = Join-Path $out 'Missions'

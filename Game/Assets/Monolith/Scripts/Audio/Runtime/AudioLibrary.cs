@@ -249,7 +249,7 @@ namespace Monolith.Audio
             FilesTotal = _assets.Count;
             var sw = System.Diagnostics.Stopwatch.StartNew();
             int next = 0, running = 0;
-            const int Concurrency = 10;
+            const int Concurrency = 32;
             while (next < _assets.Count || running > 0)
             {
                 while (running < Concurrency && next < _assets.Count)
