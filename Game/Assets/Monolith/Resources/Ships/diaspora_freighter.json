@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "diaspora_freighter",
+  "name": "Diaspora freighter (placeholder)",
+  "role": "A slow, lightly armed freighter for escort missions (the Tamsin in the escort test mission): a placeholder hull from Game/PlaceholderShips until the diaspora's own freighters are modelled. Flight numbers are FS2's Triton's.",
+  "flight": {
+    "topSpeed": {
+      "value": 30,
+      "unit": "m/s",
+      "source": "FS2 ships.tbl, GTFR Triton $Max Velocity 0, 0, 30"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 ships.tbl, GTFR Triton $Rear Velocity 0"
+    },
+    "rotationTime": {
+      "value": [
+        15,
+        15,
+        15
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "FS2 ships.tbl, GTFR Triton $Rotation time 15, 15, 15"
+    },
+    "rotDamp": {
+      "value": 0.7,
+      "unit": "s (turn-rate time constant)",
+      "source": "FS2 ships.tbl, GTFR Triton $Rotdamp 0.7"
+    },
+    "sideDamp": {
+      "value": 0.2,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "FS2 ships.tbl, GTFR Triton $Damp 0.2"
+    },
+    "forwardAccel": {
+      "value": 8,
+      "unit": "s (speed-up time constant)",
+      "source": "FS2 ships.tbl, GTFR Triton $Forward accel 8.0"
+    },
+    "forwardDecel": {
+      "value": 4,
+      "unit": "s (slow-down time constant)",
+      "source": "FS2 ships.tbl, GTFR Triton $Forward decel 4.0"
+    },
+    "afterburner": {
+      "value": false,
+      "unit": "bool",
+      "source": "FS2 ships.tbl, GTFR Triton $Afterburner NO"
+    },
+    "afterburnerSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "No afterburner"
+    },
+    "afterburnerAccel": {
+      "value": 0,
+      "unit": "s",
+      "source": "No afterburner"
+    },
+    "afterburnerFuel": {
+      "value": 0,
+      "unit": "fuel units",
+      "source": "No afterburner"
+    },
+    "afterburnerBurnRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "afterburnerRechargeRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "mass": {
+      "value": 20000000.0,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        36,
+        30,
+        140
+      ],
+      "unit": "m (width, height, length)",
+      "source": "The escort mission's placeholder hull (look.hull 140 x 36 x 30), about a Triton's length"
+    }
+  }
+}
