@@ -26,7 +26,8 @@ The Expanse's space battles, with FreeSpace 2's big, meaty lasers everywhere (us
 4. **Lead** records the verdict and gap in `gauntlet/pieces/<id>/history.md`, updates the board, and
    commits a checkpoint.
 
-A piece wins when the critic picks ours in at least 2 of 3 pairs (or calls all three a coin-flip), two
+Since 2026-10-24 each look round uses three separate critics with one pair each, so recognising our
+ship or effect in one pair can't decide the others. A piece wins when the critic picks ours in at least 2 of 3 pairs (or calls all three a coin-flip), two
 rounds running against different reference frames. Measured pieces win when the numbers pass.
 
 ## Lessons carried over from Trap Door
