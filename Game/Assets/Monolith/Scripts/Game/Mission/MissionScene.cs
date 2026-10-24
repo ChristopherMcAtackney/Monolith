@@ -182,7 +182,7 @@ namespace Monolith.Game
             _hud.Banner = null; _hud.BannerSub = null;
             _hud.Overlay = null;
             _juice.Death.Reset();
-            _hud.enabled = _hudWanted; _dyingShown = false;
+            _hud.enabled = _hudWanted; _hud.gameObject.SetActive(true); _dyingShown = false;
         }
 
         // ------------------------------------------------------------------------------------------------ the cabin
@@ -358,7 +358,8 @@ namespace Monolith.Game
             if (dying != _dyingShown)
             {
                 _dyingShown = dying;
-                _hud.enabled = _hudWanted && !dying;
+                _hud.enabled = _hudWanted;
+                _hud.gameObject.SetActive(!dying);                 // the whole object: switching the component off would leave its last frame on the screen
                 if (dying) { _paused = false; _briefing = false; _hud.Banner = null; _hud.BannerSub = null; }
             }
             if (!dying)

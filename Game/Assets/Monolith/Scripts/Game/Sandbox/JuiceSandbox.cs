@@ -35,7 +35,7 @@ namespace Monolith.Game
         Transform _root;
         public JuiceDirector Juice { get; private set; }
         /// <summary>The flight HUD is drawing (the checks read it).</summary>
-        public bool HudOn => _hud != null && _hud.enabled;
+        public bool HudOn => _hud != null && _hud.enabled && _hud.gameObject.activeSelf;
         public SandboxCombat Combat { get; private set; }
         JuicePanel _panel;
         ShipState _player;
@@ -350,7 +350,7 @@ namespace Monolith.Game
             if (death.Active != _deathShown)
             {
                 _deathShown = death.Active;
-                if (_hud != null) _hud.enabled = !death.Active;
+                if (_hud != null) _hud.gameObject.SetActive(!death.Active);
             }
             if (death.Active)
             {
