@@ -90,6 +90,10 @@ namespace Monolith.Game
             self._noRespawn = opts != null && (bool)(opts["noRespawn"] ?? false);
             self._noEmplacements = opts != null && (bool)(opts["noEmplacements"] ?? false);
             self._noTurrets = opts != null && (bool)(opts["noTurrets"] ?? false);
+            // The pad drive checks the pad and what the flight model does with it, so nothing may shoot at the player ship: a Rack missile that hit the
+            // braked ship in the middle of a brake step shoved it by 11 to 15 m/s and failed that step (on a run in four, and on every run on a loaded
+            // machine, where the script's real-time waits drift against the sim's clock and the missile's arrival falls inside the step).
+            if (RangeChecks.Requested) { self._noEmplacements = true; self._noTurrets = true; }
 
             var view = CockpitView.Create(world, root.transform);
             SkyRig.Enable(view.Camera, root.transform);
