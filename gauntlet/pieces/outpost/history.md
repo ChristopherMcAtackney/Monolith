@@ -94,3 +94,36 @@ before: informational); the dogfight port check SAME (all 90 samples bit for bit
 (victory "OUTPOST DOWN" at 631.7 s, every beat in order, 18 ships at most, threats 11 at most, longest quiet 9 s), **dogfight FAIL** ("longest stretch without a threat in the fight 94 s <= 30 s":
 the sim ends with only the Warden alive for 94 s). The dogfight failure is not from this work: with the regenerated shared prefabs restored byte for byte the result is the same, the
 dogfight uses neither new class, and the Mercy round recorded the same failure (75 s then); the AI pacing round owns it.
+
+## Round 2 (oort-mission round 2 builder, 2026-10-24): reading at 7 km
+
+Round 1's first "does not work": from the player's start, 7.2 km out, the station is about 25 to 40 pixels across in the 55 degree view, its
+lamps (1 to 6 m: a pixel there is about 6.5 m) are a few dots, the rock a dark lump; it said "comet with a thing on it". Lit shapes big enough
+to cover a pixel, in the lights material (150,000 nits, so the bloom catches them), all added by `build_earth_outpost.py` (no generated asset
+touched by hand: the FBX, the manifest, the prefab and the juice sections are the pipeline's):
+- **`beacon_rings`**: the Eye's two rims as continuous bands of cold light on the ring's face toward the approach, 6 m wide from the inner
+  chamfer out (the 56 rim lamps poke through it) and 3 m inside the outer lip, 0.7 m off the face (above the plating and the radial ribs).
+  On every LOD, so the eye shows at any range. This is what reads: from the start the Eye is a lit circle with its red pupil in it.
+- **`deck_bands`**: a lit band 2.2 to 2.4 m tall along each of the four decks' fronts, between their chamfers and clear of their window slits:
+  the decks are the part of the station that shows over the rock's brow from the approach, so the band is a line of light under the Eye.
+- **`foundation_strip`**: a lit strip 3.4 m tall along the spine's front flank just above the shelf, segment by segment (the necks dark),
+  broken into dashes by the anchor blocks. **Hidden by the rock's brow from the start** (the station's lower flank is below the nucleus' top
+  edge seen from 5 degrees below); it shows from above, the flanks and the last kilometre, where it seats the station on the ice.
+- **`end_beacons`**: a mast at each end of the spine (46 m and 38 m) with guy braces and a 9 m beacon globe: two white points either side of
+  the Eye. About a pixel each from the start; plain at 4 km.
+
+LOD0 253,837 triangles (+1,436), LOD1 38,332 (+774), LOD2 3,650 (+104; the rings only); bounds unchanged; the hull's LOD2 renderer gains the
+lights material. `Setup.Project` then `JuiceSetup.BakeSections` re-made `earth_outpost.prefab` and `earth_outpost.sections.asset` (they also
+re-make every other ship's prefab and sections with unrelated differences, as on main: those were put back, only the outpost's are kept).
+`wire_combat_defs.py` is not needed (no part moved).
+
+Captures (the built game, HUD off, `gauntlet/captures/oort-mission/r2/`): `outpost7km_before/` and `outpost7km_after/` (`start_view`: the
+player's eye point and 55 degree view turned onto the station; `start_cockpit`: the seat camera as the mission starts; `money_7km`: round 1's
+framing; `start_tele`: 12 degrees from the start, what is there to read), with `start_view_crop4x.png` (the outpost at 4x, nearest
+neighbour) and `tele_station_2x.png`; side by side: `outpost7km_before_after.png`; closer: `outpost_close_after/` (`sheet.png`: drift 4 km,
+approach 2 km and 1 km, the Eye close, three quarter, from above). Plan: `gauntlet/shots/oort_r2_outpost7km.json`.
+
+Honest read: the rings do the job (a ring of light is the one shape at that range that says "built", and says "eye"); the deck bands and
+the beacons add a little at 7 km and a lot from 4 km in; the foundation strip only helps closer. The rock is still a dark lump next to the
+field's pale rocks, the station's spine is still mostly behind the brow from the start, and the rings are pure cold white with no flicker or
+sweep (a slow chase of light round the rim would say "scanning" and is the next lever). Not judged by a critic, not seen by the user.
