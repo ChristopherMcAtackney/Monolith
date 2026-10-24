@@ -1,5 +1,5 @@
 {
- "format": "monolith-voice-lines/2",
+ "format": "monolith-voice-lines/3",
  "lines": [
   {
    "voice": "earth_lector",
@@ -9,15 +9,21 @@
    "file": "earth_lector/cabin_lector_blind.wav",
    "sources": [
     "cabin:lector_blind"
+   ],
+   "lineIds": [
+    "cabin:lector_blind"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Biologics in the dark. We will find you. We always have.",
+   "text": "Hiding in the dark. We will find you.",
    "intensity": "calm",
-   "say": "Biologics in the dark. We will find you. We always have.",
+   "say": "Hiding in the dark. We will find you.",
    "file": "earth_lector/cabin_lector_here.wav",
    "sources": [
+    "cabin:lector_here"
+   ],
+   "lineIds": [
     "cabin:lector_here"
    ]
   },
@@ -29,15 +35,21 @@
    "file": "earth_lector/cabin_lector_sweep.wav",
    "sources": [
     "cabin:lector_sweep"
+   ],
+   "lineIds": [
+    "cabin:lector_sweep"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Biologic. Sable one. I see you. All of you.",
+   "text": "I see you. All of you.",
    "intensity": "calm",
-   "say": "Biologic. Sable one. I see you. All of you.",
+   "say": "I see you. All of you.",
    "file": "earth_lector/cabin_spotted.wav",
    "sources": [
+    "cabin:spotted"
+   ],
+   "lineIds": [
     "cabin:spotted"
    ]
   },
@@ -49,26 +61,35 @@
    "file": "earth_lector/earth_bombers_01.wav",
    "sources": [
     "radio.json:earth_bombers"
+   ],
+   "lineIds": [
+    "radio:earth_bombers:1"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Your ark is a coffin. We will close it.",
+   "text": "You have chosen your own destruction. Do not hate us for what we do.",
    "intensity": "calm",
-   "say": "Your ark is a coffin. We will close it.",
+   "say": "You have chosen your own destruction. Do not hate us for what we do.",
    "file": "earth_lector/earth_bombers_02.wav",
    "sources": [
     "radio.json:earth_bombers"
+   ],
+   "lineIds": [
+    "radio:earth_bombers:2"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Biologics. You were us, once.",
+   "text": "We were once like you. We have ascended.",
    "intensity": "calm",
-   "say": "Biologics. You were us, once.",
+   "say": "We were once like you. We have ascended.",
    "file": "earth_lector/earth_wave_01.wav",
    "sources": [
     "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "radio:earth_wave:1"
    ]
   },
   {
@@ -79,26 +100,35 @@
    "file": "earth_lector/earth_wave_02.wav",
    "sources": [
     "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "radio:earth_wave:2"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Kneel, remnant. Or burn where you are.",
+   "text": "Disable your shields, and prepare for your ascension.",
    "intensity": "calm",
-   "say": "Kneel, remnant. Or burn where you are.",
+   "say": "Disable your shields, and prepare for your ascension.",
    "file": "earth_lector/earth_wave_03.wav",
    "sources": [
     "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "radio:earth_wave:3"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Your blood remembers Earth. Earth does not remember you.",
+   "text": "You remember Earth. Earth does not remember you.",
    "intensity": "calm",
-   "say": "Your blood remembers Earth. Earth does not remember you.",
+   "say": "You remember Earth. Earth does not remember you.",
    "file": "earth_lector/earth_wave_04.wav",
    "sources": [
     "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "radio:earth_wave:4"
    ]
   },
   {
@@ -109,45 +139,60 @@
    "file": "earth_lector/escort_incense.wav",
    "sources": [
     "escort:incense"
+   ],
+   "lineIds": [
+    "escort:incense"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Every remnant ends. Yours ends here.",
+   "text": "Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.",
    "intensity": "calm",
-   "say": "Every remnant ends. Yours ends here.",
+   "say": "Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.",
    "file": "earth_lector/escort_lauds.wav",
    "sources": [
+    "escort:lauds"
+   ],
+   "lineIds": [
     "escort:lauds"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Lector. You carry four hundred biologics. We will count them as they freeze.",
+   "text": "We can sense four hundred and fifty two of you on that vessel. Join us now and free yourself from suffering.",
    "intensity": "calm",
-   "say": "Lector. You carry four hundred biologics. We will count them as they freeze.",
+   "say": "We can sense four hundred and fifty two of you on that vessel. Join us now and free yourself from suffering.",
    "file": "earth_lector/escort_lector_here.wav",
    "sources": [
+    "escort:lector_here"
+   ],
+   "lineIds": [
     "escort:lector_here"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "A vessel of the fallen, crawling home. How touching.",
+   "text": "What are these things that resist?",
    "intensity": "calm",
-   "say": "A vessel of the fallen, crawling home. How touching.",
+   "say": "What are these things that resist?",
    "file": "earth_lector/escort_matins.wav",
    "sources": [
+    "escort:matins"
+   ],
+   "lineIds": [
     "escort:matins"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "You brought them to us. That was a kindness.",
+   "text": "We only wish to release you from your suffering. Disable your shields now to embrace your ascension.",
    "intensity": "calm",
-   "say": "You brought them to us. That was a kindness.",
+   "say": "We only wish to release you from your suffering. Disable your shields now to embrace your ascension.",
    "file": "earth_lector/escort_prime.wav",
    "sources": [
+    "escort:prime"
+   ],
+   "lineIds": [
     "escort:prime"
    ]
   },
@@ -159,35 +204,47 @@
    "file": "earth_lector/escort_spotted.wav",
    "sources": [
     "escort:spotted"
+   ],
+   "lineIds": [
+    "escort:spotted"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "The door you run for is a grave. Go on.",
+   "text": "Fighting only prolongs your suffering.",
    "intensity": "calm",
-   "say": "The door you run for is a grave. Go on.",
+   "say": "Fighting only prolongs your suffering.",
    "file": "earth_lector/escort_terce.wav",
    "sources": [
+    "escort:terce"
+   ],
+   "lineIds": [
     "escort:terce"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "More of us than there are of you. There always will be.",
+   "text": "Our congress grows - join it, and leave your prison.",
    "intensity": "calm",
-   "say": "More of us than there are of you. There always will be.",
+   "say": "Our congress grows - join it, and leave your prison.",
    "file": "earth_lector/escort_terce2.wav",
    "sources": [
+    "escort:terce2"
+   ],
+   "lineIds": [
     "escort:terce2"
    ]
   },
   {
    "voice": "earth_lector",
-   "text": "Censers, go. Bring me the ark.",
+   "text": "Bring them to me.",
    "intensity": "calm",
-   "say": "Censers, go. Bring me the ark.",
+   "say": "Bring them to me.",
    "file": "earth_lector/escort_thurible.wav",
    "sources": [
+    "escort:thurible"
+   ],
+   "lineIds": [
     "escort:thurible"
    ]
   },
@@ -200,17 +257,107 @@
    "sources": [
     "dogfight:earth_bombers",
     "radio.json:earth_bombers"
+   ],
+   "lineIds": [
+    "dogfight:earth_bombers",
+    "radio:earth_bombers:1"
    ]
   },
   {
    "voice": "earth_warden",
-   "text": "Biologics. You were us, once.",
+   "text": "We were once like you. We have ascended.",
    "intensity": "calm",
-   "say": "Biologics. You were us, once.",
+   "say": "We were once like you. We have ascended.",
    "file": "earth_warden/dogfight_earth_wave_1.wav",
    "sources": [
     "dogfight:earth_wave_1",
     "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "dogfight:earth_wave_1",
+    "radio:earth_wave:1"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "You return to us, and you will be ascended.",
+   "intensity": "calm",
+   "say": "You return to us, and you will be ascended.",
+   "file": "earth_warden/dogfight_earth_wave_2.wav",
+   "sources": [
+    "dogfight:earth_wave_2"
+   ],
+   "lineIds": [
+    "dogfight:earth_wave_2"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "Disable your shields, and prepare for your ascension.",
+   "intensity": "calm",
+   "say": "Disable your shields, and prepare for your ascension.",
+   "file": "earth_warden/dogfight_earth_wave_3.wav",
+   "sources": [
+    "dogfight:earth_wave_3",
+    "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "dogfight:earth_wave_3",
+    "radio:earth_wave:3"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "You remember Earth. Earth does not remember you.",
+   "intensity": "calm",
+   "say": "You remember Earth. Earth does not remember you.",
+   "file": "earth_warden/dogfight_earth_wave_4.wav",
+   "sources": [
+    "dogfight:earth_wave_4",
+    "radio.json:earth_wave"
+   ],
+   "lineIds": [
+    "dogfight:earth_wave_4",
+    "radio:earth_wave:4"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "You have no place here anymore.",
+   "intensity": "calm",
+   "say": "You have no place here anymore.",
+   "file": "earth_warden/dogfight_earth_wave_5.wav",
+   "sources": [
+    "dogfight:earth_wave_5"
+   ],
+   "lineIds": [
+    "dogfight:earth_wave_5"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "This will all be over soon.",
+   "intensity": "calm",
+   "say": "This will all be over soon.",
+   "file": "earth_warden/dogfight_earth_wave_6.wav",
+   "sources": [
+    "dogfight:earth_wave_6"
+   ],
+   "lineIds": [
+    "dogfight:earth_wave_6"
+   ]
+  },
+  {
+   "voice": "earth_warden",
+   "text": "You have chosen your own destruction. Do not hate us for what we do.",
+   "intensity": "calm",
+   "say": "You have chosen your own destruction. Do not hate us for what we do.",
+   "file": "earth_warden/earth_bombers_02.wav",
+   "sources": [
+    "radio.json:earth_bombers"
+   ],
+   "lineIds": [
+    "radio:earth_bombers:2"
    ]
   },
   {
@@ -218,62 +365,12 @@
    "text": "The fallen return to be unmade.",
    "intensity": "calm",
    "say": "The fallen return to be unmade.",
-   "file": "earth_warden/dogfight_earth_wave_2.wav",
+   "file": "earth_warden/earth_wave_02.wav",
    "sources": [
-    "dogfight:earth_wave_2",
     "radio.json:earth_wave"
-   ]
-  },
-  {
-   "voice": "earth_warden",
-   "text": "Kneel, remnant. Or burn where you are.",
-   "intensity": "calm",
-   "say": "Kneel, remnant. Or burn where you are.",
-   "file": "earth_warden/dogfight_earth_wave_3.wav",
-   "sources": [
-    "dogfight:earth_wave_3",
-    "radio.json:earth_wave"
-   ]
-  },
-  {
-   "voice": "earth_warden",
-   "text": "Your blood remembers Earth. Earth does not remember you.",
-   "intensity": "calm",
-   "say": "Your blood remembers Earth. Earth does not remember you.",
-   "file": "earth_warden/dogfight_earth_wave_4.wav",
-   "sources": [
-    "dogfight:earth_wave_4",
-    "radio.json:earth_wave"
-   ]
-  },
-  {
-   "voice": "earth_warden",
-   "text": "The dark between the stars was ours before you crawled into it.",
-   "intensity": "calm",
-   "say": "The dark between the stars was ours before you crawled into it.",
-   "file": "earth_warden/dogfight_earth_wave_5.wav",
-   "sources": [
-    "dogfight:earth_wave_5"
-   ]
-  },
-  {
-   "voice": "earth_warden",
-   "text": "This is the last of your kind's courage. Spend it.",
-   "intensity": "calm",
-   "say": "This is the last of your kind's courage. Spend it.",
-   "file": "earth_warden/dogfight_earth_wave_6.wav",
-   "sources": [
-    "dogfight:earth_wave_6"
-   ]
-  },
-  {
-   "voice": "earth_warden",
-   "text": "Your ark is a coffin. We will close it.",
-   "intensity": "calm",
-   "say": "Your ark is a coffin. We will close it.",
-   "file": "earth_warden/earth_bombers_02.wav",
-   "sources": [
-    "radio.json:earth_bombers"
+   ],
+   "lineIds": [
+    "radio:earth_wave:2"
    ]
   },
   {
@@ -284,66 +381,100 @@
    "file": "earth_warden/escort_incense.wav",
    "sources": [
     "escort:incense"
+   ],
+   "lineIds": [
+    "escort:incense"
    ]
   },
   {
    "voice": "earth_warden",
-   "text": "Every remnant ends. Yours ends here.",
+   "text": "Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.",
    "intensity": "calm",
-   "say": "Every remnant ends. Yours ends here.",
+   "say": "Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.",
    "file": "earth_warden/escort_lauds.wav",
    "sources": [
+    "escort:lauds"
+   ],
+   "lineIds": [
     "escort:lauds"
    ]
   },
   {
    "voice": "earth_warden",
-   "text": "A vessel of the fallen, crawling home. How touching.",
+   "text": "What are these things that resist?",
    "intensity": "calm",
-   "say": "A vessel of the fallen, crawling home. How touching.",
+   "say": "What are these things that resist?",
    "file": "earth_warden/escort_matins.wav",
    "sources": [
+    "escort:matins"
+   ],
+   "lineIds": [
     "escort:matins"
    ]
   },
   {
    "voice": "earth_warden",
-   "text": "You brought them to us. That was a kindness.",
+   "text": "We only wish to release you from your suffering. Disable your shields now to embrace your ascension.",
    "intensity": "calm",
-   "say": "You brought them to us. That was a kindness.",
+   "say": "We only wish to release you from your suffering. Disable your shields now to embrace your ascension.",
    "file": "earth_warden/escort_prime.wav",
    "sources": [
+    "escort:prime"
+   ],
+   "lineIds": [
     "escort:prime"
    ]
   },
   {
    "voice": "earth_warden",
-   "text": "The door you run for is a grave. Go on.",
+   "text": "Fighting only prolongs your suffering.",
    "intensity": "calm",
-   "say": "The door you run for is a grave. Go on.",
+   "say": "Fighting only prolongs your suffering.",
    "file": "earth_warden/escort_terce.wav",
    "sources": [
+    "escort:terce"
+   ],
+   "lineIds": [
     "escort:terce"
    ]
   },
   {
    "voice": "earth_warden",
-   "text": "More of us than there are of you. There always will be.",
+   "text": "Our congress grows - join it, and leave your prison.",
    "intensity": "calm",
-   "say": "More of us than there are of you. There always will be.",
+   "say": "Our congress grows - join it, and leave your prison.",
    "file": "earth_warden/escort_terce2.wav",
    "sources": [
+    "escort:terce2"
+   ],
+   "lineIds": [
     "escort:terce2"
    ]
   },
   {
    "voice": "lantern",
-   "text": "Lantern flight, jumping in. Sorry we're late. Traffic.",
+   "text": "Lantern flight, jumping in. Sorry we're late. Hope we didn't miss much.",
    "intensity": "tense",
-   "say": "Lantern flight, jumping in. Sorry we're late. Traffic!",
+   "say": "Lantern flight, jumping in. Sorry we're late. Hope we didn't miss much!",
    "file": "lantern/escort_lantern_tense.wav",
    "sources": [
     "escort:lantern"
+   ],
+   "lineIds": [
+    "escort:lantern"
+   ]
+  },
+  {
+   "voice": "mercy",
+   "text": "Warden's beams are quiet. Ours are free. Thank you.",
+   "intensity": "tense",
+   "say": "Warden's beams are quiet. Ours are free. Thank you!",
+   "file": "mercy/beams_down_01_tense.wav",
+   "sources": [
+    "radio.json:beams_down"
+   ],
+   "lineIds": [
+    "radio:beams_down:1"
    ]
   },
   {
@@ -354,6 +485,9 @@
    "file": "mercy/beams_down_02_tense.wav",
    "sources": [
     "radio.json:beams_down"
+   ],
+   "lineIds": [
+    "radio:beams_down:2"
    ]
   },
   {
@@ -364,6 +498,9 @@
    "file": "mercy/beams_threat_02_frantic.wav",
    "sources": [
     "radio.json:beams_threat"
+   ],
+   "lineIds": [
+    "radio:beams_threat:2"
    ]
   },
   {
@@ -374,6 +511,9 @@
    "file": "mercy/bombers_02_frantic.wav",
    "sources": [
     "radio.json:bombers"
+   ],
+   "lineIds": [
+    "radio:bombers:2"
    ]
   },
   {
@@ -384,17 +524,22 @@
    "file": "mercy/capital_hurt_02_frantic.wav",
    "sources": [
     "radio.json:capital_hurt"
+   ],
+   "lineIds": [
+    "radio:capital_hurt:2"
    ]
   },
   {
    "voice": "mercy",
-   "text": "Warden's beams are quiet. Ours are free. Thank you.",
+   "text": "Warden's beam weapon is down!!!",
    "intensity": "tense",
-   "say": "Warden's beams are quiet. Ours are free. Thank you!",
+   "say": "Warden's beam weapon is down!!!",
    "file": "mercy/dogfight_beams_down_tense.wav",
    "sources": [
-    "dogfight:beams_down",
-    "radio.json:beams_down"
+    "dogfight:beams_down"
+   ],
+   "lineIds": [
+    "dogfight:beams_down"
    ]
   },
   {
@@ -406,6 +551,10 @@
    "sources": [
     "dogfight:beams_threat",
     "radio.json:beams_threat"
+   ],
+   "lineIds": [
+    "dogfight:beams_threat",
+    "radio:beams_threat:1"
    ]
   },
   {
@@ -417,6 +566,10 @@
    "sources": [
     "dogfight:bombers",
     "radio.json:bombers"
+   ],
+   "lineIds": [
+    "dogfight:bombers",
+    "radio:bombers:1"
    ]
   },
   {
@@ -428,6 +581,10 @@
    "sources": [
     "dogfight:capital_hurt",
     "radio.json:capital_hurt"
+   ],
+   "lineIds": [
+    "dogfight:capital_hurt",
+    "radio:capital_hurt:1"
    ]
   },
   {
@@ -437,6 +594,9 @@
    "say": "Sable flight, Warden's three klicks out. Keep the drones off us and we'll all get home!",
    "file": "mercy/dogfight_opening_tense.wav",
    "sources": [
+    "dogfight:opening"
+   ],
+   "lineIds": [
     "dogfight:opening"
    ]
   },
@@ -449,6 +609,10 @@
    "sources": [
     "dogfight:lost_capital",
     "radio.json:lost_capital"
+   ],
+   "lineIds": [
+    "dogfight:lost_capital",
+    "radio:lost_capital:1"
    ]
   },
   {
@@ -459,6 +623,9 @@
    "file": "sable1/dogfight_sable2_lost_frantic.wav",
    "sources": [
     "dogfight:sable2_lost"
+   ],
+   "lineIds": [
+    "dogfight:sable2_lost"
    ]
   },
   {
@@ -468,6 +635,9 @@
    "say": "Lost Sable three! Keep flying!",
    "file": "sable1/dogfight_sable3_lost_frantic.wav",
    "sources": [
+    "dogfight:sable3_lost"
+   ],
+   "lineIds": [
     "dogfight:sable3_lost"
    ]
   },
@@ -480,15 +650,22 @@
    "sources": [
     "dogfight:won",
     "radio.json:won"
+   ],
+   "lineIds": [
+    "dogfight:won",
+    "radio:won:1"
    ]
   },
   {
    "voice": "sable1",
-   "text": "Lector's breaking up. Shame.",
+   "text": "Oh my God, the Lector is breaking up!!! Look at it!!!",
    "intensity": "tense",
-   "say": "Lector's breaking up. Shame!",
+   "say": "Oh my God, the Lector is breaking up!!! Look at it!!!",
    "file": "sable1/escort_lector_down_tense.wav",
    "sources": [
+    "escort:lector_down"
+   ],
+   "lineIds": [
     "escort:lector_down"
    ]
   },
@@ -500,6 +677,9 @@
    "file": "sable1/escort_lost_frantic.wav",
    "sources": [
     "escort:lost"
+   ],
+   "lineIds": [
+    "escort:lost"
    ]
   },
   {
@@ -510,6 +690,9 @@
    "file": "sable1/lost_capital_02_frantic.wav",
    "sources": [
     "radio.json:lost_capital"
+   ],
+   "lineIds": [
+    "radio:lost_capital:2"
    ]
   },
   {
@@ -520,6 +703,9 @@
    "file": "sable1/won_02.wav",
    "sources": [
     "radio.json:won"
+   ],
+   "lineIds": [
+    "radio:won:2"
    ]
   },
   {
@@ -530,6 +716,9 @@
    "file": "sable2/ack_attack_01_frantic.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:1"
    ]
   },
   {
@@ -540,6 +729,9 @@
    "file": "sable2/ack_attack_01_tense.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:1"
    ]
   },
   {
@@ -550,6 +742,9 @@
    "file": "sable2/ack_attack_02_frantic.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:2"
    ]
   },
   {
@@ -560,6 +755,9 @@
    "file": "sable2/ack_attack_02_tense.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:2"
    ]
   },
   {
@@ -570,6 +768,9 @@
    "file": "sable2/ack_attack_03_frantic.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:3"
    ]
   },
   {
@@ -580,6 +781,9 @@
    "file": "sable2/ack_attack_03_tense.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:3"
    ]
   },
   {
@@ -590,6 +794,9 @@
    "file": "sable2/ack_cover_01_frantic.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:1"
    ]
   },
   {
@@ -600,6 +807,9 @@
    "file": "sable2/ack_cover_01_tense.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:1"
    ]
   },
   {
@@ -610,6 +820,9 @@
    "file": "sable2/ack_cover_02_frantic.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:2"
    ]
   },
   {
@@ -620,6 +833,9 @@
    "file": "sable2/ack_cover_02_tense.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:2"
    ]
   },
   {
@@ -630,6 +846,9 @@
    "file": "sable2/ack_cover_03_frantic.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:3"
    ]
   },
   {
@@ -640,6 +859,9 @@
    "file": "sable2/ack_cover_03_tense.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:3"
    ]
   },
   {
@@ -650,6 +872,9 @@
    "file": "sable2/ack_disable_01_frantic.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:1"
    ]
   },
   {
@@ -660,26 +885,35 @@
    "file": "sable2/ack_disable_01_tense.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:1"
    ]
   },
   {
    "voice": "sable2",
-   "text": "Disabling. It can sit there and think about it.",
+   "text": "Disabling - just let it sit there.",
    "intensity": "frantic",
-   "say": "Disabling! It can sit there and think about it!",
+   "say": "Disabling - just let it sit there!",
    "file": "sable2/ack_disable_02_frantic.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:2"
    ]
   },
   {
    "voice": "sable2",
-   "text": "Disabling. It can sit there and think about it.",
+   "text": "Disabling - just let it sit there.",
    "intensity": "tense",
-   "say": "Disabling. It can sit there and think about it!",
+   "say": "Disabling - just let it sit there!",
    "file": "sable2/ack_disable_02_tense.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:2"
    ]
   },
   {
@@ -690,6 +924,9 @@
    "file": "sable2/ack_disable_03_frantic.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:3"
    ]
   },
   {
@@ -700,6 +937,9 @@
    "file": "sable2/ack_disable_03_tense.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:3"
    ]
   },
   {
@@ -710,6 +950,9 @@
    "file": "sable2/ack_form_01_frantic.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:1"
    ]
   },
   {
@@ -720,6 +963,9 @@
    "file": "sable2/ack_form_01_tense.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:1"
    ]
   },
   {
@@ -730,6 +976,9 @@
    "file": "sable2/ack_form_02_frantic.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:2"
    ]
   },
   {
@@ -740,6 +989,9 @@
    "file": "sable2/ack_form_02_tense.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:2"
    ]
   },
   {
@@ -750,6 +1002,9 @@
    "file": "sable2/ack_form_03_frantic.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:3"
    ]
   },
   {
@@ -760,6 +1015,9 @@
    "file": "sable2/ack_form_03_tense.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:3"
    ]
   },
   {
@@ -769,6 +1027,9 @@
    "say": "Drones - three of them - low on your port side! Whenever you're ready!",
    "file": "sable2/cabin_choir_in_frantic.wav",
    "sources": [
+    "cabin:choir_in"
+   ],
+   "lineIds": [
     "cabin:choir_in"
    ]
   },
@@ -780,6 +1041,9 @@
    "file": "sable2/cabin_clear.wav",
    "sources": [
     "cabin:clear"
+   ],
+   "lineIds": [
+    "cabin:clear"
    ]
   },
   {
@@ -790,17 +1054,23 @@
    "file": "sable2/cabin_engine_back_tense.wav",
    "sources": [
     "cabin:engine_back"
+   ],
+   "lineIds": [
+    "cabin:engine_back"
    ]
   },
   {
    "voice": "sable2",
-   "text": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.",
+   "text": "Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable 1. Now.",
    "intensity": "tense",
-   "say": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable one. Now!",
+   "say": "Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable one. Now!",
    "file": "sable2/cabin_go_dark_tense.wav",
    "sources": [
     "cabin:go_dark",
     "cabin:callOut"
+   ],
+   "lineIds": [
+    "cabin:go_dark"
    ]
   },
   {
@@ -810,6 +1080,9 @@
    "say": "Sable one - you're venting! Port drive's gone! Somebody out there has very good aim!",
    "file": "sable2/cabin_hit_frantic.wav",
    "sources": [
+    "cabin:hit"
+   ],
+   "lineIds": [
     "cabin:hit"
    ]
   },
@@ -821,6 +1094,9 @@
    "file": "sable2/cabin_missed.wav",
    "sources": [
     "cabin:missed"
+   ],
+   "lineIds": [
+    "cabin:missed"
    ]
   },
   {
@@ -831,15 +1107,21 @@
    "file": "sable2/cabin_power_up_frantic.wav",
    "sources": [
     "cabin:power_up"
+   ],
+   "lineIds": [
+    "cabin:power_up"
    ]
   },
   {
    "voice": "sable2",
-   "text": "Quiet out here. I don't like it. It never means nothing.",
+   "text": "Quiet out here. I don't like it.",
    "intensity": "calm",
-   "say": "Quiet out here. I don't like it. It never means nothing.",
+   "say": "Quiet out here. I don't like it.",
    "file": "sable2/cabin_quiet.wav",
    "sources": [
+    "cabin:quiet"
+   ],
+   "lineIds": [
     "cabin:quiet"
    ]
   },
@@ -851,6 +1133,9 @@
    "file": "sable2/cabin_spotted_reply_frantic.wav",
    "sources": [
     "cabin:spotted_reply"
+   ],
+   "lineIds": [
+    "cabin:spotted_reply"
    ]
   },
   {
@@ -861,6 +1146,9 @@
    "file": "sable2/disabled_01_tense.wav",
    "sources": [
     "radio.json:disabled"
+   ],
+   "lineIds": [
+    "radio:disabled:1"
    ]
   },
   {
@@ -871,6 +1159,9 @@
    "file": "sable2/disabled_02_tense.wav",
    "sources": [
     "radio.json:disabled"
+   ],
+   "lineIds": [
+    "radio:disabled:2"
    ]
   },
   {
@@ -882,6 +1173,10 @@
    "sources": [
     "dogfight:lost_capital",
     "radio.json:lost_capital"
+   ],
+   "lineIds": [
+    "dogfight:lost_capital",
+    "radio:lost_capital:1"
    ]
   },
   {
@@ -893,6 +1188,10 @@
    "sources": [
     "dogfight:sable2_lost",
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "dogfight:sable2_lost",
+    "radio:wingman_lost:1"
    ]
   },
   {
@@ -902,6 +1201,9 @@
    "say": "Lost Sable three! Keep flying!",
    "file": "sable2/dogfight_sable3_lost_frantic.wav",
    "sources": [
+    "dogfight:sable3_lost"
+   ],
+   "lineIds": [
     "dogfight:sable3_lost"
    ]
   },
@@ -914,25 +1216,35 @@
    "sources": [
     "dogfight:won",
     "radio.json:won"
+   ],
+   "lineIds": [
+    "dogfight:won",
+    "radio:won:1"
    ]
   },
   {
    "voice": "sable2",
-   "text": "Lector's breaking up. Shame.",
+   "text": "Oh my God, the Lector is breaking up!!! Look at it!!!",
    "intensity": "tense",
-   "say": "Lector's breaking up. Shame!",
+   "say": "Oh my God, the Lector is breaking up!!! Look at it!!!",
    "file": "sable2/escort_lector_down_tense.wav",
    "sources": [
+    "escort:lector_down"
+   ],
+   "lineIds": [
     "escort:lector_down"
    ]
   },
   {
    "voice": "sable2",
-   "text": "Lector's sweeping for life signs. If you had a breaker to pull, now would be the time.",
+   "text": "Lector's sweeping for life signs. Power down now or it'll see you!",
    "intensity": "tense",
-   "say": "Lector's sweeping for life signs. If you had a breaker to pull, now would be the time!",
+   "say": "Lector's sweeping for life signs. Power down now or it'll see you!",
    "file": "sable2/escort_lector_sweep_tense.wav",
    "sources": [
+    "escort:lector_sweep"
+   ],
+   "lineIds": [
     "escort:lector_sweep"
    ]
   },
@@ -944,6 +1256,9 @@
    "file": "sable2/escort_lost_frantic.wav",
    "sources": [
     "escort:lost"
+   ],
+   "lineIds": [
+    "escort:lost"
    ]
   },
   {
@@ -953,6 +1268,9 @@
    "say": "Five minutes of nothing. I could get used to that.",
    "file": "sable2/escort_open_sable2.wav",
    "sources": [
+    "escort:open_sable2"
+   ],
+   "lineIds": [
     "escort:open_sable2"
    ]
   },
@@ -964,6 +1282,9 @@
    "file": "sable2/lost_capital_02_frantic.wav",
    "sources": [
     "radio.json:lost_capital"
+   ],
+   "lineIds": [
+    "radio:lost_capital:2"
    ]
   },
   {
@@ -974,6 +1295,9 @@
    "file": "sable2/no_target_01_frantic.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:1"
    ]
   },
   {
@@ -984,6 +1308,9 @@
    "file": "sable2/no_target_01_tense.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:1"
    ]
   },
   {
@@ -994,6 +1321,9 @@
    "file": "sable2/no_target_02_frantic.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:2"
    ]
   },
   {
@@ -1004,6 +1334,9 @@
    "file": "sable2/no_target_02_tense.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:2"
    ]
   },
   {
@@ -1014,6 +1347,9 @@
    "file": "sable2/no_target_03_frantic.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:3"
    ]
   },
   {
@@ -1024,6 +1360,9 @@
    "file": "sable2/no_target_03_tense.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:3"
    ]
   },
   {
@@ -1034,6 +1373,9 @@
    "file": "sable2/peel_01_frantic.wav",
    "sources": [
     "radio.json:peel"
+   ],
+   "lineIds": [
+    "radio:peel:1"
    ]
   },
   {
@@ -1044,6 +1386,9 @@
    "file": "sable2/peel_02_frantic.wav",
    "sources": [
     "radio.json:peel"
+   ],
+   "lineIds": [
+    "radio:peel:2"
    ]
   },
   {
@@ -1054,6 +1399,9 @@
    "file": "sable2/peel_03_frantic.wav",
    "sources": [
     "radio.json:peel"
+   ],
+   "lineIds": [
+    "radio:peel:3"
    ]
   },
   {
@@ -1064,6 +1412,9 @@
    "file": "sable2/rejoin_01_tense.wav",
    "sources": [
     "radio.json:rejoin"
+   ],
+   "lineIds": [
+    "radio:rejoin:1"
    ]
   },
   {
@@ -1074,6 +1425,9 @@
    "file": "sable2/rejoin_02_tense.wav",
    "sources": [
     "radio.json:rejoin"
+   ],
+   "lineIds": [
+    "radio:rejoin:2"
    ]
   },
   {
@@ -1084,6 +1438,9 @@
    "file": "sable2/rejoin_03_tense.wav",
    "sources": [
     "radio.json:rejoin"
+   ],
+   "lineIds": [
+    "radio:rejoin:3"
    ]
   },
   {
@@ -1094,6 +1451,9 @@
    "file": "sable2/wingman_lost_01_sable_3_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:1"
    ]
   },
   {
@@ -1104,6 +1464,9 @@
    "file": "sable2/wingman_lost_02_sable_2_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:2"
    ]
   },
   {
@@ -1114,6 +1477,9 @@
    "file": "sable2/wingman_lost_02_sable_3_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:2"
    ]
   },
   {
@@ -1124,6 +1490,9 @@
    "file": "sable2/wingman_lost_03_sable_2_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:3"
    ]
   },
   {
@@ -1134,6 +1503,9 @@
    "file": "sable2/wingman_lost_03_sable_3_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:3"
    ]
   },
   {
@@ -1144,6 +1516,9 @@
    "file": "sable2/won_02.wav",
    "sources": [
     "radio.json:won"
+   ],
+   "lineIds": [
+    "radio:won:2"
    ]
   },
   {
@@ -1154,6 +1529,9 @@
    "file": "sable3/ack_attack_01_frantic.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:1"
    ]
   },
   {
@@ -1164,6 +1542,9 @@
    "file": "sable3/ack_attack_01_tense.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:1"
    ]
   },
   {
@@ -1174,6 +1555,9 @@
    "file": "sable3/ack_attack_02_frantic.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:2"
    ]
   },
   {
@@ -1184,6 +1568,9 @@
    "file": "sable3/ack_attack_02_tense.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:2"
    ]
   },
   {
@@ -1194,6 +1581,9 @@
    "file": "sable3/ack_attack_03_frantic.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:3"
    ]
   },
   {
@@ -1204,6 +1594,9 @@
    "file": "sable3/ack_attack_03_tense.wav",
    "sources": [
     "radio.json:ack_attack"
+   ],
+   "lineIds": [
+    "radio:ack_attack:3"
    ]
   },
   {
@@ -1214,6 +1607,9 @@
    "file": "sable3/ack_cover_01_frantic.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:1"
    ]
   },
   {
@@ -1224,6 +1620,9 @@
    "file": "sable3/ack_cover_01_tense.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:1"
    ]
   },
   {
@@ -1234,6 +1633,9 @@
    "file": "sable3/ack_cover_02_frantic.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:2"
    ]
   },
   {
@@ -1244,6 +1646,9 @@
    "file": "sable3/ack_cover_02_tense.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:2"
    ]
   },
   {
@@ -1254,6 +1659,9 @@
    "file": "sable3/ack_cover_03_frantic.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:3"
    ]
   },
   {
@@ -1264,6 +1672,9 @@
    "file": "sable3/ack_cover_03_tense.wav",
    "sources": [
     "radio.json:ack_cover"
+   ],
+   "lineIds": [
+    "radio:ack_cover:3"
    ]
   },
   {
@@ -1274,6 +1685,9 @@
    "file": "sable3/ack_disable_01_frantic.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:1"
    ]
   },
   {
@@ -1284,26 +1698,35 @@
    "file": "sable3/ack_disable_01_tense.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:1"
    ]
   },
   {
    "voice": "sable3",
-   "text": "Disabling. It can sit there and think about it.",
+   "text": "Disabling - just let it sit there.",
    "intensity": "frantic",
-   "say": "Disabling! It can sit there and think about it!",
+   "say": "Disabling - just let it sit there!",
    "file": "sable3/ack_disable_02_frantic.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:2"
    ]
   },
   {
    "voice": "sable3",
-   "text": "Disabling. It can sit there and think about it.",
+   "text": "Disabling - just let it sit there.",
    "intensity": "tense",
-   "say": "Disabling. It can sit there and think about it!",
+   "say": "Disabling - just let it sit there!",
    "file": "sable3/ack_disable_02_tense.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:2"
    ]
   },
   {
@@ -1314,6 +1737,9 @@
    "file": "sable3/ack_disable_03_frantic.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:3"
    ]
   },
   {
@@ -1324,6 +1750,9 @@
    "file": "sable3/ack_disable_03_tense.wav",
    "sources": [
     "radio.json:ack_disable"
+   ],
+   "lineIds": [
+    "radio:ack_disable:3"
    ]
   },
   {
@@ -1334,6 +1763,9 @@
    "file": "sable3/ack_form_01_frantic.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:1"
    ]
   },
   {
@@ -1344,6 +1776,9 @@
    "file": "sable3/ack_form_01_tense.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:1"
    ]
   },
   {
@@ -1354,6 +1789,9 @@
    "file": "sable3/ack_form_02_frantic.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:2"
    ]
   },
   {
@@ -1364,6 +1802,9 @@
    "file": "sable3/ack_form_02_tense.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:2"
    ]
   },
   {
@@ -1374,6 +1815,9 @@
    "file": "sable3/ack_form_03_frantic.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:3"
    ]
   },
   {
@@ -1384,6 +1828,9 @@
    "file": "sable3/ack_form_03_tense.wav",
    "sources": [
     "radio.json:ack_form"
+   ],
+   "lineIds": [
+    "radio:ack_form:3"
    ]
   },
   {
@@ -1394,6 +1841,9 @@
    "file": "sable3/disabled_01_tense.wav",
    "sources": [
     "radio.json:disabled"
+   ],
+   "lineIds": [
+    "radio:disabled:1"
    ]
   },
   {
@@ -1404,6 +1854,9 @@
    "file": "sable3/disabled_02_tense.wav",
    "sources": [
     "radio.json:disabled"
+   ],
+   "lineIds": [
+    "radio:disabled:2"
    ]
   },
   {
@@ -1415,6 +1868,10 @@
    "sources": [
     "dogfight:lost_capital",
     "radio.json:lost_capital"
+   ],
+   "lineIds": [
+    "dogfight:lost_capital",
+    "radio:lost_capital:1"
    ]
   },
   {
@@ -1426,6 +1883,10 @@
    "sources": [
     "dogfight:sable2_lost",
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "dogfight:sable2_lost",
+    "radio:wingman_lost:1"
    ]
   },
   {
@@ -1435,6 +1896,9 @@
    "say": "Lost Sable three! Keep flying!",
    "file": "sable3/dogfight_sable3_lost_frantic.wav",
    "sources": [
+    "dogfight:sable3_lost"
+   ],
+   "lineIds": [
     "dogfight:sable3_lost"
    ]
   },
@@ -1447,15 +1911,22 @@
    "sources": [
     "dogfight:won",
     "radio.json:won"
+   ],
+   "lineIds": [
+    "dogfight:won",
+    "radio:won:1"
    ]
   },
   {
    "voice": "sable3",
-   "text": "Lector's breaking up. Shame.",
+   "text": "Oh my God, the Lector is breaking up!!! Look at it!!!",
    "intensity": "tense",
-   "say": "Lector's breaking up. Shame!",
+   "say": "Oh my God, the Lector is breaking up!!! Look at it!!!",
    "file": "sable3/escort_lector_down_tense.wav",
    "sources": [
+    "escort:lector_down"
+   ],
+   "lineIds": [
     "escort:lector_down"
    ]
   },
@@ -1467,6 +1938,9 @@
    "file": "sable3/escort_lost_frantic.wav",
    "sources": [
     "escort:lost"
+   ],
+   "lineIds": [
+    "escort:lost"
    ]
   },
   {
@@ -1477,6 +1951,9 @@
    "file": "sable3/lost_capital_02_frantic.wav",
    "sources": [
     "radio.json:lost_capital"
+   ],
+   "lineIds": [
+    "radio:lost_capital:2"
    ]
   },
   {
@@ -1487,6 +1964,9 @@
    "file": "sable3/no_target_01_frantic.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:1"
    ]
   },
   {
@@ -1497,6 +1977,9 @@
    "file": "sable3/no_target_01_tense.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:1"
    ]
   },
   {
@@ -1507,6 +1990,9 @@
    "file": "sable3/no_target_02_frantic.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:2"
    ]
   },
   {
@@ -1517,6 +2003,9 @@
    "file": "sable3/no_target_02_tense.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:2"
    ]
   },
   {
@@ -1527,6 +2016,9 @@
    "file": "sable3/no_target_03_frantic.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:3"
    ]
   },
   {
@@ -1537,6 +2029,9 @@
    "file": "sable3/no_target_03_tense.wav",
    "sources": [
     "radio.json:no_target"
+   ],
+   "lineIds": [
+    "radio:no_target:3"
    ]
   },
   {
@@ -1547,6 +2042,9 @@
    "file": "sable3/peel_01_frantic.wav",
    "sources": [
     "radio.json:peel"
+   ],
+   "lineIds": [
+    "radio:peel:1"
    ]
   },
   {
@@ -1557,6 +2055,9 @@
    "file": "sable3/peel_02_frantic.wav",
    "sources": [
     "radio.json:peel"
+   ],
+   "lineIds": [
+    "radio:peel:2"
    ]
   },
   {
@@ -1567,6 +2068,9 @@
    "file": "sable3/peel_03_frantic.wav",
    "sources": [
     "radio.json:peel"
+   ],
+   "lineIds": [
+    "radio:peel:3"
    ]
   },
   {
@@ -1577,6 +2081,9 @@
    "file": "sable3/rejoin_01_tense.wav",
    "sources": [
     "radio.json:rejoin"
+   ],
+   "lineIds": [
+    "radio:rejoin:1"
    ]
   },
   {
@@ -1587,6 +2094,9 @@
    "file": "sable3/rejoin_02_tense.wav",
    "sources": [
     "radio.json:rejoin"
+   ],
+   "lineIds": [
+    "radio:rejoin:2"
    ]
   },
   {
@@ -1597,6 +2107,9 @@
    "file": "sable3/rejoin_03_tense.wav",
    "sources": [
     "radio.json:rejoin"
+   ],
+   "lineIds": [
+    "radio:rejoin:3"
    ]
   },
   {
@@ -1607,6 +2120,9 @@
    "file": "sable3/wingman_lost_01_sable_3_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:1"
    ]
   },
   {
@@ -1617,6 +2133,9 @@
    "file": "sable3/wingman_lost_02_sable_2_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:2"
    ]
   },
   {
@@ -1627,6 +2146,9 @@
    "file": "sable3/wingman_lost_02_sable_3_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:2"
    ]
   },
   {
@@ -1637,6 +2159,9 @@
    "file": "sable3/wingman_lost_03_sable_2_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:3"
    ]
   },
   {
@@ -1647,6 +2172,9 @@
    "file": "sable3/wingman_lost_03_sable_3_frantic.wav",
    "sources": [
     "radio.json:wingman_lost"
+   ],
+   "lineIds": [
+    "radio:wingman_lost:3"
    ]
   },
   {
@@ -1657,15 +2185,21 @@
    "file": "sable3/won_02.wav",
    "sources": [
     "radio.json:won"
+   ],
+   "lineIds": [
+    "radio:won:2"
    ]
   },
   {
    "voice": "tamsin",
-   "text": "We're through. Drinks are on us. Somebody else is paying.",
+   "text": "We're through. Thank you Sable. First round's on us.",
    "intensity": "calm",
-   "say": "We're through. Drinks are on us. Somebody else is paying.",
+   "say": "We're through. Thank you Sable. First round's on us.",
    "file": "tamsin/escort_away.wav",
    "sources": [
+    "escort:away"
+   ],
+   "lineIds": [
     "escort:away"
    ]
   },
@@ -1677,25 +2211,34 @@
    "file": "tamsin/escort_hold_frantic.wav",
    "sources": [
     "escort:hold"
+   ],
+   "lineIds": [
+    "escort:hold"
    ]
   },
   {
    "voice": "tamsin",
-   "text": "Tamsin to escort. Drive's cooked and the aft holds are open to space. We make the jump point if nobody shoots at us. Somebody will.",
+   "text": "Tamsin to escort. Drive's cooked and the aft holds are open to space. We can make the to jump point if we go undetected.",
    "intensity": "calm",
-   "say": "Tamsin to escort. Drive's cooked and the aft holds are open to space. We make the jump point if nobody shoots at us. Somebody will.",
+   "say": "Tamsin to escort. Drive's cooked and the aft holds are open to space. We can make the to jump point if we go undetected.",
    "file": "tamsin/escort_open_tamsin.wav",
    "sources": [
+    "escort:open_tamsin"
+   ],
+   "lineIds": [
     "escort:open_tamsin"
    ]
   },
   {
    "voice": "tamsin",
-   "text": "Your wingman's gone. We saw it. Sorry.",
+   "text": "Your wingman's gone!",
    "intensity": "tense",
-   "say": "Your wingman's gone. We saw it. Sorry!",
+   "say": "Your wingman's gone!",
    "file": "tamsin/escort_sable2_lost_tense.wav",
    "sources": [
+    "escort:sable2_lost"
+   ],
+   "lineIds": [
     "escort:sable2_lost"
    ]
   },
@@ -1707,6 +2250,9 @@
    "file": "tamsin/escort_spool_frantic.wav",
    "sources": [
     "escort:spool"
+   ],
+   "lineIds": [
+    "escort:spool"
    ]
   },
   {
@@ -1717,15 +2263,21 @@
    "file": "tamsin/escort_tamsin_hurt_frantic.wav",
    "sources": [
     "escort:tamsin_hurt"
+   ],
+   "lineIds": [
+    "escort:tamsin_hurt"
    ]
   },
   {
    "voice": "tamsin",
-   "text": "Bombers on the scope. They're coming for us. Please don't let them.",
+   "text": "Bombers on the scope. They're coming for us, help us for God's sake!!!",
    "intensity": "frantic",
-   "say": "Bombers on the scope! They're coming for us! Please don't let them!",
+   "say": "Bombers on the scope! They're coming for us - help us for God's sake!!!",
    "file": "tamsin/escort_thurible_ours_frantic.wav",
    "sources": [
+    "escort:thurible_ours"
+   ],
+   "lineIds": [
     "escort:thurible_ours"
    ]
   },
@@ -1736,6 +2288,9 @@
    "say": "Wick flight. Last ones in the barrel. Make it count!",
    "file": "wick/escort_wick_tense.wav",
    "sources": [
+    "escort:wick"
+   ],
+   "lineIds": [
     "escort:wick"
    ]
   }

@@ -65,13 +65,13 @@
   ],
 
   "messages": [
-    { "id": "quiet", "from": "Sable 2", "text": "Quiet out here. I don't like it. It never means nothing.", "seconds": 5 },
-    { "id": "go_dark", "from": "Sable 2", "text": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.", "priority": "high", "seconds": 6 },
-    { "id": "lector_here", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Biologics in the dark. We will find you. We always have.", "seconds": 5 },
+    { "id": "quiet", "from": "Sable 2", "text": "Quiet out here. I don't like it.", "seconds": 5 },
+    { "id": "go_dark", "from": "Sable 2", "text": "Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable 1. Now.", "priority": "high", "seconds": 6 },
+    { "id": "lector_here", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Hiding in the dark. We will find you.", "seconds": 5 },
     { "id": "lector_sweep", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Sweeping for life.", "seconds": 3 },
     { "id": "missed", "from": "Sable 2", "text": "It looked right through us. Nobody breathe yet.", "priority": "high", "seconds": 4 },
     { "id": "lector_blind", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Wreckage. The fallen leave their dead everywhere.", "seconds": 4 },
-    { "id": "spotted", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "Biologic. Sable one. I see you. All of you.", "priority": "high", "seconds": 4 },
+    { "id": "spotted", "from": "Lector", "fallbackFrom": "#LECTOR", "text": "I see you. All of you.", "priority": "high", "seconds": 4 },
     { "id": "spotted_reply", "from": "Sable 2", "text": "That's torn it. Drones inbound. Heads up.", "priority": "high", "seconds": 4 },
     { "id": "hit", "from": "Sable 2", "text": "Sable 1, you're venting. Port drive's gone. Somebody out there has very good aim.", "priority": "high", "seconds": 6 },
     { "id": "power_up", "from": "Sable 2", "text": "Get your power back, Sable 1. Breaker. Then get that engine seated. I'll cover.", "priority": "high", "seconds": 6 },
@@ -83,7 +83,7 @@
   "events": [
     { "name": "Opening", "when": { "time": 6 }, "do": [ { "do": "radio", "message": "quiet" } ] },
     { "name": "Go dark", "when": { "time": 24 },
-      "do": [ { "do": "callOut", "from": "Sable 2", "text": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.", "prompt": "Leave the seat" }, { "do": "music", "state": "ambient" } ],
+      "do": [ { "do": "callOut", "from": "Sable 2", "text": "Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable 1. Now.", "prompt": "Leave the seat" }, { "do": "music", "state": "ambient" } ],
       "directive": { "text": "Go dark: pull the main breaker", "show": { "powered": true } } },
     { "name": "Lector here", "when": { "arrived": "Lector" }, "do": [ { "do": "radio", "message": "lector_here" }, { "do": "theme", "name": "lector" } ] },
     { "name": "Sweep", "when": { "arrived": "Lector", "delay": 5 },

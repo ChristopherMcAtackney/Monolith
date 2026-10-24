@@ -12,15 +12,23 @@
   Then rebuild the player (tools\unity.ps1 Monolith.EditorTools.Build.Player) and run tools\audio\check.ps1: the audio self-test and the mission self-test FAIL for any radio line of any
   built-in mission that has no recording (so a mission whose lines were never voiced cannot pass).
 
+  THE USER APPROVES LINES FIRST (their standing rule: no voice file is made for a line they have not approved). The sheet design/dialogue/monolith_dialogue.xlsx is how they rewrite lines:
+  python tools/dialogue/import_sheet.py reads their NEW text back into the missions and radio.json and writes design/dialogue/changed_lines.json; then
+      voice.ps1 -List design\dialogue\changed_lines.json                voices exactly those lines (and nothing else)
+      voice.ps1 -List design\dialogue\changed_lines.json -Also tamsin   ... and every line of a voice whose description changed
+  A mission whose lines the user has not seen yet carries "linesPending": true (or "pending": true on a line): it is left out of every batch, and the voice checks count
+  its lines as waiting for approval instead of failing. Drop the flag when the user has approved its lines, then run this with no arguments.
+
   A new speaker (a callsign nobody has voiced) needs a line in audio_src/voice/cast.json: "speakers" maps the name before the colon to a voice, and a voice has an instruction (who, accent,
   delivery). A new mission needs nothing else. Needs WSL with Trap Door's Breeze install (~/breeze), see tools/audio/README.md.
 
 .EXAMPLE
   powershell -NoProfile -ExecutionPolicy Bypass -File tools\audio\voice.ps1            # voice what is missing
   powershell -NoProfile -ExecutionPolicy Bypass -File tools\audio\voice.ps1 -Plan      # only say what would be generated
+  powershell -NoProfile -ExecutionPolicy Bypass -File tools\audio\voice.ps1 -List design\dialogue\changed_lines.json -Also tamsin   # only the lines the user changed (and Tamsin)
   powershell -NoProfile -ExecutionPolicy Bypass -File tools\audio\voice.ps1 -NoGenerate  # redo the radio processing of the clips already generated (after changing Radio.cs)
 #>
-param([switch]$Plan, [switch]$NoGenerate)
+param([switch]$Plan, [switch]$NoGenerate, [string]$List, [string[]]$Also)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path (Split-Path $PSScriptRoot)
 Set-Location $root
@@ -36,6 +44,11 @@ if (-not $NoGenerate) {
     $wslRoot = "$(& wsl -e wslpath -a ($root -replace '\\', '/'))".Trim()
     if (-not $wslRoot) { throw "wslpath could not translate $root (is WSL installed?)" }
     $voiceArgs = @(); if ($Plan) { $voiceArgs += '--plan' }
+    if ($List) {
+        $listFull = (Resolve-Path $List).Path
+        $voiceArgs += '--list'; $voiceArgs += (& wsl -e wslpath -a ($listFull -replace "\\", "/")).Trim()
+        foreach ($v in $Also) { $voiceArgs += '--also'; $voiceArgs += $v }
+    }
     & wsl -e bash "$wslRoot/audio_src/voice/run_voice.sh" @voiceArgs
     if ($LASTEXITCODE -ne 0) { throw "run_voice.sh failed ($LASTEXITCODE): see the log above; it is resumable, run this again" }
 }

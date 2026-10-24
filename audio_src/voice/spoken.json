@@ -1,0 +1,3 @@
+{
+ "_about": "Written by tools/dialogue/import_sheet.py from the user's sheet. Line ID -> what the voice says, where it differs from the on-screen text. Read by audio_src/voice/collect_lines.py."
+}

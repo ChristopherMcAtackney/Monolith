@@ -68,6 +68,8 @@ namespace Monolith.Audio
                         "MP3 files carry encoder padding at the start; WAV or OGG loop more cleanly. Your loops cross-fade on the bar of the built-in tempo (112 BPM).\r\n" +
                         "Voice: your recordings are put through the game's radio filter (band-limiting, squelch, the reverb of Earth's voices). If a recording is\r\n" +
                         "already radio-ready, add a .json beside it with { \"radio\": false }.\r\n" +
+                        "For the whole score at once (base music, stings, endings and the themes a mission fades in over it, like the Lector's), with fades and volumes: put a music.json next to\r\n" +
+                        "Monolith.exe and name your tracks there (MUSIC.txt, in the playtest folder or tools/audio, says how). Slots you leave empty play the built-in music.\r\n" +
                         "The log (Monolith_Data\\output_log.txt or the player log) lists every override as [MN] AUDIO override ...\r\n");
             }
             catch (Exception e) { MnLog.Warn("AUDIO could not make the Audio folder: " + e.Message); }

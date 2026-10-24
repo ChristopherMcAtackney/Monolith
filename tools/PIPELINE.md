@@ -145,6 +145,14 @@ One command voices them (needs WSL with Trap Door's Breeze install, `tools/audio
 Two things only the mission author knows: a new callsign needs a line in `audio_src/voice/cast.json` (`speakers` maps the name before the colon to a voice; a voice is a text description of who, accent and delivery; the check names an uncast speaker), and each message
 should have an intensity in `INTENSITY` in `collect_lines.py` (calm, tense or frantic, with the reason: the event that fires it and the music at that moment; an untagged message is guessed from its `priority` and reported). Earth's voices are always calm.
 
+**The dialogue sheet round trip (the user rewrites lines; nothing is voiced until they approve).** `python -I tools/dialogue/export_sheet.py` writes `design/dialogue/monolith_dialogue.xlsx`, one row per line (radio, briefing, debrief).
+The user types their replacement into the yellow NEW columns. `python -I tools/dialogue/import_sheet.py` reads them back by Line ID: NEW on-screen text goes into the mission files and `radio.json` (edited as text, comments and layout kept, then
+checked: nothing but the named lines may differ; an inline `radio` or `callOut` that says the same words changes with it), NEW spoken text (only where it differs; empty means "say what is on screen") into `audio_src/voice/spoken.json`, an
+intensity in Notes into `audio_src/voice/intensity.json`; it prints exactly which rows changed and writes `design/dialogue/changed_lines.json`. It makes no voice. Then
+`powershell -File tools\audio\voice.ps1 -List design\dialogue\changed_lines.json [-Also tamsin]` voices exactly those lines (and every line of a voice whose description changed), and `python -I tools/dialogue/reexport_sheet.py` writes the sheet again with the
+new current text and the NEW columns cleared (to a temp file first, replacing the original only if Excel does not have it open). A new mission whose lines the user has not seen carries `"linesPending": true` (or `"pending": true` on a line) until they approve it: the sheet lists those lines as "pending approval", the import clears the flag when the user approves a line, and nothing is voiced before. Keep a copy
+of the sheet as delivered (`design/dialogue/monolith_dialogue_user_<date>.xlsx`). `--dry-run` shows an import without writing; `--missions`, `--radio`, `--state` and `--changes` point it at a copy to try it.
+
 ## Blender
 
 `tools\blender.ps1 <script.py> [-Blend file.blend] [-TimeoutMin 20] [-- script args]` runs

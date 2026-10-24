@@ -17,6 +17,12 @@ calm, battle 1 tense, battle 2 and 3 frantic), then adjusted by what it says (ba
 opening, the going-dark whisper and the relief at the end stay low). Earth never panics: its lines are always calm and cold.
 The wingmen's acknowledgements and situation calls are made in two intensities (tense and frantic) and chosen at run time by the music state,
 so in a big fight they are mostly the frantic ones. Everything is in INTENSITY below with the reason beside it.
+
+The user's own sheet (design/dialogue, read back by tools/dialogue/import_sheet.py) adds two small files here:
+  spoken.json     Line ID -> what the voice says, where it differs from the on-screen text (the on-screen text is the mission's; the clip is found by it)
+  intensity.json  Line ID -> calm, tense or frantic, over the table below (a Notes entry in the sheet)
+A mission's lines that the user has not approved yet are marked in the mission file ("linesPending": true, or "pending": true on a line): they are left out of voice_lines.json, so no voice is made for them.
+A Line ID is mission:message_id for a message, radio:category:n for radio.json (the sheet's first column).
 """
 import json
 import os
@@ -26,7 +32,21 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 RES = os.path.join(ROOT, 'Game', 'Assets', 'Monolith', 'Resources')
 OUT = os.path.join(os.path.dirname(__file__), 'voice_lines.json')
-CAST = json.load(open(os.path.join(os.path.dirname(__file__), 'cast.json'), encoding='utf-8'))
+HERE = os.path.dirname(os.path.abspath(__file__))
+CAST = json.load(open(os.path.join(HERE, 'cast.json'), encoding='utf-8'))
+
+
+def _side(name):
+    p = os.path.join(HERE, name)
+    if not os.path.exists(p):
+        return {}
+    d = json.load(open(p, encoding='utf-8'))
+    d.pop('_about', None)
+    return d
+
+
+SPOKEN = _side('spoken.json')                      # Line ID -> what is said, where it is not the on-screen text
+INTENSITY_OVERRIDE = _side('intensity.json')       # Line ID -> calm, tense or frantic (the user's Notes)
 
 NUMWORD = {'1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine'}
 
@@ -126,16 +146,21 @@ def strip_comments(txt):
 def main():
     entries = {}   # (voice, norm, intensity) -> entry
 
-    def add(voice, text, source, name, intensities):
+    def add(voice, text, source, name, intensities, line_id=None):
         for inten in intensities:
+            if line_id in INTENSITY_OVERRIDE and INTENSITY_OVERRIDE[line_id] in ('calm', 'tense', 'frantic'):
+                inten = INTENSITY_OVERRIDE[line_id]
             if CAST['voices'][voice].get('intensity') == 'calm':
                 inten = 'calm'              # Earth never panics
             k = (voice, norm(text), inten)
             if k in entries:
                 entries[k]['sources'].append(source)
+                if line_id and line_id not in entries[k]['lineIds']:
+                    entries[k]['lineIds'].append(line_id)
                 continue
             suffix = '' if inten == 'calm' else '_' + inten
-            entries[k] = {'voice': voice, 'text': text, 'intensity': inten, 'say': spoken(text, inten), 'file': f'{voice}/{name}{suffix}.wav', 'sources': [source]}
+            said = SPOKEN.get(line_id, text) if line_id else text
+            entries[k] = {'voice': voice, 'text': text, 'intensity': inten, 'say': spoken(said, inten), 'file': f'{voice}/{name}{suffix}.wav', 'sources': [source], 'lineIds': [line_id] if line_id else []}
 
     mdir = os.path.join(RES, 'Missions')
     for fn in sorted(os.listdir(mdir)):
@@ -158,7 +183,7 @@ def main():
                 if any(CAST['voices'][v].get('intensity') != 'calm' for v in voices):       # Earth's voices are always calm: no need to tag them
                     UNTAGGED.append(f'{mid}:{m["id"]} -> {inten}')
             for v in voices:
-                add(v, m['text'], f'{mid}:{m["id"]}', f'{mid}_{slug(m["id"])}', [inten])
+                add(v, m['text'], f'{mid}:{m["id"]}', f'{mid}_{slug(m["id"])}', [inten], line_id=f'{mid}:{m["id"]}')
 
         def walk(o):
             if isinstance(o, dict):
@@ -191,9 +216,9 @@ def main():
                 texts = [t.replace('{0}', f) for f in CAST['fills']['{0}']]
             for j, tt in enumerate(texts, 1):
                 for v in voices:
-                    add(v, tt, f'radio.json:{sit}', f'{sit}_{i:02d}' + (f'_{slug(CAST["fills"]["{0}"][j - 1])}' if len(texts) > 1 else ''), intens)
+                    add(v, tt, f'radio.json:{sit}', f'{sit}_{i:02d}' + (f'_{slug(CAST["fills"]["{0}"][j - 1])}' if len(texts) > 1 else ''), intens, line_id=f'radio:{sit}:{i}')
 
-    out = {'format': 'monolith-voice-lines/2', 'lines': sorted(entries.values(), key=lambda e: (e['voice'], e['file']))}
+    out = {'format': 'monolith-voice-lines/3', 'lines': sorted(entries.values(), key=lambda e: (e['voice'], e['file']))}
     text = json.dumps(out, indent=1, ensure_ascii=False) + '\n'
     if PENDING:
         print("  " + str(len(PENDING)) + " line(s) pending the user's approval: not voiced (once approved, set \"pending\": false on the line or drop the mission's \"linesPending\")")

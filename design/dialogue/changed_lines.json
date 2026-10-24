@@ -1,0 +1,337 @@
+{
+ "format": "monolith-dialogue-changes/1",
+ "imported": "2026-10-24 16:14",
+ "sheet": "monolith_dialogue.xlsx",
+ "lines": [
+  {
+   "id": "cabin:quiet",
+   "what": [
+    "text"
+   ],
+   "speaker": "Sable 2  (voice: sable2)",
+   "old": "Quiet out here. I don't like it. It never means nothing.",
+   "new": "Quiet out here. I don't like it.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "cabin:go_dark",
+   "what": [
+    "text"
+   ],
+   "speaker": "Sable 2  (voice: sable2)",
+   "old": "Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.",
+   "new": "Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable 1. Now.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "cabin:lector_here",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector)",
+   "old": "Biologics in the dark. We will find you. We always have.",
+   "new": "Hiding in the dark. We will find you.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "cabin:spotted",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector)",
+   "old": "Biologic. Sable one. I see you. All of you.",
+   "new": "I see you. All of you.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:earth_wave_1",
+   "what": [
+    "text"
+   ],
+   "speaker": "Warden  (voice: earth_warden)",
+   "old": "Biologics. You were us, once.",
+   "new": "We were once like you. We have ascended.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:earth_wave_2",
+   "what": [
+    "text"
+   ],
+   "speaker": "Warden  (voice: earth_warden)",
+   "old": "The fallen return to be unmade.",
+   "new": "You return to us, and you will be ascended.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:earth_wave_3",
+   "what": [
+    "text"
+   ],
+   "speaker": "Warden  (voice: earth_warden)",
+   "old": "Kneel, remnant. Or burn where you are.",
+   "new": "Disable your shields, and prepare for your ascension.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:earth_wave_4",
+   "what": [
+    "text"
+   ],
+   "speaker": "Warden  (voice: earth_warden)",
+   "old": "Your blood remembers Earth. Earth does not remember you.",
+   "new": "You remember Earth. Earth does not remember you.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:earth_wave_5",
+   "what": [
+    "text"
+   ],
+   "speaker": "Warden  (voice: earth_warden)",
+   "old": "The dark between the stars was ours before you crawled into it.",
+   "new": "You have no place here anymore.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:earth_wave_6",
+   "what": [
+    "text"
+   ],
+   "speaker": "Warden  (voice: earth_warden)",
+   "old": "This is the last of your kind's courage. Spend it.",
+   "new": "This will all be over soon.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "dogfight:beams_down",
+   "what": [
+    "text"
+   ],
+   "speaker": "Small Mercy  (voice: mercy)",
+   "old": "Warden's beams are quiet. Ours are free. Thank you.",
+   "new": "Warden's beam weapon is down!!!",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:open_tamsin",
+   "what": [
+    "text"
+   ],
+   "speaker": "Tamsin  (voice: tamsin)",
+   "old": "Tamsin to escort. Drive's cooked and the aft holds are open to space. We make the jump point if nobody shoots at us. Somebody will.",
+   "new": "Tamsin to escort. Drive's cooked and the aft holds are open to space. We can make the to jump point if we go undetected.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:matins",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector, earth_warden)",
+   "old": "A vessel of the fallen, crawling home. How touching.",
+   "new": "What are these things that resist?",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:lauds",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector, earth_warden)",
+   "old": "Every remnant ends. Yours ends here.",
+   "new": "Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:prime",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector, earth_warden)",
+   "old": "You brought them to us. That was a kindness.",
+   "new": "We only wish to release you from your suffering. Disable your shields now to embrace your ascension.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:terce",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector, earth_warden)",
+   "old": "The door you run for is a grave. Go on.",
+   "new": "Fighting only prolongs your suffering.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:lector_here",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector)",
+   "old": "Lector. You carry four hundred biologics. We will count them as they freeze.",
+   "new": "We can sense four hundred and fifty two of you on that vessel. Join us now and free yourself from suffering.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:lector_sweep",
+   "what": [
+    "text"
+   ],
+   "speaker": "Sable 2  (voice: sable2)",
+   "old": "Lector's sweeping for life signs. If you had a breaker to pull, now would be the time.",
+   "new": "Lector's sweeping for life signs. Power down now or it'll see you!",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:thurible",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector)",
+   "old": "Censers, go. Bring me the ark.",
+   "new": "Bring them to me.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:thurible_ours",
+   "what": [
+    "text"
+   ],
+   "speaker": "Tamsin  (voice: tamsin)",
+   "old": "Bombers on the scope. They're coming for us. Please don't let them.",
+   "new": "Bombers on the scope. They're coming for us, help us for God's sake!!!",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:lantern",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lantern 1  (voice: lantern)",
+   "old": "Lantern flight, jumping in. Sorry we're late. Traffic.",
+   "new": "Lantern flight, jumping in. Sorry we're late. Hope we didn't miss much.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:sable2_lost",
+   "what": [
+    "text"
+   ],
+   "speaker": "Tamsin  (voice: tamsin)",
+   "old": "Your wingman's gone. We saw it. Sorry.",
+   "new": "Your wingman's gone!",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:lector_down",
+   "what": [
+    "text"
+   ],
+   "speaker": "<any wingman>  (voice: sable1, sable2, sable3)",
+   "old": "Lector's breaking up. Shame.",
+   "new": "Oh my God, the Lector is breaking up!!! Look at it!!!",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:terce2",
+   "what": [
+    "text"
+   ],
+   "speaker": "Lector  (voice: earth_lector, earth_warden)",
+   "old": "More of us than there are of you. There always will be.",
+   "new": "Our congress grows - join it, and leave your prison.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "escort:away",
+   "what": [
+    "text"
+   ],
+   "speaker": "#Tamsin  (voice: tamsin)",
+   "old": "We're through. Drinks are on us. Somebody else is paying.",
+   "new": "We're through. Thank you Sable. First round's on us.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "radio:ack_disable:2",
+   "what": [
+    "text"
+   ],
+   "speaker": "sable2, sable3",
+   "old": "Disabling. It can sit there and think about it.",
+   "new": "Disabling - just let it sit there.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "radio:earth_wave:1",
+   "what": [
+    "text"
+   ],
+   "speaker": "earth_lector, earth_warden",
+   "old": "Biologics. You were us, once.",
+   "new": "We were once like you. We have ascended.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "radio:earth_wave:3",
+   "what": [
+    "text"
+   ],
+   "speaker": "earth_lector, earth_warden",
+   "old": "Kneel, remnant. Or burn where you are.",
+   "new": "Disable your shields, and prepare for your ascension.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "radio:earth_wave:4",
+   "what": [
+    "text"
+   ],
+   "speaker": "earth_lector, earth_warden",
+   "old": "Your blood remembers Earth. Earth does not remember you.",
+   "new": "You remember Earth. Earth does not remember you.",
+   "spoken": null,
+   "intensity": null
+  },
+  {
+   "id": "radio:earth_bombers:2",
+   "what": [
+    "text"
+   ],
+   "speaker": "earth_lector, earth_warden",
+   "old": "Your ark is a coffin. We will close it.",
+   "new": "You have chosen your own destruction. Do not hate us for what we do.",
+   "spoken": null,
+   "intensity": null
+  }
+ ]
+}

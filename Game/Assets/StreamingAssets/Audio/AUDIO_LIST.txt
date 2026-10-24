@@ -16,6 +16,9 @@ MUSIC  (music\<name>)
   music\sting_friendly              8.3 s   friendly ship arrives, quiet
   music\sting_friendly_battle       7.8 s   friendly ship arrives, in battle
   music\sting_goal                  7.3 s   an objective is done
+  music\theme_destroyer            68.6 s   
+  music\theme_lector               68.6 s   
+  music\theme_outpost              68.6 s   
   music\victory                    29.2 s   plays once at the win
   The loops are 68.6 s (112 BPM, 4/4, 32 bars): a loop of that exact length is cross-faded in step with the others; any other length starts from its beginning on the next bar.
 
@@ -119,47 +122,49 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
   Your recording of a tense or frantic line gets the matching radio treatment (more distortion and a faster squelch as it climbs).
   [earth_lector]  (earth radio)
     vo\earth_lector\cabin_lector_blind                   Wreckage. The fallen leave their dead everywhere.
-    vo\earth_lector\cabin_lector_here                    Biologics in the dark. We will find you. We always have.
+    vo\earth_lector\cabin_lector_here                    Hiding in the dark. We will find you.
     vo\earth_lector\cabin_lector_sweep                   Sweeping for life.
-    vo\earth_lector\cabin_spotted                        Biologic. Sable one. I see you. All of you.
+    vo\earth_lector\cabin_spotted                        I see you. All of you.
     vo\earth_lector\earth_bombers_01                     The Mercy will be cleansed.
-    vo\earth_lector\earth_bombers_02                     Your ark is a coffin. We will close it.
-    vo\earth_lector\earth_wave_01                        Biologics. You were us, once.
+    vo\earth_lector\earth_bombers_02                     You have chosen your own destruction. Do not hate us for what we do.
+    vo\earth_lector\earth_wave_01                        We were once like you. We have ascended.
     vo\earth_lector\earth_wave_02                        The fallen return to be unmade.
-    vo\earth_lector\earth_wave_03                        Kneel, remnant. Or burn where you are.
-    vo\earth_lector\earth_wave_04                        Your blood remembers Earth. Earth does not remember you.
+    vo\earth_lector\earth_wave_03                        Disable your shields, and prepare for your ascension.
+    vo\earth_lector\earth_wave_04                        You remember Earth. Earth does not remember you.
     vo\earth_lector\escort_incense                       Burn it. Burn all of it.
-    vo\earth_lector\escort_lauds                         Every remnant ends. Yours ends here.
-    vo\earth_lector\escort_lector_here                   Lector. You carry four hundred biologics. We will count them as they freeze.
-    vo\earth_lector\escort_matins                        A vessel of the fallen, crawling home. How touching.
-    vo\earth_lector\escort_prime                         You brought them to us. That was a kindness.
+    vo\earth_lector\escort_lauds                         Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.
+    vo\earth_lector\escort_lector_here                   We can sense four hundred and fifty two of you on that vessel. Join us now and free yourself from suffering.
+    vo\earth_lector\escort_matins                        What are these things that resist?
+    vo\earth_lector\escort_prime                         We only wish to release you from your suffering. Disable your shields now to embrace your ascension.
     vo\earth_lector\escort_spotted                       There you are.
-    vo\earth_lector\escort_terce                         The door you run for is a grave. Go on.
-    vo\earth_lector\escort_terce2                        More of us than there are of you. There always will be.
-    vo\earth_lector\escort_thurible                      Censers, go. Bring me the ark.
+    vo\earth_lector\escort_terce                         Fighting only prolongs your suffering.
+    vo\earth_lector\escort_terce2                        Our congress grows - join it, and leave your prison.
+    vo\earth_lector\escort_thurible                      Bring them to me.
   [earth_warden]  (earth radio)
     vo\earth_warden\dogfight_earth_bombers               The Mercy will be cleansed.
-    vo\earth_warden\dogfight_earth_wave_1                Biologics. You were us, once.
-    vo\earth_warden\dogfight_earth_wave_2                The fallen return to be unmade.
-    vo\earth_warden\dogfight_earth_wave_3                Kneel, remnant. Or burn where you are.
-    vo\earth_warden\dogfight_earth_wave_4                Your blood remembers Earth. Earth does not remember you.
-    vo\earth_warden\dogfight_earth_wave_5                The dark between the stars was ours before you crawled into it.
-    vo\earth_warden\dogfight_earth_wave_6                This is the last of your kind's courage. Spend it.
-    vo\earth_warden\earth_bombers_02                     Your ark is a coffin. We will close it.
+    vo\earth_warden\dogfight_earth_wave_1                We were once like you. We have ascended.
+    vo\earth_warden\dogfight_earth_wave_2                You return to us, and you will be ascended.
+    vo\earth_warden\dogfight_earth_wave_3                Disable your shields, and prepare for your ascension.
+    vo\earth_warden\dogfight_earth_wave_4                You remember Earth. Earth does not remember you.
+    vo\earth_warden\dogfight_earth_wave_5                You have no place here anymore.
+    vo\earth_warden\dogfight_earth_wave_6                This will all be over soon.
+    vo\earth_warden\earth_bombers_02                     You have chosen your own destruction. Do not hate us for what we do.
+    vo\earth_warden\earth_wave_02                        The fallen return to be unmade.
     vo\earth_warden\escort_incense                       Burn it. Burn all of it.
-    vo\earth_warden\escort_lauds                         Every remnant ends. Yours ends here.
-    vo\earth_warden\escort_matins                        A vessel of the fallen, crawling home. How touching.
-    vo\earth_warden\escort_prime                         You brought them to us. That was a kindness.
-    vo\earth_warden\escort_terce                         The door you run for is a grave. Go on.
-    vo\earth_warden\escort_terce2                        More of us than there are of you. There always will be.
+    vo\earth_warden\escort_lauds                         Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.
+    vo\earth_warden\escort_matins                        What are these things that resist?
+    vo\earth_warden\escort_prime                         We only wish to release you from your suffering. Disable your shields now to embrace your ascension.
+    vo\earth_warden\escort_terce                         Fighting only prolongs your suffering.
+    vo\earth_warden\escort_terce2                        Our congress grows - join it, and leave your prison.
   [lantern]  (crew radio)
-    vo\lantern\escort_lantern_tense                      [tense] Lantern flight, jumping in. Sorry we're late. Traffic.
+    vo\lantern\escort_lantern_tense                      [tense] Lantern flight, jumping in. Sorry we're late. Hope we didn't miss much.
   [mercy]  (crew radio)
+    vo\mercy\beams_down_01_tense                         [tense] Warden's beams are quiet. Ours are free. Thank you.
     vo\mercy\beams_down_02_tense                         [tense] That's their big guns gone. Returning the favour.
     vo\mercy\beams_threat_02_frantic                     [frantic] That's a beam. Somebody shut those turrets up before it cuts us in half.
     vo\mercy\bombers_02_frantic                          [frantic] Torpedo boats on approach. We'd appreciate the company.
     vo\mercy\capital_hurt_02_frantic                     [frantic] We're bleeding air down here.
-    vo\mercy\dogfight_beams_down_tense                   [tense] Warden's beams are quiet. Ours are free. Thank you.
+    vo\mercy\dogfight_beams_down_tense                   [tense] Warden's beam weapon is down!!!
     vo\mercy\dogfight_beams_threat_frantic               [frantic] Mercy here. The Warden's charging beams at us. Its two beam turrets, forward, on top. Take them out.
     vo\mercy\dogfight_bombers_frantic                    [frantic] Bombers inbound on the Mercy. Somebody deal with them.
     vo\mercy\dogfight_capital_hurt_frantic               [frantic] Mercy here. Hull's going. Any time now.
@@ -169,7 +174,7 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable1\dogfight_sable2_lost_frantic               [frantic] Sable 2 is gone.
     vo\sable1\dogfight_sable3_lost_frantic               [frantic] Lost Sable 3. Keep flying.
     vo\sable1\dogfight_won                               That's the lot. Warden's gone.
-    vo\sable1\escort_lector_down_tense                   [tense] Lector's breaking up. Shame.
+    vo\sable1\escort_lector_down_tense                   [tense] Oh my God, the Lector is breaking up!!! Look at it!!!
     vo\sable1\escort_lost_frantic                        [frantic] Tamsin's gone. All of them.
     vo\sable1\lost_capital_02_frantic                    [frantic] We lost the Mercy.
     vo\sable1\won_02                                     Area's quiet. Let's not stay.
@@ -188,8 +193,8 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable2\ack_cover_03_tense                         [tense] I've got your back. For now.
     vo\sable2\ack_disable_01_frantic                     [frantic] Copy. Engines only.
     vo\sable2\ack_disable_01_tense                       [tense] Copy. Engines only.
-    vo\sable2\ack_disable_02_frantic                     [frantic] Disabling. It can sit there and think about it.
-    vo\sable2\ack_disable_02_tense                       [tense] Disabling. It can sit there and think about it.
+    vo\sable2\ack_disable_02_frantic                     [frantic] Disabling - just let it sit there.
+    vo\sable2\ack_disable_02_tense                       [tense] Disabling - just let it sit there.
     vo\sable2\ack_disable_03_frantic                     [frantic] Going for the engines.
     vo\sable2\ack_disable_03_tense                       [tense] Going for the engines.
     vo\sable2\ack_form_01_frantic                        [frantic] Forming up.
@@ -201,11 +206,11 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable2\cabin_choir_in_frantic                     [frantic] Drones, three of them, low on your port side. Whenever you're ready.
     vo\sable2\cabin_clear                                That's the last of them. Sable flight, form up.
     vo\sable2\cabin_engine_back_tense                    [tense] Port drive's back. Whatever you did, do it again.
-    vo\sable2\cabin_go_dark_tense                        [tense] Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.
+    vo\sable2\cabin_go_dark_tense                        [tense] Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable 1. Now.
     vo\sable2\cabin_hit_frantic                          [frantic] Sable 1, you're venting. Port drive's gone. Somebody out there has very good aim.
     vo\sable2\cabin_missed                               It looked right through us. Nobody breathe yet.
     vo\sable2\cabin_power_up_frantic                     [frantic] Get your power back, Sable 1. Breaker. Then get that engine seated. I'll cover.
-    vo\sable2\cabin_quiet                                Quiet out here. I don't like it. It never means nothing.
+    vo\sable2\cabin_quiet                                Quiet out here. I don't like it.
     vo\sable2\cabin_spotted_reply_frantic                [frantic] That's torn it. Drones inbound. Heads up.
     vo\sable2\disabled_01_tense                          [tense] Target's dead in the water.
     vo\sable2\disabled_02_tense                          [tense] Engines gone. It's not going anywhere.
@@ -213,8 +218,8 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable2\dogfight_sable2_lost_frantic               [frantic] Sable 2 is gone.
     vo\sable2\dogfight_sable3_lost_frantic               [frantic] Lost Sable 3. Keep flying.
     vo\sable2\dogfight_won                               That's the lot. Warden's gone.
-    vo\sable2\escort_lector_down_tense                   [tense] Lector's breaking up. Shame.
-    vo\sable2\escort_lector_sweep_tense                  [tense] Lector's sweeping for life signs. If you had a breaker to pull, now would be the time.
+    vo\sable2\escort_lector_down_tense                   [tense] Oh my God, the Lector is breaking up!!! Look at it!!!
+    vo\sable2\escort_lector_sweep_tense                  [tense] Lector's sweeping for life signs. Power down now or it'll see you!
     vo\sable2\escort_lost_frantic                        [frantic] Tamsin's gone. All of them.
     vo\sable2\escort_open_sable2                         Five minutes of nothing. I could get used to that.
     vo\sable2\lost_capital_02_frantic                    [frantic] We lost the Mercy.
@@ -251,8 +256,8 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable3\ack_cover_03_tense                         [tense] I've got your back. For now.
     vo\sable3\ack_disable_01_frantic                     [frantic] Copy. Engines only.
     vo\sable3\ack_disable_01_tense                       [tense] Copy. Engines only.
-    vo\sable3\ack_disable_02_frantic                     [frantic] Disabling. It can sit there and think about it.
-    vo\sable3\ack_disable_02_tense                       [tense] Disabling. It can sit there and think about it.
+    vo\sable3\ack_disable_02_frantic                     [frantic] Disabling - just let it sit there.
+    vo\sable3\ack_disable_02_tense                       [tense] Disabling - just let it sit there.
     vo\sable3\ack_disable_03_frantic                     [frantic] Going for the engines.
     vo\sable3\ack_disable_03_tense                       [tense] Going for the engines.
     vo\sable3\ack_form_01_frantic                        [frantic] Forming up.
@@ -267,7 +272,7 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable3\dogfight_sable2_lost_frantic               [frantic] Sable 2 is gone.
     vo\sable3\dogfight_sable3_lost_frantic               [frantic] Lost Sable 3. Keep flying.
     vo\sable3\dogfight_won                               That's the lot. Warden's gone.
-    vo\sable3\escort_lector_down_tense                   [tense] Lector's breaking up. Shame.
+    vo\sable3\escort_lector_down_tense                   [tense] Oh my God, the Lector is breaking up!!! Look at it!!!
     vo\sable3\escort_lost_frantic                        [frantic] Tamsin's gone. All of them.
     vo\sable3\lost_capital_02_frantic                    [frantic] We lost the Mercy.
     vo\sable3\no_target_01_frantic                       [frantic] Need a target first, lead.
@@ -289,12 +294,12 @@ RADIO  (vo\<voice>\<line>; your recording goes through the game's radio filter u
     vo\sable3\wingman_lost_03_sable_3_frantic            [frantic] Sable 3's gone. Keep flying.
     vo\sable3\won_02                                     Area's quiet. Let's not stay.
   [tamsin]  (crew radio)
-    vo\tamsin\escort_away                                We're through. Drinks are on us. Somebody else is paying.
+    vo\tamsin\escort_away                                We're through. Thank you Sable. First round's on us.
     vo\tamsin\escort_hold_frantic                        [frantic] We're at the jump point and the drive's still cold. Keep them off us.
-    vo\tamsin\escort_open_tamsin                         Tamsin to escort. Drive's cooked and the aft holds are open to space. We make the jump point if nobody shoots at us. Somebody will.
-    vo\tamsin\escort_sable2_lost_tense                   [tense] Your wingman's gone. We saw it. Sorry.
+    vo\tamsin\escort_open_tamsin                         Tamsin to escort. Drive's cooked and the aft holds are open to space. We can make the to jump point if we go undetected.
+    vo\tamsin\escort_sable2_lost_tense                   [tense] Your wingman's gone!
     vo\tamsin\escort_spool_frantic                       [frantic] Spooling what's left of the drive. Keep them off us for twenty seconds.
     vo\tamsin\escort_tamsin_hurt_frantic                 [frantic] Tamsin here. We're venting from three places now. Hurry it up.
-    vo\tamsin\escort_thurible_ours_frantic               [frantic] Bombers on the scope. They're coming for us. Please don't let them.
+    vo\tamsin\escort_thurible_ours_frantic               [frantic] Bombers on the scope. They're coming for us, help us for God's sake!!!
   [wick]  (alien radio)
     vo\wick\escort_wick_tense                            [tense] Wick flight. Last ones in the barrel. Make it count.
