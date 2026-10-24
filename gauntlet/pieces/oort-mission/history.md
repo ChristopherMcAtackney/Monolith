@@ -187,3 +187,109 @@ flight 8 of 8 (the vanguard fighter's afterburner metrics differ from the Ulysse
   "X here" radio line fires as Earth withdraws.
 - The capital helm closes on the nearest hostile capital at its standoff, so where Earth's big ships arrive decides where the fight is:
   arrivals `near` the Mercy at an offset keep them in beam reach wherever the Mercy has drifted.
+
+## Round 2 (builder, 2026-10-24): the climax on every level, Earth's late wings, the outpost at 7 km
+
+Worktree `oort-tune-wt` from main at 2ab0e28 (AI round 3). Measured, not judged: every number below is the AI flying an invulnerable player
+ship, and most are **sweeps of 30 runs a level** with the new `-mnSeed n` (a salt on every random seed of the sim; 0 is the old run, bit for
+bit), because one run a level hides how often the climax fails (seed 0 alone said "Medium is fine, Hard escapes"; ten seeds said Hard lost a
+lance in 10 of 10 and the Archon escaped in 6). Sweeps: `captures/oort-mission/r2/sweep_base` (main, 10 seeds), `sweep_final` (this round,
+30 seeds), `sweep_uncapped` (the rejected alternative below).
+
+### 1. The climax: why the Archon escaped, and the three fixes
+The auto-play report now ends with every big ship's fate, lowest hull, hull damage by source and **every part it lost, when, to whom and with
+what** (`MissionAutoPlay.CapitalWatch`). On main, at Hard, the Mercy lost a lance in 10 of 10 runs (torpedoes 10 lances, the Archon's slashes
+8), usually before the player had stripped the Archon's beams (Hard: 460 to 550 s, the Archon arriving at 340 to 362 s). Three causes:
+- **A torpedo wore down every part of the Mercy.** `Weapons/Projectiles.cs` `Blast` gave every part within the 270 m blast a third of the
+  subsystem damage (the README's "three at most" was only the divisor), so a torpedo anywhere on the 350 m hull took about 1,900 off both
+  lances; on Hard the bombers' torpedoes (half the Mercy's hull damage in some runs) took the lances with them, and in one run a single blast
+  at 469 s finished every engine and turret at once. Now the **three nearest parts** share it (FS2 spends a blast on the nearest subsystems
+  first; round 3 flagged it). Combat 98/98, the dogfight's port the same to the bit.
+- **The Mercy wasted her beams on the corvette.** Her beam turrets took the nearest Earth capital in reach; on Hard the Cantor is often still
+  about when the Archon is crippled, and in Hard seed 17 her first beams (496 to 517 s) cut 17 of the Cantor's parts while it was running
+  anyway, and the Archon took its first beam 43 s after the lock lifted. New (mission + AI): `beams` takes a `target`, FS2's beam-fire:
+  `{ "do": "beams", "ship": "Small Mercy", "free": true, "target": "Archon" }`: the beam turrets (and the helm) go for that ship whenever it is
+  alive, in reach and in a turret's arc, and for the nearest otherwise (`CapitalOrders.BeamTarget`; the self-test checks it).
+- **The Patience took the kill.** With one lance left the Mercy needs 90 to 110 s on Hard; the Patience's time-out was 90 s (its own note
+  said "two minutes"), so she jumped in on top and finished the Archon in 4 of 30. Now 120 s; she still comes at once when both lances are
+  gone ("So are ours. Patience, we need you now").
+
+The lances' placement (centreline, dorsal fore and ventral aft) and round 3's 10% toughness are unchanged: a side slash still passes within the
+30 m cut radius of both (the hull is 56 to 94 m wide), but 8,000 hp is four or five passes, and with the blast fixed the player strips the
+beams first in 29 of 30 Hard runs. The Mercy's approach was looked at and left: she fights at 3.3 to 3.6 km, inside the Archon's 4 km reach,
+which is what makes the beam threat (and "We're hit. That went through three decks") real; standing her off would leave the player nothing
+to save her from. The withdrawal was left too: once the climax works the Archon is dead before the outpost falls (Hard: the Archon at 560 to
+680 s, the outpost 600 to 770 s); it only escapes when both lances go before its beams do (1 of 30, Hard).
+
+| 30 runs a level | main (10 runs): Archon killed / by the Mercy / escaped | round 2: Archon killed / by the Mercy / escaped | lance lost | Mercy's end hull mean (min) | length mean |
+|---|---|---|---|---|---|
+| Very easy | 10 / 10 / 0 | 30 / 30 / 0 | 0 of 30 | 93% (88%) | 11:00 |
+| Easy | 10 / 10 / 0 | 30 / 30 / 0 | 0 of 30 | 87% (77%) | 10:32 |
+| **Medium** | 10 / 8 / 0 | **30 / 29 (the player's last hit in the other) / 0** | 2 of 30 | **70% (40%)** | **10:43** |
+| Hard | 4 / 1 / 6 | 29 / 29 / 1 | one in 17, both in 1 | 34% (0%: lost once) | 11:25 |
+
+Medium is not trivial: the Mercy ends at 40 to 87% (main, 10 runs: 46 to 86%), the player is at the cap of four attackers 40 to 50% of the
+escalation (main 20%), and the Archon dies 50 to 90 s after its beams go. On Hard the Mercy is in real danger (mean 34%, under 20% in 8 of
+30, lost once, after the Archon died, to torpedoes and fighters), as round 3 found; the AI player strips beams before it chases bombers.
+
+### 2. Earth's late wings: they arrive, with the cap freed for them
+Measured on main (10 runs): the opening waves' stragglers fill the arrival cap until the withdrawal (Gloria, Credo and Agnus ships still
+arriving one at a time at 596 s on Medium), so the destroyer's fighters (Benedictus, called at the Archon + 50 s) and Earth's last wing
+(Libera, crippled + 12 s) queued behind them and were stood down: none arrived on Very easy, Easy and Hard, 1.1 a run on Medium. The
+escalation (the Archon's arrival to its crippling) on Medium: 7.6 threats on average (max 10), 2.8 on the player (max 3.9).
+- **Uncapped** (tried, rejected): Medium 9.6 threats in the escalation and 12.9 in the climax, 3.3 on the player, at the cap half the time,
+  the Mercy's low 61% on average; **Hard lost the Mercy in 22 of 30**.
+- **The cap freed for them** (kept): new `capPriority` on a capped wing: its ships take the next free places ahead of waiting ships of a lower
+  priority (Libera 2, Benedictus 1, the rest 0). The cap, and so the pressure, is unchanged. Benedictus now 2.6 / 2.9 / 3.8 / 0.9 ships a run
+  (Very easy / Easy / Medium / Hard), Libera 2.1 / 2.1 / 2.3 / 0.5 of 3, and both radio beats fire. The escalation on Medium: 7.8 threats (max
+  10), 3.0 on the player (max 4, Medium's cap), at the cap 40% of the time; Hard 9.2 threats, 4.1 on the player (max 5, Hard's cap). On Hard
+  the kills come slowly, so the queue rarely frees even for them. Libera's first ship comes before the Archon dies in 94 of 97 runs where it
+  comes at all.
+
+### 3. The outpost at 7 km (see `gauntlet/pieces/outpost/history.md`, round 2)
+Lit shapes big enough to cover a pixel at 7.2 km, in `art_src/oort_art/build_earth_outpost.py`: the Eye's two rims as continuous rings of
+light, lit bands on the decks, a lit strip at the spine's foot, beacon globes on masts at the spine's ends. Before and after from the built
+game, HUD off: `captures/oort-mission/r2/outpost7km_before/` and `outpost7km_after/` (start_view: the player's eye point and 55 degree view
+turned onto the station; start_cockpit: the seat camera at 3.5 s; money_7km, round 1's framing; start_tele, 12 degrees), side by side in
+`captures/oort-mission/r2/outpost7km_before_after.png`; closer frames in `outpost_close_after/sheet.png`. Plan: `gauntlet/shots/oort_r2_outpost7km.json`.
+
+### 4. Small things
+- The HUD's class names: "Earth comet outpost", "Earth destroyer", "Diaspora cruiser" (all three still said "(placeholder)" with their real
+  models in; `Resources/Ships/*.json`, whose roles now say where the model is).
+- The auto-play's `maxEngagingMax` takes one number per level (`[2, 3, 4, 5, 99]` in the Oculus: the AI's own cap on the player), so the
+  Hard run no longer fails on "5 <= 4". The other missions still give one number.
+
+### Checks (this worktree's build)
+Mission self-test **81 of 81** (76 + 5: a higher capPriority goes ahead, capPriority on an uncapped wing is refused, three wait behind a cap of
+one, the per-level expectation, beam-fire takes the far corvette over the near one). `tools\mission.ps1 -Exe` at four levels (seed 0):
+
+| | oort | dogfight | escort | cabin |
+|---|---|---|---|---|
+| Very easy | PASS 653.8 s, quiet 9 s, Mercy 96%, the Mercy kills the Archon at 528 s | PASS 427.4 s | FAIL: 'Lantern here' expected but no wingman is lost (same on main) | PASS 120.2 s |
+| Easy | PASS 630.2 s, quiet 9 s, Mercy 84%, the Mercy kills it at 526 s | PASS 381.9 s | FAIL: the same (same on main) | PASS 140.6 s |
+| Medium | PASS 671.4 s, quiet 9 s, Mercy 44%, the Mercy kills it at 573 s | PASS 410.6 s | PASS 296.3 s | PASS 142.5 s |
+| Hard | PASS 692.2 s, quiet 23 s, Mercy 44%, the Mercy kills it at 584 s (main: FAIL, it escaped) | PASS, the Mercy lost at 459.5 s (main: FAIL on 5 on the player) | FAIL: 11 on the player (same on main) | PASS 127.6 s |
+
+Port check SAME at Very easy, Easy, Medium and Hard (900 s each: every ship to the bit, timelines identical). AI 39/39, combat 98/98, HUD
+90/90, cabin 75/75, audio PASS (150 checks). The dogfight, 20 seeds a level: Very easy, Easy and Medium won 20 of 20 each (longest quiet 30,
+22, 18 s); on Hard the Mercy is lost in 16 and 4 are unfinished at 1,500 s (round 3's known Hard gap). The Oculus' 30-seed gate passes 29,
+27, 30 and 28 of 30: the misses are a 32 to 45 s quiet in 3 runs on Very easy and Easy (the player crossing from the outpost to the corvette;
+main's first 10 seeds had the same, 27 and 35 s), one Easy run with 4 on the player against Easy's 3, and the Hard escape and Mercy loss.
+
+### Known gaps
+- **Hard**: the Archon escapes when both lances go before its beams (1 of 30), and the Mercy can be lost after the Archon dies (1 of 30). The
+  AI player strips beams before it chases bombers; a human who goes for the bombers first saves the lances from torpedoes but leaves the
+  slashes longer. Levers if Hard wants softening: the Thurible's torpedoes (two each) or the lance share (10%).
+- **Two arenas** (round 1): on Very easy and Easy, 3 runs in 60 have a 32 to 45 s quiet while the player crosses from the outpost to the
+  corvette; the outpost's guns fire at the player meanwhile, but the measure counts fighters only.
+- Benedictus and Libera come in one ship at a time as places free up, not as a formed wing; on Hard about one ship of each a run.
+- The blast fix is global: every missile, flak burst and torpedo now spends its part damage on the three nearest parts. The dogfight's port
+  and every self-test pass and its Hard result is unchanged (the Mercy is lost), but its balance was not re-soaked here.
+- No new radio lines. Benedictus' and Libera's existing drafts now play (pending the user's approval: text and squelch).
+- Not tested by hand.
+
+### How to run
+- Play: `Playtest\Monolith_2026-10-24_oort2\Play.bat` (the Oculus; OORT2.txt says what changed).
+- Sweep: `Monolith.exe -batchmode -nographics -mnMissionAutoPlay oort -mnOut dir -mnDifficulty Hard -mnSeed 7`, once a seed (30 seeds at four
+  levels is about two minutes on 12 processes); `autoplay.txt` ends with the capital ships' report.
+- Captures: `tools\capture.ps1 -Plan gauntlet\shots\oort_r2_outpost7km.json -Kind stills`.

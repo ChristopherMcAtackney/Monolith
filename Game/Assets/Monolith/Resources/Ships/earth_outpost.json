@@ -1,8 +1,8 @@
 {
   "format": "monolith-ship-class/1",
   "id": "earth_outpost",
-  "name": "Earth comet outpost (placeholder)",
-  "role": "Earth's early-warning station in the Oort Cloud, built into a comet nucleus (design section 3): turrets, a hangar that scrambles interceptors, a scanner, and the comms array that warns the inner system. A placeholder until the real model exists: a procedural ice nucleus (look.rock, about 1.1 km across) with a station hull on top (look.hull). When ShipArt has an earth_outpost model, it replaces the placeholder by this class name and its parts come from the model. It does not move (FS2's installations do not).",
+  "name": "Earth comet outpost",
+  "role": "Earth's early-warning station in the Oort Cloud, built into a comet nucleus (design section 3): turrets, a hangar that scrambles interceptors, a scanner, and the comms array that warns the inner system. The real model is ShipArt's earth_outpost (art_src/oort_art/build_earth_outpost.py: the nucleus about 1.1 km across with the station bored into it), which replaces the mission's placeholder look by this class name; its parts come from the model. Without the model a mission draws the placeholder: a procedural ice nucleus (look.rock) with a station hull on top (look.hull). It does not move (FS2's installations do not).",
   "flight": {
     "topSpeed": {
       "value": 0,

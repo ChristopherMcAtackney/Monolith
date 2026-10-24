@@ -239,7 +239,7 @@ section h2 em { font-style: normal; color: var(--ink); }
       pieces = s.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; });
       renderPieces();
     }, fail);
-    db.collection("log").orderBy("at", "desc").limit(60).onSnapshot(function (s) {
+    db.collection("log").orderBy("at", "desc").limit(300).onSnapshot(function (s) {
       log = s.docs.map(function (d) { return d.data(); });
       renderLog();
     }, fail);

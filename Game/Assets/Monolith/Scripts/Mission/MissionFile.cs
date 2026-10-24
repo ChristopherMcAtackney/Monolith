@@ -158,6 +158,9 @@ namespace Monolith.Mission
             public float WaveDelay = 5f;
             /// <summary>Its fighters count against, and wait for, the mission's arrival cap.</summary>
             public bool Capped;
+            /// <summary>Its place in the cap's queue: a capped wing with a higher priority takes the next free place before older arrivals with
+            /// a lower one (a beat's own reinforcements before the stragglers of earlier waves). Default 0: oldest first.</summary>
+            public int CapPriority;
             public bool Wingmen;
             public OrderDef Goal, Fallback;
             public ArrivalDef Arrival = new ArrivalDef();
@@ -241,6 +244,9 @@ namespace Monolith.Mission
             public List<string> Fired = new List<string>(), NotFired = new List<string>(), Order = new List<string>();
             public float LongestQuietMax = -1f, ThreatsAvgMin = -1f;
             public int MaxEngagingMax = -1, MaxThreatsMax = -1;
+            /// <summary>"maxEngagingMax" as a number, or one per difficulty level (the AI's own cap on the player rises with the level).</summary>
+            public float[] MaxEngagingPerLevel;
+            public int MaxEngagingAt(int level) => MaxEngagingPerLevel == null ? MaxEngagingMax : Mathf.RoundToInt(MaxEngagingPerLevel[Mathf.Clamp(level, 0, MaxEngagingPerLevel.Length - 1)]);
         }
 
         // ------------------------------------------------------------------------------------------------ loading
@@ -380,7 +386,7 @@ namespace Monolith.Mission
                     foreach (var n in a.Order) ctx.CheckEvent(n, ex.Where + ".order");
                     a.LongestQuietMax = ex.Float("longestQuietMax", -1f);
                     a.ThreatsAvgMin = ex.Float("threatsAvgMin", -1f);
-                    a.MaxEngagingMax = ex.Int("maxEngagingMax", -1);
+                    if (ex.Has("maxEngagingMax")) { a.MaxEngagingPerLevel = ex.PerLevel("maxEngagingMax"); a.MaxEngagingMax = Mathf.RoundToInt(a.MaxEngagingPerLevel[0]); }
                     a.MaxThreatsMax = ex.Int("maxThreatsMax", -1);
                     ex.Done();
                 }
@@ -419,6 +425,8 @@ namespace Monolith.Mission
             d.WaveThreshold = w.Int("waveThreshold", 0);
             d.WaveDelay = w.Float("waveDelay", 5f);
             d.Capped = w.Bool("capped", false);
+            d.CapPriority = w.Int("capPriority", 0);
+            if (d.CapPriority != 0 && !d.Capped) ctx.Errors.Add($"{w.Where}.capPriority: only a capped wing waits in the cap's queue");
             d.Wingmen = w.Bool("wingmen", false);
             d.Goal = ReadOrder(w.Obj("goal"), w.Where + ".goal", ctx);
             d.Fallback = ReadOrder(w.Obj("fallback"), w.Where + ".fallback", ctx);

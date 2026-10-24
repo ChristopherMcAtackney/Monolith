@@ -98,9 +98,9 @@
     { "name": "Patience", "class": "diaspora_cruiser", "team": "diaspora", "selfHeal": false,
       "capital": { "standoff": 3300, "band": 400, "bearing": 55, "throttle": 0.3, "turretProfile": "diaspora_turret", "turretWaitScale": 1.3, "beamWaitScale": 1.0 },
       "look": { "hull": { "length": 420, "width": 100, "height": 84, "seed": 29 } },
-      "arrival": { "cue": { "or": [ { "destroyed": "Archon", "delay": 5 }, { "event": "Archon crippled", "delay": 90 },
+      "arrival": { "cue": { "or": [ { "destroyed": "Archon", "delay": 5 }, { "event": "Archon crippled", "delay": 120 },
                                       { "and": [ { "event": "Archon crippled", "delay": 8 }, { "subsystem": "Small Mercy", "kind": "turret", "destroyed": true } ] } ] }, "near": "Oculus", "offset": [700, -250, 3500], "facing": "Oculus", "speed": 0.3 },
-      "arrivalWhy": "the second cruiser waits out of the fight until the destroyer is finished (or two minutes after its beams are out), then jumps in three and a half kilometres off the outpost's face and opens on it: the Mercy is busy and too far to reach it. If the Mercy has lost its own beams, she comes eight seconds after the destroyer's are out, and her helm takes the nearer of the two first" }
+      "arrivalWhy": "the second cruiser waits out of the fight until the destroyer is finished (or two minutes after its beams are out: with one beam lance left the Mercy needs 90 to 110 s on Hard, and at 90 s the Patience came in on top of it and took the kill), then jumps in three and a half kilometres off the outpost's face and opens on it: the Mercy is busy and too far to reach it. If the Mercy has lost its own beams, she comes eight seconds after the destroyer's are out, and her helm takes the nearer of the two first" }
   ],
 
   "wings": [
@@ -133,12 +133,14 @@
       "goal": { "order": "bomb", "target": "Small Mercy" },
       "arrival": { "cue": { "arrived": "Archon", "delay": 18 }, "bay": "Archon", "formation": "line", "spacing": [60, 0, 30], "speed": 0.7 },
       "arrivalWhy": "the destroyer's bombers launch from its hangar eighteen seconds after it arrives (unless its hangar is already gone)" },
-    { "name": "Benedictus", "team": "earth", "capped": true, "waves": 3, "waveThreshold": 1, "waveDelay": 35,
+    { "name": "Benedictus", "team": "earth", "capped": true, "capPriority": 1, "waves": 3, "waveThreshold": 1, "waveDelay": 35,
+      "capPriorityWhy": "the destroyer's fighters take the cap's next free places ahead of the opening waves' stragglers (oldest first, they filled the queue and these never came: round 2's pacing, 30 seeds a level); the cap itself, and so the pressure, is unchanged. Uncapped instead, Hard lost the Mercy in 22 of 30 runs",
       "ships": [ { "class": "earth_fighter", "ai": "drone", "count": 2 }, { "class": "earth_interceptor", "ai": "drone", "count": 1 } ],
       "goal": { "order": "engage" },
       "arrival": { "cue": { "arrived": "Archon", "delay": 50 }, "bay": "Archon", "speed": 0.7 },
       "arrivalWhy": "the destroyer's fighters, three at a time out of its hangar while the hangar stands" },
-    { "name": "Libera", "team": "earth", "capped": true,
+    { "name": "Libera", "team": "earth", "capped": true, "capPriority": 2,
+      "capPriorityWhy": "Earth's last wing, sent when the destroyer is crippled: first in the cap's queue, ahead of the destroyer's own fighters",
       "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 } ],
       "goal": { "order": "engage" },
       "arrival": { "cue": { "event": "Archon crippled", "delay": 12 }, "near": "Archon", "distance": 2400, "facing": "Small Mercy", "formation": "v", "spacing": [45, 8, 40], "speed": 0.9 },
@@ -322,7 +324,8 @@
       "whenWhy": "the climax: with the destroyer's beam turrets (or its engines) gone, the Mercy comes off its beam-lock; if the destroyer's slashes have already cut the Mercy's own beam turrets, the Patience is called at once",
       "do": [ { "do": "cond", "cases": [ { "if": { "subsystem": "Small Mercy", "kind": "turret", "destroyed": true }, "then": [ { "do": "radio", "message": "beams_lost" } ] },
                                        { "else": [ { "do": "radio", "message": "beams_down" } ] } ] },
-              { "do": "beams", "ship": "Small Mercy", "free": true }, { "do": "music", "state": "battle3", "for": 30 } ],
+              { "do": "beams", "ship": "Small Mercy", "free": true, "target": "Archon" }, { "do": "music", "state": "battle3", "for": 30 } ],
+      "doWhy": "the Mercy's beams (and its helm) go for the Archon first: without a target they take the nearest Earth capital, and on Hard the corvette is often still about, so the Mercy spent its first beams on a corvette that was leaving anyway",
       "directive": { "text": "Destroy the Archon's beam turrets or its engines", "show": { "arrived": "Archon" } } },
     { "name": "Patience here", "when": { "arrived": "Patience" }, "do": [ { "do": "radio", "message": "patience_in" } ] },
     { "name": "Benedictus here", "when": { "arrived": "Benedictus", "any": true }, "do": [ { "do": "radio", "message": "benedictus" } ] },
@@ -384,7 +387,8 @@
       "notFired": ["Missed", "Mercy lost"],
       "order": ["Opening", "Go dark", "Sweep", "Strike", "Scramble", "Kyrie in", "Cantor here", "Archon here", "Heavy hit", "Archon crippled", "Patience here", "Outpost down", "Victory"],
       "orderWhy": "the Archon's death is not in the order: when the Mercy is slow to kill it, the Patience comes on its time-out first",
-      "longestQuietMax": 30, "maxEngagingMax": 4, "threatsAvgMin": 2
+      "longestQuietMax": 30, "maxEngagingMax": [2, 3, 4, 5, 99], "threatsAvgMin": 2,
+      "maxEngagingMaxWhy": "the AI's own cap on the player per level (ai.json maxPlayerAttackers, FS2's Skill_level_max_attackers)"
     }
   }
 }

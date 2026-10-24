@@ -442,7 +442,16 @@ namespace Monolith.Mission
 
         bool IsCapped(WingRec w) => w.Def.Capped && File.ArrivalCap != null && w.Def.Team == File.ArrivalCap.Team;
 
-        void Enqueue(ShipRec r) { if (!r.Queued && r.ArrivedAt < 0f) { r.Queued = true; _capQueue.Add(r); } }
+        /// <summary>Into the cap's queue: behind every waiting ship of the same or a higher <c>capPriority</c>, ahead of lower ones (oldest
+        /// first within a priority).</summary>
+        void Enqueue(ShipRec r)
+        {
+            if (r.Queued || r.ArrivedAt >= 0f) return;
+            r.Queued = true;
+            int pri = r.Wing != null ? r.Wing.Def.CapPriority : 0, at = _capQueue.Count;
+            while (at > 0 && (_capQueue[at - 1].Wing != null ? _capQueue[at - 1].Wing.Def.CapPriority : 0) < pri) at--;
+            _capQueue.Insert(at, r);
+        }
 
         int CappedAlive()
         {
@@ -455,7 +464,7 @@ namespace Monolith.Mission
             return n;
         }
 
-        /// <summary>Arrivals held back by the cap come in, oldest first, while the team has room.</summary>
+        /// <summary>Arrivals held back by the cap come in, highest <c>capPriority</c> first and oldest first within it, while the team has room.</summary>
         void DrainQueue()
         {
             while (_capQueue.Count > 0 && CappedAlive() < _cap)

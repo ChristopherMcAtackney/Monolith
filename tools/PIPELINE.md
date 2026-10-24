@@ -104,13 +104,13 @@ shots on it as the turrets go; warden_runs.txt and .json), `-mnDogfightSoak 0 -m
 pinned after every LateUpdate as well as before rendering (HDRP takes the camera's matrices before `beginCameraRendering`, so in scenes with the
 cockpit camera those shots used to come out from the cockpit).
 
-Missions: `-mnMission <name or path>` plays any mission file (`Resources/Missions/<name>.mission.json`, or `Missions/<name>.mission.json` beside
+Missions (`Play.bat` takes plain words for the common flags: `tools/audio/OPTIONS.txt`, copied into every playtest folder): `-mnMission <name or path>` plays any mission file (`Resources/Missions/<name>.mission.json`, or `Missions/<name>.mission.json` beside
 the exe, read first; `Play.bat <name>` in a playtest folder passes it), with `-mnDifficulty`, `-mnAutopilot`, `-mnInvulnerable`, `-mnSkipBriefing`,
 `-mnPacingLog dir` (events.csv and pacing.csv when a run ends). A plan with `"scene": "mission"` takes `sceneOptions` `mission`, `pilot: "ai"`,
 `difficulty`, `invulnerable`, `hud`, `dust`, `juice`, `lod0` and `spectate` (as the dogfight's); plans `gauntlet/shots/mission_r1_*.json`. Checks:
 `Monolith.exe -batchmode -nographics -mnMissionSelfTest` (the format, every condition and action, the dogfight's port), `-mnMissionAutoPlay <name>
--mnOut dir [-mnSeconds n] [-mnDifficulty x] [-mnMortal]` (the AI flies the player; the mission's `autoplay.expect` is asserted against its event
-log and pacing; exit 0 on pass), `-mnDogfightPortCheck seconds -mnOut dir` (the hand-written dogfight against `dogfight.mission.json`, every
+-mnOut dir [-mnSeconds n] [-mnDifficulty x] [-mnMortal] [-mnSeed n]` (the AI flies the player; the mission's `autoplay.expect` is asserted against its event
+log and pacing; exit 0 on pass; `-mnSeed` plays it with other dice, for sweeps of many runs a level), `-mnDogfightPortCheck seconds -mnOut dir` (the hand-written dogfight against `dogfight.mission.json`, every
 ship's state compared to the bit once a second). `tools\mission.ps1 -Out dir` runs the self-test and every mission's auto-play. The format,
 every condition and action: `Scripts/Mission/README.md`.
 

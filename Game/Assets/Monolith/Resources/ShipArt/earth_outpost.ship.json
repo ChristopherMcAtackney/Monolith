@@ -1,17 +1,17 @@
 {
  "lods": {
   "0": {
-   "triangles": 252401,
-   "vertices": 613241,
+   "triangles": 253837,
+   "vertices": 615569,
    "subsystemTriangles": 58404
   },
   "1": {
-   "triangles": 37558,
-   "vertices": 99822
+   "triangles": 38332,
+   "vertices": 101138
   },
   "2": {
-   "triangles": 3546,
-   "vertices": 8804
+   "triangles": 3650,
+   "vertices": 9012
   }
  },
  "subsystems": [

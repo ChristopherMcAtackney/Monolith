@@ -276,6 +276,11 @@ namespace Monolith.Game
             foreach (var cp in Ai.CapitalPilots) if (cp.Ship == ship) cp.Orders.HoldBeams = !free;
         }
 
+        public void SetBeamTarget(int ship, int target)
+        {
+            foreach (var cp in Ai.CapitalPilots) if (cp.Ship == ship) cp.Orders.BeamTarget = target;
+        }
+
         public void SetTurrets(int ship, bool fire)
         {
             foreach (var cp in Ai.CapitalPilots) if (cp.Ship == ship) cp.Orders.HoldTurrets = !fire;

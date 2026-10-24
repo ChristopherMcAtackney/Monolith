@@ -13,7 +13,8 @@ namespace Monolith.Game
 {
     /// <summary>
     /// The headless auto-play check: <c>Monolith.exe -batchmode -nographics -mnMissionAutoPlay &lt;mission&gt; -mnOut dir [-mnSeconds n]
-    /// [-mnDifficulty x] [-mnMortal] [-mnGoDark]</c> (-mnGoDark: the player's cabin goes dark for every scan sweep, so it is never seen). Runs a mission on a bare world with the AI flying the player's ship (invulnerable unless the mission's
+    /// [-mnDifficulty x] [-mnMortal] [-mnGoDark] [-mnSeed n]</c> (-mnGoDark: the player's cabin goes dark for every scan sweep, so it is never seen;
+    /// -mnSeed: a salt on the sim's random seeds, so the same mission can be played with other dice, see <see cref="SimSeed"/>). Runs a mission on a bare world with the AI flying the player's ship (invulnerable unless the mission's
     /// autoplay block or -mnMortal says otherwise) until it ends or the time is up, then asserts its event log against the mission's
     /// <c>autoplay.expect</c>: the result, which events fired and which did not, the order they fired in, and the pacing numbers. Also: no
     /// errors, no bad numbers, no AI ship stuck. Writes events.csv, pacing.csv, autoplay.txt and autoplay.json; exit 0 when it passes.
@@ -40,6 +41,7 @@ namespace Monolith.Game
             catch (Exception e) { MnLog.Error("AUTOPLAY could not load the mission: " + e.Message); return 2; }
             var ap = file.Autoplay;
             int level = AiData.Default.LevelOf(CommandLine.Get("-mnDifficulty", ap.Difficulty ?? file.Difficulty));
+            SimSeed.Salt = (uint)Mathf.Max(0, CommandLine.GetInt("-mnSeed", 0));
             var r = Run(file, CommandLine.GetFloat("-mnSeconds", ap.Seconds), level, ap.Invulnerable && !CommandLine.Has("-mnMortal"), outDir);
             return r.Pass ? 0 : 1;
         }
@@ -55,6 +57,8 @@ namespace Monolith.Game
                 var rt = new MissionRuntime(lab.W, file, host, new CabinStub { AutoRepairSeconds = 8f, GoesDark = CommandLine.Has("-mnGoDark") });
                 lab.W.Sim.Register(rt);
                 lab.W.Sim.Register(new PlayerKeeper(lab.W, lab.Rig, rt, invulnerable));
+                var capitals = new CapitalWatch(lab.W, lab.Rig, rt);
+                lab.W.Sim.Register(capitals);
                 rt.Start();
                 int steps = Mathf.RoundToInt(seconds * Sim.Hz);
                 int nan = 0, maxShips = 0; string nanShip = null;
@@ -94,7 +98,8 @@ namespace Monolith.Game
                 }
                 var log = rt.Log;
                 if (ex.LongestQuietMax >= 0f) Check(log.LongestQuiet <= ex.LongestQuietMax, $"longest stretch without a threat in the fight {log.LongestQuiet:0} s <= {ex.LongestQuietMax:0} s");
-                if (ex.MaxEngagingMax >= 0) Check(log.MaxEngaging <= ex.MaxEngagingMax, $"most hostiles on the player at once {log.MaxEngaging} <= {ex.MaxEngagingMax}");
+                int engagingMax = ex.MaxEngagingAt(level < 0 ? AiData.Default.Difficulty.Default : level);
+                if (engagingMax >= 0) Check(log.MaxEngaging <= engagingMax, $"most hostiles on the player at once {log.MaxEngaging} <= {engagingMax}");
                 if (ex.MaxThreatsMax >= 0) Check(log.MaxThreats <= ex.MaxThreatsMax, $"most threats alive at once {log.MaxThreats} <= {ex.MaxThreatsMax}");
                 if (ex.ThreatsAvgMin >= 0f) Check(log.AvgThreats >= ex.ThreatsAvgMin, $"threats alive on average {log.AvgThreats:0.0} >= {ex.ThreatsAvgMin:0.0}");
                 var st = lab.Ai.Stats;
@@ -119,12 +124,13 @@ namespace Monolith.Game
                 foreach (var e in fired) text.AppendLine($"  {e.FirstFiredAt - rt.StartTime,7:0.0} s  {e.Def.Name}{(e.Fired > 1 ? $" (x{e.Fired})" : "")}");
                 text.AppendLine("Objectives:");
                 foreach (var o in rt.Objectives) text.AppendLine($"  {o.Def.Kind,-9} {o.View.State,-6} {o.Def.Text}");
+                capitals.Report(text);
 
                 var json = new JObject
                 {
                     ["mission"] = file.Id, ["level"] = lab.Ai.LevelName, ["seconds"] = Math.Round(ran, 1), ["result"] = result, ["resultText"] = rt.ResultText,
                     ["endedAt"] = rt.Ended ? Math.Round(rt.EndedAt - rt.StartTime, 2) : (double?)null, ["kills"] = rt.Kills, ["losses"] = new JArray(rt.Losses.ToArray()),
-                    ["pacing"] = log.ToJson(), ["pass"] = pass,
+                    ["pacing"] = log.ToJson(), ["pass"] = pass, ["seed"] = SimSeed.Salt, ["capitals"] = capitals.ToJson(),
                     ["events"] = new JArray(EventTimes(rt)),
                     ["checks"] = new JArray(checks.ConvertAll(c => (JToken)new JObject { ["pass"] = c.ok, ["what"] = c.what }).ToArray()),
                 };
@@ -136,6 +142,8 @@ namespace Monolith.Game
                     File.WriteAllText(Path.Combine(outDir, "radio.txt"), string.Join("\n", rt.Radio.Said) + "\n");
                 }
                 foreach (var l in text.ToString().Split('\n')) if (l.Trim().Length > 0) MnLog.Info("AUTOPLAY " + l.TrimEnd());
+                capitals.Dispose();
+                lab.W.Sim.Unregister(capitals);
                 rt.Dispose();
                 host.Dispose();
                 return new Result { Pass = pass, Report = text.ToString(), Json = json, Runtime = rt };
@@ -147,6 +155,119 @@ namespace Monolith.Game
             foreach (var e in rt.Events)
                 if (e.FirstFiredAt >= 0f) yield return new JObject { ["name"] = e.Def.Name, ["t"] = Math.Round(e.FirstFiredAt - rt.StartTime, 2), ["fired"] = e.Fired };
         }
+    }
+
+    /// <summary>
+    /// What happened to the mission's big ships (the ones in its <c>pacing.hulls</c>) in an auto-play, for tuning the capital fight: each one's
+    /// fate, its lowest hull, what its hull damage came from, and every part it lost (when, which kind, to whom and with what: a beam if the
+    /// attacker's heavy beam was burning then, else the attacker's last weapon to hit anything). Measurement only: it changes nothing.
+    /// </summary>
+    sealed class CapitalWatch : ISimSystem, IDisposable
+    {
+        readonly GameWorld _w;
+        readonly CombatRig _rig;
+        readonly MissionRuntime _rt;
+        readonly DamageLedger _ledger;
+        readonly List<IDisposable> _subs = new List<IDisposable>();
+        readonly Dictionary<int, string> _lastWeapon = new Dictionary<int, string>();
+        readonly Dictionary<int, float> _minHull = new Dictionary<int, float>();
+        readonly Dictionary<int, float> _minAt = new Dictionary<int, float>();
+        readonly List<(float t, int ship, string part, string kind, string by, string how)> _parts = new List<(float, int, string, string, string, string)>();
+
+        public CapitalWatch(GameWorld w, CombatRig rig, MissionRuntime rt)
+        {
+            _w = w; _rig = rig; _rt = rt;
+            _ledger = new DamageLedger(w);
+            _subs.Add(GameEvents.Subscribe(CombatEvents.HitHull, e => { if (e.Other != GameWorld.NoShip && e.Subject != null) _lastWeapon[e.Other] = e.Subject; }));
+            _subs.Add(GameEvents.Subscribe(CombatEvents.SubsystemDestroyed, OnPart));
+        }
+
+        public int Order => SimOrder.Late + 20;
+
+        bool Watched(int ship, out string name)
+        {
+            name = null;
+            var hulls = _rt.File.Pacing?.Hulls;
+            if (hulls == null) return false;
+            foreach (var r in _rt.Ships)
+                if (r.Id == ship && hulls.Contains(r.Name)) { name = r.Name; return true; }
+            return false;
+        }
+
+        void OnPart(GameEvent e)
+        {
+            if (!Watched(e.Entity, out _)) return;
+            var c = _w.Combat.Get(e.Entity);
+            string kind = "?";
+            if (c != null) foreach (var p in c.Parts) if (p.Name == e.Subject) { kind = p.Kind; break; }
+            string how = null;
+            if (_rig?.Weapons != null)
+                foreach (var b in _rig.Weapons.Beams) if (b.Ship == e.Other && b.State == Monolith.Weapons.BeamShot.Phase.Firing) { how = "beam"; break; }
+            if (how == null) how = _lastWeapon.TryGetValue(e.Other, out var wpn) ? wpn : "?";
+            _parts.Add((_rt.Now - _rt.StartTime, e.Entity, e.Subject, kind, _w.Ships.Get(e.Other)?.Callsign ?? "?", how));
+        }
+
+        public void Step(in SimFrame frame)
+        {
+            if (frame.Tick % Sim.Hz != 0) return;
+            foreach (var r in _rt.Ships)
+            {
+                if (r.Id == GameWorld.NoShip || !r.Present) continue;
+                if (!Watched(r.Id, out _)) continue;
+                var c = _w.Combat.Get(r.Id);
+                if (c == null || !c.Alive) continue;
+                float h = c.Hull01 * 100f;
+                if (!_minHull.TryGetValue(r.Id, out float m) || h < m) { _minHull[r.Id] = h; _minAt[r.Id] = _rt.Now - _rt.StartTime; }
+            }
+        }
+
+        public void Report(StringBuilder text)
+        {
+            var hulls = _rt.File.Pacing?.Hulls;
+            if (hulls == null || hulls.Count == 0) return;
+            text.AppendLine("Capital ships (fate, lowest hull, hull damage by source, parts lost):");
+            foreach (var name in hulls)
+            {
+                MissionRuntime.ShipRec r = null;
+                foreach (var s in _rt.Ships) if (s.Name == name) { r = s; break; }
+                if (r == null) continue;
+                if (r.ArrivedAt < 0f || r.Id == GameWorld.NoShip) { text.AppendLine($"  {name}: never arrived"); continue; }
+                var c = _w.Combat.Get(r.Id);
+                string fate = r.DestroyedAt >= 0f ? $"destroyed at {r.DestroyedAt - _rt.StartTime:0.0} s" : r.DepartedAt >= 0f ? $"departed at {r.DepartedAt - _rt.StartTime:0.0} s" : $"alive at {(c != null ? c.Hull01 * 100f : 0f):0}%";
+                string low = _minHull.TryGetValue(r.Id, out float m) ? $"{m:0}% at {_minAt[r.Id]:0} s" : "-";
+                text.AppendLine($"  {name}: arrived {r.ArrivedAt - _rt.StartTime:0.0} s, {fate}, lowest {low}; hull damage {_ledger.Total(r.Id):0}: {_ledger.Shares(r.Id)}");
+                foreach (var p in _parts)
+                    if (p.ship == r.Id) text.AppendLine($"      {p.t,6:0.0} s  {p.part} ({p.kind}) by {p.by} [{p.how}]");
+            }
+        }
+
+        public JObject ToJson()
+        {
+            var o = new JObject();
+            var hulls = _rt.File.Pacing?.Hulls;
+            if (hulls == null) return o;
+            foreach (var name in hulls)
+            {
+                foreach (var r in _rt.Ships)
+                {
+                    if (r.Name != name || r.Id == GameWorld.NoShip) continue;
+                    var parts = new JArray();
+                    foreach (var p in _parts) if (p.ship == r.Id) parts.Add(new JObject { ["t"] = Math.Round(p.t, 1), ["part"] = p.part, ["kind"] = p.kind, ["by"] = p.by, ["how"] = p.how });
+                    o[name] = new JObject
+                    {
+                        ["arrived"] = Math.Round(r.ArrivedAt - _rt.StartTime, 1),
+                        ["destroyed"] = r.DestroyedAt >= 0f ? Math.Round(r.DestroyedAt - _rt.StartTime, 1) : (double?)null,
+                        ["departed"] = r.DepartedAt >= 0f ? Math.Round(r.DepartedAt - _rt.StartTime, 1) : (double?)null,
+                        ["lowestHull"] = _minHull.TryGetValue(r.Id, out float m) ? Math.Round(m, 1) : (double?)null,
+                        ["damage"] = _ledger.ToJson(r.Id), ["partsLost"] = parts,
+                    };
+                    break;
+                }
+            }
+            return o;
+        }
+
+        public void Dispose() { foreach (var s in _subs) s.Dispose(); _subs.Clear(); _ledger.Dispose(); }
     }
 
     /// <summary>
