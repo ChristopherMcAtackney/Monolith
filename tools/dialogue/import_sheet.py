@@ -13,6 +13,11 @@ The rules (the user's, 2026-10-24/25):
   * Briefing pages, briefing answers and debrief lines (ids mission:briefing:N, mission:briefing:qN, mission:debrief:N) are read back the same way.
   * Only the text is touched: the mission files are edited as text (their comments and layout stay), then checked by comparing the parsed files before and after: nothing but the
     named lines may differ. An inline radio or callOut action that carries the same words as a changed message (Dead Water's "go dark" call-out) is changed with it.
+  * Approving: a line the mission author marked as a draft ("linesPending": true on the mission, "pending": true on the line) is pending approval until the user says otherwise. Writing
+    a NEW on-screen or NEW spoken text for it, or "yes" in the Approve column, approves it: its "pending": false is written into the mission file (and when no line of the mission is pending
+    any more, the mission's linesPending and the explicit "pending": false flags are taken out). Approved lines are listed in changed_lines.json, so voice.ps1 -List voices them, and nothing
+    else. A tick on a line that is already approved changes nothing. Briefing and debrief text has no flag of its own (see the sheet's How to use).
+  * Call-outs (the radio and callOut actions with their own text inside an event) have Line IDs made from their event's name (line_ids.py): mission:callout:event-name.
   * It makes NO voice files. It writes design/dialogue/changed_lines.json (and .txt): the lines that need voicing. tools/audio/voice.ps1 -List voices exactly those (and nothing else).
     A row that only repeats the current text changes nothing.
 
@@ -26,7 +31,10 @@ import os
 import re
 import sys
 
-from openpyxl import load_workbook
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from line_ids import inline_lines  # noqa: E402
+from openpyxl import load_workbook  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RES = os.path.join(ROOT, "Game", "Assets", "Monolith", "Resources")
@@ -44,9 +52,13 @@ class Doc:
             raw = f.read().decode("utf-8")
         self.crlf = "\r\n" in raw
         self.text = raw.replace("\r\n", "\n")
+        self._parse()
+
+    def _parse(self):
         self.i = 0
         self.spans = {}      # path tuple -> (start, end) of the string literal including its quotes
         self.parents = {}    # path tuple -> the dict (or list) holding it
+        self.members = {}    # path of a dict -> [(key, where the key starts, where its value starts, where its value ends)]
         self.root = self._value((), None)
 
     # tolerant recursive descent
@@ -86,6 +98,7 @@ class Doc:
         if c == "{":
             self.i += 1
             d = {}
+            mem = self.members[path] = []
             while True:
                 self._ws()
                 if t[self.i] == "}":
@@ -94,11 +107,15 @@ class Doc:
                 if t[self.i] == ",":
                     self.i += 1
                     continue
+                kstart = self.i
                 k, _ = self._string()
                 self._ws()
                 assert t[self.i] == ":", f"{self.path}: expected ':' at {self.i}"
                 self.i += 1
+                self._ws()
+                vstart = self.i
                 d[k] = self._value(path + (k,), d)
+                mem.append((k, kstart, vstart, self.i))
         if c == "[":
             self.i += 1
             a = []
@@ -127,6 +144,36 @@ class Doc:
             if a > s:
                 self.spans[p] = (a + delta, b + delta)
         self.spans[path] = (s, s + len(lit))
+
+    def set_bool(self, dpath, key, value):
+        """Make "key": true/false a member of the dict at dpath: changed where it is, else put in after the dict's first member. The text is re-read first, so spans are fresh."""
+        self._parse()
+        mem = self.members[dpath]
+        lit = "true" if value else "false"
+        for k, ks, vs, ve in mem:
+            if k == key:
+                self.text = self.text[:vs] + lit + self.text[ve:]
+                self._parse()
+                return
+        ve = mem[0][3]
+        self.text = self.text[:ve] + f', "{key}": {lit}' + self.text[ve:]
+        self._parse()
+
+    def remove_member(self, dpath, key):
+        """Take "key": ... out of the dict at dpath, with its comma. True if it was there."""
+        self._parse()
+        mem = self.members[dpath]
+        for n, (k, ks, vs, ve) in enumerate(mem):
+            if k == key:
+                if n + 1 < len(mem):
+                    self.text = self.text[:ks] + self.text[mem[n + 1][1]:]
+                elif n > 0:
+                    self.text = self.text[:mem[n - 1][3]] + self.text[ve:]
+                else:
+                    raise ValueError(f"{self.path}: cannot take the only member out of {dpath}")
+                self._parse()
+                return True
+        return False
 
     def save(self):
         out = self.text.replace("\n", "\r\n") if self.crlf else self.text
@@ -160,8 +207,14 @@ def read_sheet(path):
             return "" if v is None else str(v).strip()
         out.append(dict(id=cell("Line ID"), kind=cell("Kind") if "Kind" in col else "", speaker=cell("Speaker") if "Speaker" in col else "",
                         current=cell("Current on-screen text"), intensity=cell("Intensity"),
-                        new=cell("NEW on-screen text"), new_said=cell("NEW spoken text"), notes=cell("Notes")))
+                        new=cell("NEW on-screen text"), new_said=cell("NEW spoken text"), notes=cell("Notes"),
+                        approve=truthy(cell("Approve")) if "Approve" in col else False))
     return out
+
+
+def truthy(v):
+    """An Approve cell: yes, y, x, a tick, true, approve, approved, 1 (anything else, including empty and no, is not an approval)."""
+    return (v or "").strip().lower() in ("yes", "y", "x", "\u2713", "\u2714", "true", "approve", "approved", "ok", "1")
 
 
 def intensity_from_notes(notes):
@@ -208,6 +261,11 @@ class Files:
         d = self.mission_doc(parts[0])
         if d is None:
             return None
+        if len(parts) >= 3 and parts[1] in ("callout", "inline"):
+            for lid, p, act in inline_lines(d.root):
+                if lid == line_id:
+                    return d, p + ("text",), act["text"]
+            return None
         if len(parts) == 2:
             for i, m in enumerate(d.root.get("messages", [])):
                 if m.get("id") == parts[1]:
@@ -232,6 +290,31 @@ class Files:
             if 0 <= i < len(db):
                 return d, ("debriefing", i, "text"), db[i].get("text", "")
         return None
+
+    @staticmethod
+    def at(root, path):
+        for k in path:
+            root = root[k]
+        return root
+
+    def flag_path(self, doc, path):
+        """The path of the dict that carries a radio line's pending flag (a message, or a radio or callOut action with its own text), or None for text that has no flag."""
+        if len(path) == 3 and path[0] == "messages" and path[-1] == "text":
+            return path[:2]
+        if path[0] == "events" and path[-1] == "text":
+            parent = doc.parents.get(path)
+            if isinstance(parent, dict) and parent.get("do") in ("radio", "callOut"):
+                return path[:-1]
+        return None
+
+    def pending_of(self, doc, objpath):
+        return bool(self.at(doc.root, objpath).get("pending", doc.root.get("linesPending", False)))
+
+    def radio_lines(self, doc):
+        """The paths of every radio line in a mission that can carry a pending flag: its messages, and its call-outs."""
+        out = [("messages", i) for i in range(len(doc.root.get("messages", [])))]
+        out += [p for _, p, _ in inline_lines(doc.root)]
+        return out
 
     def inline_twins(self, doc, old):
         """Inline radio or callOut actions in the same mission that say exactly the old words (they are the same line)."""
@@ -287,6 +370,8 @@ def main():
     spoken.pop("_about", None)
     inten.pop("_about", None)
     edits = []   # (doc, path, new)
+    approvals = []   # (doc, path of the dict holding the flag, line id)
+    approve_ignored = []
     expected = {}   # path of doc -> set of paths
 
     for r in rows:
@@ -295,7 +380,7 @@ def main():
         want_int = intensity_from_notes(r["notes"])
         if r["notes"] and want_int is None:
             notes_ignored.append((r["id"], r["notes"]))
-        if not (want_text or want_said or want_int):
+        if not (want_text or want_said or want_int or r["approve"]):
             continue
         loc = files.locate(r["id"])
         if loc is None:
@@ -306,6 +391,12 @@ def main():
         if r["current"] and r["current"] != cur:
             stale.append((r["id"], r["current"], cur))
         entry = dict(id=r["id"], kind=r["kind"], speaker=r["speaker"], old=cur, new=cur, said=None, intensity=None, what=[])
+        flag = files.flag_path(doc, path)
+        if flag is not None and files.pending_of(doc, flag) and (r["approve"] or want_text or want_said):
+            approvals.append((doc, flag, r["id"]))              # a line the author left as a draft: the user's text, or a tick, approves it
+            entry["what"].append("approved")
+        elif r["approve"] and flag is None:
+            approve_ignored.append(r["id"])
         if want_text and want_text != cur:
             entry["new"] = want_text
             entry["what"].append("text")
@@ -334,15 +425,34 @@ def main():
 
     # apply, longest paths first inside a file does not matter: spans move with each edit
     twins = []
+    own = {(doc.path, path) for doc, path, new, old in edits}          # a call-out with a row of its own is edited by that row, not as a twin
     for doc, path, new, old in edits:
         doc.replace_string(path, new)
         for tp in files.inline_twins(doc, old):
+            if (doc.path, tp) in own or tp == path:
+                continue
             doc.replace_string(tp, new)
             twins.append((os.path.basename(doc.path), tp, old, new))
         expected.setdefault(doc.path, set()).add(path)
     for doc, path, new, old in edits:
         for tp in [t for t in twins if t[0] == os.path.basename(doc.path)]:
             expected[doc.path].add(tp[1])
+
+    # approvals: "pending": false on each approved line; a mission with nothing pending left loses its flags
+    cleared = []
+    for doc, flag, line_id in approvals:
+        doc.set_bool(flag, "pending", False)
+        expected.setdefault(doc.path, set()).add(flag + ("pending",))
+    for doc in {a[0] for a in approvals}:
+        if not any(files.pending_of(doc, p) for p in files.radio_lines(doc)):
+            for p in files.radio_lines(doc):
+                if files.at(doc.root, p).get("pending") is False:
+                    doc.remove_member(p, "pending")
+                    expected[doc.path].add(p + ("pending",))
+            for key in ("linesPending", "linesPendingWhy"):
+                if doc.remove_member((), key):
+                    expected[doc.path].add((key,))
+            cleared.append(os.path.basename(doc.path))
 
     # nothing but the named lines may differ
     problems = []
@@ -364,7 +474,7 @@ def main():
         sys.exit(1)
 
     # report
-    print(f"{len(changes)} rows changed:")
+    print(f"{len(changes)} rows changed ({len(approvals)} approved):")
     for c in changes:
         print(f"  {c['id']:28s} [{', '.join(c['what'])}]")
         if "text" in c["what"]:
@@ -376,6 +486,10 @@ def main():
             print(f"      intensity: {c['intensity']}")
     for t in twins:
         print(f"  (also changed with it: the same words in {t[0]} {'/'.join(str(x) for x in t[1])})")
+    for c in cleared:
+        print(f"  every radio line of {c} is approved now: its linesPending flag is gone")
+    for i in approve_ignored:
+        print(f"  {i}: ticked Approve, but a briefing or debrief page has no flag of its own (the mission is cleared when all its radio lines are approved)")
     for (i, n) in notes_ignored:
         print(f"  note on {i} left alone (not an intensity): {n}")
     for (i, was, now) in stale:
@@ -396,7 +510,7 @@ def main():
         json.dump({"_about": note + "Line ID -> calm, tense or frantic, over the table in collect_lines.py.", **inten}, f, indent=1, ensure_ascii=False)
         f.write("\n")
     out = dict(format="monolith-dialogue-changes/1", imported=datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), sheet=os.path.basename(a.sheet),
-               lines=[dict(id=c["id"], what=c["what"], speaker=c["speaker"], old=c["old"], new=c["new"], spoken=c["said"], intensity=c["intensity"]) for c in changes])
+               lines=[dict(id=c["id"], what=c["what"], speaker=c["speaker"], old=c["old"], new=c["new"], spoken=c["said"], intensity=c["intensity"], approved="approved" in c["what"]) for c in changes])
     os.makedirs(os.path.dirname(a.changes), exist_ok=True)
     with open(a.changes, "w", encoding="utf-8", newline="\n") as f:
         json.dump(out, f, indent=1, ensure_ascii=False)

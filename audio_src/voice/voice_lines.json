@@ -1070,7 +1070,8 @@
     "cabin:callOut"
    ],
    "lineIds": [
-    "cabin:go_dark"
+    "cabin:go_dark",
+    "cabin:callout:go-dark"
    ]
   },
   {

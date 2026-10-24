@@ -31,6 +31,8 @@ import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 RES = os.path.join(ROOT, 'Game', 'Assets', 'Monolith', 'Resources')
+sys.path.insert(0, os.path.join(ROOT, 'tools', 'dialogue'))
+from line_ids import inline_lines  # noqa: E402  (a call-out's Line ID, made from its event's name: the same ids as the dialogue sheet)
 OUT = os.path.join(os.path.dirname(__file__), 'voice_lines.json')
 HERE = os.path.dirname(os.path.abspath(__file__))
 CAST = json.load(open(os.path.join(HERE, 'cast.json'), encoding='utf-8'))
@@ -185,16 +187,18 @@ def main():
             for v in voices:
                 add(v, m['text'], f'{mid}:{m["id"]}', f'{mid}_{slug(m["id"])}', [inten], line_id=f'{mid}:{m["id"]}')
 
+        inline_ids = {id(act): lid for lid, _, act in inline_lines(d)}
+
         def walk(o):
             if isinstance(o, dict):
                 if o.get('do') in ('radio', 'callOut') and 'text' in o and o.get('pending', file_pending):
                     PENDING.append(f'{mid}:{o["do"]}:{o["text"][:40]}')
                 elif o.get('do') == 'radio' and 'text' in o:
                     for v in voice_of(o.get('from')):
-                        add(v, o['text'], f'{mid}:inline', f'{mid}_inline_{slug(o["text"])[:24]}', [o.get('intensity') or DEFAULT_MESSAGE])
+                        add(v, o['text'], f'{mid}:inline', f'{mid}_inline_{slug(o["text"])[:24]}', [o.get('intensity') or DEFAULT_MESSAGE], line_id=inline_ids.get(id(o)))
                 elif o.get('do') == 'callOut' and 'text' in o:
                     for v in (voice_of(o['from']) if o.get('from') else CAST['defaults']['wingmanVoices']):
-                        add(v, o['text'], f'{mid}:callOut', f'{mid}_callout_{slug(o["text"])[:24]}', [o.get('intensity') or 'tense'])
+                        add(v, o['text'], f'{mid}:callOut', f'{mid}_callout_{slug(o["text"])[:24]}', [o.get('intensity') or 'tense'], line_id=inline_ids.get(id(o)))
                 for x in o.values():
                     walk(x)
             elif isinstance(o, list):
