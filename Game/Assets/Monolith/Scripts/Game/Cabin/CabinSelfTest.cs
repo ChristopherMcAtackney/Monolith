@@ -4,6 +4,7 @@ using System.Globalization;
 using Monolith.AI;
 using Monolith.Cabin;
 using Monolith.Core;
+using Monolith.Input;
 using Monolith.Mission;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -79,6 +80,22 @@ namespace Monolith.Game
                 InputSystem.Update();
                 f = input.Sample(0.016f);
                 Check(f.Move.sqrMagnitude < 1e-6f && f.Back && !f.StandHeld, "a stick inside its dead zone does nothing; B is back");
+                // Inverted look is the default: push the right stick up and the view goes down (Look.y is "up", so it is negative); the switch in controls.json turns it round.
+                InputSystem.QueueStateEvent(pad, new GamepadState { rightStick = new Vector2(0f, 1f) });
+                InputSystem.Update();
+                f = input.Sample(0.016f);
+                Check(f.Look.y < -0.9f, $"the right stick pushed up looks down, the inverted default ({F(f.Look.y)})");
+                var plain = new ControlsConfig(); plain.invert.cabinLook = false;
+                var straight = new PadCabinInput(cfg, plain);
+                f = straight.Sample(0.016f);
+                Check(f.Look.y > 0.9f, $"... and with invert.cabinLook off it looks up ({F(f.Look.y)})");
+                InputSystem.QueueStateEvent(pad, new GamepadState());
+                InputSystem.QueueStateEvent(kb, new KeyboardState(Key.UpArrow));
+                InputSystem.Update();
+                f = input.Sample(0.016f);
+                Check(f.Look.y < -0.3f, $"the up arrow looks down too ({F(f.Look.y)})");
+                InputSystem.QueueStateEvent(kb, new KeyboardState());
+                InputSystem.Update();
             }
             finally
             {
@@ -149,28 +166,14 @@ namespace Monolith.Game
                 foreach (var t in prefab.GetComponentsInChildren<Transform>(true)) names.Add(t.name);
                 var missing = new List<string>();
                 foreach (var d in layout.Displays) if (!names.Contains(d.Name)) missing.Add(d.Name);
-                foreach (var it in layout.Interactables) if (it.Grip != null && !names.Contains(it.Grip)) missing.Add(it.Grip);
                 foreach (var n in new[] { "CABIN_SHELL", "CABIN_FRAME", "CABIN_GLASS", "BREAKER_LEVER", "PANEL_engine_DOOR", "PANEL_engine_MODULE", "PANEL_arms_DOOR", "PANEL_arms_MODULE", "ANCHOR_seat_eye" })
                     if (!names.Contains(n)) missing.Add(n);
-                Check(missing.Count == 0, "every display, grip and moving part the code binds is in the model" + (missing.Count > 0 ? ": missing " + string.Join(", ", missing) : ""));
+                Check(missing.Count == 0, "every display and moving part the code binds is in the model" + (missing.Count > 0 ? ": missing " + string.Join(", ", missing) : ""));
                 int onLayer = 0, total = 0;
                 foreach (var r in prefab.GetComponentsInChildren<Renderer>(true)) { total++; if (r.renderingLayerMask == 2u) onLayer++; }
                 Check(total > 0 && onLayer == total, $"every renderer is on the cabin's own lighting layer ({onLayer} of {total})");
             }
-            var hands = Resources.Load<GameObject>(CabinHands.PrefabPath);
-            Check(hands != null, "the pilot's hands are in the build");
-            if (hands != null)
-            {
-                var names = new HashSet<string>();
-                foreach (var t in hands.GetComponentsInChildren<Transform>(true)) names.Add(t.name);
-                var missing = new List<string>();
-                foreach (var side in new[] { "R", "L" })
-                {
-                    foreach (var n in new[] { "wrist", "upper", "fore" }) if (!names.Contains($"{side}_{n}")) missing.Add($"{side}_{n}");
-                    for (int f = 0; f < 5; f++) foreach (var j in f == 0 ? "ab" : "abc") if (!names.Contains($"{side}_f{f}_{j}")) missing.Add($"{side}_f{f}_{j}");
-                }
-                Check(missing.Count == 0, "both hands have every finger joint and both arm halves" + (missing.Count > 0 ? ": missing " + string.Join(", ", missing) : ""));
-            }
+            Check(Resources.Load<GameObject>("Cabin/pilot_hands") == null, "the pilot has no hands: no hand model is in the build");
         }
 
         // ------------------------------------------------------------------------------------------------ the body
@@ -354,13 +357,13 @@ namespace Monolith.Game
                 b.Run(1.0);
                 float pr = b.Cab.RepairProgress("engine_port");
                 Check(pr < p2 && pr > p2 - 0.35f, $"let go, the progress decays slowly ({F(p2)} to {F(pr)})");
-                // a jolt while holding makes the hands slip
+                // a jolt while holding makes the repair slip
                 b.Run(1.6, () => b.Cab.Action == CabinSystem.Act.Repair);
                 float before = b.Cab.RepairProgress("engine_port");
                 GameEvents.RaiseAt(CombatEvents.HitHull, Vector3.zero, Vector3.up, "needle", 40f, b.Me.Id);
                 b.Run(0.3);
                 float after = b.Cab.RepairProgress("engine_port");
-                Check(after < before, $"a hit while the module is being pressed in makes the hands slip ({F(before)} to {F(after)})");
+                Check(after < before, $"a hit while the module is being pressed in makes the repair slip ({F(before)} to {F(after)})");
                 b.Run(12.0, () => !part.Destroyed);
                 Check(!part.Destroyed && !((ICabin)b.Cab).NeedsRepair(b.Me.Id, "engine_port"), "holding to the end seats the module: the part is back and nothing needs repair");
                 Check(part.Hp >= part.MaxHp * 0.24f, $"... at a quarter of its health, for the living tech to mend the rest ({F(part.Health01)})");

@@ -1,13 +1,17 @@
 {
   "format": "monolith-controls/1",
   "about": "Pad and keyboard mappings, dead zones and response curves. The pad layout starts from Star Wars: Squadrons' default Xbox scheme (left stick throttle and roll, right stick pitch and yaw, L3 boost, RT fire, LT target ahead, A cycle targets, B countermeasures, LB/RB auxiliaries). Control names are Unity Input System paths on the Gamepad / Keyboard device. The playtest build reads controls.json next to Play.bat instead, so this can be tuned without a rebuild.",
+  "invert": {
+    "flight": true,
+    "cabinLook": true,
+    "why": "Inverted, the flight-sim way (the user's default, 2026-10-24): push the stick up or forward and the nose goes DOWN, pull it back and the nose comes UP. The same for looking round the cabin: push the right stick up and the view goes down, pull it back and you look up. flight covers the aim stick and the keyboard's pitch keys (W is the stick pushed forward, so W is nose down); cabinLook covers the right stick and the arrow keys in the cabin. Set either to false for the other way round. The pause screen flips them too (LB flight, RB cabin look on the pad; I and O on the keyboard), and this file is read on the next start."
+  },
   "pad": {
     "aim": {
       "stick": "rightStick",
       "deadZone": 0.1,
       "outerDeadZone": 0.04,
       "exponent": 1.6,
-      "pushForwardIsNoseDown": true,
       "why": "The right stick is FS2's joystick: pitch and yaw together, auto-bank does the rest. Radial (not per-axis) dead zone so diagonals keep their direction; scaled so output starts at 0 at the edge of the dead zone (no jump). 0.10 clears worn Xbox sticks' rest drift. Exponent 1.6 on the deflection past the dead zone: a quarter stick gives 6% of the turn rate (8 deg/s of yaw on a Ulysses instead of 35) for fine aim, half stick 29%, full stick the full table rate. The flight model's own 0.35 s turn lag smooths the rest, so no extra input smoothing. Outer dead zone 0.04 so full rate is reachable before the stick gate."
     },
     "roll": {

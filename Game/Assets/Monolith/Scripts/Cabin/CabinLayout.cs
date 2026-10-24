@@ -21,11 +21,10 @@ namespace Monolith.Cabin
 
         public sealed class Interactable
         {
-            public string Id, Kind, Bay, BayKind, Grip;
+            public string Id, Kind, Bay, BayKind;
             public Vector3 Pos;
             public Vector2 Stand;
             public float FaceYaw, Radius;
-            public bool Crouch;
         }
 
         public sealed class DisplayDef { public string Name; public int W, H; public float Aspect; }
@@ -42,7 +41,7 @@ namespace Monolith.Cabin
 
         public Vector3 Eye;
         public Vector3 StandAt;
-        public float StandYaw, EyeStand, EyeCrouch;
+        public float StandYaw, EyeStand;
         public Vector3 BoundsMin, BoundsMax;
         public readonly List<Level> Levels = new List<Level>();
         public readonly List<Circle> Obstacles = new List<Circle>();
@@ -68,16 +67,14 @@ namespace Monolith.Cabin
             l.StandAt = V3(r["stand"]["pos"]);
             l.StandYaw = (float)r["stand"]["faceYawDeg"];
             l.EyeStand = (float)r["eyeHeights"]["stand"];
-            l.EyeCrouch = (float)r["eyeHeights"]["crouch"];
             l.BoundsMin = V3(r["bounds"]["min"]); l.BoundsMax = V3(r["bounds"]["max"]);
             foreach (var j in (JArray)r["levels"]) l.Levels.Add(new Level { X0 = (float)j["x0"], X1 = (float)j["x1"], Z0 = (float)j["z0"], Z1 = (float)j["z1"], Y = (float)j["y"] });
             foreach (var j in (JArray)r["obstacles"]) l.Obstacles.Add(new Circle { X = (float)j["x"], Z = (float)j["z"], R = (float)j["r"] });
             foreach (var j in (JArray)r["interactables"])
                 l.Interactables.Add(new Interactable
                 {
-                    Id = (string)j["id"], Kind = (string)j["kind"], Bay = (string)j["bay"], BayKind = (string)j["baykind"], Grip = (string)j["grip"],
+                    Id = (string)j["id"], Kind = (string)j["kind"], Bay = (string)j["bay"], BayKind = (string)j["baykind"],
                     Pos = V3(j["pos"]), Stand = new Vector2((float)j["stand"][0], (float)j["stand"][1]), FaceYaw = (float)j["faceYawDeg"], Radius = (float)j["radius"],
-                    Crouch = (bool?)j["crouch"] ?? false,
                 });
             foreach (var j in (JArray)r["displays"]) l.Displays.Add(new DisplayDef { Name = (string)j["name"], W = (int)j["w"], H = (int)j["h"], Aspect = (float)j["aspect"] });
             foreach (var j in (JArray)r["lights"])

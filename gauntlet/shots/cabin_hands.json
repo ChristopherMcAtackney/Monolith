@@ -1,6 +1,0 @@
-{
-  "scene": "mission",
-  "sceneOptions": { "mission": "cabin", "hud": false, "dust": false, "cabin": { "prelaunch": true, "script": [ { "t": 0.5, "do": "face", "yaw": 90, "pitch": 5 } ] } },
-  "defaults": { "width": 1920, "height": 1080, "warmup": 1.0 },
-  "stills": [ { "name": "hands", "follow": true, "warmup": 3.0, "fov": 62 }, { "name": "hands_close", "follow": true, "warmup": 0.1, "fov": 40 } ]
-}

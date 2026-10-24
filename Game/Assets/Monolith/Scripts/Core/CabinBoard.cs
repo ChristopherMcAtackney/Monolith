@@ -40,10 +40,10 @@ namespace Monolith.Core
         /// <summary>The minimal prompt for what the pilot is looking at and what the context button does there (null: none), and how far a hold has come (0..1, -1: not a hold).</summary>
         public string Prompt, PromptKey;
         public float PromptProgress = -1f;
-        /// <summary>The pilot's hands are doing something: what and how far (the hands animate from this).</summary>
+        /// <summary>The pilot is working a control: what and how far (the lever, panel hatches, modules and rack bays animate from this).</summary>
         public string Action;
         public float ActionProgress;
-        /// <summary>A hull hit or shove just landed (0..1, fading): the lights flicker and the hands slip with it.</summary>
+        /// <summary>A hull hit or shove just landed (0..1, fading): the lights flicker and a repair under way slips with it.</summary>
         public float Jolt;
         /// <summary>The ship's own scan state for the lights and audio: 0 nothing, 1 a sweep is crossing the canopy.</summary>
         public float ScanLight;

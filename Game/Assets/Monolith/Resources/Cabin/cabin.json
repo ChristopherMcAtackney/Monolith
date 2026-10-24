@@ -13,8 +13,6 @@
     "accel": 9.0,
     "radius": 0.26,
     "eyeStand": 1.64,
-    "eyeCrouch": 1.16,
-    "crouchRate": 5.0,
     "lookYawRate": 140.0,
     "lookPitchRate": 95.0,
     "pitchMax": 75.0,

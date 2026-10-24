@@ -156,7 +156,7 @@ to choose; sitting down and pressing launch starts the clock. The rack's choice 
 
 What the conditions and actions do for real: `seated` is false while the pilot is up; `powered` is the main breaker; `detected` is decided when a
 sweep's light crosses the ship (powered, or dark less than five seconds, inside the range); any destroyed part of the player's ship is a
-`needsRepair` until the pilot's hands have knit it (it comes back at 25 percent health); `callOut` puts a "hold View: stand up" prompt at the seat; `scan` sends the
+`needsRepair` until the pilot has knit it (hold at the panel; the module seats itself on screen) (it comes back at 25 percent health); `callOut` puts a "hold View: stand up" prompt at the seat; `scan` sends the
 light through the canopy (with the hull's creak four seconds before); `knockOut` destroys the part for the cabin to hold; `cabinLights` sets the
 glow. A mission never needs the cabin: with `-mnNoCabin`, in an AI-flown run, or from a mission with no use for it, `CabinStub` answers (always
 seated and powered, a scan detects a powered player in range, a knock-out destroys the part and the AI flying "repairs" it after 8 s).

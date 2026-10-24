@@ -195,40 +195,6 @@
    "emissiveNits": 900
   },
   {
-   "blender": "mn_cab_skin",
-   "name": "MN_CabSkin",
-   "baseColor": [
-    1,
-    1,
-    1
-   ],
-   "baseMap": "cab_skin_albedo",
-   "normalMap": "cab_skin_normal",
-   "maskMap": "cab_skin_mask",
-   "normalScale": 0.8,
-   "smoothnessRemap": [
-    0,
-    0.7
-   ]
-  },
-  {
-   "blender": "mn_cab_nail",
-   "name": "MN_CabNail",
-   "baseColor": [
-    1,
-    1,
-    1
-   ],
-   "baseMap": "cab_nail_albedo",
-   "normalMap": "cab_nail_normal",
-   "maskMap": "cab_nail_mask",
-   "normalScale": 1.0,
-   "smoothnessRemap": [
-    0,
-    0.9
-   ]
-  },
-  {
    "blender": "mn_cab_glyph",
    "name": "MN_CabGlyph",
    "baseColor": [

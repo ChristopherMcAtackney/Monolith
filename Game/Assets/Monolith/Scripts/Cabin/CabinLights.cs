@@ -118,7 +118,7 @@ namespace Monolith.Cabin
             _sun.color = new Color(1f, 0.95f, 0.86f);
         }
 
-        /// <summary>The glow of a module knitting back into its socket: a small light in front of the panel (cabin axes), lighting the hands and the wall, strength 0..1.</summary>
+        /// <summary>The glow of a module knitting back into its socket: a small light in front of the panel (cabin axes), lighting the wall, strength 0..1.</summary>
         public void SetKnit(Vector3 localPos, float strength, float nitsPerUnit)
         {
             bool on = strength > 0.01f;

@@ -86,29 +86,27 @@ Scorch decals come from one atlas (4 x 4: small scorches, blasts, craters, strea
 
 ## The cabin (`art_src\cabin`)
 
-The pilot's cabin and hands, built by the same kit (`tools\blender_lib\mncabin.py` for the cabin's pieces: chamfered boxes, tubes, lofts, trim plates and screens; `mnpaint.py` for the
+The pilot's cabin (there are no hands: the user dropped them), built by the same kit (`tools\blender_lib\mncabin.py` for the cabin's pieces: chamfered boxes, tubes, lofts, trim plates and screens; `mnpaint.py` for the
 textures; `mnpreview` renders Workbench views from inside). Run in this order:
 
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\cabin\build_cabin_textures.py     # the texture set: plate, metal, floor, fabric, bio, glyph, tissue, skin, nail, rubber, trim sheet, screen
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\cabin\build_cabin_textures.py     # the texture set: plate, metal, floor, fabric, bio, glyph, tissue, rubber, trim sheet, screen
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\cabin\build_cabin.py             # ~3 s: cabin.fbx, cabin.layout.json (`-- --preview` renders views into $MN_PREVIEW_DIR, art_src\cabin\_preview by default)
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\cabin\build_pilot_hands.py       # ~3 s: pilot_hands.fbx and its layout
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\unity.ps1 Monolith.EditorTools.Setup.All               # CabinArtSetup: materials, prefabs, player build
 ```
 
 - **Axes:** x starboard, y forward (the canopy), z up, in metres, the seated eye at y = 0; the layout JSON is in Unity's axes. The layout is data, never code: the floor levels, obstacles,
-  stand points, interactables, lights and displays are in `Resources\Cabin\cabin.layout.json` (written by the model script) and `CabinLayout` reads them. Stand points are chosen so a
-  hand reaches the grip (arm 0.57 m): low panels and low rack bays are marked `crouch`, and the pilot ducks when looking at them.
+  stand points, interactables, lights and displays are in `Resources\Cabin\cabin.layout.json` (written by the model script) and `CabinLayout` reads them. Stand points are where the pilot stands to work each one (the work shows on the cabin itself;
+  the pilot never ducks and has no hands: the `crouch` and `grip` data the generator still writes are not read).
 - **Study, not copy:** Soyuz, Apollo and the ISS for the cramped, rough, utilitarian worn human hull (structural ribs every half metre with panels between, handrails, tied cable bundles,
   labelled switch banks, placards, worn paint at every touch point, hatches with wheels, caged lamps); the dark, ribbed, wet-looking, glyph-lit biomechanical grafts of the alien-ally
   technology in *Independence Day* kept rough on top. Never bizarre, never clean.
-- **Contract with the code (`Monolith.Cabin`):** node names are looked up by `CabinRig` and `CabinHands`, and the self-test refuses a prefab that lacks one:
+- **Contract with the code (`Monolith.Cabin`):** node names are looked up by `CabinRig`, and the self-test refuses a prefab that lacks one:
   `DISPLAY_<name>` (a quad facing the viewer: the table, the two dash screens, the breaker, the rack labels), `ANCHOR_*` (grips and view points), `BREAKER_LEVER`, `PANEL_<engine|arms>`
-  with `_DOOR`, `_MODULE`, `_KNIT`, `RACK_MODULE_<gun0|gun1|msl0|msl1>`, `CABIN_GLASS` and the canopy frame. The hands: `{R,L}_wrist`, `{R,L}_f<0..4>_<a,b,c>` (finger segments, each pivoting at its
-  joint), `{R,L}_upper`, `{R,L}_fore`.
+  with `_DOOR`, `_MODULE`, `_KNIT`, `RACK_MODULE_<gun0|gun1|msl0|msl1>`, `CABIN_GLASS` and the canopy frame.
 - **Materials** are recipes in `cabin.materials.json` that `CabinArtSetup` turns into editor-made HDRP Lit assets under `Resources\Cabin\Materials` (runtime materials are never made with
   `Shader.Find`); the displays' `MN_CabScreen` is one emissive asset that `CabinRig` instances and gives a render texture each. Every renderer is on HDRP light layer 1.
-- **Size:** the texture set is about 42 MB of PNG (2,048 px tiles, the plate a 2 m tile at about a millimetre a pixel), the FBX 1.6 MB, the hands 0.5 MB: under the 50 MB line, but the biggest art set in the repo.
+- **Size:** the texture set is about 42 MB of PNG (2,048 px tiles, the plate a 2 m tile at about a millimetre a pixel), the FBX 1.6 MB: under the 50 MB line, but the biggest art set in the repo.
 
 ## Gotchas
 

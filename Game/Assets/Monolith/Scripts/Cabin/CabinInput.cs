@@ -15,7 +15,7 @@ namespace Monolith.Cabin
     {
         /// <summary>x strafes right, y walks forward (-1..1, shaped).</summary>
         public Vector2 Move;
-        /// <summary>x turns right, y looks up (-1..1, shaped).</summary>
+        /// <summary>x turns right, y looks up (-1..1, shaped; the pad and keyboard give it already turned round when the look is inverted).</summary>
         public Vector2 Look;
         /// <summary>The context button: held, and the tick it went down.</summary>
         public bool Context, ContextPressed;
@@ -47,7 +47,10 @@ namespace Monolith.Cabin
         float _lastTapTime = -10f, _clock;
         bool _standWasDown;
 
-        public PadCabinInput(CabinConfig cfg) { _c = cfg.controls; }
+        readonly Monolith.Input.ControlsConfig _controls;
+
+        /// <param name="controls">The player's controls: its <c>invert.cabinLook</c> switch (read every tick, so the pause screen can flip it) decides which way up and down look. Without it the look is inverted, the default.</param>
+        public PadCabinInput(CabinConfig cfg, Monolith.Input.ControlsConfig controls = null) { _c = cfg.controls; _controls = controls; }
 
         public CabinInputFrame Sample(float dt)
         {
@@ -78,6 +81,7 @@ namespace Monolith.Cabin
                 mapKey |= Down(kb, k.map);
             }
             f.Move = Vector2.ClampMagnitude(move, 1f);
+            if (_controls == null || _controls.invert.cabinLook) look.y = -look.y;           // inverted (the default): push up and the view goes down
             f.Look = Vector2.ClampMagnitude(look, 1f);
             f.Context = context;
             f.ContextPressed = context && !_prevContext;

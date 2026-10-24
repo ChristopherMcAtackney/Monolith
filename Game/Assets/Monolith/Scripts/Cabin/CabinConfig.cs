@@ -42,9 +42,8 @@ namespace Monolith.Cabin
             public float walkSpeed = 1.25f, backSpeed = 0.9f, strafeSpeed = 1.0f, accel = 9f;
             /// <summary>The pilot's body as a circle on the floor (m).</summary>
             public float radius = 0.26f;
-            /// <summary>Eye height above the floor standing, and crouched at a low panel (m).</summary>
-            public float eyeStand = 1.64f, eyeCrouch = 1.16f;
-            public float crouchRate = 5f;
+            /// <summary>Eye height above the floor standing (m).</summary>
+            public float eyeStand = 1.64f;
             public float lookYawRate = 140f, lookPitchRate = 95f, pitchMax = 75f;
             public float bobHeight = 0.013f, bobSide = 0.007f, strideMeters = 0.62f;
             public float stepSmooth = 0.09f;

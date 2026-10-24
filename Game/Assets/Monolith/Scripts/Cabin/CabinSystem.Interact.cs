@@ -268,7 +268,7 @@ namespace Monolith.Cabin
             bool aimed = _aimItem == _actItem || StillAimedAt(_actItem);
             if (need == null) { _act = Act.None; return; }
             _repairP.TryGetValue(need.Name, out float p);
-            _actT += dt;                       // how long the hands have been in (the rig reaches them out over the first third of a second)
+            _actT += dt;                       // how long the work has been going
             if (Board.Jolt > 0.55f && _slip <= 0f && p > 0.02f)
             {
                 _slip = Cfg.timing.repairSlipSeconds;

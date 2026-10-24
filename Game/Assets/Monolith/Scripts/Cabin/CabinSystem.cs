@@ -94,7 +94,7 @@ namespace Monolith.Cabin
 
         // Where the pilot is, in cabin space (x right, z forward), the way they face (degrees; 0 is forward, 90 starboard) and the eye.
         Vector2 _pos, _vel;
-        float _yaw, _pitch, _floorY, _floorVel, _crouch, _stride, _phaseT, _standHold, _bobT;
+        float _yaw, _pitch, _floorY, _floorVel, _stride, _phaseT, _standHold, _bobT;
         Vector3 _eye;
         // The pose the pilot had when they began to sit down (the path is blended from it).
         Vector3 _lowerFromEye; float _lowerFromYaw, _lowerFromPitch;
@@ -113,14 +113,14 @@ namespace Monolith.Cabin
         public Vector3 CabinOrigin => Cfg.ShipEye - Layout.Eye;
         public Vector3 LookDir => Quaternion.Euler(-_pitch, _yaw, 0f) * Vector3.forward;
         /// <summary>The eye's height above the floor right now: standing, or lower at a panel.</summary>
-        public float EyeHeightNow => Mathf.Lerp(Cfg.body.eyeStand, Cfg.body.eyeCrouch, _crouch);
+        public float EyeHeightNow => Cfg.body.eyeStand;
 
         void ResetBody()
         {
             Board.State = CabinBoard.Phase.Seated;
             Board.Stand01 = 0f;
             _pos = SeatStandPoint(); _yaw = 0f; _pitch = 0f; _vel = Vector2.zero;
-            _floorY = Layout.StandAt.y; _crouch = 0f; _phaseT = 0f; _standHold = 0f;
+            _floorY = Layout.StandAt.y; _phaseT = 0f; _standHold = 0f;
             _eye = Layout.Eye;
             Board.EyeNow = Board.EyePrev = Cfg.ShipEye;
             Board.RotNow = Board.RotPrev = Quaternion.identity;
@@ -221,7 +221,7 @@ namespace Monolith.Cabin
             bool locked = _act == Act.Repair || _act == Act.Breaker;
             _yaw = Mathf.Repeat(_yaw + inp.Look.x * b.lookYawRate * dt + 180f, 360f) - 180f;
             _pitch = Mathf.Clamp(_pitch + inp.Look.y * b.lookPitchRate * dt, -b.pitchMax, b.pitchMax);
-            // Walk (not while the hands are busy).
+            // Walk (not while an action is under way).
             Vector2 want = Vector2.zero;
             if (!locked && _act != Act.Rack && !Frozen)
             {
@@ -241,7 +241,7 @@ namespace Monolith.Cabin
                 else if (Layout.Walkable(_pos.x, np.y, b.radius)) { _pos.y = np.y; _vel.x *= 0.2f; }
                 else _vel = Vector2.zero;
             }
-            // The floor under the feet (steps ease), the walk's bob, a crouch at a low panel.
+            // The floor under the feet (steps ease), the walk's bob.
             float fy = Layout.FloorAt(_pos.x, _pos.y);
             if (float.IsNaN(fy)) fy = _floorY;
             float before = _floorY;
@@ -253,10 +253,7 @@ namespace Monolith.Cabin
             float speed01 = Mathf.Clamp01(_vel.magnitude / b.walkSpeed);
             float bob = Mathf.Abs(Mathf.Sin(_bobT)) * b.bobHeight * speed01;
             float side = Mathf.Sin(_bobT) * b.bobSide * speed01;
-            // Down on a knee for a low panel or a low bay: while working it, and as soon as the pilot is looking at it.
-            bool wantCrouch = ((_act == Act.Repair || _act == Act.Rack) && _actItem != null && _actItem.Crouch) || (_act == Act.None && _aimItem != null && _aimItem.Crouch);
-            _crouch = Mathf.MoveTowards(_crouch, wantCrouch ? 1f : 0f, dt * b.crouchRate);
-            float eh = Mathf.Lerp(b.eyeStand, b.eyeCrouch, Ease(_crouch));
+            float eh = b.eyeStand;
             Vector3 right3 = new Vector3(Mathf.Cos(_yaw * Mathf.Deg2Rad), 0f, -Mathf.Sin(_yaw * Mathf.Deg2Rad));
             _eye = new Vector3(_pos.x, _floorY + eh - bob, _pos.y) + right3 * side;
             // Back in the seat: hold the stand button within reach of it.

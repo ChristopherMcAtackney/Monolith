@@ -79,6 +79,21 @@ namespace Monolith.Game
             var mc = _world.Combat.Get(me.Id);
             mc.Invulnerable = true;
 
+            // Inverted flight is the default (controls.json invert.flight): the aim stick pushed forward points the nose down, pulled back brings it up.
+            {
+                float y0 = me.Forward.y;
+                InputSystem.QueueStateEvent(pad, new GamepadState { rightStick = new Vector2(0f, 1f) });
+                yield return new WaitForSeconds(0.4f);
+                float y1 = me.Forward.y;
+                InputSystem.QueueStateEvent(pad, new GamepadState { rightStick = new Vector2(0f, -1f) });
+                yield return new WaitForSeconds(0.9f);
+                float y2 = me.Forward.y;
+                InputSystem.QueueStateEvent(pad, new GamepadState());
+                yield return new WaitForSeconds(0.4f);
+                Check(y1 < y0 - 0.03f, $"the aim stick pushed forward points the nose down, the inverted default (nose height {y0:0.00} to {y1:0.00})");
+                Check(y2 > y1 + 0.03f, $"... and pulled back brings the nose up ({y1:0.00} to {y2:0.00})");
+            }
+
             yield return Tap(pad, GamepadButton.South);
             Check(Saw(ControlButtons.TargetNext) && me.Target != GameWorld.NoShip && _world.Ships.Get(me.Target).Team != 0, "A targets the next hostile");
 

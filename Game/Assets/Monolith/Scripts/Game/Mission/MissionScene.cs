@@ -52,6 +52,8 @@ namespace Monolith.Game
         MissionFile _file;
         string _error;
         bool _paused, _briefing, _keepLod0;
+        ControlsConfig _controls;                 // the player's controls (null when the AI flies); the pause screen flips its invert switches
+        string _controlsSource;
         int _nextLevel, _runs;
         string _pacingLog;
 
@@ -108,10 +110,12 @@ namespace Monolith.Game
             // The cabin is on in every played mission (a pad, or a scripted cabin in a capture plan); the AI-flown runs leave it out unless the plan asks.
             self._cabinOpts = opts?["cabin"] as JObject;
             self._cabinOn = !CommandLine.Has("-mnNoCabin") && !(opts?["cabin"] != null && opts["cabin"].Type == JTokenType.Boolean && !(bool)opts["cabin"]) && (!autopilot || self._cabinOpts != null);
+            if (!autopilot && self._file != null) self._controls = ControlsConfig.Load(out self._controlsSource);      // before the mission starts: the cabin's pad input reads its invert switch
             if (self._file != null) self.StartMission();
             if (!autopilot && self._file != null)
             {
-                var controls = ControlsConfig.Load(out string source);
+                var controls = self._controls;
+                string source = self._controlsSource;
                 self._pad = new PlayerPilot(world, world.LocalPlayerShip, controls);
                 world.Pilots.Attach(world.LocalPlayerShip, self.WrapPilot());
                 MnLog.Info($"MISSION controls from {source}; {PlayerPilot.Devices()}");
@@ -180,7 +184,7 @@ namespace Monolith.Game
             {
                 var cfg = CabinConfig.Load(out string source);
                 var layout = CabinLayout.Load();
-                ICabinInput input = _cabinOpts?["script"] is JArray steps ? new ScriptedCabinInput(steps) : (ICabinInput)new PadCabinInput(cfg);
+                ICabinInput input = _cabinOpts?["script"] is JArray steps ? new ScriptedCabinInput(steps) : (ICabinInput)new PadCabinInput(cfg, _controls);
                 _cabin = new CabinSystem(_world, layout, cfg, input, _host, _file);
                 _world.Sim.Register(_cabin);
                 _cabinRig = CabinRig.Create(_world, _cabin, _world.MainCamera, transform);
@@ -247,6 +251,14 @@ namespace Monolith.Game
             {
                 if (pad != null && pad.dpad.left.wasPressedThisFrame || kb != null && kb.leftBracketKey.wasPressedThisFrame) _nextLevel = Mathf.Max(0, _nextLevel - 1);
                 if (pad != null && pad.dpad.right.wasPressedThisFrame || kb != null && kb.rightBracketKey.wasPressedThisFrame) _nextLevel = Mathf.Min(_ai.Data.Difficulty.Count - 1, _nextLevel + 1);
+                if (_controls != null)
+                {
+                    bool flipFlight = pad != null && pad.leftShoulder.wasPressedThisFrame || kb != null && kb.iKey.wasPressedThisFrame;
+                    bool flipLook = pad != null && pad.rightShoulder.wasPressedThisFrame || kb != null && kb.oKey.wasPressedThisFrame;
+                    if (flipFlight) _controls.invert.flight = !_controls.invert.flight;
+                    if (flipLook) _controls.invert.cabinLook = !_controls.invert.cabinLook;
+                    if (flipFlight || flipLook) { bool saved = _controls.SaveInvert(); MnLog.Info($"CONTROLS invert: flight {_controls.invert.flight}, cabin look {_controls.invert.cabinLook}" + (saved ? " (saved to " + _controls.SourcePath + ")" : " (this run only)")); }
+                }
                 _flightHud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { SetPaused(false); Restart(); }
@@ -301,6 +313,7 @@ namespace Monolith.Game
                 "PAUSED",
                 "START RESUME      Y FLY AGAIN      B QUIT",
                 $"D-PAD LEFT/RIGHT  DIFFICULTY {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "  (NEXT RUN)" : ""),
+                _controls != null ? $"LB FLIGHT PITCH {(_controls.invert.flight ? "INVERTED" : "NORMAL")}      RB CABIN LOOK {(_controls.invert.cabinLook ? "INVERTED" : "NORMAL")}      (I AND O ON THE KEYBOARD)" : "",
                 "",
             };
             var board = _world.Mission;

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using Monolith.Core;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -21,6 +22,23 @@ namespace Monolith.Input
         public string about;
         public PadConfig pad = new PadConfig();
         public KeyboardConfig keyboard = new KeyboardConfig();
+        public InvertConfig invert = new InvertConfig();
+
+        /// <summary>The file these came from (null for the built-in controls), so the pause screen can write the invert switches back.</summary>
+        [JsonIgnore] public string SourcePath;
+
+        /// <summary>
+        /// Inverted look, the flight-sim way (the user's default, 2026-10-24): push the stick up or forward and the nose (or the cabin view) goes DOWN; pull back and it goes UP.
+        /// One switch for flying and one for looking round the cabin; the pause screen flips them.
+        /// </summary>
+        public sealed class InvertConfig
+        {
+            /// <summary>Flying: the aim stick's up/down and the keyboard's pitch keys (W is the stick pushed forward, so W is nose down).</summary>
+            public bool flight = true;
+            /// <summary>The cabin: the right stick's up/down and the arrow keys' up/down while walking round.</summary>
+            public bool cabinLook = true;
+            public string why;
+        }
 
         public sealed class StickShape
         {
@@ -29,7 +47,6 @@ namespace Monolith.Input
             public float deadZone = 0.1f;
             public float outerDeadZone = 0.04f;
             public float exponent = 1f;
-            public bool pushForwardIsNoseDown = true;
             public bool rightIsRollRight = true;
             public float ratePerSecond = 0.8f;
             public string why;
@@ -87,13 +104,34 @@ namespace Monolith.Input
                 if (File.Exists(path))
                 {
                     source = Path.GetFullPath(path);
-                    return Parse(File.ReadAllText(path), source);
+                    var fromFile = Parse(File.ReadAllText(path), source);
+                    fromFile.SourcePath = source;
+                    return fromFile;
                 }
                 MnLog.Warn($"controls file '{path}' not found; using the built-in controls");
             }
             var asset = Resources.Load<TextAsset>(ResourcePath) ?? throw new FileNotFoundException($"Resources/{ResourcePath}.json is missing");
             source = $"Resources/{ResourcePath}.json";
             return Parse(asset.text, source);
+        }
+
+        /// <summary>Write the two invert switches back into the file the controls came from (only the two values in the "invert" block change). False when there is no file to write to.</summary>
+        public bool SaveInvert()
+        {
+            if (string.IsNullOrEmpty(SourcePath) || !File.Exists(SourcePath)) return false;
+            try
+            {
+                string text = File.ReadAllText(SourcePath);
+                int at = text.IndexOf("\"invert\"", StringComparison.Ordinal);
+                int end = at < 0 ? -1 : text.IndexOf('}', at);
+                if (end < 0) return false;
+                string block = text.Substring(at, end - at);
+                block = Regex.Replace(block, @"""flight""\s*:\s*(true|false)", "\"flight\": " + (invert.flight ? "true" : "false"));
+                block = Regex.Replace(block, @"""cabinLook""\s*:\s*(true|false)", "\"cabinLook\": " + (invert.cabinLook ? "true" : "false"));
+                File.WriteAllText(SourcePath, text.Substring(0, at) + block + text.Substring(end));
+                return true;
+            }
+            catch (Exception e) { MnLog.Warn("CONTROLS could not save the invert switches: " + e.Message); return false; }
         }
 
         public static ControlsConfig Parse(string json, string where)

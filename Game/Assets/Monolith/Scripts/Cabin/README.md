@@ -15,14 +15,15 @@ mission gets `CabinStub` instead (`Scripts/Mission/MissionHost.cs`), so headless
 | The seat | hold View to stand (half a second, so a stray press does nothing), hold it again at the seat to sit | the view rises 1.7 s, the HUD collapses toward the bottom of the screen into the displays; the eye opens slowly to the dim cabin |
 | The main breaker (starboard, chest high) | one press: the lever slides down in 1.5 s, the HUD dies, the cabin goes black but for the red emergency strips; again to restore (2.4 s, the displays come back one by one) | `powered` is false while it is off; the ship drifts on its last heading and speed |
 | Dark, a scan crossing | the sweep's light crawls through the canopy for about 3.4 s, swinging 75 degrees, with a hull creak four seconds before and breathing | a **powered** ship in range is found; a dark one is missed, unless it went dark less than 5 s ago (still warm) |
-| A repair panel (aft starboard "engine", port "arms") | hold the button: the hatch opens, the module lies crooked in its socket, the hands press it home in 5 s while it glows; a hit makes the hands slip; let go and the progress decays slowly | any destroyed player part needs a hand repair; it comes back at 25 percent health and the living tech mends the rest |
+| A repair panel (aft starboard "engine", port "arms") | hold the button: the hatch opens, the module lies crooked in its socket, the module presses itself home in 5 s while it glows; a hit makes the repair slip; let go and the progress decays slowly | any destroyed player part needs a hand repair; it comes back at 25 percent health and the living tech mends the rest |
 | The weapon rack (port wall) | press at a bay: two gun bays and two missile bays, the module is pulled out and the next type is seated (1.1 s) | feeds the loadout (`Loadout`): the ship's fast and heavy gun slots and its two missile types; locked after launch |
 | The plan table | press to turn pages, B to step away | briefing and debrief pages, and the retro blip map of the same battle the seat's map shows (double-tap View seated) |
 
-The pilot's **hands** are two procedural, segmented arms with two-bone IK (`CabinHands`): human but noticeably changed (fingers about a sixth
-longer and a narrower palm, ashen skin with a cold cast and darker banding, short dark horn nails, ridged tendons on the backs of the hands), five fingers
-and a hand you could shake, in worn olive sleeves with a cuff strap. They rest low and apart, reach to the breaker lever and ride it down, grip a rack
-module and haul it out, press a panel's module home and tap the table.
+**There are no hands.** The pilot is a camera: nothing of the body is drawn (user, 2026-10-24: "unnecessary and awful looking"). Every interaction shows on the cabin itself, which animates on its own: the
+lever swings down, the hatch opens and the module seats itself, the rack bay slides out, the table turns its page. No arms, no reach poses, no IK, and the pilot no longer ducks to a low panel.
+
+**Looking round is inverted by default** (user, 2026-10-24): push the right stick up (or press the up arrow) and the view goes down; pull back and it looks up. `controls.json` `invert.cabinLook` (and `invert.flight` for flying)
+turns it round; the pause screen flips both (LB flight, RB cabin look, or I and O) and saves them back to the controls file.
 
 ## Parts
 
@@ -34,8 +35,8 @@ module and haul it out, press a panel's module home and tap the table.
 | `CabinConfig` | `Resources/Cabin/cabin.json`: every number (walk speed, eye heights, timings, exposure per light state, light units, scan, rack, controls). A playtest build reads `cabin.json` next to `Play.bat` first (`-mnCabin <file>`) |
 | `CabinPilot` | wraps the player's pilot source: standing or dark, it holds heading and the current speed |
 | `CabinInput` | `PadCabinInput` (pad and keyboard, from `cabin.json`'s `controls`) and `ScriptedCabinInput` (a JSON script: `stand`, `sit`, `walk` (`to`, `via`), `face` (`at`, `yaw`, `pitch`), `press`, `use`, `back`, `map`, `launch`, `wait`, each with an optional `t` start time) for captures and checks |
-| `CabinRig` | the MonoBehaviour that presents it: builds the prefab, the lights, the displays and the hands, follows the ship, drives the moving parts (lever, panel doors and modules, rack modules) and the emissives |
-| `CabinLights`, `CabinDisplays`, `CabinOverlay`, `BlipMap`, `CabinHands`, `Loadout` | the lights, the display render textures (drawn with `HudLines` and `MN_Lines`), the prompts, the table's map, the hands, the rack's choice |
+| `CabinRig` | the MonoBehaviour that presents it: builds the prefab, the lights and the displays, follows the ship, drives the moving parts (lever, panel doors and modules, rack modules) and the emissives |
+| `CabinLights`, `CabinDisplays`, `CabinOverlay`, `BlipMap`, `Loadout` | the lights, the display render textures (drawn with `HudLines` and `MN_Lines`), the prompts, the table's map, the rack's choice |
 
 `Game/Cabin/CabinSelfTest.cs` is `-mnCabinSelfTest` (below). `Game/Mission/MissionScene.cs` builds the cabin (`MakeCabin`), wraps the pilot,
 holds the sim while a mission starts at the plan table, and passes the cabin to `MissionRuntime` as its `ICabin`.
@@ -67,14 +68,14 @@ A mission file's optional `cabin` block (`MissionFile.CabinDef`): `"start": "tab
 
 ## Checks
 
-- `Monolith.exe -batchmode -nographics -mnCabinSelfTest`: 73 checks. The plan and the prefab (every display, grip and moving part the code binds
-  is in the model, every renderer is on the cabin layer), the hands, the pad and keyboard mapping through virtual devices, seated and standing control (the ship holds heading and speed, nobody fires,
+- `Monolith.exe -batchmode -nographics -mnCabinSelfTest`: 73 checks. The plan and the prefab (every display and moving part the code binds
+  is in the model, every renderer is on the cabin layer), no hand model in the build, the pad and keyboard mapping through virtual devices (the look inverted by default, and not when the switch is off), seated and standing control (the ship holds heading and speed, nobody fires,
   the HUD collapses, the eye opens), walking (every stand point reachable, never off the floor), the breaker, each scan outcome, the hand repair
   (hold, decay, slip, completion at 25 percent health), the rack feeding the loadout, the plan table, and the whole test mission played with the
   real cabin and a scripted pilot (dark when swept and missed, hit, repaired, back in the seat; if the drones break the engine again the pilot
   repairs it again).
 - `tools\mission.ps1` auto-plays every mission with the stub (the cabin mission included), unchanged.
-- Captures: `gauntlet\shots\cabin_r1_*.json` (`sceneOptions.cabin`: `script`, `prelaunch`), `-mnHandsShowcase` (the hands held up before the eye).
+- Captures: `gauntlet\shots\cabin_r1_*.json` (`sceneOptions.cabin`: `script`, `prelaunch`).
   Perf: add `-mnPerfSync` (see `tools/PIPELINE.md`).
 
-Flags: `-mnCabin <cabin.json>`, `-mnNoCabin`, `-mnCabinSelfTest`, `-mnHandsShowcase`, `-mnCabinNoDisplays` and `-mnCabinNoShadows` (diagnostics for the frame cost).
+Flags: `-mnCabin <cabin.json>`, `-mnNoCabin`, `-mnCabinSelfTest`, `-mnCabinNoDisplays` and `-mnCabinNoShadows` (diagnostics for the frame cost).

@@ -332,42 +332,6 @@ def make_glyph(w=2048, h=128, seed=171):
     return L
 
 
-def make_skin(size=1024, seed=201):
-    """The pilot's skin, a 20 cm tile (0.2 mm a pixel): ashen, with a cold violet cast where the blood runs near the surface and a darker banding across the knuckles' direction,
-    fine pores and creases, a few paler flecks. Human but not baseline: nothing here is a tan."""
-    rng = rngf(seed)
-    s = size / 1024.0
-    L = Layers(size, size, albedo=(0.47, 0.405, 0.405), metal=0.0, smooth=0.42, ao=1.0)
-    n1 = spectral_noise(size, size, rng, beta=2.6, fmin=1, fmax=10)
-    n2 = spectral_noise(size, size, rng, beta=1.8, fmin=6, fmax=60)
-    band = np.sin(2 * math.pi * (np.arange(size)[None, :] / size * 5.0 + 0.6 * n1)) * 0.5 + 0.5
-    L.alb *= (1.0 + 0.07 * n1 + 0.04 * n2 - 0.07 * band)[:, :, None]
-    L.alb += (0.03 * smoothstep(0.2, 1.4, n2))[:, :, None] * np.array([0.5, 0.2, 0.9], np.float32)
-    veins = np.clip(1.0 - np.abs(spectral_noise(size, size, rng, beta=2.3, fmin=3, fmax=30)) * 2.4, 0, 1) ** 3
-    L.alb = L.alb * (1 - 0.18 * veins[:, :, None]) + 0.18 * veins[:, :, None] * np.array([0.25, 0.22, 0.32], np.float32)
-    L.hgt += 0.8 * spectral_noise(size, size, rng, beta=1.0, fmin=120)
-    # pores: tiny dark dimples; creases: short fine lines mostly across the tile
-    for _ in range(int(2600 * s * s)):
-        soft_dot(L, rng.uniform(0, size), rng.uniform(0, size), rng.uniform(0.8, 1.7) * s, rng.uniform(0.8, 1.7) * s, rng.uniform(0.3, 0.7), rng, albedo=(0.30, 0.24, 0.25), height_add=-1.0, ao=0.7)
-    for _ in range(int(140 * s * s)):
-        a = rng.normal(0, 0.25)
-        ln = rng.uniform(40, 160) * s
-        x0, y0 = rng.uniform(0, size), rng.uniform(0, size)
-        draw_segment(L, (x0, y0), (x0 + math.cos(a) * ln, y0 + math.sin(a) * ln), rng.uniform(1.2, 2.4) * s, k=0.4, albedo=(0.30, 0.25, 0.26), height_add=-1.4 * s, ao_mul=0.8)
-    L.smo += 0.05 * n2
-    L.alb = np.clip(L.alb, 0, 1)
-    return L
-
-
-def make_nail(size=256, seed=211):
-    rng = rngf(seed)
-    L = Layers(size, size, albedo=(0.085, 0.07, 0.065), metal=0.0, smooth=0.70, ao=1.0)
-    ridge = np.abs(np.sin(np.arange(size)[None, :] * math.pi / 14.0)) ** 0.7
-    L.hgt += 1.2 * ridge
-    L.tint_noise(spectral_noise(size, size, rng, beta=2.0, fmin=2, fmax=16), 0.2)
-    return L
-
-
 def make_screen_blank(size=4):
     L = Layers(size, size, albedo=(0, 0, 0), metal=0.0, smooth=0.8)
     return L
@@ -606,8 +570,6 @@ def write_materials():
         m("mn_cab_fabric", "MN_CabFabric", baseColor=[1, 1, 1], **tex("cab_fabric"), normalScale=1.0, smoothnessRemap=[0, 0.5], specularAA=True),
         m("mn_cab_glass", "MN_CabGlass", surface="glass", baseColor=[0.55, 0.62, 0.66], alpha=0.07, metallic=0.0, smoothness=0.97, doubleSided=True),
         m("mn_cab_screen", "MN_CabScreen", baseColor=[0.0, 0.0, 0.0], metallic=0.0, smoothness=0.85, emissiveMap="cab_screen_emissive", emissiveColor=[1, 1, 1], emissiveNits=900),
-        m("mn_cab_skin", "MN_CabSkin", baseColor=[1, 1, 1], **tex("cab_skin"), normalScale=0.8, smoothnessRemap=[0, 0.7]),
-        m("mn_cab_nail", "MN_CabNail", baseColor=[1, 1, 1], **tex("cab_nail"), normalScale=1.0, smoothnessRemap=[0, 0.9]),
         m("mn_cab_glyph", "MN_CabGlyph", baseColor=[1, 1, 1], **tex("cab_glyph"), emissiveMap="cab_glyph_emissive", emissiveColor=[1, 1, 1], emissiveNits=700, normalScale=1.0, smoothnessRemap=[0, 0.8]),
         m("mn_cab_tissue", "MN_CabTissue", baseColor=[1, 1, 1], **tex("cab_tissue"), normalScale=1.0, smoothnessRemap=[0, 0.97]),
         m("mn_cab_lamp_white", "MN_CabLampWhite", baseColor=[0.02, 0.02, 0.02], metallic=0.0, smoothness=0.9, emissiveColor=[0.95, 0.97, 1.0], emissiveNits=2500),
@@ -641,10 +603,6 @@ def main():
         L = make_tissue(); save("cab_tissue", L.finish(1.0))
     if want("glyph"):
         L = make_glyph(); save("cab_glyph", L.finish(0.5))
-    if want("skin"):
-        L = make_skin(); save("cab_skin", L.finish(1.0))
-    if want("nail"):
-        L = make_nail(); save("cab_nail", L.finish(1.0))
     if want("screen"):
         L = make_screen_blank(); save("cab_screen", L.finish(1.0), keys=("emissive",))
         mntex.write_png(os.path.join(OUT, "cab_screen_emissive.png"), np.zeros((4, 4, 3), np.uint8))

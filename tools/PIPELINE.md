@@ -112,14 +112,14 @@ log and pacing; exit 0 on pass), `-mnDogfightPortCheck seconds -mnOut dir` (the 
 ship's state compared to the bit once a second). `tools\mission.ps1 -Out dir` runs the self-test and every mission's auto-play. The format,
 every condition and action: `Scripts/Mission/README.md`.
 
-Cabin: the pilot as a person in the ship (`Scripts/Cabin/README.md`), on in every played mission. `-mnCabinSelfTest` (73 checks: the plan and prefab, the hands, the pad and keyboard through virtual devices, standing and
+Cabin: the pilot as a person in the ship (`Scripts/Cabin/README.md`), on in every played mission. `-mnCabinSelfTest` (73 checks: the plan and prefab, the pad and keyboard through virtual devices (look inverted by default), standing and
 sitting, walking, the breaker, scans, the hand repair, the rack, the plan table, and `cabin.mission.json` played with the real cabin and a scripted pilot) from `Monolith.exe -batchmode -nographics`.
 Flags: `-mnNoCabin` (the mission gets the stub), `-mnCabin <file>` (a `cabin.json` to read instead of the built-in: a playtest build reads the one next to `Play.bat`),
-`-mnHandsShowcase` (the hands held up before the eye, for looking at them), `-mnCabinNoDisplays` and `-mnCabinNoShadows` (leave those out, to see what a frame loses).
+`-mnCabinNoDisplays` and `-mnCabinNoShadows` (leave those out, to see what a frame loses).
 A mission plan takes `sceneOptions.cabin`: `{ "prelaunch": true, "script": [ ... ] }` where `prelaunch` starts at the plan table with the sim held, and the script is a list of steps
 (`stand`, `sit`, `walk` with `to` (an interactable id or `[x, z]`) and optional `via` points, `face` with `at` or `yaw` / `pitch`, `press`, `use` with `seconds`, `back`, `map`, `launch`,
 `wait` with `seconds`), each with an optional `t` (do not start before that many seconds); `"cabin": false` leaves the cabin out. A `follow` still then shows the cabin's own camera.
-Plans: `gauntlet/shots/cabin_r1_*.json` (the stand and sit, the whole mission walk-through, the seated HUD, the perf runs), `cabin_hands.json`, `cabin_bench_table.json`.
+Plans: `gauntlet/shots/cabin_r1_*.json` (the stand and sit, the whole mission walk-through, the seated HUD, the perf runs), `cabin_bench_table.json`.
 
 Perf on a machine whose desktop session is disconnected (remote, locked, or a console session closed): the window's frames are never rendered or presented, so the plain frame
 time is only the CPU's submit time and the GPU timer reads nonsense (a hundredth of a millisecond). `-mnPerfSync` (a player flag; `-PlayerArgs "-mnPerfSync"` on `capture.ps1`)

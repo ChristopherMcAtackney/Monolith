@@ -71,7 +71,7 @@ namespace Monolith.Input
             if (pad != null)
             {
                 var aim = StickShaping.Radial(Stick(pad, p.aim.stick), p.aim.deadZone, p.aim.outerDeadZone, p.aim.exponent);
-                pitchUp += p.aim.pushForwardIsNoseDown ? -aim.y : aim.y;
+                pitchUp += _cfg.invert.flight ? -aim.y : aim.y;      // inverted (the default): stick forward is nose down
                 yaw += aim.x;
                 float r = StickShaping.Axial(Axis(pad, p.roll.control), p.roll.deadZone, p.roll.outerDeadZone, p.roll.exponent);
                 roll += p.roll.rightIsRollRight ? r : -r;
@@ -129,7 +129,7 @@ namespace Monolith.Input
 
             if (kb != null)
             {
-                pitchUp += Key(kb, k.pitchUp) - Key(kb, k.pitchDown);
+                { float kp = Key(kb, k.pitchUp) - Key(kb, k.pitchDown); pitchUp += _cfg.invert.flight ? kp : -kp; }      // W is "stick forward": nose down when inverted
                 yaw += Key(kb, k.yawRight) - Key(kb, k.yawLeft);
                 roll += Key(kb, k.rollRight) - Key(kb, k.rollLeft);
                 throttleRate += (Key(kb, k.throttleUp) - Key(kb, k.throttleDown)) * k.throttleRatePerSecond;

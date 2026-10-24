@@ -9,7 +9,7 @@ namespace Monolith.Cabin
 {
     /// <summary>
     /// The cabin's body in the scene: the Blender model (Resources/Cabin/cabin.prefab) riding the player's ship at its interpolated pose, shown only while the pilot is up
-    /// (seated, the view is open space with at most the canopy frame at its edges), with its lights, displays, the pilot's hands and the parts that move: the breaker's lever,
+    /// (seated, the view is open space with at most the canopy frame at its edges), with its lights, displays and the parts that move (they animate on their own: the pilot has no hands in the view): the breaker's lever,
     /// the repair panels' hatches and modules, the rack's modules. The pilot's pose is the <see cref="CabinSystem"/>'s (published on the board; the cockpit view puts the
     /// camera there). Before launch the sim is held, and the rig steps the cabin on its own clock so the pilot can walk and work.
     /// </summary>
@@ -25,7 +25,6 @@ namespace Monolith.Cabin
         readonly List<Renderer> _interior = new List<Renderer>(), _frame = new List<Renderer>(), _glass = new List<Renderer>();
         CabinLights _lights;
         CabinDisplays _displays;
-        CabinHands _hands;
         float _manualNow;
         bool _built;
         string _lightState = "normal";
@@ -50,7 +49,6 @@ namespace Monolith.Cabin
 
         public CabinSystem System => _cab;
         public Transform Root => _root;
-        public CabinHands Hands => _hands;
 
         public static CabinRig Create(GameWorld world, CabinSystem cab, Camera cam, Transform parent)
         {
@@ -79,7 +77,6 @@ namespace Monolith.Cabin
             _lights = new CabinLights(_root, _cab.Layout, _cab.Cfg);
             var shader = Resources.Load<Shader>(FlightHud.ShaderPath) ?? throw new FileNotFoundException($"Resources/{FlightHud.ShaderPath}.shader is missing");
             _displays = new CabinDisplays(_world, _cab, _root, shader);
-            _hands = CabinHands.Create(_cab, _root, cam);
             CabinOverlay.Create(_world, _cab, cam, transform);
             foreach (var id in new[] { "engine", "arms" })
             {
@@ -153,7 +150,6 @@ namespace Monolith.Cabin
             if (!NoDisplays) _displays.Update(now, lit, show || b.MapOpen);
 
             Animate(dt);
-            _hands.Tick(dt, show);
         }
 
         void SetInteriorVisible(bool show)
