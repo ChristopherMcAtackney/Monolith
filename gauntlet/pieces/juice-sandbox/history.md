@@ -147,6 +147,7 @@ nobody has heard the sounds, and the pad rumble has not been felt.
 ### How to run
 - Sandbox: `Playtest\Monolith_2026-10-24_juice\Play.bat` (`JUICE.txt` there explains the panel), or `-mnScene juice`.
 - Captures: `tools\capture.ps1 -Plan gauntlet\shots\juice_sandbox.json -Out ...`; the other plans `juice_capital_clip.json`,
-  `juice_shake_clip.json`, `juice_perf.json` come from `gauntlet\shots\specs\*.json` with `python tools\juice\make_plan.py spec plan`.
+  `juice_shake_clip.json` (generated, 394 and 100 stills, so not committed) and `juice_perf.json` come from `gauntlet\shots\specs\*.json` with
+  `python tools\juice\make_plan.py spec plan`.
 - Checks (player flags): `-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`,
   `-mnShakeLog file.csv`, `-mnJuiceHitchLog`, `-mnAudioMute` (run the sound paths silently).
