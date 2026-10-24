@@ -438,7 +438,9 @@ namespace Monolith.Game
                     if (ev != null && ev.FirstFiredAt >= 0f && lab.W.Time - rt.StartTime > ev.FirstFiredAt - rt.StartTime + 8f && lab.W.Time - rt.StartTime < ev.FirstFiredAt - rt.StartTime + 9f) wasDarkWhenSwept = !cab.Powered;
                     if (cab.Action == CabinSystem.Act.Repair) sawRepair = true;
                     if (sawRepair && !cab.NeedsRepair(me, null)) repaired = true;
-                    if (rt.Ended && lab.W.Time > rt.EndedAt + 2f) break;
+                    // The scripted pilot has to be back in the seat before the run is read: how long the dogfight lasts depends on how the ships fly
+                    // (a faster player ship ends it sooner), so the mission can end with the pilot still on the way back from the panel.
+                    if (rt.Ended && lab.W.Time > rt.EndedAt + 2f && cab.State == CabinBoard.Phase.Seated) break;
                 }
                 var enginePart = c.FindPart("engine_port");
                 Check(rt.Ended && rt.Result == "victory", $"the mission plays through with the real cabin and a scripted pilot: {rt.Result} \"{rt.ResultText}\" at {rt.EndedAt - rt.StartTime:0} s (needs repair: {cab.NeedsRepair(me, null)}, engine port destroyed: {enginePart != null && enginePart.Destroyed}, state {cab.State})");
