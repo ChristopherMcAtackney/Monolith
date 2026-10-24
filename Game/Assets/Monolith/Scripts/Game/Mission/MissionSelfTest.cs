@@ -186,6 +186,30 @@ namespace Monolith.Game
                         Check(free, "beams frees the Mercy's beams (FS2's beam-free)");
                     },
                     [Tick(28f)] = () => GameEvents.RaiseAt(CombatEvents.BeamCharge, lab.W.Ships.Get(Id("Warden")).Position, Vector3.forward, "beam_slash", 3f, Id("Warden"), Id("Mercy")),
+                    [Tick(1f)] = () =>
+                    {
+                        bool held = false; foreach (var cp in lab.Ai.CapitalPilots) if (cp.Ship == Id("Warden")) held = cp.Orders.HoldTurrets;
+                        Check(held, "a capital can start with its turrets held (holdTurrets)");
+                        Check(file.Scenery.Rocks.Count == 1 && file.Scenery.Fields.Count == 1 && file.Scenery.Fields[0].Clear.Count == 1, "scenery is read: single rocks and fields (drawn only, by the scene)");
+                    },
+                    [Tick(30.5f)] = () =>
+                    {
+                        bool held = true; foreach (var cp in lab.Ai.CapitalPilots) if (cp.Ship == Id("Warden")) held = cp.Orders.HoldTurrets;
+                        Check(!held, "turrets: the Warden's guns wake up on the mission's word");
+                    },
+                    [Tick(31.5f)] = () =>
+                    {
+                        var ar = lab.W.Ships.Get(Id("Archon")); var ac = lab.W.Combat.Get(Id("Archon"));
+                        var hg = ac.FirstPart("hangar"); var l1 = lab.W.Ships.Get(Id("Launch 1"));
+                        float d = l1 != null ? Vector3.Distance(l1.Position, hg.WorldPosition(ar)) : -1f;
+                        Check(l1 != null && rt.RecOf("Launch 2").Present && d > 0f && d < 120f, $"a bay arrival comes out of the ship's hangar part (Launch 1 {F(d)} m from the Archon's hangar)");
+                        host.DestroyPart(ac.Id, hg.Index);
+                    },
+                    [Tick(33.5f)] = () =>
+                    {
+                        var w2 = lab.Ai.PilotOf(Id("Sable 2")); var wc = lab.W.Combat.Get(Id("Warden"));
+                        Check(w2.Goal.Kind == GoalKind.Attack && w2.Goal.Target == wc.Id && w2.Goal.Part == wc.FirstPart("flak").Index, $"an order by part kind attacks the target's first living part of that kind (part {w2.Goal.Part}, {wc.Parts[w2.Goal.Part].Name})");
+                    },
                 };
 
                 int steps = Tick(50f);
@@ -213,15 +237,21 @@ namespace Monolith.Game
                 Check(Near(At("objective done"), 15f) && rt.ObjectiveState("choir") == MissionBoard.State.Done, $"an objective completes on its condition and another event reads it: 15 s ({F(At("objective done"))})");
                 Check(Near(At("kill choir"), 15f) && Near(At("choir 3 dead"), 18f), "wing destroyed at 15 s; a wing member destroyed with a delay of 3 s at 18 s");
                 Check(Near(At("spotted"), 18f) && rt.ObjectiveState("spotted") == MissionBoard.State.Done && !rt.Board.Objectives[2].Hidden, "a scan sweep detects the powered player when it ends (cabin stub); the hidden bonus shows once met");
+                var darkStub = new CabinStub { GoesDark = true };
+                darkStub.StartScan(1, 5f, 1000f, 0f);
+                Check(!darkStub.Powered, "a stub that goes dark (auto-play's -mnGoDark) has its power off while a sweep runs");
                 Check(Near(At("needs repair"), 17f) && Near(At("repaired"), 20f), $"needs a hand repair at 17 s, repaired at 20 s ({F(At("needs repair"))}, {F(At("repaired"))})");
                 Check(Near(At("cabin flags"), 0f), "seated and powered (the stub's defaults)");
                 bool right = rt.Log.Entries.Exists(e => e.Text == "right branch"), wrong = rt.Log.Entries.Exists(e => e.Text == "wrong branch" || e.Text == "else branch");
                 Check(right && !wrong, "cond runs the first case that holds");
                 Check(Near(At("relay 2 in"), 24f) && rt.RecOf("Relay 4").Present, $"wing waves: the second wave comes 2 s after the first is gone, as Relay 3 and 4 ({F(At("relay 2 in"))})");
                 Check(Near(At("late gone"), 27f) && lab.W.Ships.Get(Id("Late")) == null, $"depart: flies out, jumps after 2 s, leaves the world ({F(At("late gone"))})");
+                Check(Near(At("reserve gone"), 36f) && Id("Reserve 1") == GameWorld.NoShip && Id("Reserve 2") == GameWorld.NoShip && rt.Log.Entries.Exists(e => e.Kind == "stood down") && !rt.HasArrived("Reserve 1") && At("reserve here") < 0f,
+                      $"a wing ordered out before it arrives never comes: it reads as departed, never as arrived ({F(At("reserve gone"))})");
+                Check(Near(At("launch2 gone"), 34f) && Id("Launch2 1") == GameWorld.NoShip && rt.Log.Entries.Exists(e => e.Kind == "scrubbed"), $"a ship whose hangar is destroyed launches nothing: the wing is scrubbed and counts as destroyed ({F(At("launch2 gone"))})");
                 Check(At("departed hull") < 0f, "a ship that jumped out reads as neither hurt nor destroyed (hull and subsystem conditions stay false)");
                 Check(At("runner gone") > 25f && lab.W.Ships.Get(Id("Runner")) == null, $"waypoints then depart: the Runner flies its leg and jumps ({F(At("runner gone"))} s)");
-                Check(Near(At("earth count"), 5f), $"teamAlive: Earth reaches 3 ships when Choir comes in ({F(At("earth count"))})");
+                Check(Near(At("earth count"), 5f), $"teamAlive: Earth reaches 4 ships (the Warden, the Archon, two of Choir) when Choir comes in ({F(At("earth count"))})");
                 Check(Near(At("hostiles near"), 0f) && Near(At("easy or harder"), 0f) && Near(At("no autopilot"), 0f), "hostilesNear, difficultyAtLeast and autopilot read the world, the level and the pilot");
                 Check(Near(At("warden beaming"), 28f), $"beaming: the Warden charging a beam ({F(At("warden beaming"))})");
                 Check(rt.Ended && rt.Result == "victory" && rt.ResultText == "TEST OVER" && Near(rt.EndedAt, 45f) && ends == 1 && At("after the end") < 0f, "end: victory at 45 s, mission_end raised once, nothing fires after it");
@@ -259,7 +289,13 @@ namespace Monolith.Game
         {
             // A line with no recording plays as a squelch: the playtester hears clicks and no voice. A mission written without voicing its lines fails here.
             var gaps = VoiceCoverage.Unvoiced(out int lines);
-            Check(gaps.Count == 0, $"every radio line of every built-in mission has a recording ({lines} speaker and line pairs)" + (gaps.Count > 0 ? ": " + string.Join(" | ", gaps.GetRange(0, Math.Min(6, gaps.Count))) + " -> " + VoiceCoverage.Fix : ""));
+            int pending = VoiceCoverage.Pending;
+            const string control = "{ \"linesPending\": false, \"messages\": [ { \"id\": \"p\", \"from\": \"Sable 2\", \"text\": \"A draft nobody has approved.\", \"pending\": true }, { \"id\": \"q\", \"from\": \"Sable 2\", \"text\": \"An approved line nobody has voiced.\" } ] }";
+            var withControl = VoiceCoverage.Unvoiced(out _, ("pending_control", control));
+            Check(withControl.Count == gaps.Count + 1 && VoiceCoverage.Pending == pending + 1 && withControl.Exists(g => g.Contains("nobody has voiced")),
+                  "a line marked pending is counted, not failed; an approved line with no recording still fails");
+            VoiceCoverage.Unvoiced(out _);
+            Check(gaps.Count == 0, $"every radio line of every built-in mission has a recording ({lines} speaker and line pairs; {VoiceCoverage.Pending} pending the user's approval, not voiced on purpose)" + (gaps.Count > 0 ? ": " + string.Join(" | ", gaps.GetRange(0, Math.Min(6, gaps.Count))) + " -> " + VoiceCoverage.Fix : ""));
         }
 
         // ------------------------------------------------------------------------------------------------ the dogfight's port

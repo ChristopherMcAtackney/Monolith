@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "earth_destroyer",
+  "name": "Earth destroyer (placeholder)",
+  "role": "Earth's destroyer in the Oort strike: heavy beams that charge before they fire, flak and guns, a hangar that launches its bombers. A placeholder hull from Game/PlaceholderShips (1,000 x 180 x 150 m, the mission's look) until the real model exists; when ShipArt has an earth_destroyer model, it replaces the placeholder by this class name and its parts come from the model. Flight numbers are FS2's Hecate's.",
+  "flight": {
+    "topSpeed": {
+      "value": 15,
+      "unit": "m/s",
+      "source": "FS2 ships.tbl, GTD Hecate $Max Velocity"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 ships.tbl, GTD Hecate $Rear Velocity (none)"
+    },
+    "rotationTime": {
+      "value": [
+        150,
+        150,
+        150
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "FS2 ships.tbl, GTD Hecate $Rotation time"
+    },
+    "rotDamp": {
+      "value": 1.5,
+      "unit": "s (turn-rate time constant)",
+      "source": "FS2 ships.tbl, GTD Hecate $Rotdamp"
+    },
+    "sideDamp": {
+      "value": 1.5,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "Estimate: capital ships do not slide in FS2; set equal to the turn damping"
+    },
+    "forwardAccel": {
+      "value": 20,
+      "unit": "s (speed-up time constant)",
+      "source": "FS2 ships.tbl, GTD Hecate $Forward accel"
+    },
+    "forwardDecel": {
+      "value": 10,
+      "unit": "s (slow-down time constant)",
+      "source": "FS2 ships.tbl, GTD Hecate $Forward decel"
+    },
+    "afterburner": {
+      "value": false,
+      "unit": "bool",
+      "source": "Capital ships have no afterburner"
+    },
+    "afterburnerSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "No afterburner"
+    },
+    "afterburnerAccel": {
+      "value": 0,
+      "unit": "s",
+      "source": "No afterburner"
+    },
+    "afterburnerFuel": {
+      "value": 0,
+      "unit": "fuel units",
+      "source": "No afterburner"
+    },
+    "afterburnerBurnRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "afterburnerRechargeRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "mass": {
+      "value": 600000000.0,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        180,
+        150,
+        1000
+      ],
+      "unit": "m (width, height, length)",
+      "source": "The Oort mission's placeholder hull (look.hull 1000 x 180 x 150 m); the Hecate is over two kilometres"
+    }
+  }
+}

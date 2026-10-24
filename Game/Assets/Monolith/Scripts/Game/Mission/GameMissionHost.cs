@@ -47,6 +47,14 @@ namespace Monolith.Game
 
         public void Dispose() => _rig.Reaper.Reaped -= OnReaped;
 
+        Transform _scenery;
+
+        public void Scenery(MissionFile.SceneryDef sc)
+        {
+            if (!Visual || _scenery != null || sc == null || (sc.Rocks.Count == 0 && sc.Fields.Count == 0)) return;
+            _scenery = IceRocks.Scenery(sc, _root);
+        }
+
         bool Visual => _root != null;
         public int Level => Ai.Level;
         public string LevelName => Ai.LevelName;
@@ -104,8 +112,7 @@ namespace Monolith.Game
             {
                 if (Visual)
                 {
-                    var h = s.Look != null && s.Look.HasHull ? s.Look : new MissionFile.LookDef { Length = cls.Size.z, Width = cls.Size.x, Height = cls.Size.y, Seed = s.Name.Length * 7 + 3 };
-                    var go = PlaceholderShips.Hull(s.Name, h.Length, h.Width, h.Height, h.Seed, _mats, _root);
+                    var go = PlaceholderLook(s, cls);
                     _views.Register(st.Id, go.transform);
                     _rig.Spawn(st, defId, new PlaceholderVisual(go.transform), go.transform, _juice, null, s.HullScale, s.SelfHeal);
                 }
@@ -151,13 +158,39 @@ namespace Monolith.Game
             return st.Id;
         }
 
+        /// <summary>
+        /// A big ship with no Blender model: a placeholder hull (the mission's <c>look.hull</c>, else the class's size), built into a rock of ice when
+        /// the look has one (a comet station). The class's own model, once ShipArt has it, replaces all of this without the mission changing.
+        /// </summary>
+        GameObject PlaceholderLook(ShipSpawn s, ShipClass cls)
+        {
+            var look = s.Look;
+            bool hull = look == null || look.HasHull || !look.HasRock;
+            var h = look != null && look.HasHull ? look : new MissionFile.LookDef { Length = cls.Size.z, Width = cls.Size.x, Height = cls.Size.y, Seed = s.Name.Length * 7 + 3 };
+            if (look == null || !look.HasRock)
+            {
+                var only = PlaceholderShips.Hull(s.Name, h.Length, h.Width, h.Height, h.Seed, _mats, _root);
+                if (look != null && look.HullOffset != Vector3.zero) foreach (Transform c in only.transform) c.localPosition += look.HullOffset;
+                return only;
+            }
+            var root = new GameObject(s.Name);
+            root.transform.SetParent(_root, false);
+            IceRocks.Rock(s.Name + " nucleus", look.RockRadius, look.RockStretch, look.RockSeed, root.transform);
+            if (hull)
+            {
+                var station = PlaceholderShips.Hull(s.Name + " station", h.Length, h.Width, h.Height, h.Seed, _mats, root.transform);
+                station.transform.localPosition = look.HullOffset;
+            }
+            return root;
+        }
+
         static CapitalOrders ToOrders(MissionFile.CapitalDef d)
         {
             if (d == null) return new CapitalOrders();
             return new CapitalOrders
             {
                 Standoff = d.Standoff, Band = d.Band, Bearing = d.Bearing, Throttle = d.Throttle, TurretProfile = d.TurretProfile,
-                TurretWaitScale = d.TurretWaitScale, BeamWaitScale = d.BeamWaitScale, HoldBeams = d.HoldBeams, Stationary = d.Stationary,
+                TurretWaitScale = d.TurretWaitScale, BeamWaitScale = d.BeamWaitScale, HoldBeams = d.HoldBeams, HoldTurrets = d.HoldTurrets, Stationary = d.Stationary,
                 Weapons = new Dictionary<string, string>(d.Weapons),
             };
         }
@@ -241,6 +274,11 @@ namespace Monolith.Game
         public void SetBeams(int ship, bool free)
         {
             foreach (var cp in Ai.CapitalPilots) if (cp.Ship == ship) cp.Orders.HoldBeams = !free;
+        }
+
+        public void SetTurrets(int ship, bool fire)
+        {
+            foreach (var cp in Ai.CapitalPilots) if (cp.Ship == ship) cp.Orders.HoldTurrets = !fire;
         }
 
         public void DestroyPart(int ship, int partIndex)

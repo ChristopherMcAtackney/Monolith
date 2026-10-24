@@ -31,9 +31,12 @@ if ($LASTEXITCODE -ne 0) { throw 'collect_lines.py failed' }
 
 if (-not $NoGenerate) {
     Write-Host '== 2. generating the missing clips (WSL, GPU)'
-    $wslRoot = (& wsl wslpath -a $root).Trim()
+    # wsl -e runs the program directly: a plain "wsl <command>" goes through the WSL user's shell, which eats the backslashes of a Windows path
+    # (C:\Users\x became C:Usersx and wslpath returned nothing). Forward slashes are a second guard: wslpath takes C:/Users/x as well.
+    $wslRoot = "$(& wsl -e wslpath -a ($root -replace '\\', '/'))".Trim()
+    if (-not $wslRoot) { throw "wslpath could not translate $root (is WSL installed?)" }
     $voiceArgs = @(); if ($Plan) { $voiceArgs += '--plan' }
-    & wsl bash "$wslRoot/audio_src/voice/run_voice.sh" @voiceArgs
+    & wsl -e bash "$wslRoot/audio_src/voice/run_voice.sh" @voiceArgs
     if ($LASTEXITCODE -ne 0) { throw "run_voice.sh failed ($LASTEXITCODE): see the log above; it is resumable, run this again" }
 }
 if ($Plan) { Write-Host 'plan only: nothing was made'; exit 0 }

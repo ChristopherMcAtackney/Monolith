@@ -39,6 +39,13 @@ namespace Monolith.Mission
         /// <summary>FS2's beam-free / beam-lock for a capital ship's heavy beams.</summary>
         void SetBeams(int ship, bool free);
 
+        /// <summary>A capital ship's or station's gun and flak turrets hold their fire (false) or fire at will (true).</summary>
+        void SetTurrets(int ship, bool fire);
+
+        /// <summary>Draw the mission's scenery (rocks and ice; nothing collides with it). Called when a run starts; a host draws it once however
+        /// many times the mission is flown again, and a headless host not at all.</summary>
+        void Scenery(MissionFile.SceneryDef scenery);
+
         /// <summary>Destroy one part (the cabin's knock-out), and give it back (a hand repair).</summary>
         void DestroyPart(int ship, int partIndex);
         void RestorePart(int ship, int partIndex);
@@ -115,6 +122,8 @@ namespace Monolith.Mission
         public string Lights { get; private set; } = "normal";
         public string LastPrompt { get; private set; }
         public float AutoRepairSeconds = -1f;
+        /// <summary>A player who obeys every "go dark": the power is off from the moment a sweep starts until the last one ends (auto-play's -mnGoDark).</summary>
+        public bool GoesDark;
 
         public bool DetectedBy(int ship) => ship == GameWorld.NoShip ? _detectedBy.Count > 0 : _detectedBy.Contains(ship);
 
@@ -124,7 +133,11 @@ namespace Monolith.Mission
             return false;
         }
 
-        public void StartScan(int fromShip, float seconds, float range, float now) => _sweeps.Add(new Sweep { From = fromShip, Ends = now + seconds, Range = range });
+        public void StartScan(int fromShip, float seconds, float range, float now)
+        {
+            _sweeps.Add(new Sweep { From = fromShip, Ends = now + seconds, Range = range });
+            if (GoesDark) Powered = false;
+        }
         public void CallOut(string prompt) => LastPrompt = prompt;
         public void KnockOut(int ship, string part, float now) => _knocks.Add(new Knock { Ship = ship, Part = part, At = now });
         public void SetLights(string state) => Lights = state;
@@ -155,6 +168,7 @@ namespace Monolith.Mission
                 if (s.Hit && _detectedBy.Add(s.From)) rt.Note("cabin", $"scan from {from?.Callsign ?? "#" + s.From} detected the player (stub: powered)");
                 else if (!s.Hit) rt.Note("cabin", "scan swept past without a contact (stub)");
                 _sweeps.RemoveAt(i);
+                if (GoesDark && _sweeps.Count == 0) { Powered = true; rt.Note("cabin", "power back on after the sweep (stub)"); }
             }
             if (AutoRepairSeconds >= 0f)
                 foreach (var k in _knocks)

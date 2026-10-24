@@ -1,0 +1,86 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "oort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false,
+    "spectate": {
+      "ship": "Small Mercy",
+      "offset": [
+        -520,
+        230,
+        -900
+      ],
+      "look": "Archon"
+    }
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0
+  },
+  "stills": [
+    {
+      "name": "archon_t0330_00",
+      "warmup": 330.0,
+      "follow": true
+    },
+    {
+      "name": "archon_t0330_70",
+      "warmup": 0.7,
+      "follow": true
+    },
+    {
+      "name": "archon_t0332_50",
+      "warmup": 1.8,
+      "follow": true
+    },
+    {
+      "name": "archon_t0349_00",
+      "warmup": 16.5,
+      "follow": true
+    },
+    {
+      "name": "archon_t0356_00",
+      "warmup": 7.0,
+      "follow": true
+    },
+    {
+      "name": "archon_t0420_00",
+      "warmup": 64.0,
+      "follow": true
+    },
+    {
+      "name": "archon_t0446_00",
+      "warmup": 26.0,
+      "follow": true
+    },
+    {
+      "name": "archon_t0473_50",
+      "warmup": 27.5,
+      "follow": true
+    },
+    {
+      "name": "archon_t0520_00",
+      "warmup": 46.5,
+      "follow": true
+    },
+    {
+      "name": "archon_t0558_80",
+      "warmup": 38.8,
+      "follow": true
+    },
+    {
+      "name": "archon_t0559_30",
+      "warmup": 0.5,
+      "follow": true
+    },
+    {
+      "name": "archon_t0561_00",
+      "warmup": 1.7,
+      "follow": true
+    }
+  ]
+}

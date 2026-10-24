@@ -1,0 +1,167 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "oort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": false,
+    "dust": false
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0
+  },
+  "stills": [
+    {
+      "name": "start_ahead",
+      "pos": [
+        0,
+        40,
+        -120
+      ],
+      "lookAt": [
+        700,
+        300,
+        7200
+      ],
+      "fov": 40,
+      "warmup": 3.0
+    },
+    {
+      "name": "outpost_near",
+      "pos": [
+        1900,
+        700,
+        5600
+      ],
+      "lookAt": [
+        700,
+        330,
+        7200
+      ],
+      "fov": 40,
+      "warmup": 1
+    },
+    {
+      "name": "outpost_high",
+      "pos": [
+        -600,
+        1100,
+        6000
+      ],
+      "lookAt": [
+        700,
+        350,
+        7200
+      ],
+      "fov": 45,
+      "warmup": 1
+    },
+    {
+      "name": "big_rock",
+      "pos": [
+        -3200,
+        900,
+        3800
+      ],
+      "lookAt": [
+        -5200,
+        1300,
+        6200
+      ],
+      "fov": 50,
+      "warmup": 1
+    },
+    {
+      "name": "mercy_ice",
+      "pos": [
+        900,
+        0,
+        -2700
+      ],
+      "lookAt": [
+        150,
+        -250,
+        -1800
+      ],
+      "fov": 50,
+      "warmup": 2
+    },
+    {
+      "name": "field_wide",
+      "pos": [
+        -2500,
+        1500,
+        -2500
+      ],
+      "lookAt": [
+        600,
+        0,
+        4000
+      ],
+      "fov": 55,
+      "warmup": 1
+    },
+    {
+      "name": "scramble_a",
+      "pos": [
+        1900,
+        700,
+        5600
+      ],
+      "lookAt": [
+        700,
+        330,
+        7200
+      ],
+      "fov": 40,
+      "warmup": 103.6
+    },
+    {
+      "name": "scramble_b",
+      "pos": [
+        1900,
+        700,
+        5600
+      ],
+      "lookAt": [
+        700,
+        330,
+        7200
+      ],
+      "fov": 40,
+      "warmup": 1.4
+    },
+    {
+      "name": "scramble_c",
+      "pos": [
+        1900,
+        700,
+        5600
+      ],
+      "lookAt": [
+        700,
+        330,
+        7200
+      ],
+      "fov": 40,
+      "warmup": 3.0
+    },
+    {
+      "name": "outpost_fight",
+      "pos": [
+        1900,
+        700,
+        5600
+      ],
+      "lookAt": [
+        700,
+        330,
+        7200
+      ],
+      "fov": 40,
+      "warmup": 33.0
+    }
+  ]
+}

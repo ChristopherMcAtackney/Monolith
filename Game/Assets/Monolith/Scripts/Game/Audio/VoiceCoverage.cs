@@ -18,6 +18,15 @@ namespace Monolith.Game
     {
         public const string Fix = "run tools\\audio\\voice.ps1 (it gathers the lines, voices the new ones, rebuilds the index), rebuild the player";
 
+        /// <summary>
+        /// Lines the last <see cref="Unvoiced"/> call skipped because they are drafts pending the user's approval (<c>"pending": true</c> on the line, or
+        /// <c>"linesPending": true</c> on the mission): no voice is made for a line before the user approves it (design: the dialogue process). They play as
+        /// on-screen text with the radio's squelch. A new speaker of a draft (a ship only this mission has) goes in audio_src/voice/cast.json; the voice
+        /// index learns it at the voice run that voices the approved line, so until then it is counted here too, not failed.
+        /// </summary>
+        public static int Pending { get; private set; }
+        public static readonly List<string> PendingLines = new List<string>();
+
         static string Norm(string s) => Regex.Replace((s ?? "").Trim().ToUpperInvariant(), @"\s+", " ");
 
         /// <summary>The lines with no recording, as readable text; <paramref name="lines"/> is how many (speaker, text) pairs were looked at.</summary>
@@ -49,12 +58,19 @@ namespace Monolith.Game
                 return new List<string>();
             }
 
-            void Need(string speaker, string text, string where)
+            Pending = 0; PendingLines.Clear();
+            void Need(string speaker, string text, string where, bool pending)
             {
-                foreach (var v in VoicesOf(speaker, where, gaps))
+                // a draft's speaker may be new: cast.json names it, and the voice index learns it at the next voice run (the one that voices the approved line)
+                var uncast = pending ? new List<string>() : gaps;
+                var voices = VoicesOf(speaker, where, uncast);
+                if (pending && uncast.Count > 0) { count++; Pending++; PendingLines.Add($"{where}: {speaker} (not in the voice index yet) '{text}'"); }
+                foreach (var v in voices)
                 {
                     count++;
-                    if (!have.Contains(v + "|" + Norm(text))) gaps.Add($"{where}: {speaker} ({v}) '{text}'");
+                    if (have.Contains(v + "|" + Norm(text))) continue;
+                    if (pending) { Pending++; PendingLines.Add($"{where}: {speaker} ({v}) '{text}'"); }
+                    else gaps.Add($"{where}: {speaker} ({v}) '{text}'");
                 }
             }
 
@@ -66,27 +82,30 @@ namespace Monolith.Game
             foreach (var (name, json) in sources)
             {
                 var root = JObject.Parse(Regex.Replace(json, @"(?m)^\s*//.*$", ""));
+                bool filePending = root["linesPending"] is JValue lp && (bool)lp;
+                bool PendingOf(JObject line) => line["pending"] is JValue pv ? (bool)pv : filePending;
                 if (root["messages"] is JArray msgs)
                     foreach (JObject m in msgs)
                     {
                         string text = (string)m["text"], from = (string)m["from"], fb = (string)m["fallbackFrom"], where = $"{name}:{(string)m["id"]}";
                         if (string.IsNullOrEmpty(text)) continue;
-                        Need(from, text, where);
-                        if (!string.IsNullOrEmpty(fb)) Need(fb, text, where + " (fallback)");
+                        bool pending = PendingOf(m);
+                        Need(from, text, where, pending);
+                        if (!string.IsNullOrEmpty(fb)) Need(fb, text, where + " (fallback)", pending);
                     }
-                Walk(root["events"], name, Need);
+                Walk(root["events"], name, (sp, tx, wh, line) => Need(sp, tx, wh, PendingOf(line)));
             }
             lines = count;
             return gaps;
         }
 
-        static void Walk(JToken o, string mission, Action<string, string, string> need)
+        static void Walk(JToken o, string mission, Action<string, string, string, JObject> need)
         {
             if (o is JObject d)
             {
                 string act = d["do"] is JValue dv ? (string)dv : null;          // an event's "do" is a list of actions; an action's is its name
                 if ((act == "radio" || act == "callOut") && d["text"] is JValue && (d["from"] is JValue || act == "callOut"))
-                    need(d["from"] is JValue fv ? (string)fv : MissionFile.AnyWingman, (string)d["text"], $"{mission}:{act}");
+                    need(d["from"] is JValue fv ? (string)fv : MissionFile.AnyWingman, (string)d["text"], $"{mission}:{act}", d);
                 foreach (var p in d.Properties()) Walk(p.Value, mission, need);
             }
             else if (o is JArray a) foreach (var x in a) Walk(x, mission, need);

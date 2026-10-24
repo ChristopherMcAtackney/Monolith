@@ -56,6 +56,8 @@ namespace Monolith.Mission
             public int Team;
             public int Id = GameWorld.NoShip;
             public float ArrivedAt = -1f, DestroyedAt = -1f, DepartedAt = -1f, DisabledAt = -1f, DisarmedAt = -1f;
+            /// <summary>Ordered out before it arrived: the wing's arithmetic counts it as in and gone, but it never reads as arrived.</summary>
+            public bool StoodDown;
             public bool Queued, Departing, Wingman, IsPlayer;
             public float ArriveAt = -1f, DepartAt = -1f, JumpAt = -1f;
             public Vector3? DepartTo;
@@ -107,7 +109,7 @@ namespace Monolith.Mission
         readonly List<ShipRec> _capQueue = new List<ShipRec>();
         readonly HashSet<int> _beaming = new HashSet<int>();
         readonly List<IDisposable> _subs = new List<IDisposable>();
-        readonly List<float> _hulls = new List<float>();
+        readonly List<float> _hulls = new List<float>(), _ranges = new List<float>();
         ShipRec _player;
         int _cap = int.MaxValue;
 
@@ -183,9 +185,10 @@ namespace Monolith.Mission
             foreach (var o in _objectives) Board.Objectives.Add(o.View);
             World.Mission = Board;
             var hullNames = new List<string>(File.Pacing.Hulls);
-            Log.Begin(StartTime, hullNames);
+            Log.Begin(StartTime, hullNames, File.Pacing.Ranges.ConvertAll(r => r.A + "-" + r.B));
             if (File.ArrivalCap != null) _cap = Mathf.RoundToInt(File.ArrivalCap.At(Host.Level));
             Music.Start(File.Music.Start, File.Music.Auto);
+            Host.Scenery(File.Scenery);
             Note("start", $"{File.Name} ({File.Id}) at {Host.LevelName}{(Host.PlayerIsAi ? ", the AI flying the player" : "")}");
             foreach (var r in _shipList) if (r.Def != null && r.Def.Arrival.AtStart) Spawn(r, true);
             foreach (var w in _wingList) if (w.Def.Arrival.AtStart) SendWave(w, true);
@@ -466,10 +469,34 @@ namespace Monolith.Mission
 
         public int QueuedCount => _capQueue.Count;
 
+        /// <summary>
+        /// A ship's hangar launches what arrives from its bay: the first living part of kind "hangar", or the hull when the ship has none. A ship whose
+        /// hangars are all destroyed launches nothing more (FS2: a destroyed fighter bay): that arrival is scrubbed.
+        /// </summary>
+        CombatPart Hangar(string bay, out bool closed)
+        {
+            closed = false;
+            var c = CombatOf(bay);
+            if (c == null) return null;
+            CombatPart open = null; bool any = false;
+            foreach (var p in c.Parts)
+                if (p.Kind == "hangar") { any = true; if (!p.Destroyed) { open = p; break; } }
+            closed = any && open == null;
+            return open;
+        }
+
+        /// <summary>An arrival that cannot happen (its bay's hangar is gone): it counts as arrived and destroyed at once, so a wing's rules still add up.</summary>
+        void Scrub(ShipRec r, string why)
+        {
+            r.ArrivedAt = r.DestroyedAt = Now; r.Queued = false;
+            Note("scrubbed", $"{r.Name}: {why}");
+        }
+
         void Spawn(ShipRec r, bool atStart)
         {
             var a = r.Arrival;
             var load = r.Loadout;
+            if (a.Bay != null) { Hangar(a.Bay, out bool closed); if (closed) { Scrub(r, $"{a.Bay}'s hangar is destroyed"); return; } }
             Place(r, a, out Vector3 pos, out Quaternion rot);
             var spawn = new ShipSpawn
             {
@@ -486,7 +513,7 @@ namespace Monolith.Mission
             var c = World.Combat.Get(id);
             if (!atStart)
             {
-                if (a.Effect == "jump" && s != null)
+                if (a.Effect == "jump" && a.Bay == null && s != null)          // out of a hangar: no jump flash
                     GameEvents.RaiseAt(MissionEvents.JumpIn, s.Position, s.Forward, c?.SizeClass ?? CombatEvents.SizeFighter, s.Radius, id);
                 bool hostile = _player != null && Teams.Hostile(_player.Team, r.Team);
                 if (r.Wing == null || r.InWave == 0) Music.Sting(hostile ? "enemy_arrival" : "friendly_arrival");
@@ -520,7 +547,15 @@ namespace Monolith.Mission
             else if (a.Bay != null)
             {
                 var b = PresentShip(a.Bay);
-                if (b != null)
+                var hangar = Hangar(a.Bay, out _);
+                if (b != null && hangar != null)
+                {
+                    // Out of the hangar's mouth, along its facing, clear of its doors.
+                    Vector3 fwd = hangar.WorldForward(b);
+                    anchor = hangar.WorldPosition(b) + fwd * (hangar.Radius + 30f) + b.Rotation * (a.Offset ?? Vector3.zero);
+                    baseRot = Quaternion.LookRotation(fwd, b.Rotation * Vector3.up);
+                }
+                else if (b != null)
                 {
                     anchor = b.Position + b.Rotation * (a.Offset ?? new Vector3(0f, -b.Radius * 0.3f, b.Radius * 0.2f));
                     baseRot = b.Rotation;
@@ -608,6 +643,12 @@ namespace Monolith.Mission
                 if (c != null)
                     foreach (var name in d.Parts) { var p = c.FindPart(name); if (p != null && !p.Destroyed) { o.Part = p.Index; break; } }
             }
+            else if (d.PartKind != null)
+            {
+                var c = World.Combat.Get(o.Target);
+                var p = c?.FirstPart(d.PartKind);
+                if (p != null) o.Part = p.Index;
+            }
             return o;
         }
 
@@ -617,7 +658,21 @@ namespace Monolith.Mission
         public void Depart(string name, Vector3? to, string bay, float jumpAfter)
         {
             int bayId = bay != null ? IdOf(bay) : GameWorld.NoShip;
-            foreach (var r in RecsOf(name)) if (r.Present && !r.Departing) BeginDeparture(r, to, bayId, jumpAfter);
+            foreach (var r in RecsOf(name))
+            {
+                if (r.Present && !r.Departing) BeginDeparture(r, to, bayId, jumpAfter);
+                else if (r.ArrivedAt < 0f) StandDown(r);
+            }
+            if (_wings.TryGetValue(name, out var w)) w.WavesSent = Mathf.Max(w.WavesSent, Mathf.Max(1, w.Def.Waves));    // and no wave after the order to leave
+        }
+
+        /// <summary>A ship ordered out before it arrived (a later wave, or one the arrival cap is holding back) never comes: it counts as arrived and
+        /// departed at once, so a wing told to withdraw stops feeding in.</summary>
+        void StandDown(ShipRec r)
+        {
+            r.ArrivedAt = r.DepartedAt = Now; r.StoodDown = true;
+            if (r.Queued) { r.Queued = false; _capQueue.Remove(r); }
+            Note("stood down", $"{r.Name}: ordered out before it arrived");
         }
 
         void BeginDeparture(ShipRec r, Vector3? to, int bay, float jumpAfter)
@@ -710,7 +765,13 @@ namespace Monolith.Mission
             foreach (var h in File.Pacing.Hulls) { var c = CombatOf(h); _hulls.Add(c != null && c.Alive ? c.Hull01 : 0f); }
             var pc = player != null ? World.Combat.Get(player.Id) : null;
             bool fighting = !Ended && FightFrom >= 0f;
-            Log.Sample(Now, fighting, threats, engaging, nearest, pc != null && pc.Alive ? pc.Hull01 : 0f, _hulls, Music.State);
+            _ranges.Clear();
+            foreach (var (a, b) in File.Pacing.Ranges)
+            {
+                var ca = CombatOf(a); var cb = CombatOf(b);
+                _ranges.Add(ca != null && cb != null && ca.Alive && cb.Alive && ca.Ship != null && cb.Ship != null ? Vector3.Distance(ca.Ship.Position, cb.Ship.Position) : -1f);
+            }
+            Log.Sample(Now, fighting, threats, engaging, nearest, pc != null && pc.Alive ? pc.Hull01 : 0f, _hulls, Music.State, _ranges);
             if (!Ended) Music.Sample(close, engaging, capitalClose);
         }
 
@@ -756,7 +817,7 @@ namespace Monolith.Mission
 
         public ShipCombat CombatOf(string name) { var r = Rec(name); return r != null && r.Id != GameWorld.NoShip ? World.Combat.Get(r.Id) : null; }
 
-        public bool HasArrived(string name) { var r = Rec(name); return r != null && r.ArrivedAt >= 0f; }
+        public bool HasArrived(string name) { var r = Rec(name); return r != null && r.ArrivedAt >= 0f && !r.StoodDown; }
         public bool HasDeparted(string name) { var r = Rec(name); return r != null && r.DepartedAt >= 0f; }
 
         /// <summary>When a fact became true of a ship, or of every ship of a wing (for arrivals: its first wave, or with any its first ship), or -1.</summary>
@@ -767,7 +828,7 @@ namespace Monolith.Mission
                 if (fact == Fact.Arrived && any)
                 {
                     float first = -1f;
-                    foreach (var r in w.Ships) if (r.ArrivedAt >= 0f && (first < 0f || r.ArrivedAt < first)) first = r.ArrivedAt;
+                    foreach (var r in w.Ships) if (r.ArrivedAt >= 0f && !r.StoodDown && (first < 0f || r.ArrivedAt < first)) first = r.ArrivedAt;
                     return first;
                 }
                 float last = -1f;
@@ -788,7 +849,7 @@ namespace Monolith.Mission
         {
             switch (f)
             {
-                case Fact.Arrived: return r.ArrivedAt;
+                case Fact.Arrived: return r.StoodDown ? -1f : r.ArrivedAt;
                 case Fact.Destroyed: return r.DestroyedAt;
                 case Fact.Departed: return r.DepartedAt;
                 case Fact.Disabled: return r.DisabledAt;

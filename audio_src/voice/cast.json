@@ -109,7 +109,14 @@
     "#tamsin": "tamsin",
     "#command": "mercy",
     "#lector": "earth_lector",
-    "#warden": "earth_warden"
+    "#warden": "earth_warden",
+    "oculus": "earth_lector",
+    "#oculus": "earth_lector",
+    "cantor": "earth_warden",
+    "#cantor": "earth_warden",
+    "archon": "earth_warden",
+    "#archon": "earth_warden",
+    "patience": "mercy"
   },
   "defaults": {
     "wingmanVoices": [

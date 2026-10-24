@@ -84,16 +84,18 @@ def rows():
             out.append(dict(id=f"{mid}:debrief:{i + 1}", mission=mname, kind="Debrief",
                             speaker="(text)", when="Debrief: " + json.dumps(d.get("when", {})),
                             intensity="", text=d.get("text", ""), said="", voiced="no"))
+        file_pending = m.get("linesPending", False)
         for msg in m.get("messages", []):
             key = (f"{mid}:{msg['id']}", msg["text"])
             v = vinfo.get(key, {})
+            pending = msg.get("pending", file_pending)
             out.append(dict(
                 id=f"{mid}:{msg['id']}", mission=mname, kind="Radio",
                 speaker=msg.get("from", "") + (f"  (voice: {', '.join(v['speakers'])})" if v.get("speakers") else ""),
                 when="; ".join(sends.get(msg["id"], []) + sends.get("text:" + msg["text"], [])) or "(sent by an event)",
-                intensity=", ".join(v.get("intensity", [])), text=msg["text"],
+                intensity=msg.get("intensity") or ", ".join(v.get("intensity", [])), text=msg["text"],
                 said=" | ".join(v.get("said", [])) if v.get("said") and v["said"] != [msg["text"]] else "",
-                voiced="yes" if v else "no"))
+                voiced="pending approval" if pending else "yes" if v else "no"))
     radio = load(RADIO)
     for cat, variants in radio.get("lines", {}).items():
         if not isinstance(variants, list):

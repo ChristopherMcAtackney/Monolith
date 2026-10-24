@@ -13,7 +13,7 @@ namespace Monolith.Game
 {
     /// <summary>
     /// The headless auto-play check: <c>Monolith.exe -batchmode -nographics -mnMissionAutoPlay &lt;mission&gt; -mnOut dir [-mnSeconds n]
-    /// [-mnDifficulty x] [-mnMortal]</c>. Runs a mission on a bare world with the AI flying the player's ship (invulnerable unless the mission's
+    /// [-mnDifficulty x] [-mnMortal] [-mnGoDark]</c> (-mnGoDark: the player's cabin goes dark for every scan sweep, so it is never seen). Runs a mission on a bare world with the AI flying the player's ship (invulnerable unless the mission's
     /// autoplay block or -mnMortal says otherwise) until it ends or the time is up, then asserts its event log against the mission's
     /// <c>autoplay.expect</c>: the result, which events fired and which did not, the order they fired in, and the pacing numbers. Also: no
     /// errors, no bad numbers, no AI ship stuck. Writes events.csv, pacing.csv, autoplay.txt and autoplay.json; exit 0 when it passes.
@@ -52,7 +52,7 @@ namespace Monolith.Game
             using (var lab = new AiLab(level))
             {
                 var host = new GameMissionHost(lab.W, lab.Flight, lab.Rig, lab.Ai) { Autopilot = true, PlayerInvulnerable = invulnerable };
-                var rt = new MissionRuntime(lab.W, file, host, new CabinStub { AutoRepairSeconds = 8f });
+                var rt = new MissionRuntime(lab.W, file, host, new CabinStub { AutoRepairSeconds = 8f, GoesDark = CommandLine.Has("-mnGoDark") });
                 lab.W.Sim.Register(rt);
                 lab.W.Sim.Register(new PlayerKeeper(lab.W, lab.Rig, rt, invulnerable));
                 rt.Start();

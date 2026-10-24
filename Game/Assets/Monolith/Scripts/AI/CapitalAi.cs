@@ -19,6 +19,8 @@ namespace Monolith.AI
         public Dictionary<string, string> Weapons = new Dictionary<string, string>();
         /// <summary>Mission control: beams held (FS2's beam-free / beam-lock).</summary>
         public bool HoldBeams;
+        /// <summary>Mission control: every gun and flak turret holds its fire (a station that has not woken up yet); beams follow <see cref="HoldBeams"/>.</summary>
+        public bool HoldTurrets;
         /// <summary>Holds still (no manoeuvring), for tests and stationary emplacements.</summary>
         public bool Stationary;
     }
@@ -209,6 +211,7 @@ namespace Monolith.AI
             }
             if (part.Cooldown > 0f || _now < t.NextFireAt) return;
             if (t.Kind == Kind.Beam && (cap.Orders.HoldBeams || _ai.Beaming(c.Id))) return;
+            if (t.Kind != Kind.Beam && cap.Orders.HoldTurrets) return;
             var ship = c.Ship;
             Vector3 from = part.WorldPosition(ship);
 

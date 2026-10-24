@@ -78,6 +78,7 @@ SITUATION = {
 }
 DEFAULT_MESSAGE = 'calm'      # Earth's lines and anything untagged: composed
 UNTAGGED = []                 # mission:message ids that had no entry in INTENSITY (printed at the end: add them, with the reason)
+PENDING = []                  # lines that are drafts pending the user's approval ("pending": true, or the mission's "linesPending"): never voiced
 
 
 def spoken(text, intensity):
@@ -142,11 +143,15 @@ def main():
             continue
         d = json.loads(strip_comments(open(os.path.join(mdir, fn), encoding='utf-8').read()))
         mid = d.get('id', fn.split('.')[0])
+        file_pending = d.get('linesPending', False)
         for m in d.get('messages', []):
+            if m.get('pending', file_pending):
+                PENDING.append(f'{mid}:{m["id"]}')
+                continue
             voices = voice_of(m.get('from'))
             if m.get('fallbackFrom'):
                 voices += [v for v in voice_of(m['fallbackFrom']) if v not in voices]
-            inten = INTENSITY.get(f'{mid}:{m["id"]}')
+            inten = m.get('intensity') or INTENSITY.get(f'{mid}:{m["id"]}')       # the line's own tag first
             if inten is None:
                 # a mission written after this table: guess (a high-priority message is tense, anything else calm) and say so; Earth's voices ignore it anyway
                 inten = 'tense' if m.get('priority') == 'high' else DEFAULT_MESSAGE
@@ -157,12 +162,14 @@ def main():
 
         def walk(o):
             if isinstance(o, dict):
-                if o.get('do') == 'radio' and 'text' in o:
+                if o.get('do') in ('radio', 'callOut') and 'text' in o and o.get('pending', file_pending):
+                    PENDING.append(f'{mid}:{o["do"]}:{o["text"][:40]}')
+                elif o.get('do') == 'radio' and 'text' in o:
                     for v in voice_of(o.get('from')):
-                        add(v, o['text'], f'{mid}:inline', f'{mid}_inline_{slug(o["text"])[:24]}', [DEFAULT_MESSAGE])
-                if o.get('do') == 'callOut' and 'text' in o:
+                        add(v, o['text'], f'{mid}:inline', f'{mid}_inline_{slug(o["text"])[:24]}', [o.get('intensity') or DEFAULT_MESSAGE])
+                elif o.get('do') == 'callOut' and 'text' in o:
                     for v in (voice_of(o['from']) if o.get('from') else CAST['defaults']['wingmanVoices']):
-                        add(v, o['text'], f'{mid}:callOut', f'{mid}_callout_{slug(o["text"])[:24]}', ['tense'])
+                        add(v, o['text'], f'{mid}:callOut', f'{mid}_callout_{slug(o["text"])[:24]}', [o.get('intensity') or 'tense'])
                 for x in o.values():
                     walk(x)
             elif isinstance(o, list):
@@ -188,6 +195,8 @@ def main():
 
     out = {'format': 'monolith-voice-lines/2', 'lines': sorted(entries.values(), key=lambda e: (e['voice'], e['file']))}
     text = json.dumps(out, indent=1, ensure_ascii=False) + '\n'
+    if PENDING:
+        print("  " + str(len(PENDING)) + " line(s) pending the user's approval: not voiced (once approved, set \"pending\": false on the line or drop the mission's \"linesPending\")")
     if '--check' in sys.argv:
         cur = open(OUT, encoding='utf-8').read() if os.path.exists(OUT) else ''
         if cur != text:

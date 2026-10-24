@@ -1,0 +1,91 @@
+{
+  "format": "monolith-ship-class/1",
+  "id": "earth_outpost",
+  "name": "Earth comet outpost (placeholder)",
+  "role": "Earth's early-warning station in the Oort Cloud, built into a comet nucleus (design section 3): turrets, a hangar that scrambles interceptors, a scanner, and the comms array that warns the inner system. A placeholder until the real model exists: a procedural ice nucleus (look.rock, about 1.1 km across) with a station hull on top (look.hull). When ShipArt has an earth_outpost model, it replaces the placeholder by this class name and its parts come from the model. It does not move (FS2's installations do not).",
+  "flight": {
+    "topSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 ships.tbl, GTI Arcadia $Max Velocity"
+    },
+    "reverseSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "FS2 ships.tbl, GTI Arcadia $Rear Velocity (none)"
+    },
+    "rotationTime": {
+      "value": [
+        200,
+        200,
+        200
+      ],
+      "unit": "s per 360 deg (pitch, yaw, roll)",
+      "source": "FS2 ships.tbl, GTI Arcadia $Rotation time"
+    },
+    "rotDamp": {
+      "value": 0.2,
+      "unit": "s (turn-rate time constant)",
+      "source": "FS2 ships.tbl, GTI Arcadia $Rotdamp"
+    },
+    "sideDamp": {
+      "value": 0.2,
+      "unit": "s (sideways/vertical slip time constant)",
+      "source": "Estimate: capital ships do not slide in FS2; set equal to the turn damping"
+    },
+    "forwardAccel": {
+      "value": 0,
+      "unit": "s (speed-up time constant)",
+      "source": "FS2 ships.tbl, GTI Arcadia $Forward accel"
+    },
+    "forwardDecel": {
+      "value": 0,
+      "unit": "s (slow-down time constant)",
+      "source": "FS2 ships.tbl, GTI Arcadia $Forward decel"
+    },
+    "afterburner": {
+      "value": false,
+      "unit": "bool",
+      "source": "Capital ships have no afterburner"
+    },
+    "afterburnerSpeed": {
+      "value": 0,
+      "unit": "m/s",
+      "source": "No afterburner"
+    },
+    "afterburnerAccel": {
+      "value": 0,
+      "unit": "s",
+      "source": "No afterburner"
+    },
+    "afterburnerFuel": {
+      "value": 0,
+      "unit": "fuel units",
+      "source": "No afterburner"
+    },
+    "afterburnerBurnRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "afterburnerRechargeRate": {
+      "value": 0,
+      "unit": "fuel/s",
+      "source": "No afterburner"
+    },
+    "mass": {
+      "value": 50000000000.0,
+      "unit": "kg",
+      "source": "Estimate (FS2 takes mass from the 3D model); only scales how hard knocks shove the ship"
+    },
+    "size": {
+      "value": [
+        1100,
+        760,
+        940
+      ],
+      "unit": "m (width, height, length)",
+      "source": "The Oort mission's placeholder: an ice nucleus of radius 420 m stretched (1.3, 0.85, 1.1) with the station on top"
+    }
+  }
+}

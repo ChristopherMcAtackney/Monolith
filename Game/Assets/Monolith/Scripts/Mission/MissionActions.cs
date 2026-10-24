@@ -14,7 +14,7 @@ namespace Monolith.Mission
     {
         public static readonly string[] Ops =
         {
-            "arrive", "depart", "radio", "objective", "order", "beams", "music", "end", "cond", "invulnerable", "log",
+            "arrive", "depart", "radio", "objective", "order", "beams", "turrets", "music", "end", "cond", "invulnerable", "log",
             "scan", "callOut", "knockOut", "cabinLights",
         };
 
@@ -57,6 +57,7 @@ namespace Monolith.Mission
                         Id = "(inline)", Where = where, From = r.Str("from", required: true), FallbackFrom = r.Str("fallbackFrom"), Text = r.Str("text", required: true),
                         Priority = r.Str("priority", "normal"), Voice = r.Str("voice"), Seconds = r.Float("seconds", 0f),
                     };
+                    MissionFile.ReadLineMeta(r, m, ctx);
                     ctx.CheckSpeaker(m.From, where + ".from");
                     if (m.FallbackFrom != null) ctx.CheckSpeaker(m.FallbackFrom, where + ".fallbackFrom");
                     if (m.Priority != "high" && m.Priority != "normal" && m.Priority != "low") ctx.Errors.Add($"{where}.priority: '{m.Priority}' (high, normal or low)");
@@ -75,7 +76,7 @@ namespace Monolith.Mission
                     bool standing = r.Bool("standing", false);
                     // The order itself is the rest of this object (order, target, part, path, speed, then, to).
                     var order = new JObject();
-                    foreach (var k in new[] { "order", "target", "part", "path", "speed", "then", "to" }) { var v = r.Raw(k); if (v != null) order[k] = v; }
+                    foreach (var k in new[] { "order", "target", "part", "partKind", "path", "speed", "then", "to" }) { var v = r.Raw(k); if (v != null) order[k] = v; }
                     var od = MissionFile.ReadOrder(new MissionFile.Reader(order, where, ctx.Errors), where, ctx);
                     return od == null ? null : new Order(ship, od, standing);
                 }
@@ -84,6 +85,12 @@ namespace Monolith.Mission
                     string ship = r.Str("ship", required: true); ctx.CheckShip(ship, where + ".ship", true);
                     if (!r.Has("free")) ctx.Errors.Add($"{where}: beams needs \"free\": true or false");
                     return new Beams(ship, r.Bool("free", true));
+                }
+                case "turrets":
+                {
+                    string ship = r.Str("ship", required: true); ctx.CheckShip(ship, where + ".ship", true);
+                    if (!r.Has("fire")) ctx.Errors.Add($"{where}: turrets needs \"fire\": true or false");
+                    return new Turrets(ship, r.Bool("fire", true));
                 }
                 case "music":
                 {
@@ -134,7 +141,11 @@ namespace Monolith.Mission
                     string from = r.Str("from", required: true); ctx.CheckShip(from, where + ".from", false);
                     return new Scan(from, r.Float("seconds", 10f), r.Float("range", 5000f));
                 }
-                case "callOut": return new CallOut(r.Str("text"), r.Str("prompt", "LEAVE THE SEAT"), r.Str("from", "#Crew"));
+                case "callOut":
+                {
+                    MissionFile.ReadLineMeta(r, new MissionFile.MessageDef(), ctx);       // pending and intensity: for the voice tools, nothing changes in play
+                    return new CallOut(r.Str("text"), r.Str("prompt", "LEAVE THE SEAT"), r.Str("from", "#Crew"));
+                }
                 case "knockOut":
                 {
                     string ship = r.Str("ship", MissionFile.Player); ctx.CheckShip(ship, where + ".ship", false);
@@ -205,6 +216,15 @@ namespace Monolith.Mission
             public Beams(string ship, bool free) { _ship = ship; _free = free; }
             public override void Run(MissionRuntime rt) { foreach (var id in rt.IdsOf(_ship)) rt.Host.SetBeams(id, _free); rt.Note("beams", $"{_ship} {(_free ? "free" : "held")}"); }
             public override string Describe() => $"beams {_ship} {(_free ? "free" : "held")}";
+        }
+
+        /// <summary>A capital ship's or station's gun and flak turrets hold their fire, or wake up (its beams follow "beams").</summary>
+        sealed class Turrets : Act
+        {
+            readonly string _ship; readonly bool _fire;
+            public Turrets(string ship, bool fire) { _ship = ship; _fire = fire; }
+            public override void Run(MissionRuntime rt) { foreach (var id in rt.IdsOf(_ship)) rt.Host.SetTurrets(id, _fire); rt.Note("turrets", $"{_ship} {(_fire ? "firing" : "holding")}"); }
+            public override string Describe() => $"turrets {_ship} {(_fire ? "fire" : "hold")}";
         }
 
         sealed class Music : Act

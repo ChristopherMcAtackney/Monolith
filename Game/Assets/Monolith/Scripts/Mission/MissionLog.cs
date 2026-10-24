@@ -33,26 +33,30 @@ namespace Monolith.Mission
         public float AvgThreats => Samples > 0 ? SumThreats / Samples : 0f;
         public float NearestMin { get; private set; } = float.MaxValue;
 
-        public void Begin(float t0, IEnumerable<string> hulls)
+        public void Begin(float t0, IEnumerable<string> hulls, IEnumerable<string> ranges = null)
         {
             _t0 = t0; _quietSince = -1f; LongestQuiet = QuietSeconds = FightSeconds = SumThreats = 0f; MaxEngaging = MaxThreats = Samples = 0; NearestMin = float.MaxValue;
             Entries.Clear(); _csv.Clear(); _hullNames.Clear();
             _hullNames.AddRange(hulls);
             _csv.Append("t,threats,engaging_player,nearest_m,quiet,fighting,player_hull");
             foreach (var h in _hullNames) _csv.Append(',').Append(Col(h)).Append("_hull");
-            _csv.AppendLine(",music");
+            _csv.Append(",music");
+            if (ranges != null) foreach (var r in ranges) _csv.Append(',').Append(Col(r)).Append("_m");
+            _csv.AppendLine();
         }
 
         static string Col(string s) => s.Replace(' ', '_').Replace(",", "").ToLowerInvariant();
 
         public void Add(float t, string kind, string text) => Entries.Add(new Entry { T = t - _t0, Kind = kind, Text = text });
 
-        public void Sample(float t, bool fighting, int threats, int engaging, float nearest, float playerHull, IList<float> hulls, string music)
+        public void Sample(float t, bool fighting, int threats, int engaging, float nearest, float playerHull, IList<float> hulls, string music, IList<float> ranges = null)
         {
             bool quiet = threats == 0 || (nearest > QuietRange && engaging == 0);
             _csv.Append(string.Format(CultureInfo.InvariantCulture, "{0:0},{1},{2},{3:0},{4},{5},{6:0.00}", t - _t0, threats, engaging, nearest < 1e8f ? nearest : -1f, quiet ? 1 : 0, fighting ? 1 : 0, playerHull));
             for (int i = 0; i < hulls.Count; i++) _csv.Append(string.Format(CultureInfo.InvariantCulture, ",{0:0.00}", hulls[i]));
-            _csv.Append(',').AppendLine(music);
+            _csv.Append(',').Append(music);
+            if (ranges != null) foreach (var r in ranges) _csv.Append(string.Format(CultureInfo.InvariantCulture, ",{0:0}", r));
+            _csv.AppendLine();
             if (!fighting) { _quietSince = -1f; return; }
             Samples++; FightSeconds += 1f; SumThreats += threats;
             MaxEngaging = Mathf.Max(MaxEngaging, engaging); MaxThreats = Mathf.Max(MaxThreats, threats);

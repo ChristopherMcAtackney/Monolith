@@ -136,3 +136,20 @@ The user played the cabin playtest (Dead Water) and heard "all these little clic
 - A cue the juice plays with `Play` that is a loop in the catalog (`beam_impact_loop`) must be a one-shot there, or it never ends.
 - `ffmpeg`'s Ogg muxer picks a random stream serial, so every encode differs; `-fflags +bitexact` makes regenerating unchanged sound change no bytes in git.
 - Offline mode with a recorder grows by 6.4 KB a tick: only a capture asked to record keeps its audio, and headless runs (soaks) have no audio system at all.
+
+
+## Note from the mission builder (2026-10-24, with the Oort mission): voice.ps1 and lines pending approval
+
+- **`tools/audio/voice.ps1` could not find the WSL path of the repository.** `wsl wslpath -a C:\Users\...` goes through the WSL user's shell,
+  which eats the backslashes (`C:Usersx`), so `wslpath` printed nothing and the voice run started in the wrong place. Now it runs
+  `wsl -e wslpath -a` with forward slashes (`C:/Users/...`; `-e` runs the program without a shell), throws if the answer is empty, and starts
+  the voice script with `wsl -e bash`. Tested (it answers `/mnt/c/Users/chris/<worktree>`); no generation was run.
+- **Lines pending the user's approval are never voiced.** The user approves every line before a voice is made (design: the dialogue process).
+  A message, inline radio line or call-out with `"pending": true`, or every line of a mission with `"linesPending": true` (the Oort mission),
+  is a draft: `audio_src/voice/collect_lines.py` skips it (and prints how many it skipped), so `voice.ps1` makes nothing for it; it plays as
+  on-screen radio text with the squelch; `VoiceCoverage` (the mission and audio self-tests) counts it as pending instead of failing, and a
+  draft's speaker that is not in `vo/index.json` yet is counted the same way. A message's own `"intensity"` (calm, tense, frantic) is now read
+  before the table in `collect_lines.py`. New speakers for the Oort mission are in `cast.json` (Oculus as `earth_lector`; Cantor and Archon as
+  `earth_warden`; Patience as `mercy`); `vo/index.json` learns them at the next voice run.
+- To voice a line once the user approves it: set `"pending": false` on it (or drop the mission's `linesPending`), run `tools\audio\voice.ps1`,
+  rebuild.

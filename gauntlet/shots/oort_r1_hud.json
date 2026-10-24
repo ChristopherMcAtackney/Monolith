@@ -1,0 +1,107 @@
+{
+  "scene": "mission",
+  "sceneOptions": {
+    "mission": "oort",
+    "pilot": "ai",
+    "invulnerable": true,
+    "hud": true
+  },
+  "defaults": {
+    "width": 1920,
+    "height": 1080,
+    "warmup": 1.0,
+    "perfWarmup": 3.0
+  },
+  "stills": [
+    {
+      "name": "hud_t0010",
+      "follow": true,
+      "warmup": 10.0
+    },
+    {
+      "name": "hud_t0064",
+      "follow": true,
+      "warmup": 54
+    },
+    {
+      "name": "hud_t0092",
+      "follow": true,
+      "warmup": 28
+    },
+    {
+      "name": "hud_t0104",
+      "follow": true,
+      "warmup": 12
+    },
+    {
+      "name": "hud_t0118",
+      "follow": true,
+      "warmup": 14
+    },
+    {
+      "name": "hud_t0170",
+      "follow": true,
+      "warmup": 52
+    },
+    {
+      "name": "hud_t0218",
+      "follow": true,
+      "warmup": 48
+    },
+    {
+      "name": "hud_t0234",
+      "follow": true,
+      "warmup": 16
+    },
+    {
+      "name": "hud_t0323",
+      "follow": true,
+      "warmup": 89
+    },
+    {
+      "name": "hud_t0333",
+      "follow": true,
+      "warmup": 10
+    },
+    {
+      "name": "hud_t0350",
+      "follow": true,
+      "warmup": 17
+    },
+    {
+      "name": "hud_t0360",
+      "follow": true,
+      "warmup": 10
+    },
+    {
+      "name": "hud_t0446",
+      "follow": true,
+      "warmup": 86
+    },
+    {
+      "name": "hud_t0476",
+      "follow": true,
+      "warmup": 30
+    },
+    {
+      "name": "hud_t0565",
+      "follow": true,
+      "warmup": 89
+    },
+    {
+      "name": "hud_t0625",
+      "follow": true,
+      "warmup": 60
+    },
+    {
+      "name": "hud_t0637",
+      "follow": true,
+      "warmup": 12
+    },
+    {
+      "name": "hud_t0652",
+      "follow": true,
+      "warmup": 15
+    }
+  ]
+}

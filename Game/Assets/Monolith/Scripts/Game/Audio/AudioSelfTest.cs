@@ -342,6 +342,7 @@ namespace Monolith.Game
                     var f = MissionLibrary.Load(name);
                     foreach (var m in f.Messages)
                     {
+                        if (m.Pending) continue;                // a draft pending the user's approval: not voiced on purpose (VoiceCoverage counts it)
                         var speakers = new List<string>();
                         string from = m.From ?? "";
                         if (from == MissionFile.AnyWingman) { speakers.Add("Sable 2"); speakers.Add("Sable 3"); speakers.Add("Sable 1"); }
@@ -384,7 +385,7 @@ namespace Monolith.Game
                 Check(missing.Count == 0, $"every line has a clip ({lines.Count - missing.Count} of {lines.Count}; {other} use another voice's recording of the same words)" + (missing.Count > 0 ? ": " + string.Join(" | ", missing.Take(6)) + " -> " + VoiceCoverage.Fix : ""));
                 // and by the speaker's own voice: a line voiced only by somebody else's recording is a line nobody has voiced
                 var gaps = VoiceCoverage.Unvoiced(out int looked);
-                Check(gaps.Count == 0 && other == 0, $"every radio line of every mission in the build ({string.Join(", ", MissionLibrary.BuiltIn())}) is voiced by its own speaker ({looked} speaker and line pairs, {other} on another voice)" + (gaps.Count > 0 ? ": " + string.Join(" | ", gaps.Take(6)) + " -> " + VoiceCoverage.Fix : ""));
+                Check(gaps.Count == 0 && other == 0, $"every radio line of every mission in the build ({string.Join(", ", MissionLibrary.BuiltIn())}) is voiced by its own speaker ({looked} speaker and line pairs, {other} on another voice; {VoiceCoverage.Pending} pending the user's approval, not voiced on purpose)" + (gaps.Count > 0 ? ": " + string.Join(" | ", gaps.Take(6)) + " -> " + VoiceCoverage.Fix : ""));
                 // the check itself works: a mission with a line nobody voiced, and a speaker nobody is cast as, is caught
                 const string unvoiced = "{ \"messages\": [ { \"id\": \"a\", \"from\": \"Sable 2\", \"text\": \"This line has never been recorded by anybody.\" }, { \"id\": \"b\", \"from\": \"Zed\", \"text\": \"Copy.\" } ], \"events\": [ { \"do\": [ { \"do\": \"callOut\", \"text\": \"Nor has this one.\" } ] } ] }";
                 var caught = VoiceCoverage.Unvoiced(out _, ("negative_control", unvoiced));

@@ -1,0 +1,461 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "earth_destroyer",
+  "name": "Earth destroyer (placeholder)",
+  "sizeClass": "capital",
+  "note": "Earth's destroyer for the Oort strike (design section 3, beat 5). A placeholder hull with no part models: its two heavy beam turrets (kind turret, firing beam_slash), flak, anti-fighter guns, three engines, hangar, bridge, sensors, comms and reactor are combat parts placed on the hull boxes. Hull, power and weapon energy are FS2's GTD Hecate's; part shares follow FS2's capital ships (turrets about 0.8% each, beams 1.5%, engines 4%). When a model of the class lands its own parts replace these (missions address parts by kind: turret for the beams, engine, hangar).",
+  "defense": {
+    "hull": {
+      "value": 100000,
+      "unit": "hp",
+      "fs2": "ships:GTD Hecate|$Hitpoints"
+    },
+    "shield": {
+      "value": 0,
+      "unit": "hp",
+      "fs2": "ships:GTD Hecate|$Shields"
+    },
+    "powerOutput": {
+      "value": 100,
+      "unit": "power",
+      "fs2": "ships:GTD Hecate|$Power Output"
+    },
+    "weaponEnergy": {
+      "value": 100,
+      "unit": "energy",
+      "fs2": "ships:GTD Hecate|$Max Weapon Eng"
+    },
+    "decoys": {
+      "value": 0,
+      "unit": "decoys",
+      "fs2": "ships:GTD Hecate|$Countermeasures"
+    }
+  },
+  "geometry": {
+    "about": "Boxes round the placeholder hull: engine block, the plated body, the blunt nose, the dorsal spine. Unity axes, nose +z.",
+    "boxes": [
+      {
+        "centre": [
+          0,
+          0,
+          -454
+        ],
+        "half": [
+          72,
+          53,
+          46
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          -43
+        ],
+        "half": [
+          85,
+          67,
+          365
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          411
+        ],
+        "half": [
+          61,
+          50,
+          89
+        ]
+      },
+      {
+        "centre": [
+          0,
+          83,
+          -65
+        ],
+        "half": [
+          10,
+          20,
+          326
+        ]
+      }
+    ],
+    "boundRadius": 520
+  },
+  "arms": {
+    "missiles": {},
+    "decoys": 0
+  },
+  "partsSource": "hpPercent: turrets 0.8% of hull each (FS2's capital turrets), the two heavy beam turrets 1.5%, engines 4% each, hangar 4%, sensors and comms 3%, bridge and reactor 2% (ours, on FS2's scale)",
+  "parts": [
+    {
+      "name": "beam_fore",
+      "kind": "turret",
+      "pos": [
+        0,
+        73,
+        330
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 9,
+      "hpPercent": 1.5,
+      "weapon": "beam_slash"
+    },
+    {
+      "name": "beam_aft",
+      "kind": "turret",
+      "pos": [
+        0,
+        -73,
+        -260
+      ],
+      "forward": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 9,
+      "hpPercent": 1.5,
+      "weapon": "beam_slash"
+    },
+    {
+      "name": "flak_port_fore",
+      "kind": "flak",
+      "pos": [
+        -87,
+        17,
+        250
+      ],
+      "forward": [
+        -1,
+        0,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_port_mid",
+      "kind": "flak",
+      "pos": [
+        -87,
+        17,
+        0
+      ],
+      "forward": [
+        -1,
+        0,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_port_aft",
+      "kind": "flak",
+      "pos": [
+        -87,
+        17,
+        -250
+      ],
+      "forward": [
+        -1,
+        0,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_stbd_fore",
+      "kind": "flak",
+      "pos": [
+        87,
+        17,
+        250
+      ],
+      "forward": [
+        1,
+        0,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_stbd_mid",
+      "kind": "flak",
+      "pos": [
+        87,
+        17,
+        0
+      ],
+      "forward": [
+        1,
+        0,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_stbd_aft",
+      "kind": "flak",
+      "pos": [
+        87,
+        17,
+        -250
+      ],
+      "forward": [
+        1,
+        0,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "gun_dorsal_fore",
+      "kind": "aaf",
+      "pos": [
+        -40,
+        69,
+        200
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_dorsal_mid",
+      "kind": "aaf",
+      "pos": [
+        40,
+        69,
+        -100
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_dorsal_aft",
+      "kind": "aaf",
+      "pos": [
+        -40,
+        69,
+        -330
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ventral_fore",
+      "kind": "aaf",
+      "pos": [
+        40,
+        -69,
+        200
+      ],
+      "forward": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ventral_mid",
+      "kind": "aaf",
+      "pos": [
+        -40,
+        -69,
+        -100
+      ],
+      "forward": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ventral_aft",
+      "kind": "aaf",
+      "pos": [
+        40,
+        -69,
+        -330
+      ],
+      "forward": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "engine_port",
+      "kind": "engine",
+      "pos": [
+        -50,
+        0,
+        -500
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "radius": 22,
+      "hpPercent": 4
+    },
+    {
+      "name": "engine_stbd",
+      "kind": "engine",
+      "pos": [
+        50,
+        0,
+        -500
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "radius": 22,
+      "hpPercent": 4
+    },
+    {
+      "name": "engine_dorsal",
+      "kind": "engine",
+      "pos": [
+        0,
+        42,
+        -500
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "radius": 22,
+      "hpPercent": 4
+    },
+    {
+      "name": "hangar",
+      "kind": "hangar",
+      "pos": [
+        0,
+        -68,
+        60
+      ],
+      "forward": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 30,
+      "hpPercent": 4
+    },
+    {
+      "name": "bridge",
+      "kind": "bridge",
+      "pos": [
+        0,
+        60,
+        360
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "radius": 18,
+      "hpPercent": 2
+    },
+    {
+      "name": "sensors",
+      "kind": "sensors",
+      "pos": [
+        0,
+        103,
+        120
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 12,
+      "hpPercent": 3
+    },
+    {
+      "name": "comms",
+      "kind": "comms",
+      "pos": [
+        0,
+        103,
+        -200
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 12,
+      "hpPercent": 3
+    },
+    {
+      "name": "reactor",
+      "kind": "reactor",
+      "pos": [
+        0,
+        50,
+        -300
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 16,
+      "hpPercent": 2
+    }
+  ]
+}

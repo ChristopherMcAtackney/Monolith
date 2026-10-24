@@ -1,0 +1,313 @@
+{
+  "format": "monolith-combat-ship/1",
+  "id": "earth_outpost",
+  "name": "Earth comet outpost (placeholder)",
+  "sizeClass": "capital",
+  "note": "Earth's early-warning outpost (design section 3, the strike). Combat parts on the placeholder's shapes: the comms array (kind comms: knock it out or the warning gets out), the hangar (kind hangar: while it stands, the outpost scrambles interceptors), the scanner (sensors), flak on the station, anti-fighter guns dug into the ice. Hull, power and weapon energy are FS2's GTI Arcadia installation's; part shares ours, on FS2's scale. Missions address parts by kind, so a real model's parts replace these without the mission changing.",
+  "defense": {
+    "hull": {
+      "value": 100000,
+      "unit": "hp",
+      "fs2": "ships:GTI Arcadia|$Hitpoints"
+    },
+    "shield": {
+      "value": 0,
+      "unit": "hp",
+      "fs2": "ships:GTI Arcadia|$Shields"
+    },
+    "powerOutput": {
+      "value": 1,
+      "unit": "power",
+      "fs2": "ships:GTI Arcadia|$Power Output"
+    },
+    "weaponEnergy": {
+      "value": 100,
+      "unit": "energy",
+      "fs2": "ships:GTI Arcadia|$Max Weapon Eng"
+    },
+    "decoys": {
+      "value": 0,
+      "unit": "decoys",
+      "fs2": "ships:GTI Arcadia|$Countermeasures"
+    }
+  },
+  "geometry": {
+    "about": "The ice nucleus as three crossed boxes inside its ellipsoid (546 x 357 x 462 m half-axes), and the station on top. Unity axes.",
+    "boxes": [
+      {
+        "centre": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          500,
+          200,
+          360
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          360,
+          310,
+          300
+        ]
+      },
+      {
+        "centre": [
+          0,
+          0,
+          0
+        ],
+        "half": [
+          300,
+          180,
+          440
+        ]
+      },
+      {
+        "centre": [
+          0,
+          330,
+          0
+        ],
+        "half": [
+          45,
+          36,
+          180
+        ]
+      }
+    ],
+    "boundRadius": 640
+  },
+  "arms": {
+    "missiles": {},
+    "decoys": 0
+  },
+  "partsSource": "hpPercent: turrets 0.8% of hull each (FS2's installation turrets), the comms array 3%, the hangar 4%, the scanner 2% (ours, on FS2's scale)",
+  "parts": [
+    {
+      "name": "comms_array",
+      "kind": "comms",
+      "pos": [
+        0,
+        392,
+        -130
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 16,
+      "hpPercent": 3
+    },
+    {
+      "name": "scanner",
+      "kind": "sensors",
+      "pos": [
+        0,
+        392,
+        110
+      ],
+      "forward": [
+        0,
+        1,
+        0
+      ],
+      "radius": 14,
+      "hpPercent": 2
+    },
+    {
+      "name": "hangar",
+      "kind": "hangar",
+      "pos": [
+        0,
+        60,
+        470
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "radius": 34,
+      "hpPercent": 4
+    },
+    {
+      "name": "flak_station_pf",
+      "kind": "flak",
+      "pos": [
+        -48,
+        372,
+        120
+      ],
+      "forward": [
+        -0.5,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_station_sf",
+      "kind": "flak",
+      "pos": [
+        48,
+        372,
+        120
+      ],
+      "forward": [
+        0.5,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_station_pa",
+      "kind": "flak",
+      "pos": [
+        -48,
+        372,
+        -120
+      ],
+      "forward": [
+        -0.5,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "flak_station_sa",
+      "kind": "flak",
+      "pos": [
+        48,
+        372,
+        -120
+      ],
+      "forward": [
+        0.5,
+        1,
+        0
+      ],
+      "radius": 5,
+      "hpPercent": 0.8,
+      "weapon": "flak_gun"
+    },
+    {
+      "name": "gun_ice_fore_p",
+      "kind": "aaf",
+      "pos": [
+        -260,
+        120,
+        380
+      ],
+      "forward": [
+        -0.5,
+        0.3,
+        0.8
+      ],
+      "radius": 6,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ice_fore_s",
+      "kind": "aaf",
+      "pos": [
+        260,
+        120,
+        380
+      ],
+      "forward": [
+        0.5,
+        0.3,
+        0.8
+      ],
+      "radius": 6,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ice_port",
+      "kind": "aaf",
+      "pos": [
+        -520,
+        40,
+        0
+      ],
+      "forward": [
+        -1,
+        0.1,
+        0
+      ],
+      "radius": 6,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ice_stbd",
+      "kind": "aaf",
+      "pos": [
+        520,
+        40,
+        0
+      ],
+      "forward": [
+        1,
+        0.1,
+        0
+      ],
+      "radius": 6,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ice_aft",
+      "kind": "aaf",
+      "pos": [
+        0,
+        150,
+        -420
+      ],
+      "forward": [
+        0,
+        0.3,
+        -1
+      ],
+      "radius": 6,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    },
+    {
+      "name": "gun_ice_belly",
+      "kind": "aaf",
+      "pos": [
+        0,
+        -330,
+        60
+      ],
+      "forward": [
+        0,
+        -1,
+        0.2
+      ],
+      "radius": 6,
+      "hpPercent": 0.8,
+      "weapon": "turret_laser"
+    }
+  ]
+}

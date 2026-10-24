@@ -34,6 +34,9 @@ namespace Monolith.Mission
         public List<EventDef> Events = new List<EventDef>();
         public AutoplayDef Autoplay = new AutoplayDef();
         public CabinDef Cabin = new CabinDef();
+        /// <summary>Every radio line of this file is a draft pending the user's approval (a line may say otherwise with its own "pending"): not voiced yet, on purpose.</summary>
+        public bool LinesPending;
+        public SceneryDef Scenery = new SceneryDef();
 
         // ------------------------------------------------------------------------------------------------ the parts of a file
 
@@ -70,6 +73,8 @@ namespace Monolith.Mission
         {
             public List<string> Hulls = new List<string>();
             public float QuietRange = 2500f;
+            /// <summary>Pairs of ships whose distance the pacing log samples each second ("Small Mercy | Archon"), for tuning where the big ships meet.</summary>
+            public List<(string A, string B)> Ranges = new List<(string A, string B)>();
         }
 
         public sealed class CapDef { public int Team; public float[] PerLevel; public float At(int level) => PerLevel[Mathf.Clamp(level, 0, PerLevel.Length - 1)]; }
@@ -108,6 +113,9 @@ namespace Monolith.Mission
             public OrderKind Kind;
             public string Target;
             public List<string> Parts;
+            /// <summary>Attack the target's first living part of this kind ("comms", "hangar", "engine", "turret"...), so a mission names parts the
+            /// way any model of the class will have them, not by a placeholder's part names.</summary>
+            public string PartKind;
             public List<Vector3> Path;
             public float Speed = -1f;
             /// <summary>After the last waypoint: "depart", "stop" or "loop".</summary>
@@ -162,11 +170,38 @@ namespace Monolith.Mission
         {
             public float Standoff = 2600f, Band = 400f, Bearing = 70f, Throttle = 0.3f, TurretWaitScale = 1f, BeamWaitScale = 1f;
             public string TurretProfile = "earth_turret";
-            public bool HoldBeams, Stationary;
+            public bool HoldBeams, HoldTurrets, Stationary;
             public Dictionary<string, string> Weapons = new Dictionary<string, string>();
         }
 
-        public sealed class LookDef { public float Length = 400f, Width = 100f, Height = 80f; public int Seed = 1; public bool HasHull; }
+        /// <summary>
+        /// How a ship with no Blender model of its own is drawn (the class's model, when ShipArt has one, always wins and this is ignored): a placeholder
+        /// hull (length, width, height, seed, and an offset from the ship's centre), and/or a rock of ice (a comet nucleus, an asteroid) it is built into.
+        /// </summary>
+        public sealed class LookDef
+        {
+            public float Length = 400f, Width = 100f, Height = 80f; public int Seed = 1; public bool HasHull;
+            public Vector3 HullOffset;
+            public bool HasRock; public float RockRadius = 400f; public int RockSeed = 1; public Vector3 RockStretch = Vector3.one;
+        }
+
+        /// <summary>Scenery: drifting bodies of ice, drawn only (nothing collides with them or shoots at them), single rocks and scattered fields.</summary>
+        public sealed class SceneryDef
+        {
+            public List<RockDef> Rocks = new List<RockDef>();
+            public List<FieldDef> Fields = new List<FieldDef>();
+        }
+
+        public sealed class RockDef { public Vector3 At; public float Radius = 100f, Spin = 0.4f; public int Seed = 1; public Vector3 Stretch = Vector3.one; }
+
+        /// <summary>A field of rocks scattered in a box (centre, size) with radii between two bounds, kept out of the given spheres (x, y, z, radius).</summary>
+        public sealed class FieldDef
+        {
+            public Vector3 Centre, Size = new Vector3(4000f, 1000f, 4000f);
+            public int Count = 20, Seed = 1;
+            public float RadiusMin = 10f, RadiusMax = 120f, Spin = 1f;
+            public List<Vector4> Clear = new List<Vector4>();
+        }
 
         public sealed class ObjectiveDef
         {
@@ -179,6 +214,10 @@ namespace Monolith.Mission
         {
             public string Id, From, FallbackFrom, Text, Priority = "normal", Voice, Where;
             public float Seconds;
+            /// <summary>A draft the user has not approved yet: shown and heard as the radio's squelch, never sent for voicing (the voice checks count it as pending).</summary>
+            public bool Pending;
+            /// <summary>How it is performed when voiced: calm, tense or frantic (the voice pipeline's tag; empty: its own table, else guessed from the priority).</summary>
+            public string Intensity;
         }
 
         public sealed class EventDef
@@ -222,6 +261,7 @@ namespace Monolith.Mission
             m.Difficulty = r.Str("difficulty", "Medium");
             m.PlayerName = r.Str("player", required: true);
             m.PlayerDeathEnds = r.Bool("playerDeathEnds", true);
+            m.LinesPending = r.Bool("linesPending", false);
             var teams = r.Strings("teams");
             if (teams != null) m.Teams = teams;
             var ctx = new ParseContext(m, errors);
@@ -264,7 +304,40 @@ namespace Monolith.Mission
                 m.Pacing.Hulls = pa.Strings("hulls") ?? new List<string>();
                 foreach (var h in m.Pacing.Hulls) ctx.CheckShip(h, pa.Where + ".hulls", false);
                 m.Pacing.QuietRange = pa.Float("quietRange", 2500f);
+                foreach (var pair in pa.Strings("ranges") ?? new List<string>())
+                {
+                    var ab = pair.Split('|');
+                    if (ab.Length != 2) { errors.Add($"{pa.Where}.ranges: '{pair}' is not two ships joined by '|'"); continue; }
+                    string ra = ab[0].Trim(), rb = ab[1].Trim();
+                    ctx.CheckShip(ra, pa.Where + ".ranges", false); ctx.CheckShip(rb, pa.Where + ".ranges", false);
+                    m.Pacing.Ranges.Add((ra, rb));
+                }
                 pa.Done();
+            }
+            var sc = r.Obj("scenery");
+            if (sc != null)
+            {
+                foreach (var k in sc.Objects("rocks"))
+                {
+                    if (!k.Has("at")) errors.Add($"{k.Where}: a rock needs 'at'");
+                    m.Scenery.Rocks.Add(new RockDef { At = k.Vec("at") ?? Vector3.zero, Radius = k.Float("radius", 100f), Seed = k.Int("seed", 1), Stretch = k.Vec("stretch") ?? Vector3.one, Spin = k.Float("spin", 0.4f) });
+                    k.Done();
+                }
+                foreach (var f in sc.Objects("fields"))
+                {
+                    var fd = new FieldDef { Centre = f.Vec("centre") ?? Vector3.zero, Size = f.Vec("size") ?? new Vector3(4000f, 1000f, 4000f), Count = f.Int("count", 20), Seed = f.Int("seed", 1),
+                                            RadiusMin = f.Float("radiusMin", 10f), RadiusMax = f.Float("radiusMax", 120f), Spin = f.Float("spin", 1f) };
+                    if (f.Raw("clear") is JArray cl)
+                        foreach (var c in cl)
+                        {
+                            if (c is JArray ca && ca.Count == 4) fd.Clear.Add(new Vector4(ca[0].ToObject<float>(), ca[1].ToObject<float>(), ca[2].ToObject<float>(), ca[3].ToObject<float>()));
+                            else errors.Add($"{f.Where}.clear: each is [x, y, z, radius]");
+                        }
+                    if (fd.Count < 0 || fd.Count > 2000) errors.Add($"{f.Where}.count: 0 to 2000");
+                    m.Scenery.Fields.Add(fd);
+                    f.Done();
+                }
+                sc.Done();
             }
             var cb = r.Obj("cabin");
             if (cb != null)
@@ -377,7 +450,7 @@ namespace Monolith.Mission
                 var c = new CapitalDef();
                 c.Standoff = cap.Float("standoff", c.Standoff); c.Band = cap.Float("band", c.Band); c.Bearing = cap.Float("bearing", c.Bearing);
                 c.Throttle = cap.Float("throttle", c.Throttle); c.TurretWaitScale = cap.Float("turretWaitScale", 1f); c.BeamWaitScale = cap.Float("beamWaitScale", 1f);
-                c.TurretProfile = cap.Str("turretProfile", c.TurretProfile); c.HoldBeams = cap.Bool("holdBeams", false); c.Stationary = cap.Bool("stationary", false);
+                c.TurretProfile = cap.Str("turretProfile", c.TurretProfile); c.HoldBeams = cap.Bool("holdBeams", false); c.HoldTurrets = cap.Bool("holdTurrets", false); c.Stationary = cap.Bool("stationary", false);
                 var wp = cap.Obj("weapons");
                 if (wp != null) { foreach (var k in wp.Keys()) c.Weapons[k] = wp.Str(k); wp.Done(); }
                 cap.Done();
@@ -386,11 +459,19 @@ namespace Monolith.Mission
             var look = r.Obj("look");
             if (look != null)
             {
+                d.Look = new LookDef();
                 var h = look.Obj("hull");
                 if (h != null)
                 {
-                    d.Look = new LookDef { HasHull = true, Length = h.Float("length", 400f), Width = h.Float("width", 100f), Height = h.Float("height", 80f), Seed = h.Int("seed", 1) };
+                    d.Look.HasHull = true; d.Look.Length = h.Float("length", 400f); d.Look.Width = h.Float("width", 100f); d.Look.Height = h.Float("height", 80f); d.Look.Seed = h.Int("seed", 1);
+                    d.Look.HullOffset = h.Vec("offset") ?? Vector3.zero;
                     h.Done();
+                }
+                var rk = look.Obj("rock");
+                if (rk != null)
+                {
+                    d.Look.HasRock = true; d.Look.RockRadius = rk.Float("radius", 400f); d.Look.RockSeed = rk.Int("seed", 1); d.Look.RockStretch = rk.Vec("stretch") ?? Vector3.one;
+                    rk.Done();
                 }
                 look.Done();
             }
@@ -487,6 +568,8 @@ namespace Monolith.Mission
             d.Then = o.Str("then", "stop");
             if (d.Then != "stop" && d.Then != "depart" && d.Then != "loop") ctx.Errors.Add($"{where}.then: '{d.Then}' (stop, depart or loop)");
             d.To = o.Vec("to");
+            d.PartKind = o.Str("partKind");
+            if (d.PartKind != null && d.Parts != null) ctx.Errors.Add($"{where}: give part or partKind, not both");
             o.Done();
             return d;
         }
@@ -510,11 +593,20 @@ namespace Monolith.Mission
                 Id = o.Str("id"), Where = o.Where, From = o.Str("from", required: true), FallbackFrom = o.Str("fallbackFrom"), Text = o.Str("text", required: true),
                 Priority = o.Str("priority", "normal"), Voice = o.Str("voice"), Seconds = o.Float("seconds", 0f),
             };
+            ReadLineMeta(o, d, ctx);
             ctx.CheckSpeaker(d.From, o.Where + ".from");
             if (d.FallbackFrom != null) ctx.CheckSpeaker(d.FallbackFrom, o.Where + ".fallbackFrom");
             if (d.Priority != "high" && d.Priority != "normal" && d.Priority != "low") ctx.Errors.Add($"{o.Where}.priority: '{d.Priority}' (high, normal or low)");
             o.Done();
             return d;
+        }
+
+        /// <summary>A line's draft state and how it is to be performed: "pending" (default: the file's "linesPending") and "intensity".</summary>
+        internal static void ReadLineMeta(Reader o, MessageDef d, ParseContext ctx)
+        {
+            d.Pending = o.Bool("pending", ctx.File.LinesPending);
+            d.Intensity = o.Str("intensity");
+            if (d.Intensity != null && d.Intensity != "calm" && d.Intensity != "tense" && d.Intensity != "frantic") ctx.Errors.Add($"{o.Where}.intensity: '{d.Intensity}' (calm, tense or frantic)");
         }
 
         static EventDef ReadEvent(Reader o, ParseContext ctx)
