@@ -1,8 +1,8 @@
 {
   "format": "monolith-ship-class/1",
   "id": "earth_destroyer",
-  "name": "Earth destroyer (placeholder)",
-  "role": "Earth's destroyer in the Oort strike: heavy beams that charge before they fire, flak and guns, a hangar that launches its bombers. A placeholder hull from Game/PlaceholderShips (1,000 x 180 x 150 m, the mission's look) until the real model exists; when ShipArt has an earth_destroyer model, it replaces the placeholder by this class name and its parts come from the model. Flight numbers are FS2's Hecate's.",
+  "name": "Earth destroyer",
+  "role": "Earth's destroyer in the Oort strike: heavy beams that charge before they fire, flak and guns, a hangar that launches its bombers. The real model is ShipArt's earth_destroyer (art_src/oort_art/build_earth_destroyer.py), which replaces the mission's placeholder look by this class name; its parts come from the model. Without the model a mission draws a placeholder hull from Game/PlaceholderShips (the mission's look). Flight numbers are FS2's Hecate's.",
   "flight": {
     "topSpeed": {
       "value": 15,

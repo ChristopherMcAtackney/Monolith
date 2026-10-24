@@ -56,6 +56,7 @@ namespace Monolith.Weapons
         {
             _world = world ?? throw new ArgumentNullException(nameof(world));
             _rules = rules ?? CombatRules.Default;
+            seed = SimSeed.Apply(seed);
             _rng = seed == 0 ? 1u : seed;
         }
 

@@ -1299,6 +1299,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: ae8f3a40227807c4aa83dcd33455e3da, type: 2}
   - {fileID: 2100000, guid: 61fabe9ba6f0ba24dad3464ae57bd2d0, type: 2}
+  - {fileID: 2100000, guid: 5e2e61f1ec8eb64498efeb2f1547222d, type: 2}
   - {fileID: 2100000, guid: ffd546760d5317f46ad6d985c9dd06a4, type: 2}
   - {fileID: 2100000, guid: b87eb12ef9f597a49aabb0882d398e92, type: 2}
   - {fileID: 2100000, guid: 9b56fa299e17c2441a3a3f4bc3d21356, type: 2}

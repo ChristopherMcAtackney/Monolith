@@ -289,22 +289,29 @@ namespace Monolith.Weapons
                     });
                 }
                 // Parts near the blast take it too (a torpedo that goes off on the hull kills the turrets round the hole). The blast spreads its
-                // subsystem damage over the parts it reaches, three at most, so one flak burst cannot strip a small ship of everything.
+                // subsystem damage over the parts it reaches, the three nearest at most (FS2 spends a blast's subsystem damage on the nearest
+                // subsystems first), so one flak burst cannot strip a small ship of everything and one torpedo on a cruiser's flank does not wear
+                // down every part from the bow to the stern.
                 if (c.Shield <= 0f && def.SubsystemMult > 0f)
                 {
-                    int reached = 0;
-                    for (int k = 0; k < c.Parts.Count; k++)
-                    {
-                        if (c.Parts[k].Destroyed) continue;
-                        if (Mathf.Max(0f, Vector3.Distance(c.Parts[k].WorldPosition(ship), point) - c.Parts[k].Radius) < def.BlastOuter) reached++;
-                    }
-                    float share = reached > 0 ? 1f / Mathf.Min(reached, 3) : 1f;
+                    int n0 = -1, n1 = -1, n2 = -1; float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
                     for (int k = 0; k < c.Parts.Count; k++)
                     {
                         var part = c.Parts[k];
                         if (part.Destroyed) continue;
                         float pd = Mathf.Max(0f, Vector3.Distance(part.WorldPosition(ship), point) - part.Radius);
                         if (pd >= def.BlastOuter) continue;
+                        if (pd < d0) { n2 = n1; d2 = d1; n1 = n0; d1 = d0; n0 = k; d0 = pd; }
+                        else if (pd < d1) { n2 = n1; d2 = d1; n1 = k; d1 = pd; }
+                        else if (pd < d2) { n2 = k; d2 = pd; }
+                    }
+                    int reached = (n0 >= 0 ? 1 : 0) + (n1 >= 0 ? 1 : 0) + (n2 >= 0 ? 1 : 0);
+                    float share = reached > 0 ? 1f / reached : 1f;
+                    for (int j = 0; j < reached; j++)
+                    {
+                        int k = j == 0 ? n0 : j == 1 ? n1 : n2;
+                        float pd = j == 0 ? d0 : j == 1 ? d1 : d2;
+                        var part = c.Parts[k];
                         float pf = pd <= def.BlastInner ? 1f : 1f - (pd - def.BlastInner) / Mathf.Max(0.01f, def.BlastOuter - def.BlastInner);
                         _world.Damage.Add(new DamageRequest
                         {

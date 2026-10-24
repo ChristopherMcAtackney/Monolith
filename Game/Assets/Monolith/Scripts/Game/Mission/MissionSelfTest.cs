@@ -34,7 +34,7 @@ namespace Monolith.Game
         public static bool Run()
         {
             _checks = 0; _fails = 0;
-            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
+            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("queue and beam-fire", QueueAndBeamFire), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
             foreach (var (name, t) in tests)
             {
                 try { t(); }
@@ -284,6 +284,53 @@ namespace Monolith.Game
                 Check(rt.Log.Entries.Count > 40 && rt.Log.EventsCsv().Split('\n').Length > 40, $"the timeline logs arrivals, deaths, events, objectives, radio and music ({rt.Log.Entries.Count} entries)");
                 Check(lab.Errors == 0, $"no errors logged ({lab.Errors})");
                 foreach (var s in subs) s.Dispose();
+                rt.Dispose(); host.Dispose();
+            }
+        }
+
+        // ------------------------------------------------------------------------------------------------ the cap's queue, beam-fire, per-level expectations (oort round 2)
+
+        static void QueueAndBeamFire()
+        {
+            // A cap of one Earth fighter: wing A (two, at the start) fills it and queues its second; B (oldest first) queues at 1 s; C, with a higher
+            // capPriority, queues at 2 s and goes ahead of both. The Mercy's beams are freed at 1 s with a target: the far corvette, not the near one.
+            const string json = @"{ ""format"": ""monolith-mission/1"", ""id"": ""queue"", ""name"": ""Queue"", ""player"": ""P"", ""teams"": [""diaspora"", ""earth""],
+              ""arrivalCap"": { ""team"": ""earth"", ""value"": 1 },
+              ""ships"": [ { ""name"": ""P"", ""class"": ""vanguard_fighter"", ""team"": ""diaspora"", ""invulnerable"": true, ""arrival"": { ""at"": [0, 0, -3000] } },
+                           { ""name"": ""Mercy"", ""class"": ""diaspora_cruiser"", ""team"": ""diaspora"", ""invulnerable"": true, ""capital"": { ""holdBeams"": true, ""stationary"": true }, ""arrival"": { ""at"": [0, 0, 0] } },
+                           { ""name"": ""Near"", ""class"": ""earth_corvette"", ""team"": ""earth"", ""invulnerable"": true, ""capital"": { ""stationary"": true, ""holdTurrets"": true }, ""arrival"": { ""at"": [1800, 0, 0], ""rot"": [0, 0, 0] } },
+                           { ""name"": ""Far"", ""class"": ""earth_corvette"", ""team"": ""earth"", ""invulnerable"": true, ""capital"": { ""stationary"": true, ""holdTurrets"": true }, ""arrival"": { ""at"": [-3000, 0, 0], ""rot"": [0, 0, 0] } } ],
+              ""wings"": [ { ""name"": ""A"", ""team"": ""earth"", ""capped"": true, ""ships"": [ { ""class"": ""earth_interceptor"", ""count"": 2 } ], ""arrival"": { ""at"": [0, 0, 6000] } },
+                           { ""name"": ""B"", ""team"": ""earth"", ""capped"": true, ""ships"": [ { ""class"": ""earth_interceptor"", ""count"": 1 } ], ""arrival"": { ""cue"": { ""time"": 1 }, ""at"": [600, 0, 6000] } },
+                           { ""name"": ""C"", ""team"": ""earth"", ""capped"": true, ""capPriority"": 1, ""ships"": [ { ""class"": ""earth_interceptor"", ""count"": 1 } ], ""arrival"": { ""cue"": { ""time"": 2 }, ""at"": [-600, 0, 6000] } } ],
+              ""events"": [ { ""name"": ""free"", ""when"": { ""time"": 1 }, ""do"": [ { ""do"": ""beams"", ""ship"": ""Mercy"", ""free"": true, ""target"": ""Far"" } ] } ],
+              ""autoplay"": { ""expect"": { ""maxEngagingMax"": [2, 3, 4, 5, 99] } } }";
+            var file = MissionFile.Load(json, "queue");
+            Check(file.Autoplay.MaxEngagingAt(0) == 2 && file.Autoplay.MaxEngagingAt(3) == 5 && file.Autoplay.MaxEngagingAt(9) == 99, "an auto-play expectation can be one number per difficulty level (maxEngagingMax)");
+            string bad = null;
+            try { MissionFile.Load(json.Replace(@"""name"": ""C"", ""team"": ""earth"", ""capped"": true,", @"""name"": ""C"", ""team"": ""earth"", ""capped"": false,"), "queue_bad"); }
+            catch (InvalidDataException e) { bad = e.Message; }
+            Check(bad != null && bad.Contains("capPriority"), "capPriority on a wing that is not capped is refused: " + (bad ?? "(it loaded)").Replace("\n", " "));
+            using (var lab = new AiLab(2))
+            {
+                var host = new GameMissionHost(lab.W, lab.Flight, lab.Rig, lab.Ai);
+                var rt = new MissionRuntime(lab.W, file, host, new CabinStub());
+                lab.W.Sim.Register(rt);
+                rt.Start();
+                lab.Run(2.5f);
+                Check(rt.RecOf("A 1").Present && !rt.RecOf("A 2").Present && !rt.RecOf("B 1").Present && !rt.RecOf("C 1").Present && rt.QueuedCount == 3, $"three wait behind the cap of one ({rt.QueuedCount} queued)");
+                var a1 = lab.W.Combat.Get(rt.IdOf("A 1"));
+                lab.W.Damage.Add(new DamageRequest { Ship = a1.Id, Attacker = GameWorld.NoShip, Weapon = "test", Amount = 1e7f, HullMult = 1f, BypassShield = true, Kind = DamageKind.Debug, Part = -2, Point = a1.Ship.Position });
+                lab.Run(0.2f);
+                Check(rt.RecOf("C 1").Present && !rt.RecOf("A 2").Present && !rt.RecOf("B 1").Present, "a capped wing with a higher capPriority takes the free place ahead of older arrivals (C 1 in; A 2 and B 1 still waiting)");
+                int mercy = rt.IdOf("Mercy"), far = rt.IdOf("Far"), near = rt.IdOf("Near");
+                int onFar = 0, onNear = 0;
+                for (int i = 0; i < 12 * Sim.Hz; i++)
+                {
+                    lab.W.Sim.StepOnce();
+                    foreach (var b in lab.Rig.Weapons.Beams) if (b.Ship == mercy) { if (b.Target == far) onFar++; else if (b.Target == near) onNear++; }
+                }
+                Check(onFar > 0 && onNear == 0, $"beams with a target (FS2's beam-fire): the Mercy's beams go for the far corvette, not the nearer one ({F(onFar / (float)Sim.Hz)} s of beam on Far, {F(onNear / (float)Sim.Hz)} s on Near)");
                 rt.Dispose(); host.Dispose();
             }
         }

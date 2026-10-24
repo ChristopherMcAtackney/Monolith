@@ -103,7 +103,7 @@ namespace Monolith.AI
         public AiPilot AddPilot(int shipId, string profile, AiRole role, bool attach = true, string statsKey = null)
         {
             var ship = World.Ships.Get(shipId) ?? throw new ArgumentException($"no ship {shipId}");
-            var p = new AiPilot(this, shipId, profile, role, (uint)(shipId * 2654435761u) ^ 0x9E3779B9u);
+            var p = new AiPilot(this, shipId, profile, role, SimSeed.Apply((uint)(shipId * 2654435761u) ^ 0x9E3779B9u));
             _pilots.Add(p);
             _byShip[shipId] = p;
             if (attach) World.Pilots.Attach(shipId, p);

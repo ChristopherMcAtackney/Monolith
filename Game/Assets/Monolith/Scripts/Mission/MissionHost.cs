@@ -39,6 +39,10 @@ namespace Monolith.Mission
         /// <summary>FS2's beam-free / beam-lock for a capital ship's heavy beams.</summary>
         void SetBeams(int ship, bool free);
 
+        /// <summary>FS2's beam-fire: the capital ship's beams (and its helm) prefer <paramref name="target"/> while it is alive and in reach
+        /// (<see cref="GameWorld.NoShip"/>: back to the nearest enemy capital).</summary>
+        void SetBeamTarget(int ship, int target);
+
         /// <summary>A capital ship's or station's gun and flak turrets hold their fire (false) or fire at will (true).</summary>
         void SetTurrets(int ship, bool fire);
 

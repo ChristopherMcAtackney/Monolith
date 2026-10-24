@@ -1,8 +1,8 @@
 {
   "format": "monolith-ship-class/1",
   "id": "diaspora_cruiser",
-  "name": "Diaspora cruiser (placeholder)",
-  "role": "Our side's capital ship in the dogfight (the bombers' target): a placeholder hull from Game/PlaceholderShips in FS2's design language, until the diaspora's own capital ships are modelled.",
+  "name": "Diaspora cruiser",
+  "role": "Our side's capital ship in the dogfight (the bombers' target): the real model is ShipArt's diaspora_cruiser (art_src/diaspora/build_diaspora_cruiser.py); without it a scene draws a placeholder hull from Game/PlaceholderShips.",
   "flight": {
     "topSpeed": {
       "value": 18,

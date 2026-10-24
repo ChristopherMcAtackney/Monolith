@@ -35,6 +35,24 @@ namespace Monolith.Core
     }
 
     /// <summary>
+    /// A run-wide salt on the sim's random seeds (the weapons, the turret gunners, every AI pilot), so a headless check can play the same
+    /// mission many times with different dice (<c>-mnSeed n</c> on the mission auto-play). Zero, the default, leaves every seed exactly as it
+    /// was: a run without it is bit-identical to one before it existed.
+    /// </summary>
+    public static class SimSeed
+    {
+        public static uint Salt;
+
+        public static uint Apply(uint seed)
+        {
+            if (Salt == 0u) return seed;
+            uint h = (seed ^ (Salt * 0x9E3779B9u)) * 0x85EBCA6Bu;
+            h ^= h >> 13; h *= 0xC2B2AE35u; h ^= h >> 16;
+            return h == 0u ? 1u : h;
+        }
+    }
+
+    /// <summary>
     /// The fixed-rate clock: <see cref="Hz"/> ticks per second whatever the frame rate, running registered systems in
     /// <see cref="ISimSystem.Order"/>. Rendering interpolates with <see cref="Alpha"/>: draw
     /// Lerp(previous tick's state, current tick's state, Alpha). A plain class, driven once per rendered frame by
