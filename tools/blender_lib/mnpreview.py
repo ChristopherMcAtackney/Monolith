@@ -10,7 +10,7 @@ import mathutils
 DEFAULT_COLOURS = {"mn_earth_plate": (0.16, 0.16, 0.18, 1), "mn_earth_trim": (0.5, 0.5, 0.55, 1), "mn_earth_lights": (1.0, 0.95, 0.8, 1), "mn_earth_engine": (1.0, 0.5, 0.2, 1)}
 
 
-def render_views(out_dir, views, size=(1280, 720), sun=(0.4, 0.55, -0.75), colours=None, lens=50.0, hide=("_COL",), only_lod=0, show=()):
+def render_views(out_dir, views, size=(1280, 720), sun=(0.4, 0.55, -0.75), colours=None, lens=50.0, hide=("_COL",), only_lod=0, show=(), clip=(0.5, 5000.0)):
     os.makedirs(out_dir, exist_ok=True)
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_WORKBENCH"
@@ -48,8 +48,7 @@ def render_views(out_dir, views, size=(1280, 720), sun=(0.4, 0.55, -0.75), colou
         o.hide_render = not vis
     cam_data = bpy.data.cameras.new("pv")
     cam_data.lens = lens
-    cam_data.clip_start = 0.5
-    cam_data.clip_end = 5000
+    cam_data.clip_start, cam_data.clip_end = clip
     cam = bpy.data.objects.new("pv", cam_data)
     scene.collection.objects.link(cam)
     scene.camera = cam

@@ -1,0 +1,1226 @@
+{
+ "format": "monolith-cabin/1",
+ "about": "Written by art_src/cabin/build_cabin.py. Cabin space, Unity axes (x right, y up, z forward); metres.",
+ "displays": [
+  {
+   "name": "DISPLAY_dash",
+   "w": 1024,
+   "h": 352,
+   "aspect": 2.96
+  },
+  {
+   "name": "DISPLAY_left",
+   "w": 384,
+   "h": 640,
+   "aspect": 0.5614035087719299
+  },
+  {
+   "name": "DISPLAY_right",
+   "w": 384,
+   "h": 640,
+   "aspect": 0.5614035087719299
+  },
+  {
+   "name": "DISPLAY_table",
+   "w": 1024,
+   "h": 1024,
+   "aspect": 1.0
+  },
+  {
+   "name": "DISPLAY_rack_gun0",
+   "w": 384,
+   "h": 96,
+   "aspect": 4.285714285714286
+  },
+  {
+   "name": "DISPLAY_rack_gun1",
+   "w": 384,
+   "h": 96,
+   "aspect": 4.285714285714286
+  },
+  {
+   "name": "DISPLAY_rack_msl0",
+   "w": 384,
+   "h": 96,
+   "aspect": 4.285714285714286
+  },
+  {
+   "name": "DISPLAY_rack_msl1",
+   "w": 384,
+   "h": 96,
+   "aspect": 4.285714285714286
+  },
+  {
+   "name": "DISPLAY_breaker",
+   "w": 384,
+   "h": 160,
+   "aspect": 2.4
+  },
+  {
+   "name": "DISPLAY_panel_engine",
+   "w": 384,
+   "h": 128,
+   "aspect": 4.0
+  },
+  {
+   "name": "DISPLAY_panel_arms",
+   "w": 384,
+   "h": 128,
+   "aspect": 4.0
+  }
+ ],
+ "rackBays": [
+  {
+   "id": "gun0",
+   "kind": "gun",
+   "pos": [
+    -1.0,
+    1.55,
+    -1.54
+   ],
+   "grip": "ANCHOR_rack_gun0_grip"
+  },
+  {
+   "id": "gun1",
+   "kind": "gun",
+   "pos": [
+    -1.0,
+    1.55,
+    -1.06
+   ],
+   "grip": "ANCHOR_rack_gun1_grip"
+  },
+  {
+   "id": "msl0",
+   "kind": "missile",
+   "pos": [
+    -1.0,
+    0.86,
+    -1.54
+   ],
+   "grip": "ANCHOR_rack_msl0_grip"
+  },
+  {
+   "id": "msl1",
+   "kind": "missile",
+   "pos": [
+    -1.0,
+    0.86,
+    -1.06
+   ],
+   "grip": "ANCHOR_rack_msl1_grip"
+  }
+ ],
+ "eye": {
+  "pos": [
+   0.0,
+   1.32,
+   0.0
+  ],
+  "forward": [
+   0.0,
+   0.0,
+   1.0
+  ]
+ },
+ "stand": {
+  "pos": [
+   0.0,
+   0.3,
+   -0.78
+  ],
+  "faceYawDeg": 180.0
+ },
+ "eyeHeights": {
+  "stand": 1.64,
+  "crouch": 1.12,
+  "seated": 1.32
+ },
+ "levels": [
+  {
+   "x0": -1.1,
+   "x1": 1.1,
+   "z0": -2.31,
+   "z1": -1.3,
+   "y": 0.0
+  },
+  {
+   "x0": -1.1,
+   "x1": 1.1,
+   "z0": -1.3,
+   "z1": -1.05,
+   "y": 0.15
+  },
+  {
+   "x0": -1.1,
+   "x1": 1.1,
+   "z0": -1.05,
+   "z1": -0.55,
+   "y": 0.3
+  },
+  {
+   "x0": -1.04,
+   "x1": 1.04,
+   "z0": -0.55,
+   "z1": 1.2,
+   "y": 0.3
+  }
+ ],
+ "obstacles": [
+  {
+   "x": 0.0,
+   "z": 0.05,
+   "r": 0.34,
+   "why": "the seat"
+  },
+  {
+   "x": 0.0,
+   "z": -1.8,
+   "r": 0.5,
+   "why": "the plan table"
+  }
+ ],
+ "bounds": {
+  "min": [
+   -1.28,
+   0.0,
+   -2.35
+  ],
+  "max": [
+   1.28,
+   2.4,
+   1.45
+  ]
+ },
+ "interactables": [
+  {
+   "id": "seat",
+   "kind": "seat",
+   "pos": [
+    0.0,
+    0.6,
+    0.0
+   ],
+   "stand": [
+    0.0,
+    -0.78
+   ],
+   "faceYawDeg": 0.0,
+   "radius": 1.0
+  },
+  {
+   "id": "table",
+   "kind": "table",
+   "pos": [
+    0.0,
+    0.98,
+    -1.8
+   ],
+   "stand": [
+    0.0,
+    -0.8600000000000001
+   ],
+   "faceYawDeg": 180.0,
+   "radius": 0.9,
+   "grip": "ANCHOR_table_view"
+  },
+  {
+   "id": "breaker",
+   "kind": "breaker",
+   "pos": [
+    1.08,
+    1.3,
+    -1.4
+   ],
+   "stand": [
+    0.6,
+    -1.25
+   ],
+   "faceYawDeg": 90.0,
+   "radius": 0.8,
+   "grip": "ANCHOR_breaker_grip"
+  },
+  {
+   "id": "panel_engine",
+   "kind": "panel",
+   "pos": [
+    1.18,
+    0.84,
+    -0.5
+   ],
+   "stand": [
+    0.78,
+    -0.5
+   ],
+   "faceYawDeg": 90.0,
+   "radius": 0.8,
+   "grip": "ANCHOR_panel_engine_grip",
+   "crouch": true
+  },
+  {
+   "id": "panel_arms",
+   "kind": "panel",
+   "pos": [
+    -1.18,
+    1.2,
+    0.05
+   ],
+   "stand": [
+    -0.78,
+    0.05
+   ],
+   "faceYawDeg": -90.0,
+   "radius": 0.8,
+   "grip": "ANCHOR_panel_arms_grip",
+   "crouch": true
+  },
+  {
+   "id": "rack_gun0",
+   "kind": "rack",
+   "bay": "gun0",
+   "baykind": "gun",
+   "pos": [
+    -1.0,
+    1.55,
+    -1.54
+   ],
+   "stand": [
+    -0.7000000000000001,
+    -1.46
+   ],
+   "faceYawDeg": -90.0,
+   "radius": 0.9,
+   "grip": "ANCHOR_rack_gun0_grip",
+   "crouch": false
+  },
+  {
+   "id": "rack_gun1",
+   "kind": "rack",
+   "bay": "gun1",
+   "baykind": "gun",
+   "pos": [
+    -1.0,
+    1.55,
+    -1.06
+   ],
+   "stand": [
+    -0.64,
+    -1.0
+   ],
+   "faceYawDeg": -90.0,
+   "radius": 0.9,
+   "grip": "ANCHOR_rack_gun1_grip",
+   "crouch": false
+  },
+  {
+   "id": "rack_msl0",
+   "kind": "rack",
+   "bay": "msl0",
+   "baykind": "missile",
+   "pos": [
+    -1.0,
+    0.86,
+    -1.54
+   ],
+   "stand": [
+    -0.7000000000000001,
+    -1.46
+   ],
+   "faceYawDeg": -90.0,
+   "radius": 0.9,
+   "grip": "ANCHOR_rack_msl0_grip",
+   "crouch": true
+  },
+  {
+   "id": "rack_msl1",
+   "kind": "rack",
+   "bay": "msl1",
+   "baykind": "missile",
+   "pos": [
+    -1.0,
+    0.86,
+    -1.06
+   ],
+   "stand": [
+    -0.64,
+    -1.0
+   ],
+   "faceYawDeg": -90.0,
+   "radius": 0.9,
+   "grip": "ANCHOR_rack_msl1_grip",
+   "crouch": true
+  }
+ ],
+ "lights": [
+  {
+   "name": "dash",
+   "kind": "point",
+   "pos": [
+    0.0,
+    1.12,
+    0.62
+   ],
+   "colour": [
+    1.0,
+    0.62,
+    0.28
+   ],
+   "glow": 0.16,
+   "range": 2.6,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "left",
+   "kind": "point",
+   "pos": [
+    -0.95,
+    1.25,
+    0.0
+   ],
+   "colour": [
+    1.0,
+    0.62,
+    0.28
+   ],
+   "glow": 0.1,
+   "range": 1.8,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "right",
+   "kind": "point",
+   "pos": [
+    0.95,
+    1.25,
+    0.0
+   ],
+   "colour": [
+    1.0,
+    0.62,
+    0.28
+   ],
+   "glow": 0.1,
+   "range": 1.8,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "table",
+   "kind": "point",
+   "pos": [
+    0.0,
+    1.35,
+    -1.8
+   ],
+   "colour": [
+    0.35,
+    0.85,
+    0.8
+   ],
+   "glow": 0.2,
+   "range": 2.8,
+   "group": "instrument",
+   "shadow": true
+  },
+  {
+   "name": "rack",
+   "kind": "point",
+   "pos": [
+    -0.9,
+    1.45,
+    -1.3
+   ],
+   "colour": [
+    1.0,
+    0.62,
+    0.28
+   ],
+   "glow": 0.12,
+   "range": 1.6,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "breaker",
+   "kind": "point",
+   "pos": [
+    0.95,
+    1.75,
+    -1.4
+   ],
+   "colour": [
+    1.0,
+    0.62,
+    0.28
+   ],
+   "glow": 0.1,
+   "range": 1.3,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "panel_engine",
+   "kind": "point",
+   "pos": [
+    0.95,
+    0.95,
+    -0.5
+   ],
+   "colour": [
+    0.35,
+    0.85,
+    0.8
+   ],
+   "glow": 0.08,
+   "range": 1.2,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "panel_arms",
+   "kind": "point",
+   "pos": [
+    -0.95,
+    1.55,
+    0.05
+   ],
+   "colour": [
+    0.35,
+    0.85,
+    0.8
+   ],
+   "glow": 0.08,
+   "range": 1.2,
+   "group": "instrument",
+   "shadow": false
+  },
+  {
+   "name": "emerg_fore",
+   "kind": "point",
+   "pos": [
+    0.0,
+    2.4,
+    -0.2
+   ],
+   "colour": [
+    1.0,
+    0.1,
+    0.06
+   ],
+   "glow": 0.2,
+   "range": 3.0,
+   "group": "emergency",
+   "shadow": false
+  },
+  {
+   "name": "emerg_aft",
+   "kind": "point",
+   "pos": [
+    0.0,
+    2.12,
+    -1.6
+   ],
+   "colour": [
+    1.0,
+    0.1,
+    0.06
+   ],
+   "glow": 0.2,
+   "range": 3.0,
+   "group": "emergency",
+   "shadow": false
+  },
+  {
+   "name": "emerg_floor_l",
+   "kind": "point",
+   "pos": [
+    -0.95,
+    0.25,
+    -1.2
+   ],
+   "colour": [
+    1.0,
+    0.1,
+    0.06
+   ],
+   "glow": 0.1,
+   "range": 1.5,
+   "group": "emergency",
+   "shadow": false
+  },
+  {
+   "name": "emerg_floor_r",
+   "kind": "point",
+   "pos": [
+    0.95,
+    0.25,
+    -1.2
+   ],
+   "colour": [
+    1.0,
+    0.1,
+    0.06
+   ],
+   "glow": 0.1,
+   "range": 1.5,
+   "group": "emergency",
+   "shadow": false
+  },
+  {
+   "name": "work",
+   "kind": "spot",
+   "pos": [
+    0.0,
+    2.2,
+    -1.2
+   ],
+   "colour": [
+    0.95,
+    0.97,
+    1.0
+   ],
+   "glow": 0.4,
+   "range": 3.4,
+   "group": "work",
+   "shadow": true,
+   "spot": {
+    "dir": [
+     0.0,
+     -1.0,
+     0.2
+    ],
+    "angle": 85.0
+   }
+  }
+ ],
+ "id": "cabin",
+ "materials": [
+  "mn_cab_plate",
+  "mn_cab_bio",
+  "mn_cab_floor",
+  "mn_cab_trim",
+  "mn_cab_metal",
+  "mn_cab_fabric",
+  "mn_cab_glass",
+  "mn_cab_screen",
+  "mn_cab_glyph",
+  "mn_cab_tissue",
+  "mn_cab_lamp_white",
+  "mn_cab_lamp_amber",
+  "mn_cab_lamp_red",
+  "mn_cab_rubber"
+ ],
+ "materialSet": "Assets/Monolith/Art/Cabin/cabin.materials.json",
+ "stats": {
+  "objects": {
+   "CABIN_SHELL": 8511,
+   "CABIN_FRAME": 1776,
+   "CABIN_GLASS": 171,
+   "SEAT": 1152,
+   "DASH": 1344,
+   "DISPLAY_dash": 2,
+   "DISPLAY_left": 2,
+   "DISPLAY_right": 2,
+   "TABLE": 736,
+   "DISPLAY_table": 2,
+   "RACK": 1600,
+   "DISPLAY_rack_gun0": 2,
+   "RACK_MODULE_gun0": 1128,
+   "DISPLAY_rack_gun1": 2,
+   "RACK_MODULE_gun1": 1128,
+   "DISPLAY_rack_msl0": 2,
+   "RACK_MODULE_msl0": 936,
+   "DISPLAY_rack_msl1": 2,
+   "RACK_MODULE_msl1": 936,
+   "BREAKER": 576,
+   "BREAKER_LEVER": 128,
+   "DISPLAY_breaker": 2,
+   "PANEL_engine": 256,
+   "PANEL_engine_SOCKET": 268,
+   "PANEL_engine_MODULE": 1064,
+   "PANEL_engine_KNIT": 480,
+   "PANEL_engine_DOOR": 192,
+   "DISPLAY_panel_engine": 2,
+   "PANEL_arms": 256,
+   "PANEL_arms_SOCKET": 268,
+   "PANEL_arms_MODULE": 1064,
+   "PANEL_arms_KNIT": 480,
+   "PANEL_arms_DOOR": 192,
+   "DISPLAY_panel_arms": 2,
+   "CABIN_PANELS": 15814,
+   "CABIN_LAMPS": 224,
+   "CABIN_GRAFT": 178
+  },
+  "triangles": 40880
+ },
+ "nodes": {
+  "CABIN_SHELL": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "CABIN_FRAME": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "CABIN_GLASS": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "SEAT": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "DASH": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "DISPLAY_dash": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "DISPLAY_left": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "DISPLAY_right": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "TABLE": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "DISPLAY_table": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "RACK": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "DISPLAY_rack_gun0": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "RACK_MODULE_gun0": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.08,
+     1.55,
+     -1.54
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_rack_gun0_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.0,
+     1.55,
+     -1.54
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "DISPLAY_rack_gun1": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "RACK_MODULE_gun1": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.08,
+     1.55,
+     -1.06
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_rack_gun1_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.0,
+     1.55,
+     -1.06
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "DISPLAY_rack_msl0": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "RACK_MODULE_msl0": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.08,
+     0.86,
+     -1.54
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_rack_msl0_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.0,
+     0.86,
+     -1.54
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "DISPLAY_rack_msl1": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "RACK_MODULE_msl1": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.08,
+     0.86,
+     -1.06
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_rack_msl1_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.0,
+     0.86,
+     -1.06
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "BREAKER": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "BREAKER_LEVER": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.1,
+     1.3,
+     -1.4
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_breaker_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.055,
+     1.47,
+     -1.4
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_breaker_grip_off": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.055,
+     1.13,
+     -1.4
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "DISPLAY_breaker": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "PANEL_engine": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "PANEL_engine_SOCKET": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "PANEL_engine_MODULE": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.21,
+     0.84,
+     -0.5
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "PANEL_engine_KNIT": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.21,
+     0.84,
+     -0.5
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "PANEL_engine_DOOR": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.23,
+     0.64,
+     -0.5
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_panel_engine_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     1.16,
+     0.84,
+     -0.5
+    ],
+    "forward": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "DISPLAY_panel_engine": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "PANEL_arms": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "PANEL_arms_SOCKET": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "PANEL_arms_MODULE": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.21,
+     1.2,
+     0.05
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "PANEL_arms_KNIT": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.21,
+     1.2,
+     0.05
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "PANEL_arms_DOOR": {
+   "kind": "mesh",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.23,
+     1.0,
+     0.05
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_panel_arms_grip": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     -1.16,
+     1.2,
+     0.05
+    ],
+    "forward": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "DISPLAY_panel_arms": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "CABIN_PANELS": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "CABIN_LAMPS": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "CABIN_GRAFT": {
+   "kind": "mesh",
+   "parent": null
+  },
+  "ANCHOR_seat_eye": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     0.0,
+     1.32,
+     0.0
+    ],
+    "forward": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_stand": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     0.0,
+     0.3,
+     -0.78
+    ],
+    "forward": [
+     0.0,
+     0.0,
+     -1.0
+    ],
+    "up": [
+     0.0,
+     1.0,
+     0.0
+    ]
+   }
+  },
+  "ANCHOR_table_view": {
+   "kind": "empty",
+   "parent": null,
+   "frame": {
+    "pos": [
+     0.0,
+     1.64,
+     -1.18
+    ],
+    "forward": [
+     0.0,
+     -0.8,
+     -0.6
+    ],
+    "up": [
+     0.0,
+     0.6,
+     -0.8
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,341 @@
+{
+ "format": "monolith-ship-materials/1",
+ "about": "HDRP material recipes for the pilot's cabin. baseColor and emissiveColor are sRGB display values; emissiveNits scales the emissive map. CabinArtSetup makes the assets.",
+ "materials": [
+  {
+   "blender": "mn_cab_plate",
+   "name": "MN_CabPlate",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_plate_albedo",
+   "normalMap": "cab_plate_normal",
+   "maskMap": "cab_plate_mask",
+   "normalScale": 0.9,
+   "smoothnessRemap": [
+    0,
+    0.85
+   ],
+   "specularAA": true,
+   "detailMap": "cab_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.55,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.5
+  },
+  {
+   "blender": "mn_cab_bio",
+   "name": "MN_CabBio",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_bio_albedo",
+   "normalMap": "cab_bio_normal",
+   "maskMap": "cab_bio_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.95
+   ],
+   "specularAA": true,
+   "detailMap": "cab_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.55,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.5
+  },
+  {
+   "blender": "mn_cab_floor",
+   "name": "MN_CabFloor",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_floor_albedo",
+   "normalMap": "cab_floor_normal",
+   "maskMap": "cab_floor_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.9
+   ],
+   "specularAA": true,
+   "detailMap": "cab_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.55,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.5
+  },
+  {
+   "blender": "mn_cab_trim",
+   "name": "MN_CabTrim",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_trim_albedo",
+   "normalMap": "cab_trim_normal",
+   "maskMap": "cab_trim_mask",
+   "emissiveMap": "cab_trim_emissive",
+   "emissiveColor": [
+    1,
+    1,
+    1
+   ],
+   "emissiveNits": 900,
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    1.0
+   ],
+   "specularAA": true,
+   "detailMap": "cab_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.55,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.5
+  },
+  {
+   "blender": "mn_cab_metal",
+   "name": "MN_CabMetal",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_metal_albedo",
+   "normalMap": "cab_metal_normal",
+   "maskMap": "cab_metal_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.9
+   ],
+   "specularAA": true,
+   "detailMap": "cab_detail",
+   "uvDetail": 1,
+   "detailTiling": [
+    1,
+    1
+   ],
+   "detailAlbedo": 0.55,
+   "detailNormal": 0.25,
+   "detailSmoothness": 0.5
+  },
+  {
+   "blender": "mn_cab_fabric",
+   "name": "MN_CabFabric",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_fabric_albedo",
+   "normalMap": "cab_fabric_normal",
+   "maskMap": "cab_fabric_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.5
+   ],
+   "specularAA": true
+  },
+  {
+   "blender": "mn_cab_glass",
+   "name": "MN_CabGlass",
+   "surface": "glass",
+   "baseColor": [
+    0.55,
+    0.62,
+    0.66
+   ],
+   "alpha": 0.07,
+   "metallic": 0.0,
+   "smoothness": 0.97,
+   "doubleSided": true
+  },
+  {
+   "blender": "mn_cab_screen",
+   "name": "MN_CabScreen",
+   "baseColor": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.85,
+   "emissiveMap": "cab_screen_emissive",
+   "emissiveColor": [
+    1,
+    1,
+    1
+   ],
+   "emissiveNits": 900
+  },
+  {
+   "blender": "mn_cab_skin",
+   "name": "MN_CabSkin",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_skin_albedo",
+   "normalMap": "cab_skin_normal",
+   "maskMap": "cab_skin_mask",
+   "normalScale": 0.8,
+   "smoothnessRemap": [
+    0,
+    0.7
+   ]
+  },
+  {
+   "blender": "mn_cab_nail",
+   "name": "MN_CabNail",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_nail_albedo",
+   "normalMap": "cab_nail_normal",
+   "maskMap": "cab_nail_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.9
+   ]
+  },
+  {
+   "blender": "mn_cab_glyph",
+   "name": "MN_CabGlyph",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_glyph_albedo",
+   "normalMap": "cab_glyph_normal",
+   "maskMap": "cab_glyph_mask",
+   "emissiveMap": "cab_glyph_emissive",
+   "emissiveColor": [
+    1,
+    1,
+    1
+   ],
+   "emissiveNits": 700,
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.8
+   ]
+  },
+  {
+   "blender": "mn_cab_tissue",
+   "name": "MN_CabTissue",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_tissue_albedo",
+   "normalMap": "cab_tissue_normal",
+   "maskMap": "cab_tissue_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.97
+   ]
+  },
+  {
+   "blender": "mn_cab_lamp_white",
+   "name": "MN_CabLampWhite",
+   "baseColor": [
+    0.02,
+    0.02,
+    0.02
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.9,
+   "emissiveColor": [
+    0.95,
+    0.97,
+    1.0
+   ],
+   "emissiveNits": 2500
+  },
+  {
+   "blender": "mn_cab_lamp_amber",
+   "name": "MN_CabLampAmber",
+   "baseColor": [
+    0.02,
+    0.015,
+    0.01
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.9,
+   "emissiveColor": [
+    1.0,
+    0.55,
+    0.14
+   ],
+   "emissiveNits": 2500
+  },
+  {
+   "blender": "mn_cab_lamp_red",
+   "name": "MN_CabLampRed",
+   "baseColor": [
+    0.02,
+    0.005,
+    0.005
+   ],
+   "metallic": 0.0,
+   "smoothness": 0.9,
+   "emissiveColor": [
+    1.0,
+    0.08,
+    0.04
+   ],
+   "emissiveNits": 1800
+  },
+  {
+   "blender": "mn_cab_rubber",
+   "name": "MN_CabRubber",
+   "baseColor": [
+    1,
+    1,
+    1
+   ],
+   "baseMap": "cab_rubber_albedo",
+   "normalMap": "cab_rubber_normal",
+   "maskMap": "cab_rubber_mask",
+   "normalScale": 1.0,
+   "smoothnessRemap": [
+    0,
+    0.5
+   ]
+  }
+ ]
+}
