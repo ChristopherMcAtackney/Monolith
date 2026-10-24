@@ -1,0 +1,20 @@
+{
+ "scene": "juice",
+ "sceneOptions": {
+  "script": [
+   { "t": 0.0, "do": "face", "name": "Reaper 1", "distance": 85, "behind": true, "up": 0.12, "speed": 0.3, "throttle": 0.3 },
+   { "t": 0.02, "do": "input", "throttle": 0.3 },
+   { "t": 0.5, "do": "event", "name": "wing_burn" },
+   { "t": 0.9, "do": "input", "throttle": 1.0, "afterburner": true }
+  ]
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "flame_00_before", "follow": true, "warmup": 0.40 },
+  { "name": "flame_01_ignite", "follow": true, "warmup": 0.25 },
+  { "name": "flame_02_growing", "follow": true, "warmup": 0.20 },
+  { "name": "flame_03_full", "follow": true, "warmup": 0.45 },
+  { "name": "flame_04_chase", "follow": true, "warmup": 0.80 },
+  { "name": "flame_05_late", "follow": true, "warmup": 1.20 }
+ ]
+}

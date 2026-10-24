@@ -33,6 +33,7 @@ namespace Monolith.Game
         {
             yield return new WaitForSeconds(1.0f);
             if (CommandLine.Has("-mnJuiceSelfTest")) SelfTest();
+            if (CommandLine.Has("-mnJuiceSelfTest")) yield return BoostCheck();
             if (CommandLine.Has("-mnRumbleTest")) yield return RumbleTest();
             if (CommandLine.Has("-mnPanelDrive")) yield return PanelDrive();
             if (CommandLine.Has("-mnPanelShot"))
@@ -66,17 +67,22 @@ namespace Monolith.Game
             var s = new JuiceSettings();
             s.ApplyPreset("High");
             s.effects.bolts = false; s.levels.shake = 1.7f; s.levels.beamWidth = 2.3f; s.hitStop.enabled = true; s.slowMo = 0.4f;
+            s.boost.enabled = false; s.boost.fovHold = 20f; s.boost.lens = 0.4f;
             File.WriteAllText(tmp, s.ToJson());
             var r = JuiceSettings.Parse(File.ReadAllText(tmp), tmp);
             Check(!r.effects.bolts && r.effects.beams, "switches round-trip");
             Check(Mathf.Approximately(r.levels.shake, 1.7f) && Mathf.Approximately(r.levels.beamWidth, 2.3f), "levels round-trip");
             Check(r.hitStop.enabled && Mathf.Approximately(r.slowMo, 0.4f), "hit-stop and slow-mo round-trip");
+            Check(!r.boost.enabled && Mathf.Approximately(r.boost.fovHold, 20f) && Mathf.Approximately(r.boost.lens, 0.4f), "boost settings round-trip");
+            Check(JuiceSettings.Parse("{ \"format\": \"monolith-juice/1\" }", "old file").boost.fovHold == 12f, "a juice.json without a boost section gets the boost defaults");
             Check(r.DetectPreset() == "Custom", "a hand-tuned set is Custom");
             r.ApplyPreset("Medium");
             Check(r.DetectPreset() == "Medium" && r.levels.shake == 1f, "Medium preset");
             var d = new JuiceSettings();
             Check(d.preset == "Medium" && d.levels.shake == 1f && !d.hitStop.enabled, "defaults are Medium with hit-stop off");
             Check(JuiceSettings.Parse(Resources.Load<TextAsset>(JuiceSettings.ResourcePath).text, "defaults").DetectPreset() == "Medium", "shipped defaults are Medium");
+            Check(d.boost.enabled && d.boost.intensity == 1f && d.boost.fovHold == 12f && d.boost.fovPunch == 8f, "boost defaults: on, 12 degrees held, 8 thrown");
+            Check(JuiceSettings.Parse(Resources.Load<TextAsset>(JuiceSettings.ResourcePath).text, "defaults").boost.fovHold == 12f, "shipped defaults carry the boost section");
             File.Delete(tmp);
 
             // Trauma: shake grows with the square, then fades.
@@ -98,6 +104,66 @@ namespace Monolith.Game
             Check(Mathf.Approximately(hs.Factor, 1f), "hit-stop lets go");
 
             MnLog.Info($"JUICE selftest {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: settings, presets, trauma, hit-stop");
+            if (fails > 0) Application.Quit(1);
+        }
+
+        /// <summary>
+        /// The boost, on the running sandbox: the button lights the burner, the view widens and the dust stretches, the speed rises, it all eases back
+        /// on release, the off switch really turns the treatment off, and running the tank dry makes the sputter. About 15 s.
+        /// </summary>
+        IEnumerator BoostCheck()
+        {
+            int fails = 0;
+            void Check(bool ok, string what) { if (!ok) { fails++; MnLog.Error("JUICE boostcheck FAILED: " + what); } }
+            var world = GameWorld.Current;
+            var juice = _box.Juice;
+            var fx = juice.Boost;
+            var me = world.Ships.Get(world.LocalPlayerShip);
+            var s = juice.Settings.boost;
+            Check(Mathf.Abs(BoostFx.PunchEnvelope(0f)) < 1e-5f && BoostFx.PunchEnvelope(0.07f) > 0.99f && BoostFx.PunchEnvelope(2.5f) < 0.01f, "the ignition kick rises in a few frames, then settles");
+            Check(me != null && me.FuelMax > 0f, "the player's ship has an afterburner");
+            yield return new WaitForSeconds(0.6f);
+            Check(world.FovKick == 0f && world.DustStretch == 1f && world.DustBright == 1f, "no boost, no kick");
+            float cruise = me.ForwardSpeed;
+
+            // The button lights the burner; everything shows.
+            int ign0 = fx.Ignitions;
+            _box.Trigger("boost");
+            yield return new WaitForSeconds(0.8f);
+            Check(me.AfterburnerOn && fx.Burning && fx.Ignitions == ign0 + 1, "the boost button lights the afterburner (one ignition)");
+            Check(world.FovKick > s.fovHold * 0.8f, $"the view widens while it burns (+{world.FovKick:0.0} degrees)");
+            Check(world.DustStretch > 1.3f && world.DustBright > 1.1f, $"the dust is drawn longer and brighter ({world.DustStretch:0.00}x, {world.DustBright:0.00}x)");
+            Check(juice.Context.Frame.BoostBlur > 0.004f && juice.Context.Frame.BoostActive, "the lens is on");
+            Check(me.ForwardSpeed > cruise + 0.5f * (me.AfterburnerSpeed - me.TopSpeed), $"the ship speeds up ({cruise:0} to {me.ForwardSpeed:0} m/s)");
+            Check(me.AfterburnerSpeed >= 3f * me.TopSpeed, $"the player's burner speed is at least 3x cruise ({me.TopSpeed:0} to {me.AfterburnerSpeed:0} m/s)");
+
+            // Released after 4 s: the burner is out and the view eases back, not snaps.
+            yield return new WaitForSeconds(3.4f);
+            Check(!me.AfterburnerOn, "the burner is out after the 4 s");
+            yield return new WaitForSeconds(0.12f);
+            Check(world.FovKick > 0.3f, $"the view is still easing back a moment after release (+{world.FovKick:0.0} degrees)");
+            yield return new WaitForSeconds(1.8f);
+            Check(world.FovKick < 0.2f && world.DustStretch < 1.05f && !juice.Context.Frame.BoostActive, $"it has eased all the way back (+{world.FovKick:0.00} degrees, dust {world.DustStretch:0.00}x)");
+
+            // The off switch: the speed stays, the treatment goes.
+            s.enabled = false;
+            yield return new WaitForSeconds(0.4f);
+            _box.Trigger("boost");
+            yield return new WaitForSeconds(0.6f);
+            Check(me.AfterburnerOn && world.FovKick == 0f && world.DustStretch == 1f && !juice.Context.Frame.BoostActive, "with the boost juice off the afterburner still burns, with nothing added");
+            s.enabled = true;
+            yield return new WaitForSeconds(3.6f);
+
+            // Run the tank dry: the burner drops with the key down and the sputter plays.
+            int sp0 = fx.Sputters;
+            _box.Trigger("boost_dry");
+            float waited = 0f;
+            while (fx.Sputters == sp0 && waited < 12f) { waited += 0.25f; yield return new WaitForSeconds(0.25f); }
+            Check(fx.Sputters > sp0, $"running the tank dry makes the sputter (after {waited:0.0} s)");
+            yield return new WaitForSeconds(0.3f);
+            Check(!me.AfterburnerOn && me.Fuel < 40f, $"the burner is out on an empty tank (fuel {me.Fuel:0})");
+
+            MnLog.Info($"JUICE boostcheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: ignition, view, dust, lens, release, off switch, dry tank");
             if (fails > 0) Application.Quit(1);
         }
 

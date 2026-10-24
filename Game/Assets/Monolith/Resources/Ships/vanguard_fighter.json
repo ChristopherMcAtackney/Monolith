@@ -2,7 +2,7 @@
   "format": "monolith-ship-class/1",
   "id": "vanguard_fighter",
   "name": "Vanguard fighter",
-  "role": "The player's alien fighter (placeholder name). Flight numbers start on the GTF Ulysses'.",
+  "role": "The player's alien fighter (placeholder name). Flight numbers start on the GTF Ulysses'; the afterburner is the user's override (stronger than FS2's).",
   "flight": {
     "topSpeed": {
       "value": 70,
@@ -49,14 +49,14 @@
       "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Afterburner (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
     },
     "afterburnerSpeed": {
-      "value": 150,
+      "value": 235,
       "unit": "m/s",
-      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn Max Vel (z) (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+      "source": "USER OVERRIDE (design section 4, afterburner bullet, 2026-10-24: 'boosting feels weak ... needs to provide more speed for a really satisfying feeling'): the player's side gets 3.4 x its cruise speed on the burner (70 -> 235 m/s) instead of FS2's 2.1 x (GTF Ulysses +Aburn Max Vel (z) = 150, FS2 retail ships.tbl, Root_fs2.vp, sha256 60266906...315ca). Only the player's fighter class has it: the four FS2 reference classes keep FS2's numbers, so the flight model is still proven against FS2 (tools/flight.ps1, 35 of 35 on each). About 1.3 km covered in a full 6 s tank."
     },
     "afterburnerAccel": {
-      "value": 0.7,
+      "value": 0.4,
       "unit": "s (afterburner speed-up time constant)",
-      "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field +Aburn For accel (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
+      "source": "USER OVERRIDE (same note): a punchier ramp than FS2's 0.7 s (GTF Ulysses +Aburn For accel): 63 % of the extra speed in 0.4 s (an initial push of about 410 m/s^2), 95 % in 1.2 s, so ignition is felt as a shove, not a drift. The juice (Monolith.Juice BoostFx) dresses it."
     },
     "afterburnerFuel": {
       "value": 300,

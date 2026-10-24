@@ -54,14 +54,14 @@ namespace Monolith.View
         }
 
         /// <summary>Rebuild the streaks for an eye at <paramref name="eye"/> looking along <paramref name="forward"/>, moving at <paramref name="velocity"/>.</summary>
-        public void Update(Vector3 eye, Vector3 forward, Vector3 velocity, float near)
+        public void Update(Vector3 eye, Vector3 forward, Vector3 velocity, float near, float stretch = 1f, float brighten = 1f)
         {
             float r = _s.radius, r2 = r * r;
             float speed = velocity.magnitude;
             Vector3 travel = speed > 1f ? velocity / speed : Vector3.zero;
-            Vector3 tailOffset = velocity * _s.streakSeconds;           // where the speck was, relative to us, a moment ago
+            Vector3 tailOffset = velocity * (_s.streakSeconds * stretch);   // where the speck was, relative to us, a moment ago (the boost draws it longer)
             float minAhead = near * 4f;
-            var baseCol = new Color(0.78f, 0.80f, 0.86f) * _s.brightness;
+            var baseCol = new Color(0.78f, 0.80f, 0.86f) * (_s.brightness * brighten);
 
             for (int i = 0; i < _points.Length; i++)
             {

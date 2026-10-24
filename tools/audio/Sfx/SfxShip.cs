@@ -64,6 +64,50 @@ namespace Monolith.AudioTools
             return s.Edges(0.5f, 100f).Normalize(-3f);
         }
 
+        /// <summary>
+        /// The boost lighting (the juice's ignition cue, played over afterburner_on and the roar loop): a punch low in the chest, a rush of air that
+        /// climbs and drains, a crack at the front edge and a low roar tail. The thump sits under 100 Hz and the rush under 2.5 kHz, so it adds
+        /// weight to the swell already there instead of doubling it. 1.3 s.
+        /// </summary>
+        public static Sd AfterburnerWhoomph()
+        {
+            const float L = 1.3f;
+            var s = new Sd(L);
+            s.Sine(t => Ex(t, 98f, 33f, 0.11f), t => 1.5f * Dsp.Smooth(t / 0.006f) * MathF.Exp(-t * 3.3f));
+            s.Sine(t => 47f, t => 0.8f * Dsp.Smooth(t / 0.02f) * MathF.Exp(-t * 2.1f));
+            s.Mix(Noise(L, 451u, t => Dsp.Smooth(t / 0.20f) * MathF.Exp(-MathF.Max(0f, t - 0.18f) * 2.4f)).BandPass(t => 250f + 2250f * Dsp.Clamp01(t / 0.7f), 0.3f, 2), 4f);
+            s.Mix(Noise(L, 452u, t => Hit(t, 38f, 0.0008f)).HighPass(1800f), -8f);
+            s.Mix(Noise(L, 453u, t => Dsp.Smooth(t / 0.1f) * MathF.Exp(-t * 2.0f)).LowPass(180f, 0.2f, 2), 2f);
+            s.Drive(1.6f);
+            s.Reverb(0.5f, 0.08f, 0.5f, 0.6f, 4f, 0.2f);
+            return s.Edges(0.3f, 90f).Normalize(-1.5f);
+        }
+
+        /// <summary>
+        /// An engine starving for fuel: four coughs of fire that thin out (at 0, 0.17, 0.38 and 0.66 s, the beats <c>BoostFx.CoughAt</c> shakes the
+        /// camera on), a whine falling as the burner gives up, and the soft thump of it going out. 1.2 s.
+        /// </summary>
+        public static Sd AfterburnerSputter()
+        {
+            float[] at = { 0.00f, 0.17f, 0.38f, 0.66f };
+            float[] amp = { 1.0f, 0.78f, 0.55f, 0.34f };
+            float[] len = { 0.12f, 0.10f, 0.09f, 0.08f };
+            var s = new Sd(1.2f);
+            for (int i = 0; i < at.Length; i++)
+            {
+                float dd = len[i], hz = 1150f - 170f * i, pop = 125f - 14f * i;
+                var burst = Noise(0.4f, (uint)(461 + i), t => Dsp.Smooth(t / 0.006f) * MathF.Exp(-t / (dd * 0.5f))).BandPass(t => hz * (1f - 0.55f * Dsp.Clamp01(t / 0.2f)), 0.4f, 2);
+                burst.Sine(t => Ex(t, pop, 50f, 0.05f), t => 0.9f * Hit(t, 22f, 0.003f));
+                burst.Mix(Noise(0.4f, (uint)(471 + i), t => Hit(t, 60f, 0.0006f)).HighPass(2200f), -14f);
+                s.Mix(burst, Db.FromLin(amp[i]), at[i]);
+            }
+            s.Sine(t => Ex(t, 1650f, 240f, 0.35f), t => 0.05f * Dsp.Smooth(t / 0.05f) * MathF.Exp(-t * 3.2f));
+            s.Sine(t => Ex(t, 72f, 30f, 0.12f), t => 0.55f * Dsp.Smooth((t - 0.82f) / 0.01f) * MathF.Exp(-MathF.Max(0f, t - 0.82f) * 7f));
+            s.Drive(1.4f);
+            s.Reverb(0.4f, 0.06f, 0.4f, 0.7f, 3f, 0.1f);
+            return s.Edges(0.4f, 80f).Normalize(-3f);
+        }
+
         /// <summary>Cabin air: ventilation hiss, the 120 Hz hum of a fan, now and then a tick of cooling metal. 8 s.</summary>
         public static Sd CabinAir()
         {

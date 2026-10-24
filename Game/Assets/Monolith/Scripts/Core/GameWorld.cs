@@ -70,5 +70,12 @@ namespace Monolith.Core
 
         /// <summary>The cabin's published state (where the pilot is, the view, the lights, the HUD's collapse), or null when there is no cabin (owner: Cabin).</summary>
         public CabinBoard Cabin;
+
+        /// <summary>
+        /// The boost's view effects (owner: Juice/BoostFx writes them every frame; the cockpit view and the capture camera read them):
+        /// degrees added to the field of view, and how many times longer and brighter the motion dust is drawn. 0, 1, 1 when not boosting.
+        /// </summary>
+        public float FovKick;
+        public float DustStretch = 1f, DustBright = 1f;
     }
 }

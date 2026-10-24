@@ -29,6 +29,8 @@ namespace Monolith.Juice
         public Effects effects = new Effects();
         public Levels levels = new Levels();
         public HitStopSettings hitStop = new HitStopSettings();
+        /// <summary>The boost (afterburner) treatment: the view widening, the jolt, the lens, the dust, the flame and the sound.</summary>
+        public BoostSettings boost = new BoostSettings();
         /// <summary>How slow the sandbox's slow-motion toggle runs the game (1 = real time).</summary>
         public float slowMo = 0.25f;
 
@@ -67,6 +69,31 @@ namespace Monolith.Juice
             public float ms = 70f;
             /// <summary>The game speed during the freeze (0.05 = nearly stopped).</summary>
             public float scale = 0.05f;
+        }
+
+        /// <summary>
+        /// The boost's feel (<see cref="BoostFx"/>). Each piece has its own level, 0 turns it off; <c>intensity</c> scales them all together
+        /// (the accessibility knob for the boost: the view widening and the edge blur are the parts a sensitive player may want gone, so
+        /// <c>fovHold</c>, <c>fovPunch</c> and <c>lens</c> can be zeroed on their own). The shake and rumble switches in the main settings still apply.
+        /// </summary>
+        public sealed class BoostSettings
+        {
+            /// <summary>Off leaves the afterburner as it was: speed only, the old steady hum, the audio system's roar.</summary>
+            public bool enabled = true;
+            /// <summary>Everything the boost adds, together (0 to 2).</summary>
+            public float intensity = 1f;
+            /// <summary>Degrees the view widens by while the burner burns (the cabin's standing view is 13 wider than the cockpit's), and the extra thrown out on ignition that settles back.</summary>
+            public float fovHold = 12f, fovPunch = 8f;
+            /// <summary>Ignition camera shake and pad rumble (the jolt, then the steady hum), as multiples of the defaults.</summary>
+            public float shake = 1f, rumble = 1f;
+            /// <summary>Radial blur and colour fringing toward the edges (the middle and the target stay sharp).</summary>
+            public float lens = 1f;
+            /// <summary>How much longer and brighter the motion dust is drawn.</summary>
+            public float streaks = 1f;
+            /// <summary>Size of the flame on ships that burn, and the engine glow at the rim of the picture.</summary>
+            public float flare = 1f;
+            /// <summary>Volume of the ignition whoomph and the empty-tank sputter.</summary>
+            public float sound = 1f;
         }
 
         // ---- presets ----------------------------------------------------------------------------------------------------
@@ -161,6 +188,7 @@ namespace Monolith.Juice
             s.effects ??= new Effects();
             s.levels ??= new Levels();
             s.hitStop ??= new HitStopSettings();
+            s.boost ??= new BoostSettings();
             return s;
         }
 
@@ -178,6 +206,9 @@ namespace Monolith.Juice
                 l.shake = R(l.shake); l.rumble = R(l.rumble); l.flash = R(l.flash); l.size = R(l.size); l.density = R(l.density);
                 l.shove = R(l.shove); l.boltWidth = R(l.boltWidth); l.beamWidth = R(l.beamWidth); l.volume = R(l.volume);
                 hitStop.ms = R(hitStop.ms); hitStop.scale = R(hitStop.scale); slowMo = R(slowMo);
+                var b = boost;
+                b.intensity = R(b.intensity); b.fovHold = R(b.fovHold); b.fovPunch = R(b.fovPunch); b.shake = R(b.shake); b.rumble = R(b.rumble);
+                b.lens = R(b.lens); b.streaks = R(b.streaks); b.flare = R(b.flare); b.sound = R(b.sound);
                 string path = UserPath;
                 File.WriteAllText(path, ToJson());
                 Source = path;
@@ -199,7 +230,7 @@ namespace Monolith.Juice
             JuiceSettings d = null;
             if (asset != null) { try { d = Parse(asset.text, ResourcePath); } catch (Exception) { } }
             d ??= new JuiceSettings();
-            effects = d.effects; levels = d.levels; hitStop = d.hitStop; slowMo = d.slowMo; preset = DetectPreset();
+            effects = d.effects; levels = d.levels; hitStop = d.hitStop; boost = d.boost; slowMo = d.slowMo; preset = DetectPreset();
         }
     }
 }

@@ -172,6 +172,9 @@ This is frame-rate independent, and `tau` (a time constant in seconds) sets how 
   field-of-view kick (the user saw a high-FOV effect in a test build and wants it for the boost), shake,
   rumble, an engine roar, speed streaks. The four FS2 reference classes keep FS2's values, so the flight
   model is still proven against FS2.
+  Built (round 1): the player's fighter burns at 235 m/s over a 70 cruise (3.4 x, FS2 has 2.1 x) with a 0.4 s ramp (FS2 0.7 s); the view widens 12 degrees
+  while it burns (a 17 degree kick on ignition), the dust stretches, the edges smear and fringe, other ships grow a flame, and the tank running dry coughs
+  and sputters. Every piece has a level in the juice settings (`boost`). See `gauntlet/pieces/boost/history.md`.
 - **Getting knocked about:** big hits, collisions and shockwaves loosen the damping for about 2 s (fading),
   and add rotational shake. The player feels physically shoved.
 - **Collisions:** bump and damage, scaled by speed and mass; grazing a capital ship hurts but is not

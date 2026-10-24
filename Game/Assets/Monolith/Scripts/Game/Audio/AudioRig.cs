@@ -87,6 +87,8 @@ namespace Monolith.Game
                 case JuiceCue.BeamImpactLoop: return "beam_impact_loop";
                 case JuiceCue.BreakUp: return "breakup";
                 case JuiceCue.UiClick: return "ui_click";
+                case JuiceCue.BoostWhoomph: return "afterburner_whoomph";
+                case JuiceCue.BoostSputter: return "afterburner_sputter";
                 case JuiceCue.JumpIn: return gain >= 0.9f ? "jump_in_big" : "jump_in";
                 case JuiceCue.JumpOut: return gain >= 0.9f ? "jump_out_big" : "jump_out";
                 default: return cue.ToString().ToLowerInvariant();

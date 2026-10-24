@@ -12,5 +12,10 @@
     "shove": 1.0, "boltWidth": 1.0, "beamWidth": 1.0, "volume": 0.8
   },
   "hitStop": { "enabled": false, "ms": 70.0, "scale": 0.05 },
+  "boost": {
+    "enabled": true, "intensity": 1.0,
+    "fovHold": 12.0, "fovPunch": 8.0, "shake": 1.0, "rumble": 1.0,
+    "lens": 1.0, "streaks": 1.0, "flare": 1.0, "sound": 1.0
+  },
   "slowMo": 0.25
 }

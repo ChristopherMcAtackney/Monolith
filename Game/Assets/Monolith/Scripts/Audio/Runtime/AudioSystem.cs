@@ -609,7 +609,9 @@ namespace Monolith.Audio
                 PlayLocal(burning ? "afterburner_on" : "afterburner_off", 1f);
             }
             _burnerLevel = Mathf.MoveTowards(_burnerLevel, burning ? 1f : 0f, dt * (burning ? 4f : 2.5f));
-            SetLocalLoop(_burner, _burnerLevel, 0.92f + 0.12f * speed01);
+            // The roar follows the speed gained over cruise (the boost): it swells and climbs as the ship runs up to its burner speed.
+            float gained = st != null && st.AfterburnerSpeed > st.TopSpeed + 1f ? Mathf.Clamp01((st.ForwardSpeed - st.TopSpeed) / (st.AfterburnerSpeed - st.TopSpeed)) : 0f;
+            SetLocalLoop(_burner, _burnerLevel * (0.85f + 0.3f * gained), 0.92f + 0.12f * speed01 + 0.16f * gained);
 
             _airLevel = Mathf.MoveTowards(_airLevel, paused ? 0.15f : dark ? 1.6f : 1f, dt * 1.5f);
             SetLocalLoop(_air, _airLevel, 1f);

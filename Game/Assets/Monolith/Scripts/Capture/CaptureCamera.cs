@@ -19,6 +19,7 @@ namespace Monolith.Capture
         float _fov;
         bool _active = true;
         readonly bool _follow;
+        readonly bool _followFov;
 
         public CaptureCamera(Camera cam, ShotBase shot, Pose basePose, float baseFov)
         {
@@ -34,6 +35,7 @@ namespace Monolith.Capture
             _pose = new Pose(p, r);
             _fov = shot.fov ?? baseFov;
             _follow = shot.follow == true;
+            _followFov = _follow && shot.fov == null;
 
             RenderPipelineManager.beginCameraRendering += OnBeginCamera;
             if (!_follow)
@@ -54,7 +56,8 @@ namespace Monolith.Capture
         {
             if (!_active || _cam == null) return;
             if (!_follow) _cam.transform.SetPositionAndRotation(_pose.position, _pose.rotation);
-            _cam.fieldOfView = _fov;
+            // A shot that follows the game with the game's own field of view still shows the boost's FOV kick.
+            _cam.fieldOfView = _fov + (_followFov ? Monolith.Core.GameWorld.Current?.FovKick ?? 0f : 0f);
         }
 
         void OnBeginCamera(ScriptableRenderContext ctx, Camera c)

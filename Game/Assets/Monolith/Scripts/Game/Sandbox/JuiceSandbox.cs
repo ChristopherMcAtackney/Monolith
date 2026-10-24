@@ -149,6 +149,24 @@ namespace Monolith.Game
             _destroyer = Combat.Find(x => x.Kind == "destroyer");
         }
 
+        readonly Dictionary<int, ControlInput> _baseInput = new Dictionary<int, ControlInput>();
+
+        /// <summary>The fighters light their afterburners for a few seconds (to see the flames), then go back to cruising.</summary>
+        void WingBurn(float seconds)
+        {
+            int n = 0;
+            foreach (var kv in _baseInput)
+            {
+                var st = _world.Ships.Get(kv.Key);
+                if (st == null || st.FuelMax <= 0f) continue;
+                var burn = kv.Value; burn.Throttle = 1f; burn.Buttons |= ControlButtons.Afterburner;
+                float t0 = _world.Time;
+                _world.Pilots.Attach(kv.Key, new ScriptedPilot(new[] { new ScriptedPilot.Key(0f, kv.Value), new ScriptedPilot.Key(t0, burn), new ScriptedPilot.Key(t0 + seconds, kv.Value) }));
+                n++;
+            }
+            _lastAction = n > 0 ? $"{n} fighters burn for {seconds:0} s" : "no fighter has an afterburner";
+        }
+
         SandboxShip Spawn(Slot s)
         {
             var cls = ShipCatalog.Load(s.Class);
@@ -181,6 +199,7 @@ namespace Monolith.Game
                 {
                     new ScriptedPilot.Key(0f, new ControlInput { Yaw = s.Yaw, Throttle = s.Speed, Pitch = 0.02f }),
                 };
+                _baseInput[st.Id] = keys[0].Input;
                 _world.Pilots.Attach(st.Id, new ScriptedPilot(keys));
             }
             _views.Register(st.Id, visual);
@@ -261,6 +280,23 @@ namespace Monolith.Game
             tune.Add(PanelItem.Slider("Slow-motion speed", () => s.slowMo, v => { s.slowMo = v; SetSlowMo(_slowMo); }, 0.05f, 1f, 0.05f));
             tune.Add(PanelItem.Button("Save now", SaveNow), PanelItem.Button("Reset to defaults", () => { s.ResetToDefaults(); SaveNow(); }));
             _panel.Pages.Add(tune);
+
+            var boost = new PanelPage("BOOST");
+            var b = s.boost;
+            boost.Add(PanelItem.Info(() => "The afterburner's feel. Hold the afterburner (L3) in flight, or use the buttons. Each slider is its own piece; 0 turns it off."));
+            boost.Add(PanelItem.Button("Boost (4 s)", () => Trigger("boost")), PanelItem.Button("Run the tank dry", () => Trigger("boost_dry")));
+            boost.Add(PanelItem.Button("Wingmen burn (5 s)", () => Trigger("wing_burn")), PanelItem.Toggle("Boost juice", () => b.enabled, v => b.enabled = v));
+            boost.Add(PanelItem.Slider("Intensity (all of it)", () => b.intensity, v => b.intensity = v, 0f, 2f, 0.05f));
+            boost.Add(PanelItem.Slider("View widening (degrees)", () => b.fovHold, v => b.fovHold = v, 0f, 30f, 0.5f, "0.#"));
+            boost.Add(PanelItem.Slider("Ignition kick (degrees)", () => b.fovPunch, v => b.fovPunch = v, 0f, 20f, 0.5f, "0.#"));
+            boost.Add(PanelItem.Slider("Ignition shake", () => b.shake, v => b.shake = v, 0f, 3f, 0.05f));
+            boost.Add(PanelItem.Slider("Pad rumble", () => b.rumble, v => b.rumble = v, 0f, 3f, 0.05f));
+            boost.Add(PanelItem.Slider("Edge blur and fringe", () => b.lens, v => b.lens = v, 0f, 2f, 0.05f));
+            boost.Add(PanelItem.Slider("Dust streaks", () => b.streaks, v => b.streaks = v, 0f, 3f, 0.05f));
+            boost.Add(PanelItem.Slider("Flames and rim glow", () => b.flare, v => b.flare = v, 0f, 3f, 0.05f));
+            boost.Add(PanelItem.Slider("Whoomph and sputter volume", () => b.sound, v => b.sound = v, 0f, 1.5f, 0.05f));
+            boost.Add(PanelItem.Info(() => _world.Ships.Get(_player.Id) is ShipState me ? $"speed {me.ForwardSpeed:0} m/s   fuel {me.Fuel:0} of {me.FuelMax:0}   view +{Juice.Boost.FovKick:0.0} deg" : ""));
+            _panel.Pages.Add(boost);
         }
 
         void Preset(string name)
@@ -358,6 +394,9 @@ namespace Monolith.Game
                 case "subsystem": Subsystem(); break;
                 case "you_shield": HitYou(false); break;
                 case "you_hull": HitYou(true); break;
+                case "boost": _pilot.BoostFor(4f); _lastAction = "boost for 4 s"; break;
+                case "boost_dry": _pilot.BoostFor(60f); _lastAction = "boost until the tank runs dry"; break;
+                case "wing_burn": WingBurn(5f); break;
                 default: MnLog.Warn($"JUICE sandbox: unknown event '{name}'"); return;
             }
             _lastTrigger = name;
@@ -539,14 +578,21 @@ namespace Monolith.Game
             readonly PlayerPilot _inner;
             public bool Blocked;
             float _throttle;
+            float _boostLeft;
+
+            /// <summary>Hold the afterburner for this long (the panel's boost buttons; the panel being open does not stop it).</summary>
+            public void BoostFor(float seconds) { _boostLeft = seconds; }
 
             public SandboxPilot(PlayerPilot inner) { _inner = inner; }
 
             public ControlInput Sample(in SimFrame frame)
             {
-                if (Blocked) return new ControlInput { Throttle = _throttle };
+                bool boosting = _boostLeft > 0f;
+                if (boosting) _boostLeft -= frame.Dt;
+                if (Blocked) return new ControlInput { Throttle = boosting ? 1f : _throttle, Buttons = boosting ? ControlButtons.Afterburner : ControlButtons.None };
                 var c = _inner.Sample(frame);
                 _throttle = c.Throttle;
+                if (boosting) c.Buttons |= ControlButtons.Afterburner;
                 var pad = Gamepad.current;
                 if (pad != null && (pad.leftShoulder.isPressed || pad.rightShoulder.isPressed))
                     c.Buttons &= ~(ControlButtons.TargetNext | ControlButtons.MatchSpeed | ControlButtons.Countermeasure | ControlButtons.Orders | ControlButtons.SecondaryFire | ControlButtons.MissileFire);

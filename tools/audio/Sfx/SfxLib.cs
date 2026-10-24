@@ -69,6 +69,8 @@ namespace Monolith.AudioTools
             l.Add(new SfxDef { Id = "afterburner_loop", Loop = true, LevelDb = -19, Spatial = false, PitchVar = 0f, Build = v => SfxShip.AfterburnerLoop() });
             l.Add(new SfxDef { Id = "afterburner_on", LevelDb = -12, Spatial = false, PitchVar = 0f, Build = v => SfxShip.AfterburnerOn() });
             l.Add(new SfxDef { Id = "afterburner_off", LevelDb = -16, Spatial = false, PitchVar = 0f, Build = v => SfxShip.AfterburnerOff() });
+            l.Add(new SfxDef { Id = "afterburner_whoomph", LevelDb = -9, Spatial = false, PitchVar = 0.02f, Priority = 4f, Note = "the boost's ignition punch (juice), over afterburner_on", Build = v => SfxShip.AfterburnerWhoomph() });
+            l.Add(new SfxDef { Id = "afterburner_sputter", LevelDb = -12, Spatial = false, PitchVar = 0.02f, Priority = 4f, Note = "the empty tank: four coughs and a flameout", Build = v => SfxShip.AfterburnerSputter() });
             l.Add(new SfxDef { Id = "cabin_air", Loop = true, LevelDb = -26, Spatial = false, PitchVar = 0f, Build = v => SfxShip.CabinAir() });
             l.Add(new SfxDef { Id = "alarm_hull", Loop = true, LevelDb = -19, Spatial = false, PitchVar = 0f, Priority = 4f, Build = v => SfxShip.AlarmHull() });
             l.Add(new SfxDef { Id = "alarm_beep", LevelDb = -17, Spatial = false, PitchVar = 0f, Priority = 4f, Bus = "ui", Build = v => SfxShip.AlarmBeep(1180f) });

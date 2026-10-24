@@ -34,6 +34,18 @@ namespace Monolith.Juice
         public Vector4 SunCol = new Vector4(1.6f, 1.55f, 1.4f, 0f);
         public Vector4 Fill = new Vector4(0.065f, 0.07f, 0.085f, 0f);
         public bool Enabled = true;
+
+        /// <summary>
+        /// The boost's lens (pass 4 of MN_Fx, see <see cref="BoostFx"/>): a radial blur and colour fringe that grow toward the rim of the picture
+        /// (<see cref="BoostBlur"/> is the zoom-blur span at the rim as a fraction of the distance from the centre, <see cref="BoostChroma"/> the
+        /// red/blue split likewise), and a faint glow at the rim (display units). Nothing inside <see cref="BoostZone"/>.x (a fraction of the half
+        /// diagonal) is touched, nor a disc round the target (<see cref="BoostSafe"/>: x, y on screen 0..1 with y down, z radius in screen heights).
+        /// </summary>
+        public float BoostBlur, BoostChroma;
+        public Vector3 BoostGlow;
+        public Vector4 BoostZone = new Vector4(0.34f, 0.98f, 0f, 0f);
+        public Vector3 BoostSafe = new Vector3(0.5f, 0.5f, 0f);
+        public bool BoostActive => BoostBlur > 0.0015f || BoostChroma > 0.0003f || BoostGlow.sqrMagnitude > 1e-6f;
     }
 
     /// <summary>
@@ -62,11 +74,34 @@ namespace Monolith.Juice
 
         protected override bool executeInSceneView => false;
 
+        RTHandle _copy;                                   // the boost lens reads the picture from here
+        static readonly int IdSceneCopy = Shader.PropertyToID("_MN_SceneCopy"), IdBoostA = Shader.PropertyToID("_MN_BoostA"),
+            IdBoostZone = Shader.PropertyToID("_MN_BoostZone"), IdBoostSafe = Shader.PropertyToID("_MN_BoostSafe"), IdBoostGlow = Shader.PropertyToID("_MN_BoostGlow");
+
         protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
         {
             var shader = Resources.Load<Shader>(ShaderPath) ?? throw new FileNotFoundException($"Resources/{ShaderPath}.shader is missing");
             _material = new Material(shader) { name = "MN_Fx", hideFlags = HideFlags.HideAndDontSave };
             _shieldMesh = SphereMesh.Icosphere(3);
+            _copy = RTHandles.Alloc(Vector2.one, TextureXR.slices, dimension: TextureXR.dimension, colorFormat: UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat,
+                                    useDynamicScale: true, name: "MN boost lens copy");
+        }
+
+        /// <summary>The boost lens: copy the picture, then redraw the rim of it blurred along the radius and fringed, leaving the middle and the target alone.</summary>
+        void DrawBoostLens(CustomPassContext ctx, float w, float h)
+        {
+            CustomPassUtils.Copy(ctx, ctx.cameraColorBuffer, _copy);
+            var p = _props;
+            p.Clear();
+            p.SetTexture(IdSceneCopy, _copy);
+            p.SetVector(IdScreen, new Vector4(w, h, 1f / w, 1f / h));
+            p.SetVector(IdParams, new Vector4(Frame.NitsPerUnit, 1f, 1f, Frame.Time));
+            p.SetVector(IdBoostA, new Vector4(Frame.BoostBlur, Frame.BoostChroma, 0f, 0f));
+            p.SetVector(IdBoostZone, Frame.BoostZone);
+            p.SetVector(IdBoostSafe, Frame.BoostSafe);
+            p.SetVector(IdBoostGlow, Frame.BoostGlow);
+            CoreUtils.SetRenderTarget(ctx.cmd, ctx.cameraColorBuffer, ClearFlag.None);
+            ctx.cmd.DrawProcedural(Matrix4x4.identity, _material, 4, MeshTopology.Triangles, 3, 1, p);
         }
 
         protected override void Execute(CustomPassContext ctx)
@@ -80,6 +115,9 @@ namespace Monolith.Juice
             var m = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true) * view;
             float focal = h * 0.5f / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
             Vector3 eye = tr.position;
+
+            // The boost's lens first, so the flames and flashes drawn next stay crisp on top of it.
+            if (Frame.BoostActive && _copy != null) DrawBoostLens(ctx, w, h);
 
             var p = _props;
             p.Clear();
@@ -127,6 +165,7 @@ namespace Monolith.Juice
         {
             if (_material != null) Object.Destroy(_material);
             if (_shieldMesh != null) Object.Destroy(_shieldMesh);
+            if (_copy != null) { RTHandles.Release(_copy); _copy = null; }
         }
     }
 

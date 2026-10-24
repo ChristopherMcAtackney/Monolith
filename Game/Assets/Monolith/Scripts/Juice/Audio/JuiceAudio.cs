@@ -13,6 +13,8 @@ namespace Monolith.Juice
         BreakUp, UiClick,
         /// <summary>Added with the audio system: a capital ship's turret, a heavy torpedo leaving the rail, a ship arriving and a ship leaving (gain says how big).</summary>
         LaserTurret, TorpedoLaunch, JumpIn, JumpOut,
+        /// <summary>Added with the boost: the ignition whoomph under the audio system's own roar, and the empty-tank sputter (BoostFx).</summary>
+        BoostWhoomph, BoostSputter,
     }
 
     /// <summary>

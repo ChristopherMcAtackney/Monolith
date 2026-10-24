@@ -9,6 +9,7 @@
 //                  3D noise, lit by its own heat, opaque where it is dense, clipped at the scene's depth) so a blast hides the ship in it
 //   Pass 2 Shield  a shield bubble (ellipsoid mesh) with hex ripples at up to 8 hit points
 //   Pass 3 Edge    a screen-edge flash that never touches the middle of the picture (hits on the player)
+//   Pass 4 BoostLens  the boost's radial blur, colour fringe and rim glow, read from a copy of the picture; clear in the middle and round the target
 //
 // Vertex layout of passes 0 and 1 (one quad = 4 vertices, corner in -1..1):
 //   POSITION   centre, world space metres
@@ -703,6 +704,88 @@ Shader "Hidden/Monolith/Fx"
                 float n = Noise3(float3(i.uv * 7.0, _MN_Params.w * 9.0 + _MN_EdgeParams.w));
                 m *= lerp(1.0, 0.45 + 0.9 * n, _MN_EdgeParams.z);
                 return float4(ToExposure(_MN_EdgeColor.rgb * m), 0.0);
+            }
+            ENDHLSL
+        }
+
+        // ------------------------------------------------------------------ pass 4: the boost lens (Juice/Fx/BoostFx.cs)
+
+        // Reads a copy of the picture (made by FxPass just before) and writes it back with a radial zoom blur and a red/blue fringe that grow
+        // toward the rim, plus a faint glow there. Nothing inside the clear radius changes (the pixel is discarded, so the picture stays as it is),
+        // nor a disc round the player's target. Blend Off: it replaces the pixel. The HUD draws after post-processing, so it is never touched.
+        Pass
+        {
+            Name "BoostLens"
+            ZWrite Off
+            ZTest Always
+            Cull Off
+            Blend Off
+
+            HLSLPROGRAM
+            #pragma vertex VertLens
+            #pragma fragment FragLens
+
+            TEXTURE2D_X(_MN_SceneCopy);
+            float4 _MN_BoostA;          // x zoom-blur span at the rim (fraction of the distance from the centre), y red/blue split at the rim (same unit)
+            float4 _MN_BoostZone;       // x clear radius, y full-strength radius (fractions of the half diagonal)
+            float4 _MN_BoostSafe;       // x, y: the target on screen (0..1, y down), z: its radius in screen heights (0 = none)
+            float4 _MN_BoostGlow;       // rgb: the rim's glow in display units
+
+            struct LensOut { float4 pos : SV_POSITION; };
+
+            LensOut VertLens(uint id : SV_VertexID)
+            {
+                LensOut o;
+                float2 uv = float2((id << 1) & 2, id & 2);
+                o.pos = float4(uv * 2.0 - 1.0, 0.0, 1.0);
+                return o;
+            }
+
+            float4 SceneAt(float2 px)
+            {
+                float2 uv = px * _MN_Screen.zw * _RTHandleScale.xy;
+                return SAMPLE_TEXTURE2D_X_LOD(_MN_SceneCopy, s_linear_clamp_sampler, uv, 0);
+            }
+
+            float4 FragLens(LensOut i) : SV_Target
+            {
+                float2 px = i.pos.xy;                                   // pixel centre, y down
+                float2 uv = px * _MN_Screen.zw;
+                float aspect = _MN_Screen.x * _MN_Screen.w;
+                float2 p = (uv - 0.5) * 2.0;
+                p.x *= aspect;
+                float r = length(p) / length(float2(aspect, 1.0));
+                float m = smoothstep(_MN_BoostZone.x, _MN_BoostZone.y, r);
+                if (_MN_BoostSafe.z > 0.0)
+                {
+                    float2 q = uv - _MN_BoostSafe.xy;
+                    q.x *= aspect;
+                    m *= smoothstep(0.8, 1.7, length(q) / _MN_BoostSafe.z);
+                }
+                if (m <= 0.003) discard;                                // leave the picture as it is
+
+                float2 cen = 0.5 * _MN_Screen.xy;
+                float2 d = px - cen;
+                float blur = _MN_BoostA.x * m;
+                float split = _MN_BoostA.y * m;
+                float3 acc = 0.0;
+                float wsum = 0.0;
+                float alpha = 1.0;
+                [unroll] for (int j = 0; j < 7; j++)
+                {
+                    float t = j / 6.0 - 0.5;                            // -0.5 .. 0.5 along the smear
+                    float z = 1.0 + t * blur;
+                    float wgt = 1.0 - 0.8 * abs(t);
+                    float4 g = SceneAt(cen + d * z);
+                    float cr = SceneAt(cen + d * (z + split)).r;
+                    float cb = SceneAt(cen + d * (z - split)).b;
+                    acc += wgt * float3(cr, g.g, cb);
+                    wsum += wgt;
+                    if (j == 3) alpha = g.a;
+                }
+                float3 rgb = acc / wsum;
+                rgb += ToExposure(_MN_BoostGlow.rgb * (m * m));
+                return float4(rgb, alpha);
             }
             ENDHLSL
         }

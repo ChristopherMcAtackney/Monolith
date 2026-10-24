@@ -1,0 +1,10 @@
+{
+ "scene": "dogfight",
+ "sceneOptions": { "pilot": "ai", "invulnerable": true, "hud": true },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 3.0 },
+ "stills": [
+  { "name": "df_t10", "follow": true, "warmup": 10.0 },
+  { "name": "df_t20", "follow": true, "warmup": 10.0 },
+  { "name": "df_t30", "follow": true, "warmup": 10.0 }
+ ]
+}

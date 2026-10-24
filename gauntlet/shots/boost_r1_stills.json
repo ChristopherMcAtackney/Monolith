@@ -1,0 +1,23 @@
+{
+ "scene": "juice",
+ "sceneOptions": {
+  "script": [
+   { "t": 0.0, "do": "place", "pos": [-60, 92, -470], "lookAt": [-130, 78, 400], "speed": 1.0, "throttle": 1.0 },
+   { "t": 0.02, "do": "input", "throttle": 1.0 },
+   { "t": 0.04, "do": "target", "name": "Reaper 2" },
+   { "t": 1.0, "do": "input", "throttle": 1.0, "afterburner": true },
+   { "t": 3.4, "do": "input", "throttle": 1.0, "afterburner": false }
+  ]
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "boost_00_before", "follow": true, "warmup": 0.90 },
+  { "name": "boost_01_ignite", "follow": true, "warmup": 0.15 },
+  { "name": "boost_02_punch", "follow": true, "warmup": 0.08 },
+  { "name": "boost_03_surge", "follow": true, "warmup": 0.17 },
+  { "name": "boost_04_hold", "follow": true, "warmup": 0.90 },
+  { "name": "boost_05_hold_late", "follow": true, "warmup": 1.10 },
+  { "name": "boost_06_release", "follow": true, "warmup": 0.35 },
+  { "name": "boost_07_after", "follow": true, "warmup": 0.85 }
+ ]
+}

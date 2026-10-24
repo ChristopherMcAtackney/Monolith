@@ -23,6 +23,7 @@ namespace Monolith.View
         Camera _cam;
         SpaceDust _dust;
         Vector3 _velocity;
+        bool _kicked;
 
         public Camera Camera => _cam;
         public ViewSettings Settings => _settings;
@@ -89,10 +90,12 @@ namespace Monolith.View
                 {
                     transform.SetPositionAndRotation(ship.RenderPosition(a) + rot * _settings.camera.Eye, rot);
                     if (cab != null) _cam.fieldOfView = _settings.camera.fovVertical;
+                    // The boost widens the view (Juice/BoostFx writes the kick). Only touched while there is a kick, and once more to put it back.
+                    if (_world.FovKick != 0f || _kicked) { _cam.fieldOfView = _settings.camera.fovVertical + _world.FovKick; _kicked = _world.FovKick != 0f; }
                 }
                 _velocity = ship.Velocity;
             }
-            _dust.Update(transform.position, transform.forward, _velocity, _cam.nearClipPlane);
+            _dust.Update(transform.position, transform.forward, _velocity, _cam.nearClipPlane, _world.DustStretch, _world.DustBright);
         }
     }
 

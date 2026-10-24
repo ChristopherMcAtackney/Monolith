@@ -450,7 +450,7 @@ namespace Monolith.Game
                 Check(rt.EventNamed("Hit").FirstFiredAt >= 0f && repaired && rt.EventNamed("Engine back").FirstFiredAt >= 0f, "the hit took the port engine and the pilot's hands brought it back (the mission saw needsRepair end)");
                 Check(rt.ObjectiveState("engine") == MissionBoard.State.Done, "the hand-repair objective is done");
                 Check(Mathf.Abs(Mathf.DeltaAngle(hAway, hBack)) < 1.0f && Mathf.Abs(vAway - vBack) < 2f, $"while the pilot was up the ship held its heading ({F(Mathf.Abs(Mathf.DeltaAngle(hAway, hBack)))} degrees) and speed ({F(vAway)} to {F(vBack)} m/s) until the hit");
-                Check(cab.State == CabinBoard.Phase.Seated && cab.Powered, "the pilot is back in the seat with the power on");
+                Check(cab.State == CabinBoard.Phase.Seated && cab.Powered, $"the pilot is back in the seat with the power on (state {cab.State}, power {cab.Powered}, the run ended at {lab.W.Time - rt.StartTime:0} s, the mission at {rt.EndedAt - rt.StartTime:0} s)");
                 Check(lab.Errors == 0, $"no errors logged ({lab.Errors})");
                 cab.Dispose();
                 rt.Dispose();

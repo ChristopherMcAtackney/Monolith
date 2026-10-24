@@ -98,9 +98,10 @@ namespace Monolith.Game
                     foreach (var s in _world.Ships.All) if (s.Callsign == name) { ship = s; break; }
                     if (ship == null) throw new ArgumentException($"no ship called '{name}'");
                     Vector3 dir = o["from"] != null ? _box.L(V3(o["from"])).normalized : _box.L(new Vector3(0.1f, 0.08f, -1f)).normalized;
+                    if ((bool)(o["behind"] ?? false)) dir = (ship.Rotation * Vector3.back + Vector3.up * (float)(o["up"] ?? 0.08f)).normalized;      // astern of the ship, whichever way it faces
                     Vector3 pos = ship.Position + dir * (float)(o["distance"] ?? 200f);
                     var look = Quaternion.LookRotation(ship.Position - pos, Vector3.up);
-                    _box.PlacePlayerWorld(pos, look, 0f, 0f);
+                    _box.PlacePlayerWorld(pos, look, (float)(o["speed"] ?? 0f), (float)(o["throttle"] ?? 0f));
                     _world.Ships.Get(_world.LocalPlayerShip).Target = ship.Id;
                     _held = default; _velInit = false;
                     break;
