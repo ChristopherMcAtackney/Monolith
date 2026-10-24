@@ -61,27 +61,58 @@ if (Test-Path $reel) { Copy-Item $reel (Join-Path $out 'frantic_reel.mp3') }
 $ctl = Get-ChildItem $PlaytestRoot -Recurse -Filter controls.json -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $out 'controls.json') } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if ($ctl) { Copy-Item $ctl.FullName (Join-Path $out 'controls.json') } elseif (-not (Test-Path (Join-Path $out 'controls.json'))) { Write-Host 'no controls.json found: the game uses its built-in controls' }
 
+# what Play.bat's words mean, for the user (tools\audio\OPTIONS.txt)
+Copy-Item (Join-Path $root 'tools\audio\OPTIONS.txt') (Join-Path $out 'OPTIONS.txt')
+
 $bat = @'
 @echo off
-rem Monolith with sound. Play.bat [mission] [window] [veryeasy|easy|medium|hard|insane]
-rem   Play.bat                  @@DEFAULT@@ (the default mission), fullscreen 1920x1080
-rem   Play.bat escort           The Crossing
-rem   Play.bat dogfight window  The Dogfight, in a window
+rem Monolith playtest. Play.bat [words, in any order]: OPTIONS.txt lists every one.
+rem   Play.bat                       @@DEFAULT@@ (the default mission), fullscreen 1920x1080, Medium
+rem   Play.bat oort hard skip god    The Oculus on Hard, no briefing, you can't die
+rem   Play.bat flight window         free flight, in a window
+rem   Words starting with - (and numbers) go to the game as they are: Play.bat oort -mnFps 30
 rem Missions are the .mission.json files in the Missions folder next to this file (read before the built-in ones): edit one and play it again.
 rem Your own music, effects and voices go in the Audio folder (see SOUND.txt). The log, with every line of the radio and every music change, is Monolith_audio_log.txt.
 setlocal
 set "MISSION=@@DEFAULT@@"
+set "SCENE="
 set "MODE=-screen-fullscreen 1"
 set "LEVEL="
+set "EXTRA="
 :args
 if "%~1"=="" goto run
-if /I "%~1"=="window" goto window
-if /I "%~1"=="veryeasy" goto l0
-if /I "%~1"=="easy" goto l1
-if /I "%~1"=="medium" goto l2
-if /I "%~1"=="hard" goto l3
-if /I "%~1"=="insane" goto l4
-set "MISSION=%~1"
+set "W=%~1"
+if /I "%W%"=="window" goto window
+if /I "%W%"=="veryeasy" goto l0
+if /I "%W%"=="easy" goto l1
+if /I "%W%"=="medium" goto l2
+if /I "%W%"=="hard" goto l3
+if /I "%W%"=="insane" goto l4
+if /I "%W%"=="flight" goto scene
+if /I "%W%"=="range" goto scene
+if /I "%W%"=="juice" goto scene
+if /I "%W%"=="god" set "EXTRA=%EXTRA% -mnInvulnerable" & goto next
+if /I "%W%"=="skip" set "EXTRA=%EXTRA% -mnSkipBriefing" & goto next
+if /I "%W%"=="ai" set "EXTRA=%EXTRA% -mnAutopilot" & goto next
+if /I "%W%"=="nohud" set "EXTRA=%EXTRA% -mnNoHud" & goto next
+if /I "%W%"=="halo" set "EXTRA=%EXTRA% -mnHudStyle halo" & goto next
+if /I "%W%"=="meridian" set "EXTRA=%EXTRA% -mnHudStyle meridian" & goto next
+if /I "%W%"=="cipher" set "EXTRA=%EXTRA% -mnHudStyle cipher" & goto next
+if /I "%W%"=="nocabin" set "EXTRA=%EXTRA% -mnNoCabin" & goto next
+if /I "%W%"=="norumble" set "EXTRA=%EXTRA% -mnNoRumble" & goto next
+if /I "%W%"=="noload" set "EXTRA=%EXTRA% -mnNoLoadingScreen" & goto next
+if /I "%W%"=="nosound" set "EXTRA=%EXTRA% -mnNoAudio" & goto next
+if "%W:~0,1%"=="-" goto extra
+echo(%W%| findstr /r /x "[0-9.]*" >nul
+if not errorlevel 1 goto extra
+set "MISSION=%W%"
+set "SCENE="
+goto next
+:extra
+set "EXTRA=%EXTRA% %W%"
+goto next
+:scene
+set "SCENE=%W%"
 goto next
 :window
 set "MODE=-screen-fullscreen 0"
@@ -105,11 +136,13 @@ goto next
 shift
 goto args
 :run
+set "WHAT=-mnMission "%MISSION%""
+if defined SCENE set "WHAT=-mnScene %SCENE%"
 set "CTL="
 if exist "%~dp0controls.json" set "CTL=-mnControls "%~dp0controls.json""
 set "CAB="
 if exist "%~dp0cabin.json" set "CAB=-mnCabin "%~dp0cabin.json""
-start "" "%~dp0Monolith.exe" %MODE% -screen-width 1920 -screen-height 1080 -mnMission "%MISSION%" %LEVEL% %CTL% %CAB% -mnAudioLog -logFile "%~dp0Monolith_audio_log.txt"
+start "" "%~dp0Monolith.exe" %MODE% -screen-width 1920 -screen-height 1080 %WHAT% %LEVEL% %CTL% %CAB%%EXTRA% -mnAudioLog -logFile "%~dp0Monolith_audio_log.txt"
 '@
 $bat.Replace('@@DEFAULT@@', $DefaultMission) | Set-Content -Encoding ASCII (Join-Path $out 'Play.bat')
 

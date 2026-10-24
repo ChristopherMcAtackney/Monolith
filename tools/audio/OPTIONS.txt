@@ -1,0 +1,62 @@
+MONOLITH - PLAYTEST OPTIONS
+
+Play.bat takes plain words, in any order:
+
+  Play.bat                         The Dogfight, fullscreen, Medium
+  Play.bat oort                    The Oculus (the Oort Cloud mission)
+  Play.bat oort hard skip          The Oculus on Hard, no briefing
+  Play.bat dogfight god window     The Dogfight, you can't die, in a window
+  Play.bat escort ai               watch the AI fly your ship through The Crossing
+
+To use them, make a shortcut to Play.bat and add the words to the end of its Target, or type them in a command prompt opened in this folder.
+
+
+WHAT TO PLAY (one of these)
+  dogfight      The Dogfight: the Mercy against the Warden corvette and Earth's drone waves (the default)
+  oort          The Oculus: the Oort Cloud strike on the comet outpost, the slice's main mission
+  escort        The Crossing: get the crippled freighter Tamsin to the jump point
+  cabin         Dead Water: hide from the Lector's scans (go dark, hand repairs)
+  <name>        any other mission file in the Missions folder, by name
+
+  flight        free flight, nothing to fight (the flight model on its own)
+  range         the combat range: targets and turrets to shoot at
+  juice         the explosions sandbox (Start opens the tuning panel)
+
+DIFFICULTY (Medium if you give none)
+  veryeasy   easy   medium   hard   insane
+  (On the pause screen the D-pad left/right also changes it, for the next run.)
+
+SCREEN
+  window        in a window (fullscreen 1920x1080 otherwise)
+
+HUD STYLE
+  halo   meridian   cipher
+  (F9 cycles the styles while you play; the game remembers your choice in hud.json.)
+
+TESTING HELPERS
+  god           you can't die
+  skip          no briefing, no plan table: straight into the cockpit
+  ai            the AI flies your ship, and you watch
+  nohud         no HUD (for looking at the game itself)
+  nocabin       missions without the walk-around cabin: you stay seated
+  noload        start without the loading screen
+  norumble      no controller rumble
+  nosound       no sound at all
+
+ANYTHING ELSE
+  A word starting with - goes to the game as it is, with a number after it if it needs one:
+  Play.bat oort -mnFps 30          caps the frame rate at 30 (to check smoothness)
+
+
+KEYS WHILE YOU PLAY (keyboard; the pad's controls are in the pause screen)
+  F9 HUD style     F5/F6 music down/up     F7/F8 effects     F3/F4 voices     - and = master volume     F2 mute
+  (Volumes are saved in audio.json next to the game.)
+
+
+FILES NEXT TO PLAY.BAT YOU CAN EDIT (no rebuild needed)
+  Missions\*.mission.json    the missions themselves
+  music.json, Audio\         your own music, effects and voices (see MUSIC.txt and SOUND.txt)
+  controls.json              the controls (the pad layout, the brake, look inversion)
+  cabin.json                 the cabin's numbers (walking speed and so on)
+  hud.json                   the HUD style and text size
+  Monolith_audio_log.txt     the log of the last run: every radio line and music change

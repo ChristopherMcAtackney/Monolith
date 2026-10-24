@@ -104,7 +104,7 @@ shots on it as the turrets go; warden_runs.txt and .json), `-mnDogfightSoak 0 -m
 pinned after every LateUpdate as well as before rendering (HDRP takes the camera's matrices before `beginCameraRendering`, so in scenes with the
 cockpit camera those shots used to come out from the cockpit).
 
-Missions: `-mnMission <name or path>` plays any mission file (`Resources/Missions/<name>.mission.json`, or `Missions/<name>.mission.json` beside
+Missions (`Play.bat` takes plain words for the common flags: `tools/audio/OPTIONS.txt`, copied into every playtest folder): `-mnMission <name or path>` plays any mission file (`Resources/Missions/<name>.mission.json`, or `Missions/<name>.mission.json` beside
 the exe, read first; `Play.bat <name>` in a playtest folder passes it), with `-mnDifficulty`, `-mnAutopilot`, `-mnInvulnerable`, `-mnSkipBriefing`,
 `-mnPacingLog dir` (events.csv and pacing.csv when a run ends). A plan with `"scene": "mission"` takes `sceneOptions` `mission`, `pilot: "ai"`,
 `difficulty`, `invulnerable`, `hud`, `dust`, `juice`, `lod0` and `spectate` (as the dogfight's); plans `gauntlet/shots/mission_r1_*.json`. Checks:
