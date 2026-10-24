@@ -56,7 +56,8 @@ The capital ship is dangerous but beatable by taking its turrets out one by one:
   has just come into the arc, settling over `turretSettleSeconds` while it stays (loitering is punished, passing through is not). Flak goes into
   the target's path, scattered the same way, never where it would burst on our own side; it bursts at its range, not by proximity (FS2).
 - **Rate.** The weapon's wait (FS2's Terran Turret, 275 m/s every 1 s; Heavy Flak every 1.5 s) x the level's fire delay x the scene's scale.
-- **Beams** keep their three-second charge; they fire only at enemy capital ships, one beam per ship at a time.
+- **Beams** keep their three-second charge; they fire only at enemy capital ships, one beam per ship at a time: the nearest in reach and arc, or, when the
+  mission has named one (`CapitalOrders.BeamTarget`, FS2's beam-fire), that ship whenever it can be hit; the helm then fights that ship too.
 
 Our side's gunners are not handicapped by the level (the aim update and settle are the best level's).
 

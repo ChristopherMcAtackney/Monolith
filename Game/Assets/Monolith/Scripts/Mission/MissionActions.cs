@@ -84,7 +84,9 @@ namespace Monolith.Mission
                 {
                     string ship = r.Str("ship", required: true); ctx.CheckShip(ship, where + ".ship", true);
                     if (!r.Has("free")) ctx.Errors.Add($"{where}: beams needs \"free\": true or false");
-                    return new Beams(ship, r.Bool("free", true));
+                    string target = r.Str("target", null);
+                    if (target != null) ctx.CheckShip(target, where + ".target", false);
+                    return new Beams(ship, r.Bool("free", true), target);
                 }
                 case "turrets":
                 {
@@ -221,13 +223,19 @@ namespace Monolith.Mission
             public override string Describe() => $"order {_ship} {_order}" + (_standing ? " (standing)" : "");
         }
 
-        /// <summary>FS2's beam-free-all and beam-lock-all.</summary>
+        /// <summary>FS2's beam-free-all and beam-lock-all; with a target, FS2's beam-fire: the ship's beams (and its helm) go for that ship
+        /// first while it is alive and in reach, and for the nearest enemy capital otherwise.</summary>
         sealed class Beams : Act
         {
-            readonly string _ship; readonly bool _free;
-            public Beams(string ship, bool free) { _ship = ship; _free = free; }
-            public override void Run(MissionRuntime rt) { foreach (var id in rt.IdsOf(_ship)) rt.Host.SetBeams(id, _free); rt.Note("beams", $"{_ship} {(_free ? "free" : "held")}"); }
-            public override string Describe() => $"beams {_ship} {(_free ? "free" : "held")}";
+            readonly string _ship, _target; readonly bool _free;
+            public Beams(string ship, bool free, string target) { _ship = ship; _free = free; _target = target; }
+            public override void Run(MissionRuntime rt)
+            {
+                int target = _target != null ? rt.IdOf(_target) : GameWorld.NoShip;
+                foreach (var id in rt.IdsOf(_ship)) { rt.Host.SetBeams(id, _free); if (_target != null) rt.Host.SetBeamTarget(id, target); }
+                rt.Note("beams", $"{_ship} {(_free ? "free" : "held")}" + (_target != null ? $" on {_target}" : ""));
+            }
+            public override string Describe() => $"beams {_ship} {(_free ? "free" : "held")}" + (_target != null ? $" on {_target}" : "");
         }
 
         /// <summary>A capital ship's or station's gun and flak turrets hold their fire, or wake up (its beams follow "beams").</summary>

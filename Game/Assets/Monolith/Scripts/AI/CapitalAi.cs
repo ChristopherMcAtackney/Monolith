@@ -19,6 +19,9 @@ namespace Monolith.AI
         public Dictionary<string, string> Weapons = new Dictionary<string, string>();
         /// <summary>Mission control: beams held (FS2's beam-free / beam-lock).</summary>
         public bool HoldBeams;
+        /// <summary>Mission control (FS2's beam-fire): the enemy capital ship the beams go for first, and the helm fights, while it is alive
+        /// and in reach; <see cref="GameWorld.NoShip"/> for the nearest one.</summary>
+        public int BeamTarget = GameWorld.NoShip;
         /// <summary>Mission control: every gun and flak turret holds its fire (a station that has not woken up yet); beams follow <see cref="HoldBeams"/>.</summary>
         public bool HoldTurrets;
         /// <summary>Holds still (no manoeuvring), for tests and stationary emplacements.</summary>
@@ -53,6 +56,7 @@ namespace Monolith.AI
             {
                 if (!Teams.Hostile(me.Team, b.Ship.Team)) continue;
                 float d = (b.Ship.Position - me.Position).sqrMagnitude;
+                if (b.Id == Orders.BeamTarget) { enemy = b; break; }
                 if (d < bd) { bd = d; enemy = b; }
             }
             Vector3 heading = me.Forward;
@@ -127,7 +131,7 @@ namespace Monolith.AI
         uint _rng = 0x51ED270Bu;
         float _now;
 
-        public TurretGunnery(AiDirector ai) { _ai = ai; }
+        public TurretGunnery(AiDirector ai) { _ai = ai; _rng = SimSeed.Apply(_rng); }
         public int Order => SimOrder.Weapons - 10;
         /// <summary>Shots requested so far, by kind (checks).</summary>
         public int GunShots, FlakShots, BeamShots, TorpedoShots;
@@ -302,11 +306,15 @@ namespace Monolith.AI
             float best = float.MaxValue;
             if (t.Kind == Kind.Beam)
             {
+                int prefer = GameWorld.NoShip;
+                foreach (var cp in _ai.CapitalPilots) if (cp.Ship == c.Id) { prefer = cp.Orders.BeamTarget; break; }
                 foreach (var b in _ai.Big)
                 {
                     if (!Teams.Hostile(c.Ship.Team, b.Ship.Team)) continue;
                     float d = Vector3.Distance(from, b.Ship.Position) - b.Shape.BoundRadius * 0.6f;
-                    if (d > t.Def.Range || d >= best || !Sees(c, part, t, from, b.Ship.Position, b.Shape.BoundRadius)) continue;
+                    if (d > t.Def.Range || !Sees(c, part, t, from, b.Ship.Position, b.Shape.BoundRadius)) continue;
+                    if (b.Id == prefer) { t.Target = b.Id; break; }        // FS2's beam-fire: the ordered target first, whenever it can be hit
+                    if (d >= best) continue;
                     best = d; t.Target = b.Id;
                 }
                 Took(t, old);

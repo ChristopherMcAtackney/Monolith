@@ -48,7 +48,7 @@ so text the player sees can use mixed case and any punctuation; `-mnHudSelfTest`
   "arrival": { "cue": { "destroyed": "Choir", "delay": 6 }, "delay": 0, "at": [900, 60, 3000], "rot": [0, -115, 0], "speed": 0.3, "effect": "jump" },
   "departure": { "cue": { "hull": "Warden", "below": 20 }, "to": [0, 0, 9000], "jumpAfter": 3 } }
 
-{ "name": "Choir", "team": "earth", "capped": true, "waves": 1, "waveThreshold": 0, "waveDelay": 5, "wingmen": false,
+{ "name": "Choir", "team": "earth", "capped": true, "capPriority": 0, "waves": 1, "waveThreshold": 0, "waveDelay": 5, "wingmen": false,
   "ships": [ { "class": "earth_interceptor", "ai": "drone", "count": 3 },
              { "class": "earth_fighter", "ai": "drone", "count": 1, "goal": { "order": "attack", "target": "Small Mercy" } } ],
   "goal": { "order": "engage" },
@@ -71,7 +71,9 @@ so text the player sees can use mixed case and any punctuation; `-mnHudSelfTest`
   `speed` is a share of top speed at arrival, `throttle` defaults to it.
 - **Waves** (FS2's): a wing with `waves: 3` sends its next wave `waveDelay` seconds after the current one is down to `waveThreshold` ships.
 - **The arrival cap**: a `capped` wing of the cap's team queues its ships while the team's capped fighters alive are at the cap; they come in,
-  oldest first, as room is made (the dogfight's "never more than N at once").
+  oldest first, as room is made (the dogfight's "never more than N at once"). `capPriority` (a capped wing only; default 0) puts a wing's ships
+  ahead of waiting ships of a lower priority: a beat's own reinforcements (the Oort destroyer's fighters, Earth's last wing) take the next free
+  places before the stragglers of earlier waves, with the cap, and so the pressure, unchanged.
 - **Orders** (`goal`, `fallback`, the `order` action): `attack` (with `part`: a name, or a list where the first still standing is attacked;
   or `partKind`: the target's first living part of that kind, e.g. `comms`, `hangar`, `turret`, `engine`, so a mission survives a model swap),
   `disable` (engines), `disarm` (its first weapon part), `guard`, `form` (on a leader), `engage` (free fight), `bomb` (torpedo runs),
@@ -156,7 +158,7 @@ members (`"Choir 2"`) or `"<player>"`. Delays are seconds after the fact first b
 | `radio` | `{ "do": "radio", "message": "bombers" }`, or inline `{ "do": "radio", "from": "#Command", "text": "...", "priority": "high" }` | queues a message |
 | `objective` | `{ "do": "objective", "id": "bombers", "set": "complete" }` | `complete`, `failed`, `pending`, `show`, `hide` |
 | `order` | `{ "do": "order", "ship": "Vigil", "order": "guard", "target": "Censer", "standing": true }` | an AI order to a ship or every ship of a wing (standing: also its fallback) |
-| `beams` | `{ "do": "beams", "ship": "Small Mercy", "free": true }` | FS2's beam-free / beam-lock |
+| `beams` | `{ "do": "beams", "ship": "Small Mercy", "free": true }`, `"target": "Archon"` | FS2's beam-free / beam-lock; with a `target`, FS2's beam-fire: the ship's beams (and its helm) go for that ship first whenever it is alive, in reach and in a beam turret's arc, and for the nearest enemy capital otherwise |
 | `turrets` | `{ "do": "turrets", "ship": "Oculus", "fire": true }` | a capital's guns and flak wake (or hold; beams follow `beams`) |
 | `music` | `{ "do": "music", "state": "battle3", "for": 30 }`, `{ "do": "music", "auto": true }`, `{ "do": "music", "sting": "enemy_arrival" }` | the music state (`ambient`, `battle1..3`, `victory`, `failure`, `death`) |
 | `theme` | `{ "do": "theme", "name": "lector" }` fades a theme track in over the base score; `{ "do": "theme", "name": "lector", "on": false }` fades it out. Optional: `fadeIn`, `fadeOut` (seconds), `priority` (the higher one plays when two are on), `volume` (dB), `mode` (`duck`: the base score drops under it; `replace`: the base falls silent), `duck` (dB) | the music's **second layer** (below). Built-in themes: `lector` (Earth's picket corvette), `destroyer` (Earth's capital ship), `outpost` (an isolated station) |
@@ -214,10 +216,13 @@ Event ids and fields: `Core/MissionBoard.cs`.
 - `-mnMissionSelfTest`: every built-in mission loads and a broken one is refused with each problem named; every condition and action on a scripted
   world (`Resources/MissionTests/selftest.mission.json`: the test kills ships and parts at set times and checks the tick each event fires);
   each built-in mission runs a minute headless; the dogfight's port matches the hand-written dogfight to the bit for 240 s.
-- `-mnMissionAutoPlay <mission> -mnOut dir [-mnSeconds n] [-mnDifficulty x] [-mnMortal]`: the AI flies the player (invulnerable unless the
+- `-mnMissionAutoPlay <mission> -mnOut dir [-mnSeconds n] [-mnDifficulty x] [-mnMortal] [-mnSeed n]`: the AI flies the player (invulnerable unless the
   mission's `autoplay.invulnerable` is false) until the end; then the mission's `autoplay.expect` is asserted: `result` (any of), `fired`,
-  `notFired`, `order` (the ones that fired, in that order), `longestQuietMax`, `maxEngagingMax`, `maxThreatsMax`, `threatsAvgMin`; plus no errors,
-  no bad numbers, no stuck AI. Writes `events.csv`, `pacing.csv` (with the `pacing.ranges` distances), `autoplay.txt`, `autoplay.json`,
-  `radio.txt`. `-mnGoDark`: the stub goes dark for every scan sweep (a player who obeys the call), so a mission's unseen path can be run.
+  `notFired`, `order` (the ones that fired, in that order), `longestQuietMax`, `maxEngagingMax` (a number, or one per difficulty level), `maxThreatsMax`,
+  `threatsAvgMin`; plus no errors, no bad numbers, no stuck AI. Writes `events.csv`, `pacing.csv` (with the `pacing.ranges` distances), `autoplay.txt`,
+  `autoplay.json`, `radio.txt`; the report ends with the `pacing.hulls` ships' fates, lowest hulls, hull damage by source and every part they lost (when,
+  to whom, with what). `-mnGoDark`: the stub goes dark for every scan sweep (a player who obeys the call), so a mission's unseen path can be run.
+  `-mnSeed n` salts every random seed of the sim (weapons, turret gunners, AI pilots; `Core/Sim.cs` `SimSeed`), so one mission can be played with many
+  different dice: 0, the default, is the same run as before it existed. The Oort round 2 sweeps ran 30 seeds a level this way.
 - `-mnDogfightPortCheck seconds -mnOut dir [-mnDifficulty x]`: `DogfightBattle` against `dogfight.mission.json`, every ship's state compared
   once a second.

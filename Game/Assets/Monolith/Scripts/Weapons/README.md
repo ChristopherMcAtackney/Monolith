@@ -26,7 +26,8 @@ same tick and raises the events the juice listens for. Nothing is drawn here: `h
 Against a shield, `damage x shieldMult` comes off the shield; what is left goes to the hull as `x hullMult` and, near the impact, to the nearest part
 (or the part the shot struck) as `x subsystemMult`. A shield bubble is the FS2 shield total times `shieldBubbleScale` (0.5: FS2 splits it over four
 quadrants and fire lands mostly on one). Blasts (missiles, flak, torpedoes) fall off linearly from the inner to the outer radius and share their
-part damage among the parts they reach (three at most). Flak bursts at the range its turret set (or on a direct strike; `flakProximity` 0, as
+part damage among the three nearest parts they reach (FS2 spends a blast on the nearest subsystems first; until the Oort round 2 every part in
+reach took a third, so one torpedo on a cruiser's flank wore down parts from bow to stern). Flak bursts at the range its turret set (or on a direct strike; `flakProximity` 0, as
 FS2's flak), and a burst hurts hostile torpedoes near it as a bolt would, so flak turrets shoot bombs down. The difficulty spares the player's
 ship (`GameWorld.PlayerDamageScale`) and, through `ShipCombat.DamageTakenScale`, its wingmen. Collisions bypass the shield: `0.5 x reduced mass x closing^2 x (1 - e^2)` times
 `collisionEnergyToDamage`, shared by mass, plus a knock through `GameWorld.Knocks` (flight loosens its damping for up to 2 s).
