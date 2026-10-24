@@ -9,6 +9,9 @@
 //                 the shape from its centre line, v the pixels along it from its start. The fragment measures its distance outside that box in pixels,
 //                 so every edge is anti-aliased to a pixel, the glow (_MN_Glow) and the dark keyline (_MN_Key) come from the same distance.
 //                 Premultiplied alpha, on top.
+//   pass 5 HudImage: a picture (the loading screen's splash). POSITION = pixels, TEXCOORD0 = (u, v, feather u, feather v): the picture's own edges fade to nothing over that much of
+//                 its width and height where they are inside the screen (so a letterboxed splash melts into the black); COLOR = tint, alpha = how much of it shows. A negative feather u makes the
+//                 quad a plain colour (the backdrop under the picture). Premultiplied alpha. Drawn before the shapes and the type, so the picture is the bottom layer.
 //   pass 4 HudText: the HUD's type. TEXCOORD0.xy = the glyph's cell in the signed-distance atlas _MN_FontTex (128 = the edge, spread _MN_FontP.z texels either side),
 //                 so the edge is a pixel wide at any size; the same glow and keyline. Premultiplied alpha, on top.
 Shader "Hidden/Monolith/Lines"
@@ -16,6 +19,7 @@ Shader "Hidden/Monolith/Lines"
     Properties
     {
         _MN_FontTex ("HUD font atlas (signed distance)", 2D) = "black" {}
+        _MN_ImageTex ("HUD image (the loading screen's splash)", 2D) = "black" {}
     }
     SubShader
     {
@@ -30,6 +34,8 @@ Shader "Hidden/Monolith/Lines"
         float4 _MN_FontP;       // hud pass 4: atlas width, atlas height (texels), spread (texels), -
         Texture2D _MN_FontTex;
         SamplerState sampler_MN_FontTex;
+        Texture2D _MN_ImageTex;
+        SamplerState sampler_MN_ImageTex;
 
         // The alpha a HUD colour is authored with: for a lit colour it is how bright it should look (the target is sRGB and blends in linear light, where a linear 0.2 reads as half
         // as bright), so it is raised to the 2.2; a dark colour (a plate, a shadow) keeps its alpha as the share of the picture it hides.
@@ -252,6 +258,41 @@ Shader "Hidden/Monolith/Lines"
                 float3 c2 = i.col.rgb * glow * (1.0 - key);
                 float3 c3 = i.col.rgb * core + c2 * (1.0 - core);
                 return float4(c3, core + a2 * (1.0 - core));
+            }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "HudImage"
+            ZWrite Off
+            ZTest Always
+            Cull Off
+            Blend One OneMinusSrcAlpha
+
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            struct A { float2 pos : POSITION; float4 uv : TEXCOORD0; float4 col : COLOR; };
+            struct V { float4 pos : SV_POSITION; float4 uv : TEXCOORD0; float4 col : COLOR; };
+
+            V vert(A i)
+            {
+                V o;
+                o.pos = mul(_MN_Matrix, float4(i.pos, 0.0, 1.0));
+                o.uv = i.uv;
+                o.col = i.col;
+                return o;
+            }
+
+            float4 frag(V i) : SV_Target
+            {
+                if (i.uv.z < -0.5) { float a0 = i.col.a * (1.0 - _MN_Dim); return float4(i.col.rgb * a0, a0); }      // a plain colour
+                float4 t = _MN_ImageTex.Sample(sampler_MN_ImageTex, i.uv.xy);
+                float2 e = min(i.uv.xy, 1.0 - i.uv.xy);
+                float f = (i.uv.z > 0.0 ? smoothstep(0.0, i.uv.z, e.x) : 1.0) * (i.uv.w > 0.0 ? smoothstep(0.0, i.uv.w, e.y) : 1.0);
+                float a = i.col.a * f * (1.0 - _MN_Dim);
+                return float4(t.rgb * i.col.rgb * a, a);
             }
             ENDHLSL
         }

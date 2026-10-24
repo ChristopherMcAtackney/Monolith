@@ -14,6 +14,7 @@
         "Monolith.Damage",
         "Monolith.Collision",
         "Monolith.HudUi",
+        "Monolith.Loading",
         "Monolith.Juice",
         "Monolith.ShipArt",
         "Monolith.AI",

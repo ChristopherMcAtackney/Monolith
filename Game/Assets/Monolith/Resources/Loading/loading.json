@@ -1,0 +1,16 @@
+{
+ "about": "How long each step of the start took on the development machine (milliseconds, from loading_stats.json after a few runs), so the bar goes at about the right pace the first time. Every run writes its own figures beside the game (loading_stats.json) and the next start uses those. Steps overlap (the sound decodes while the ships and the world load), so the figures add up to more than the whole.",
+ "weights": {
+  "start": 40,
+  "ships": 3400,
+  "cabin": 120,
+  "effects": 300,
+  "sky": 40,
+  "world": 900,
+  "deathcut": 850,
+  "sound": 4850,
+  "skywarm": 25,
+  "cabinwarm": 45,
+  "settle": 85
+ }
+}

@@ -14,6 +14,18 @@ namespace Monolith.Game
     /// </summary>
     public static class AudioRig
     {
+        /// <summary>A library the loading screen started decoding before the world was built; the audio system made for the run takes it over.</summary>
+        public static AudioLibrary Preloaded;
+
+        /// <summary>Start decoding the sound now (the loading screen does this first, so the decode overlaps the rest of the load), if this run is to have sound. Null when it is not.</summary>
+        public static AudioLibrary BeginPreload(MonoBehaviour host)
+        {
+            if (AudioSystem.Active != null || Preloaded != null || CommandLine.Has("-mnNoAudio") || CommandLine.Has("-mnCapture") || !string.IsNullOrEmpty(CommandLine.Get("-mnAudioCapture")) || Application.isBatchMode) return null;
+            Preloaded = new AudioLibrary();
+            host.StartCoroutine(Preloaded.Load(host));
+            return Preloaded;
+        }
+
         /// <summary>Make the juice ask for the real audio. Call before the scene is built.</summary>
         public static void Install(GameWorld world, Transform parent)
         {
@@ -31,7 +43,8 @@ namespace Monolith.Game
             if (CommandLine.Has("-mnNoAudio")) return null;
             bool capture = CommandLine.Has("-mnCapture");
             string record = CommandLine.Get("-mnAudioCapture");
-            var o = new AudioOptions { SavePrefs = !capture };
+            var o = new AudioOptions { SavePrefs = !capture, Library = Preloaded };
+            Preloaded = null;
             if (!string.IsNullOrEmpty(record)) { o.Offline = true; o.RecordPath = record; }
             else if (capture && !CommandLine.Has("-mnAudio")) return null;
             else if (Application.isBatchMode && !CommandLine.Has("-mnAudioMute")) return null;        // headless runs make no sound (and the soaks must not record hours of it)

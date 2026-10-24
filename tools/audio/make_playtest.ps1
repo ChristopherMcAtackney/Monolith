@@ -20,6 +20,10 @@ if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force $out | Out-Null
 Write-Host "copying the build to $out"
 robocopy $build $out /E /NFL /NDL /NJH /NJS /NP /XD Monolith_BurstDebugInformation_DoNotShip | Out-Null
+# A Unity build does not delete a streaming file that has since been removed from the project (a sound taken out of the game lingers in Builds\Win and plays in the playtest): the
+# built-in sound in the playtest is made exactly the project's, and nothing else.
+$projAudio = Join-Path $root 'Game\Assets\StreamingAssets\Audio'
+robocopy $projAudio (Join-Path $out 'Monolith_Data\StreamingAssets\Audio') /MIR /XF *.meta /NFL /NDL /NJH /NJS /NP | Out-Null
 
 # the missions, to edit without a build
 $m = Join-Path $out 'Missions'
@@ -31,6 +35,9 @@ $a = Join-Path $out 'Audio'
 New-Item -ItemType Directory -Force (Join-Path $a 'music'), (Join-Path $a 'sfx'), (Join-Path $a 'vo') | Out-Null
 Copy-Item (Join-Path $root 'Game\Assets\StreamingAssets\Audio\AUDIO_LIST.txt') (Join-Path $out 'AUDIO_LIST.txt')
 Copy-Item (Join-Path $root 'tools\audio\SOUND.txt') (Join-Path $out 'SOUND.txt')
+# your own music: how, and a music.json with every slot listed and none set (the built-in music plays until you give a slot a file)
+Copy-Item (Join-Path $root 'tools\audio\MUSIC.txt') (Join-Path $out 'MUSIC.txt')
+Copy-Item (Join-Path $root 'tools\audio\music.example.json') (Join-Path $out 'music.json')
 # the cabin's numbers, editable next to Play.bat (the build reads its own if this is absent)
 $cab = Join-Path $root 'Game\Assets\Monolith\Resources\Cabin\cabin.json'
 if (Test-Path $cab) { Copy-Item $cab (Join-Path $out 'cabin.json') }

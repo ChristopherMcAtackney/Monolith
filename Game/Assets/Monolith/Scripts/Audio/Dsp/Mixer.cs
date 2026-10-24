@@ -19,8 +19,34 @@ namespace Monolith.Audio
         /// <summary>The loop body in frames; LoopEnd 0 means the end of the clip.</summary>
         public int LoopStart, LoopEnd;
         public float TrimDb;
+        /// <summary>Where the first pass starts (frames), skipping an intro; the loop body is still LoopStart to LoopEnd.</summary>
+        public int StartFrame;
         public int Frames => Pcm.Length / Channels;
         public float Seconds => (float)Frames / SampleRate;
+
+        /// <summary>
+        /// Make the loop seamless by cross-fading: the last <paramref name="fadeSeconds"/> of the loop body (before LoopEnd) are blended into the material that leads up to LoopStart, so
+        /// when the mixer jumps from LoopEnd back to LoopStart the signal carries on from where it was. Needs that much audio before LoopStart; returns false (and changes nothing) when there is not.
+        /// Done once, on the clip, when it is loaded.
+        /// </summary>
+        public bool BakeLoopCrossfade(float fadeSeconds)
+        {
+            int le = LoopEnd > 0 ? Math.Min(LoopEnd, Frames) : Frames;
+            int xf = (int)(fadeSeconds * SampleRate);
+            if (xf < 16 || LoopStart < xf || le - LoopStart < xf * 2) return false;
+            for (int j = 0; j < xf; j++)
+            {
+                float t = (j + 0.5f) / xf;
+                float w = t * t * (3f - 2f * t);                                  // smoothstep: the seam region is mostly one or the other, never a bump
+                for (int k = 0; k < Channels; k++)
+                {
+                    int dst = (le - xf + j) * Channels + k, src = (LoopStart - xf + j) * Channels + k;
+                    float v = Pcm[dst] * (1f - w) + Pcm[src] * w;
+                    Pcm[dst] = (short)(v > 32767f ? 32767 : v < -32768f ? -32768 : (int)MathF.Round(v));
+                }
+            }
+            return true;
+        }
 
         public static Clip FromPcm(PcmBuffer b, string name)
         {
@@ -147,7 +173,7 @@ namespace Monolith.Audio
 
         // ------------------------------------------------------------------------------------------------ control (any thread)
 
-        enum CmdType { Play, Ctl, Stop, StopAll, BusGain, MasterGain, BigDuck, TimePitch, MusicPlay, MusicStop, Sting, Tone, ToneOff, MusicTempo }
+        enum CmdType { Play, Ctl, Stop, StopAll, BusGain, MasterGain, BigDuck, TimePitch, MusicPlay, MusicStop, Sting, Tone, ToneOff, MusicTempo, ThemePlay, ThemeStop, ThemeHold, ThemeLevel }
 
         sealed class Cmd
         {

@@ -87,6 +87,43 @@
       "midi": "death.mid", "loop": false, "tail": 7.0, "lufs": -21.0, "track": "death", "seed": 27,
       "master": { "hallRt60": 7.0, "hallSize": 1.6, "hallDb": -1, "compThresh": -22, "compRatio": 1.8 },
       "tracks": { "pad_juno": { "db": -5.8 }, "brass_dark": { "db": -3.5 }, "bass_sub": { "db": -0.9 }, "bell_fm": { "db": 1.0 }, "choir_ahh": { "db": -11.7 }, "drums": { "db": -13.9 } }
+    },
+    // ---- the theme tracks (audio_src/compose/themes.py): 32-bar loops in step with the base, laid over it by a mission's "theme" action.
+    // "theme" is what the game's catalog says about the track: the name a mission uses, how long it takes to come in and go out (seconds), its priority (the higher wins),
+    // and how the base gives way: "duck" lowers it by duckDb, "replace" silences it.
+    "theme_lector": {
+      "midi": "theme_lector.mid", "loop": true, "bars": 32, "lufs": -24.0, "track": "theme_lector", "seed": 31,
+      "theme": { "name": "lector", "fadeIn": 4.0, "fadeOut": 6.0, "priority": 10, "mode": "duck", "duckDb": -9.0 },
+      "master": { "hallRt60": 6.0, "hallSize": 1.5, "hallDb": -2, "plateDb": -8, "delayDb": -7, "compThresh": -22, "compRatio": 1.6, "sat": 0.08, "highShelfDb": 3 },
+      "tracks": { "drone_dark": { "db": -6.7 }, "bass_sub": { "db": -12.0 }, "pulse_thin": { "db": -4.0, "pan": 0.2 }, "bell_fm": { "db": -4.0, "pan": -0.2 }, "arp_seq": { "db": -9.0, "pan": -0.3 },
+                  "choir_ahh": { "db": -12.0 }, "brass_dark": { "db": -9.0 }, "sweep": { "db": -10.0 }, "drums": { "db": -17.0 } }
+    },
+    "theme_destroyer": {
+      "midi": "theme_destroyer.mid", "loop": true, "bars": 32, "lufs": -21.0, "track": "theme_destroyer", "seed": 32,
+      "theme": { "name": "destroyer", "fadeIn": 5.0, "fadeOut": 8.0, "priority": 20, "mode": "duck", "duckDb": -14.0 },
+      "master": { "hallRt60": 6.5, "hallSize": 1.6, "hallDb": -3, "plateDb": -9, "delayDb": -12, "gateDb": -6, "compThresh": -19, "compRatio": 2.0, "sat": 0.12 },
+      "tracks": { "brass_dark": { "db": -5.0 }, "bass_sub": { "db": -9.0 }, "choir_ahh": { "db": -10.0 }, "strings_ens": { "db": -9.0 }, "brass_cs80": { "db": -6.0 },
+                  "bell_fm": { "db": -6.0 }, "sweep": { "db": -10.0 }, "drums": { "db": -14.0 } }
+    },
+    "theme_outpost": {
+      "midi": "theme_outpost.mid", "loop": true, "bars": 32, "lufs": -27.0, "track": "theme_outpost", "seed": 33,
+      "theme": { "name": "outpost", "fadeIn": 6.0, "fadeOut": 8.0, "priority": 5, "mode": "duck", "duckDb": -7.0 },
+      "master": { "hallRt60": 6.0, "hallSize": 1.5, "hallDb": -3, "plateDb": -8, "delayDb": -8, "compThresh": -22, "compRatio": 1.5, "sat": 0.05, "highShelfDb": 4 },
+      "tracks": { "epiano_fm": { "db": -7.0, "pan": -0.15 }, "pad_juno": { "db": -8.0 }, "pad_warm": { "db": -9.0 }, "bass_sub": { "db": -14.0 }, "bell_fm": { "db": -6.0, "pan": 0.25 },
+                  "brass_cs80": { "db": -9.0 }, "choir_ahh": { "db": -12.0 }, "drums": { "db": -22.0 } }
+    }
+  },
+
+  // Music that is not made here: copied into the game by "MnAudio ship" and listed in the catalog (Game/Assets/StreamingAssets/Audio/music/music.json) with how it plays.
+  "shipped": {
+    // The user's own mission theme (audio_src/user_music/Monolith_Epic_1.mp3, 3:29, 106.7 BPM): the FIGHT THEME. It fades in at the first move out of ambient and carries the fight.
+    // volumeDb brings its -12.7 LUFS down to sit with the score (about -20); startAt skips its 9 s of quiet drone (its entrance is at 15.3 s, two bars after startAt); the loop body is
+    // 48 bars (74.229 to 182.165 s) with its seam cross-faded over one bar (the bar before loopStart blends into the last bar before loopEnd), found by tools/audio/analyse_track.py;
+    // intensityDb is the small swell the battle intensity may give it.
+    "fight": {
+      "source": "user_music/Monolith_Epic_1.mp3", "file": "music/fight.mp3", "loop": true, "seconds": 209.4, "bpm": 106.73, "bars": 0, "lufs": -12.7, "truePeakDb": -2.1,
+      "volumeDb": -7.0, "startAt": 9.019, "loopStart": 74.229, "loopEnd": 182.165, "loopFade": 2.249,
+      "intensityDb": { "battle1": -1.5, "battle2": 0.0, "battle3": 1.5 }
     }
   }
 }

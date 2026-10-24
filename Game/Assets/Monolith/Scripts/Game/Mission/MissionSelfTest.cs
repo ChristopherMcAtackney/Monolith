@@ -74,6 +74,23 @@ namespace Monolith.Game
             bool all = msg != null && msg.Contains("player 'Nobody'") && msg.Contains("unknown field 'hulscale'") && msg.Contains("'Ghost'") && msg.Contains("unknown action 'explode'")
                        && msg.Contains("'dance' is not an order") && msg.Contains("no condition operator") && msg.Contains("a second event called 'e1'") && msg.Contains("no event called 'nope'");
             Check(all, "a broken mission is refused with every problem named: " + (msg ?? "(it loaded)").Replace("\n", " "));
+
+            // the theme action (the music's second layer): a good one loads, a bad one is named
+            const string themed = @"{ ""format"": ""monolith-mission/1"", ""id"": ""themed"", ""name"": ""Themed"", ""player"": ""A"",
+              ""ships"": [ { ""name"": ""A"", ""class"": ""vanguard_fighter"", ""team"": ""diaspora"", ""arrival"": { ""at"": [0, 0, 0] } } ],
+              ""events"": [ { ""name"": ""on"", ""when"": { ""time"": 1 }, ""do"": [ { ""do"": ""theme"", ""name"": ""lector"", ""fadeIn"": 3, ""priority"": 12, ""mode"": ""replace"" } ] },
+                           { ""name"": ""off"", ""when"": { ""time"": 9 }, ""do"": [ { ""do"": ""theme"", ""name"": ""lector"", ""on"": false, ""fadeOut"": 5 } ] } ] }";
+            bool themeOk = true; string themeMsg = null;
+            try { MissionFile.Load(themed, "themed"); } catch (InvalidDataException e) { themeOk = false; themeMsg = e.Message; }
+            Check(themeOk, "a mission with theme actions loads" + (themeOk ? "" : ": " + themeMsg));
+            const string badTheme = @"{ ""format"": ""monolith-mission/1"", ""id"": ""badtheme"", ""name"": ""Bad"", ""player"": ""A"",
+              ""ships"": [ { ""name"": ""A"", ""class"": ""vanguard_fighter"", ""team"": ""diaspora"", ""arrival"": { ""at"": [0, 0, 0] } } ],
+              ""events"": [ { ""name"": ""e1"", ""when"": { ""time"": 1 }, ""do"": [ { ""do"": ""theme"" }, { ""do"": ""theme"", ""name"": ""has space"" }, { ""do"": ""theme"", ""name"": ""x"", ""mode"": ""loud"" }, { ""do"": ""theme"", ""name"": ""y"", ""fadeIn"": -1 } ] } ] }";
+            string badMsg = null;
+            try { MissionFile.Load(badTheme, "badtheme"); } catch (InvalidDataException e) { badMsg = e.Message; }
+            Check(badMsg != null && badMsg.Contains("name") && badMsg.Contains("has space") && badMsg.Contains("'loud'") && badMsg.Contains("not negative"), "bad theme actions are named: " + (badMsg ?? "(it loaded)").Replace("\n", " "));
+            var round = ThemeEvent.Parse(new ThemeEvent { Mission = "oort", Name = "destroyer", FadeIn = 3f, Priority = 20f, Mode = "replace" }.Format(), 1f);
+            Check(round != null && round.Key == "oort/destroyer" && round.On && round.FadeIn == 3f && float.IsNaN(round.FadeOut) && round.Priority == 20f && round.Mode == "replace", "a theme's settings reach the audio intact");
         }
 
         // ------------------------------------------------------------------------------------------------ every condition and action

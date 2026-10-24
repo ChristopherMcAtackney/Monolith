@@ -9,12 +9,21 @@
     "battle3": { "file": "music/battle3.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -20.0, "truePeakDb": -5.6 },
     "death": { "file": "music/death.ogg", "loop": false, "seconds": 27.000, "bpm": 72, "bars": 0, "lufs": -21.0, "truePeakDb": -3.6 },
     "failure": { "file": "music/failure.ogg", "loop": false, "seconds": 27.665, "bpm": 72, "bars": 0, "lufs": -24.0, "truePeakDb": -11.4 },
+    "fight": {"file":"music/fight.mp3","loop":true,"seconds":209.4,"bpm":106.73,"bars":0,"lufs":-12.7,"truePeakDb":-2.1,"volumeDb":-7.0,"startAt":9.019,"loopStart":74.229,"loopEnd":182.165,"loopFade":2.249,"intensityDb":{"battle1":-1.5,"battle2":0.0,"battle3":1.5}},
     "sting_enemy": { "file": "music/sting_enemy.ogg", "loop": false, "seconds": 8.286, "bpm": 112, "bars": 0, "lufs": -19.0, "truePeakDb": -5.8 },
     "sting_enemy_battle": { "file": "music/sting_enemy_battle.ogg", "loop": false, "seconds": 7.786, "bpm": 112, "bars": 0, "lufs": -17.5, "truePeakDb": -4.6 },
     "sting_fail": { "file": "music/sting_fail.ogg", "loop": false, "seconds": 8.500, "bpm": 96, "bars": 0, "lufs": -23.0, "truePeakDb": -9.9 },
     "sting_friendly": { "file": "music/sting_friendly.ogg", "loop": false, "seconds": 8.320, "bpm": 112, "bars": 0, "lufs": -21.0, "truePeakDb": -8.6 },
     "sting_friendly_battle": { "file": "music/sting_friendly_battle.ogg", "loop": false, "seconds": 7.820, "bpm": 112, "bars": 0, "lufs": -19.0, "truePeakDb": -5.1 },
     "sting_goal": { "file": "music/sting_goal.ogg", "loop": false, "seconds": 7.286, "bpm": 112, "bars": 0, "lufs": -22.0, "truePeakDb": -11.4 },
+    "theme_destroyer": { "file": "music/theme_destroyer.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -21.0, "truePeakDb": -4.3 },
+    "theme_lector": { "file": "music/theme_lector.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -24.0, "truePeakDb": -6.4 },
+    "theme_outpost": { "file": "music/theme_outpost.ogg", "loop": true, "seconds": 68.571, "bpm": 112, "bars": 32, "lufs": -27.0, "truePeakDb": -11.5 },
     "victory": { "file": "music/victory.ogg", "loop": false, "seconds": 29.200, "bpm": 104, "bars": 0, "lufs": -21.0, "truePeakDb": -6.7 }
+  },
+  "themes": {
+    "destroyer": { "track": "theme_destroyer", "fadeIn": 5, "fadeOut": 8, "priority": 20, "mode": "duck", "duckDb": -14, "volumeDb": 0 },
+    "lector": { "track": "theme_lector", "fadeIn": 4, "fadeOut": 6, "priority": 10, "mode": "duck", "duckDb": -9, "volumeDb": 0 },
+    "outpost": { "track": "theme_outpost", "fadeIn": 6, "fadeOut": 8, "priority": 5, "mode": "duck", "duckDb": -7, "volumeDb": 0 }
   }
 }

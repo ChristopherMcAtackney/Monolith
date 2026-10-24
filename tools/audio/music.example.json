@@ -1,0 +1,40 @@
+{
+  "_about": "Monolith's music, your way. Give any slot a file (MP3, WAV or OGG, relative to this file or a full path) and it plays there; a slot with an empty file, or left out, plays the built-in synthesised music. Read MUSIC.txt for what each slot is and how the fades work. Save this file while the game runs and it is read again within a couple of seconds (it applies at the next music change). The log, Monolith_audio_log.txt, says what was read and names every mistake.",
+  "_fields": "file | volume (dB, 0 as it is, -6 quieter) | fadeIn, fadeOut (seconds; left out: the slot's own) | loop (true or false) | bpm (the track's tempo, if it starts on the beat: changes then land on its beat or bar; left out: a time-based cross-fade) | beatsPerBar (4) | loopStart, loopEnd (seconds inside the file) | themes only: priority (the higher plays), mode (duck: the base score drops under it; replace: the base goes silent), duck (dB the base drops by)",
+
+  "base": {
+    "_about": "The score that follows the fight. Add a mission before the slot to change it for that mission only: \"escort/battle2\".",
+    "ambient": { "file": "", "volume": 0 },
+    "battle1": { "file": "", "volume": 0 },
+    "battle2": { "file": "", "volume": 0 },
+    "battle3": { "file": "", "volume": 0 },
+    "fight": { "_about": "The tune that carries a fight: your Monolith_Epic_1 plays here until you give this slot a file. It comes in at the first move out of ambient and plays through battles 1 to 3 (they only swell it a little: intensity). Set \"off\": true, or name a mission (\"escort/fight\"), to have the battle tracks above carry the fight instead.",
+      "file": "", "volume": 0, "fadeIn": 3, "fadeOut": 3.4, "underThemes": "pause", "intensity": { "battle1": -1.5, "battle2": 0, "battle3": 1.5 } }
+  },
+
+  "stings": {
+    "_about": "Short pieces over everything when something arrives or an objective ends. The _battle ones play when the fight is on.",
+    "enemy_arrival": { "file": "", "volume": 0 },
+    "enemy_arrival_battle": { "file": "", "volume": 0 },
+    "friendly_arrival": { "file": "", "volume": 0 },
+    "friendly_arrival_battle": { "file": "", "volume": 0 },
+    "goal_complete": { "file": "", "volume": 0 },
+    "goal_failed": { "file": "", "volume": 0 }
+  },
+
+  "endings": {
+    "_about": "Played once when the mission ends. They end every theme.",
+    "victory": { "file": "", "volume": 0 },
+    "failure": { "file": "", "volume": 0 },
+    "death": { "file": "", "volume": 0 }
+  },
+
+  "themes": {
+    "_about": "Tracks tied to a moment of a mission. The name is mission/theme (\"escort/lector\"), or just the theme name for every mission. The numbers below are the built-in themes' own: change them, or give a file.",
+    "escort/lector": { "file": "", "volume": 0, "fadeIn": 4, "fadeOut": 6, "priority": 10, "mode": "duck", "duck": -9 },
+    "cabin/lector": { "file": "", "volume": 0, "fadeIn": 4, "fadeOut": 6, "priority": 10, "mode": "duck", "duck": -9 },
+    "dogfight/destroyer": { "file": "", "volume": 0, "fadeIn": 5, "fadeOut": 8, "priority": 20, "mode": "duck", "duck": -14 },
+    "oort/destroyer": { "file": "", "volume": 0, "fadeIn": 5, "fadeOut": 8, "priority": 20, "mode": "duck", "duck": -14 },
+    "oort/outpost": { "file": "", "volume": 0, "fadeIn": 6, "fadeOut": 8, "priority": 5, "mode": "duck", "duck": -7 }
+  }
+}

@@ -3,7 +3,7 @@
   "about": "Placeholder radio lines (design sections 1 and 7: Earth speaks like scripture and holds 'biologics' in contempt; our crews are dry, deadpan, gallows humour, never zany, no jokes about the universe). Each key is a situation; lines are used in turn. {0} is a callsign. The HUD's line font has letters, digits and . , : - + / ( ) ' % only (no question or exclamation marks). Lines will be voiced later (design section 9).",
   "lines": {
     "ack_attack":   ["Copy. Going in.", "Your target. On it.", "Engaging. Don't wait up."],
-    "ack_disable":  ["Copy. Engines only.", "Disabling. It can sit there and think about it.", "Going for the engines."],
+    "ack_disable":  ["Copy. Engines only.", "Disabling - just let it sit there.", "Going for the engines."],
     "ack_cover":    ["On your six.", "Covering you. Try not to make it interesting.", "I've got your back. For now."],
     "ack_form":     ["Forming up.", "Coming back in. Nice and boring.", "On your wing."],
     "no_target":    ["Need a target first, lead.", "Target what, exactly.", "Give me something to shoot."],
@@ -15,8 +15,8 @@
     "capital_hurt": ["Mercy here. Hull's going. Any time now.", "We're bleeding air down here."],
     "beams_threat": ["Mercy here. The Warden's charging beams at us. Its two beam turrets, forward, on top. Take them out.", "That's a beam. Somebody shut those turrets up before it cuts us in half."],
     "beams_down":   ["Warden's beams are quiet. Ours are free. Thank you.", "That's their big guns gone. Returning the favour."],
-    "earth_wave":   ["Biologics. You were us, once.", "The fallen return to be unmade.", "Kneel, remnant. Or burn where you are.", "Your blood remembers Earth. Earth does not remember you."],
-    "earth_bombers":["The Mercy will be cleansed.", "Your ark is a coffin. We will close it."],
+    "earth_wave":   ["We were once like you. We have ascended.", "The fallen return to be unmade.", "Disable your shields, and prepare for your ascension.", "You remember Earth. Earth does not remember you."],
+    "earth_bombers":["The Mercy will be cleansed.", "You have chosen your own destruction. Do not hate us for what we do."],
     "won":          ["That's the lot. Warden's gone.", "Area's quiet. Let's not stay."],
     "lost_capital": ["Mercy's gone.", "We lost the Mercy."]
   }

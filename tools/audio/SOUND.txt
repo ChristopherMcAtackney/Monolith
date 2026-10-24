@@ -11,8 +11,12 @@ Everything makes sound now, and all of it was made for this game (nothing from a
             Ambient bed, three battle intensities (they follow how many hostiles are close and on you, as the mission's music rules say), short stings when friends or Earth arrive,
             a sting for a goal done and a goal failed, victory, failure, and your death. The four loops are one 32-bar form at 112 BPM over the same harmony: the music changes on the next
             beat (up) or bar (down) in step with where it was, so it never lurches.
+            YOUR TUNE CARRIES THE FIGHT: Monolith_Epic_1 is built in as the fight theme. The opening calm is the ambient bed; at the first fight your tune fades in and plays for the rest of it
+            (the battle 1 to 3 changes only swell it a little), pausing for a lull and for an event theme (the Lector's, the Warden's destroyer's) and picking up where it left off.
+            On top of the score, short THEMES come in when something happens (a mission's "theme" action) and go when it is done. Put your own MP3/WAV/OGG in any slot with a music.json
+            beside the game: MUSIC.txt says how, music.json (an example) lists every slot.
   Voices    every radio line in both missions and every wingman acknowledgement (every line of all three missions, Dead Water's thirteen included, and every wingman acknowledgement: 169 recordings), made with Trap Door's voice pipeline from voice
-            *descriptions* (no real person, no cloning) and put through a radio. Accents: Small Mercy's comms officer (South African), Tamsin's captain (Irish), Sable 2 (an Australian man),
+            *descriptions* (no real person, no cloning) and put through a radio. Accents: Small Mercy's comms officer (South African), Tamsin's captain (a neutral American), Sable 2 (an Australian man),
             Sable 3 (a Londoner), Sable 1, which is you when no wingman is left to say it (Northern English, Manchester), Lantern (a deep Texan), Wick (an alien: a doubled, ring-modulated,
             whistling voice), and Earth: vast, cold, an octave down with a metallic edge and a long hall, preceded by a power-up swell. No Scottish accent anywhere.
             The voice ducks the music by 9 dB and the effects by 4.5 dB.

@@ -1,0 +1,122 @@
+Lines changed by the import of monolith_dialogue.xlsx (2026-10-24 16:14): these need (re-)voicing.
+
+cabin:quiet  [text]
+  was: Quiet out here. I don't like it. It never means nothing.
+  now: Quiet out here. I don't like it.
+
+cabin:go_dark  [text]
+  was: Lector's coming out of the ice. Everybody dark. Get up and pull your breaker, Sable 1. Now.
+  now: Lector's coming out of the ice. Everybody go dark. Get up and pull your breaker, Sable 1. Now.
+
+cabin:lector_here  [text]
+  was: Biologics in the dark. We will find you. We always have.
+  now: Hiding in the dark. We will find you.
+
+cabin:spotted  [text]
+  was: Biologic. Sable one. I see you. All of you.
+  now: I see you. All of you.
+
+dogfight:earth_wave_1  [text]
+  was: Biologics. You were us, once.
+  now: We were once like you. We have ascended.
+
+dogfight:earth_wave_2  [text]
+  was: The fallen return to be unmade.
+  now: You return to us, and you will be ascended.
+
+dogfight:earth_wave_3  [text]
+  was: Kneel, remnant. Or burn where you are.
+  now: Disable your shields, and prepare for your ascension.
+
+dogfight:earth_wave_4  [text]
+  was: Your blood remembers Earth. Earth does not remember you.
+  now: You remember Earth. Earth does not remember you.
+
+dogfight:earth_wave_5  [text]
+  was: The dark between the stars was ours before you crawled into it.
+  now: You have no place here anymore.
+
+dogfight:earth_wave_6  [text]
+  was: This is the last of your kind's courage. Spend it.
+  now: This will all be over soon.
+
+dogfight:beams_down  [text]
+  was: Warden's beams are quiet. Ours are free. Thank you.
+  now: Warden's beam weapon is down!!!
+
+escort:open_tamsin  [text]
+  was: Tamsin to escort. Drive's cooked and the aft holds are open to space. We make the jump point if nobody shoots at us. Somebody will.
+  now: Tamsin to escort. Drive's cooked and the aft holds are open to space. We can make the to jump point if we go undetected.
+
+escort:matins  [text]
+  was: A vessel of the fallen, crawling home. How touching.
+  now: What are these things that resist?
+
+escort:lauds  [text]
+  was: Every remnant ends. Yours ends here.
+  now: Those we leave behind will remain in eternal darkness. Ascend with us now. It is your only hope.
+
+escort:prime  [text]
+  was: You brought them to us. That was a kindness.
+  now: We only wish to release you from your suffering. Disable your shields now to embrace your ascension.
+
+escort:terce  [text]
+  was: The door you run for is a grave. Go on.
+  now: Fighting only prolongs your suffering.
+
+escort:lector_here  [text]
+  was: Lector. You carry four hundred biologics. We will count them as they freeze.
+  now: We can sense four hundred and fifty two of you on that vessel. Join us now and free yourself from suffering.
+
+escort:lector_sweep  [text]
+  was: Lector's sweeping for life signs. If you had a breaker to pull, now would be the time.
+  now: Lector's sweeping for life signs. Power down now or it'll see you!
+
+escort:thurible  [text]
+  was: Censers, go. Bring me the ark.
+  now: Bring them to me.
+
+escort:thurible_ours  [text]
+  was: Bombers on the scope. They're coming for us. Please don't let them.
+  now: Bombers on the scope. They're coming for us, help us for God's sake!!!
+
+escort:lantern  [text]
+  was: Lantern flight, jumping in. Sorry we're late. Traffic.
+  now: Lantern flight, jumping in. Sorry we're late. Hope we didn't miss much.
+
+escort:sable2_lost  [text]
+  was: Your wingman's gone. We saw it. Sorry.
+  now: Your wingman's gone!
+
+escort:lector_down  [text]
+  was: Lector's breaking up. Shame.
+  now: Oh my God, the Lector is breaking up!!! Look at it!!!
+
+escort:terce2  [text]
+  was: More of us than there are of you. There always will be.
+  now: Our congress grows - join it, and leave your prison.
+
+escort:away  [text]
+  was: We're through. Drinks are on us. Somebody else is paying.
+  now: We're through. Thank you Sable. First round's on us.
+
+radio:ack_disable:2  [text]
+  was: Disabling. It can sit there and think about it.
+  now: Disabling - just let it sit there.
+
+radio:earth_wave:1  [text]
+  was: Biologics. You were us, once.
+  now: We were once like you. We have ascended.
+
+radio:earth_wave:3  [text]
+  was: Kneel, remnant. Or burn where you are.
+  now: Disable your shields, and prepare for your ascension.
+
+radio:earth_wave:4  [text]
+  was: Your blood remembers Earth. Earth does not remember you.
+  now: You remember Earth. Earth does not remember you.
+
+radio:earth_bombers:2  [text]
+  was: Your ark is a coffin. We will close it.
+  now: You have chosen your own destruction. Do not hate us for what we do.
+

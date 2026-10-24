@@ -5,6 +5,7 @@ Run inside WSL through run_voice.sh (extra arguments pass through):
   --force          regenerate everything
   --only mercy     only one voice
   --limit N        at most N new clips (a smoke test)
+  --list FILE      only the lines in FILE (changed_lines.json from tools/dialogue/import_sheet.py); --also tamsin: and every line of that voice too
   --out DIR        raw clip folder (default audio_src/voice/raw, not committed)
   --fake-synth     no model: short tones (tests the re-run logic)
 
@@ -175,6 +176,8 @@ def main():
     ap.add_argument('--out', type=Path, default=HERE / 'raw')
     ap.add_argument('--model', type=Path, default=Path.home() / 'breeze/breeze-tts-2')
     ap.add_argument('--only')
+    ap.add_argument('--list', type=Path, help="voice only the lines in this file (design/dialogue/changed_lines.json, made by tools/dialogue/import_sheet.py), and any voice named by --also")
+    ap.add_argument('--also', action='append', default=[], help='with --list: every line of this voice too (a voice whose description changed)')
     ap.add_argument('--limit', type=int)
     ap.add_argument('--force', action='store_true')
     ap.add_argument('--plan', action='store_true')
@@ -188,19 +191,39 @@ def main():
     lines = json.loads(LINES.read_text(encoding='utf-8'))['lines']
     if args.only:
         lines = [l for l in lines if l['voice'] == args.only]
+    if args.list:
+        ids = {x['id'] for x in json.loads(args.list.read_text(encoding='utf-8'))['lines']}
+        lines = [l for l in lines if ids & set(l.get('lineIds', [])) or l['voice'] in args.also]
+        log(f'--list: {len(lines)} clips are on the list ({len(ids)} lines' + (f', every line of {", ".join(args.also)}' if args.also else '') + ')')
     mp = out / 'manifest.json'
     manifest = json.loads(mp.read_text(encoding='utf-8')) if mp.exists() else {'files': {}}
     vh = {(k, i): voice_hash(v, i) for k, v in CAST['voices'].items() for i in ('calm', 'tense', 'frantic')}
 
-    todo, ok = [], 0
+    todo, ok, adopted = [], 0, 0
     for l in lines:
         e = manifest['files'].get(l['file'])
-        if not args.force and e and (out / l['file']).exists() and e['say'] == l['say'] and e['voice_hash'] == vh[(l['voice'], l['intensity'])]:
+        want = vh[(l['voice'], l['intensity'])]
+        if not args.force and e and (out / l['file']).exists() and e['say'] == l['say'] and e['voice_hash'] == want:
             ok += 1
-        else:
-            todo.append(l)
+            continue
+        # the same words in the same voice already recorded under another file name (a line that used to share a clip with one the user has since rewritten): take that recording, do not make a new one
+        twin = None if args.force else next((f for f, v in manifest['files'].items() if f != l['file'] and v['say'] == l['say'] and v['voice_hash'] == want and (out / f).exists()), None)
+        if twin and args.plan:
+            adopted += 1
+            log(f"  would adopt {twin} for {l['file']}")
+            continue
+        if twin:
+            (out / l['file']).parent.mkdir(parents=True, exist_ok=True)
+            (out / l['file']).write_bytes((out / twin).read_bytes())
+            manifest['files'][l['file']] = dict(manifest['files'][twin])
+            adopted += 1
+            log(f"  adopted {twin} for {l['file']}")
+            continue
+        todo.append(l)
+    if adopted:
+        mp.write_text(json.dumps(manifest, indent=1, sort_keys=True), encoding='utf-8')
     stale = [f for f in manifest['files'] if f not in {l['file'] for l in json.loads(LINES.read_text(encoding='utf-8'))['lines']}]
-    log(f'{len(lines)} clips wanted | up to date {ok} | to generate {len(todo)} | stale {len(stale)}')
+    log(f'{len(lines)} clips wanted | up to date {ok} | adopted {adopted} | to generate {len(todo)} | stale {len(stale)}')
     if args.plan:
         for l in todo:
             log(f"  GENERATE {l['file']}: {l['say']}")

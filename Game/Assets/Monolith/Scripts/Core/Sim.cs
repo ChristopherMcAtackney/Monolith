@@ -55,6 +55,8 @@ namespace Monolith.Core
         public float TimeScale { get; set; } = 1f;
         /// <summary>Capture mode: every rendered frame is exactly one tick and real time is ignored, so runs are repeatable.</summary>
         public bool OneTickPerFrame { get; set; }
+        /// <summary>Hold the clock completely (the loading screen: the mission's clock must not start while the world is still being warmed up). Unlike <see cref="TimeScale"/>, nothing else sets it.</summary>
+        public bool Held { get; set; }
 
         readonly List<ISimSystem> _systems = new List<ISimSystem>();
         readonly Dictionary<ISimSystem, int> _faults = new Dictionary<ISimSystem, int>();
@@ -79,6 +81,7 @@ namespace Monolith.Core
         /// <summary>Call once per rendered frame with the real (unscaled) frame time in seconds.</summary>
         public void Advance(double realDt)
         {
+            if (Held) return;
             if (OneTickPerFrame)
             {
                 StepOnce();

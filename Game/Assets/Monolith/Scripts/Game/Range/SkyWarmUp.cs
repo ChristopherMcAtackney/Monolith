@@ -12,7 +12,9 @@ namespace Monolith.Game
     [DefaultExecutionOrder(500)]
     public sealed class SkyWarmUp : MonoBehaviour
     {
-        const int Frames = 4;
+        public const int Frames = 4;
+        /// <summary>How many warm-ups are still looking round (the loading screen waits for none).</summary>
+        public static int Pending { get; private set; }
         Camera _camera;
         int _frame;
         float _fov;
@@ -23,7 +25,10 @@ namespace Monolith.Game
             go.transform.SetParent(parent, false);
             var w = go.AddComponent<SkyWarmUp>();
             w._camera = camera; w._fov = camera.fieldOfView;
+            Pending++;
         }
+
+        void OnDestroy() { Pending = Mathf.Max(0, Pending - 1); }
 
         void LateUpdate()
         {

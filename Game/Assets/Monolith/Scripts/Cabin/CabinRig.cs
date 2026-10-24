@@ -27,6 +27,10 @@ namespace Monolith.Cabin
         CabinDisplays _displays;
         float _manualNow;
         bool _built;
+        /// <summary>The rig of the running cabin, if there is one (the loading screen shows the cabin once through it).</summary>
+        public static CabinRig Current { get; private set; }
+        /// <summary>Show the interior now whatever the pilot is doing (a warm-up behind the loading screen).</summary>
+        public bool WarmShow;
         string _lightState = "normal";
 
         // The emissive materials the rig drives by the cabin's lighting (the asset materials the prefab uses; the player build gets its own copies).
@@ -96,6 +100,7 @@ namespace Monolith.Cabin
             if (_lever != null) _leverRest = _lever.localPosition;
             SetInteriorVisible(false);
             _built = true;
+            Current = this;
             MnLog.Info($"CABIN rig built: {_interior.Count} interior, {_frame.Count} frame, {_glass.Count} glass renderers, {_displays.Count} displays, {_cab.Layout.Lights.Count} lights");
         }
 
@@ -103,6 +108,7 @@ namespace Monolith.Cabin
 
         void OnDestroy()
         {
+            if (Current == this) Current = null;
             _displays?.Dispose();
         }
 
@@ -113,7 +119,7 @@ namespace Monolith.Cabin
             if (!_built) return;
             var b = _cab.Board;
             // Before launch the sim is held; the cabin runs on its own clock (a capture runs the sim, so this stays out of its way).
-            if (b.Prelaunch && !_cab.Paused && _world.Sim.TimeScale <= 0f && !_world.Sim.OneTickPerFrame)
+            if (b.Prelaunch && !_cab.Paused && _world.Sim.TimeScale <= 0f && !_world.Sim.OneTickPerFrame && !_world.Sim.Held)
             {
                 float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
                 _manualNow += dt;
@@ -133,7 +139,7 @@ namespace Monolith.Cabin
             float alpha = _world.Alpha;
             var rot = ship.RenderRotation(alpha);
             _root.SetPositionAndRotation(ship.RenderPosition(alpha) + rot * _cab.CabinOrigin, rot);
-            bool show = b.Stand01 > 0.002f || b.State != CabinBoard.Phase.Seated;
+            bool show = WarmShow || b.Stand01 > 0.002f || b.State != CabinBoard.Phase.Seated;
             SetInteriorVisible(show);
             float now = Time.unscaledTime;
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
