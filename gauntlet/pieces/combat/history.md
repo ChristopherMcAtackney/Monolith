@@ -130,3 +130,72 @@ menu is open the buttons it names do only what the menu says. Start pauses (and 
 The user's playtest verdict on weapon weight, the lock and warning cues, the fight length and the quick menu; then the AI builder drives
 ships through `ControlInput` (see `Scripts/Weapons/README.md`), the loadout piece picks two guns and two missile types, and the real
 HUD replaces `Monolith.CombatHud`.
+
+## Round 2 (fixes builder, 2026-10-24): the blast's three parts, and two flaky checks
+
+Worktree `fixes-wt` from main at 2ab0e28, merged with main at 0e9ad06 (the Oort round 2). Three jobs, each with the evidence first.
+
+### 1. The torpedo's blast spends its part damage on the nearest three parts
+`Weapons/Projectiles.cs` `Blast` shared a blast's part damage at `1 / min(reached, 3)` among **every** part inside the outer radius, so "three at most"
+was only the divisor: a torpedo on the Archon (22 parts over a kilometre) hurt 13 parts at once, one on its prow all 4 that were in reach.
+Now `NearestBlastParts` picks the three living parts nearest the burst by signed surface distance (the order a direct hit picks the struck part in,
+so the part a torpedo strikes is always the first; the lower index first on a tie), each takes `damage x its own falloff / n x subsystemMult`
+(falloff linear from the inner to the outer radius, by its own distance), and the rest take nothing. The hull damage is untouched.
+- 17 new combat checks (98 to **115 of 115**): a torpedo struck on the Archon's back (hull x100 so no part dies and every share can be read off
+  its hit points) and on its prow. Back: 13 parts in reach, 3 hurt (flak_port_mid 89 m, flak_stbd_mid 89 m, gun_dorsal_mid 96 m), 1,926.7 each =
+  6,800 x 1/3 x 0.85. Prow: 4 in reach, 3 hurt: bridge 132 m 1,558.6 (falloff 0.809), beam_fore 174 m 1,086.0 (0.564), flak_port_fore 258 m 131.8
+  (0.068): the falloff is exercised, and flak_stbd_fore (258 m too, the higher index) takes none. The hull loses 6,800 either way, as before.
+  On the old blast the "at most three" and "the nearest ones" checks of both cases fail (13 and 4 parts hurt) and the hull and share checks pass.
+- `check_weapons.py`: 153 of 153 copied numbers match (the README said 104; the table has grown).
+- **The merge**: the Oort round 2 made its own change to the same lines (the nearest three by clamped distance, no checks). The two pick the same parts
+  except on ties among parts the burst lies inside (the clamped version takes the lowest index, this one the deepest). This branch's version was kept.
+  Oort auto-play with it, `-mnSeed 1..30` a level: Very easy 29 of 30 pass, Easy 27, Medium 30, Hard 28: **identical to the Oort builder's gate**
+  (29, 27, 30, 28; the misses are the same kinds: a 32 to 45 s quiet in three Very easy / Easy runs, one Easy run with 4 on the player, at Hard seed 7
+  the Archon escapes and at seed 5 the Mercy is lost after it dies). **The Mercy kills the Archon in 30, 30, 30 and 29 of 30** (Very easy, Easy,
+  Medium, Hard; 0 killed by the Patience). Seed 0 through `tools\mission.ps1`: oort PASS at Very easy 653.8 s, Easy 630.2, Medium 671.4, Hard 692.2,
+  to the decisecond the Oort builder's own table.
+
+### 2. The juice self-test's death check: the root cause
+It could not be made to fail headless on an idle machine (14 of 14 passes on main's code), so the cause was found by changing the one thing that
+differs from a played game, the frame time, and logging every frame (`unscaledDeltaTime`, the sequence's clock `board.Time`, the eye, the
+sim ship, the camera). On main's build: `-mnFps 60` fails the fling 2 of 2 ("the eye is 4 to 5 m from it"), a windowed run fails **both** the
+fling and the camera 2 of 2, exactly the reported pair; unthrottled headless passes 3 of 3 only by luck. Three faults in the check:
+- **It sampled the sequence's clock with the wall clock.** `DeathFx.Update` runs on frame time cut to [1 ms, 0.1 s] a frame. A windowed run draws the
+  breach's fire and debris for the first time in one 0.5 to 0.7 s frame (705 ms in the log, 1.1 s into the sequence), which leaves the sequence
+  0.3 s behind the check's `WaitForSeconds`; unthrottled headless frames (0.3 ms, cut up to 1 ms) run it 20% ahead (1.38 s of sequence at 1.10 s of wall time).
+- **The camera was read in the hitch frame itself and a frame early.** The check runs in the coroutine step, after `Update` and before `CockpitView.LateUpdate`, so
+  it compares last frame's camera with this frame's board: eye speed x frame time, 6.05 m in the 0.7 s frame (limit 3 m), 0.1 m at headless frame rates.
+- **The fling was measured against the wrong ship.** The sandbox's ship is not destroyed, and the brake check just before leaves it accelerating from 35 to 52
+  m/s, while the sequence's wreck drifts at the velocity it had at the hit; 4 to 5 m against the limit of 6 at 60 fps (14.6 m with the ship held still).
+
+The fix keeps every threshold: each moment is waited for on `board.Time` (`Until`), the eye is measured from where the wreck is (the ship's pose at the hit
+carried on at its velocity at the hit), the camera against the pose the board had when the camera next follows it. The check logs its measurements and the
+worst frame, and a failed death check now sets the exit code (`Run` quit with 0 straight after the check's `Quit(1)`, so the failure was invisible to a script).
+Result: the eye 14.5 m from the wreck at 1.15 s (limit 6), the camera 0.03 m off the eye (limit 3). **5 of 5 headless, 5 of 5 on the merged build,
+3 of 3 at `-mnFps 60`, 3 of 3 windowed (worst frame 556, 661 and 730 ms), 4 of 4 under 20 busy processes.**
+
+### 3. The pad drive's brake step: the root cause
+10 of 10 passes on an idle machine (instrumented build), so the machine was loaded (20 busy processes): main fails **3 of 3** ("braked once more" twice, "tapping Y" once), and an
+instrumented build 6 of 6 on "braked once more". The log of every failing run has the same event: a **Rack emplacement's heat-seeking missile hits the
+braked ship** (`hit_shield missile_heat`, the blast 4 m away) at sim t = 30.27 to 30.28 and shoves it 11 to 15 m/s (`off=` in the log), a tick before the
+step's assertion. The emplacement fires on a sim-time cycle; the script waits in real time; on a quiet machine the missile lands 0.7 s after the step
+(t = 30.97), on a loaded one inside it. `-mnPadDrive` now builds the range with no emplacements and no part turrets (the options captures already use); none
+of the 42 checks needs fire at the player. **5 of 5 idle, 5 of 5 on the merged build, 6 of 6 under the same 20 busy processes** (42 of 42 each time).
+
+### Checks (the merged build, after the merge)
+Combat 115/115; `check_weapons.py` 153 of 153; AI 39/39; cabin 75/75; HUD 90/90; audio PASS (150 checks); mission self-test 81/81; pad drive 42/42;
+juice self-test OK (settings, boost, brake, death); `tools\flight.ps1` 35/35 on the four FS2 classes (the player's fighter, info only, 31/35: its boost is
+the user's override). `tools\mission.ps1 -Exe`: Medium all four PASS (cabin 142.5 s, dogfight 410.6, escort 296.3, oort 671.4); Hard: cabin 127.6, oort 692.2
+PASS, dogfight "Small Mercy lost" at 459.5 s (its expectation; the known Hard gap), escort FAIL (11 on the player against 4); Very easy and Easy: cabin,
+dogfight and oort PASS, escort FAIL ('Lantern here' needs a lost wingman). The escort failures are Medium's expectations on other levels and are the same on main.
+Playtest: `Playtest\Monolith_2026-10-24_fixes2\` (FIXES2.txt).
+
+### Known gaps
+- The 0.5 to 0.7 s frame when a windowed game first draws the player's death (about 1.1 s in) is a finding, not fixed: the loading screen warms the Sky and
+  the cabin behind the screen and could warm the death's breach the same way.
+- The juice self-test's **boost** check is the same kind of fragile (waits in seconds on a sim that runs on frame time): at `-mnFps 30` and 15 it failed 2 of 2
+  (running the tank dry never makes the sputter, fuel stays 300), and once in three under 20 busy processes. Not touched; the remedy is the death check's.
+- The pad drive's "tapping Y" step (a 0.12 s tap that must stay under the 0.25 s hold) failed once on main under 20 busy processes; not seen on the quiet range.
+- The pad drive no longer exercises incoming fire; the gunners are covered by the combat self-test and the range captures.
+- A blast takes the three nearest **living** parts, so a second torpedo on the same spot takes the next three; with the shield up it still does no part damage.
+  The part a torpedo strikes is one of the three (no fourth), unless no part is within reach of the strike.
