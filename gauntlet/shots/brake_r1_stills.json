@@ -1,0 +1,25 @@
+{
+ "scene": "juice",
+ "sceneOptions": {
+  "script": [
+   { "t": 0.0, "do": "place", "pos": [-60, 92, -470], "lookAt": [-130, 78, 400], "speed": 1.0, "throttle": 1.0 },
+   { "t": 0.02, "do": "input", "throttle": 1.0 },
+   { "t": 0.04, "do": "target", "name": "Reaper 2" },
+   { "t": 1.0, "do": "input", "throttle": 1.0, "brake": true },
+   { "t": 4.0, "do": "input", "throttle": 1.0, "brake": false }
+  ]
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "brake_00_before", "follow": true, "warmup": 0.90 },
+  { "name": "brake_01_click", "follow": true, "warmup": 0.13 },
+  { "name": "brake_02_punch", "follow": true, "warmup": 0.07 },
+  { "name": "brake_03_lurch", "follow": true, "warmup": 0.08 },
+  { "name": "brake_04_hold", "follow": true, "warmup": 0.25 },
+  { "name": "brake_05_slowing", "follow": true, "warmup": 0.35 },
+  { "name": "brake_06_stopped", "follow": true, "warmup": 0.80 },
+  { "name": "brake_07_eased", "follow": true, "warmup": 1.20 },
+  { "name": "brake_08_release", "follow": true, "warmup": 1.00 },
+  { "name": "brake_09_away", "follow": true, "warmup": 1.50 }
+ ]
+}

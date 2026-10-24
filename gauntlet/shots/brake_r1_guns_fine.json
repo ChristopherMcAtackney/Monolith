@@ -1,0 +1,25 @@
+{
+ "scene": "juice",
+ "sceneOptions": {
+  "script": [
+   { "t": 0.0, "do": "place", "pos": [-60, 92, -470], "lookAt": [-130, 78, 400], "speed": 1.0, "throttle": 1.0 },
+   { "t": 0.02, "do": "input", "throttle": 1.0 },
+   { "t": 0.04, "do": "target", "name": "Reaper 2" },
+   { "t": 1.0, "do": "fire", "on": true },
+   { "t": 1.9, "do": "fire", "on": false }
+  ]
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "gunsfine_00", "follow": true, "warmup": 0.99 },
+  { "name": "gunsfine_01", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_02", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_03", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_04", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_05", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_06", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_07", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_08", "follow": true, "warmup": 0.0167 },
+  { "name": "gunsfine_09", "follow": true, "warmup": 0.0167 }
+ ]
+}

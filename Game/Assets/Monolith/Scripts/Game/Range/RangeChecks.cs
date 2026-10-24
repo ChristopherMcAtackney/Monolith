@@ -17,6 +17,8 @@ namespace Monolith.Game
         GameWorld _world;
         int _fails, _checks;
         ControlButtons _seen;
+        /// <summary>The largest aim (pitch or yaw) the pilot sent on any tick since the check last zeroed it.</summary>
+        float _maxAim;
 
         public static bool Requested => CommandLine.Has("-mnPadDrive");
 
@@ -43,7 +45,12 @@ namespace Monolith.Game
             readonly RangeChecks _c;
             public Watcher(RangeChecks c) { _c = c; }
             public int Order => SimOrder.Pilots + 5;
-            public void Step(in SimFrame frame) => _c._seen |= _c._world.Pilots.Current(_c._world.LocalPlayerShip).Buttons;
+            public void Step(in SimFrame frame)
+            {
+                var cur = _c._world.Pilots.Current(_c._world.LocalPlayerShip);
+                _c._seen |= cur.Buttons;
+                _c._maxAim = Mathf.Max(_c._maxAim, Mathf.Abs(cur.Pitch), Mathf.Abs(cur.Yaw));
+            }
         }
 
         void Check(bool ok, string what)
@@ -110,10 +117,10 @@ namespace Monolith.Game
             Check(Saw(ControlButtons.SecondaryFire) && Count("hammer") > hammers0, "LB fires the heavy gun");
 
             Clear(); int sel0 = mc.SelectedMissile;
-            yield return Tap(pad, GamepadButton.RightStick);
-            Check(Saw(ControlButtons.CycleMissile) && mc.SelectedMissile != sel0, $"R3 steps to the next missile type ({sel0} to {mc.SelectedMissile})");
-            yield return Tap(pad, GamepadButton.RightStick);
-            yield return Tap(pad, GamepadButton.RightStick);
+            yield return Tap(pad, GamepadButton.DpadRight);
+            Check(Saw(ControlButtons.CycleMissile) && mc.SelectedMissile != sel0, $"D-pad right steps to the next missile type ({sel0} to {mc.SelectedMissile})");
+            yield return Tap(pad, GamepadButton.DpadRight);
+            yield return Tap(pad, GamepadButton.DpadRight);
             Check(mc.SelectedMissile == sel0, "three clicks come full circle");
 
             Clear(); int ammo0 = mc.Missiles[0].Ammo;
@@ -169,6 +176,58 @@ namespace Monolith.Game
             yield return Tap(pad, GamepadButton.DpadUp);
             yield return new WaitForSeconds(0.2f);
             Check(_world.Pilots.Current(me.Id).Throttle > 0.99f, "D-pad up is still 100% throttle outside the menu");
+
+            // R3 is the retro brake. Wait for full cruise first (D-pad up set the throttle to 100%).
+            {
+                yield return new WaitForSeconds(6.0f);
+                float top = me.TopSpeed * Mathf.Clamp(me.SpeedScale, 0.3f, 1.2f);      // damaged or favoured engines move the cruise speed
+                Check(me.ForwardSpeed > top * 0.8f, $"flying at cruise (shoved a little by the range's gunners) before the brake ({me.ForwardSpeed:0} of {top:0} m/s)");
+                Clear(); _maxAim = 0f;
+                // A real click on the aim stick pushes it off centre; the pilot must not turn the ship for it.
+                InputSystem.QueueStateEvent(pad, new GamepadState(GamepadButton.RightStick) { rightStick = new Vector2(0.35f, -0.30f) });
+                yield return new WaitForSeconds(0.12f);
+                InputSystem.QueueStateEvent(pad, new GamepadState { rightStick = new Vector2(-0.2f, 0.2f) });
+                yield return new WaitForSeconds(0.07f);
+                InputSystem.QueueStateEvent(pad, new GamepadState());
+                yield return new WaitForSeconds(0.25f);
+                Check(Saw(ControlButtons.Brake) && _world.Pilots.Current(me.Id).Held(ControlButtons.Brake), "R3 latches the brake (it stays on after the click)");
+                Check(_maxAim < 0.02f, $"clicking the aim stick does not steer the ship (largest aim output {_maxAim:0.000})");
+                yield return new WaitForSeconds(2.2f);
+                Check(me.ForwardSpeed < 0.5f && me.BrakeOn, $"the brake stops the ship dead from cruise in about 2 s ({me.ForwardSpeed:0.0} m/s)");
+                Check(me.Throttle == 0f && me.BrakeResume > 0.95f, $"the throttle is 0 and the brake remembers the 100% it had ({me.BrakeResume * 100f:0}%)");
+
+                Clear();
+                yield return Tap(pad, GamepadButton.RightStick);
+                yield return new WaitForSeconds(0.25f);
+                var cur = _world.Pilots.Current(me.Id);
+                Check(!cur.Held(ControlButtons.Brake) && cur.Throttle > 0.95f, "a second click lets go and gives the previous throttle back");
+                yield return new WaitForSeconds(4.5f);
+                Check(me.ForwardSpeed > top * 0.85f, $"... and the ship is back at cruise ({me.ForwardSpeed:0} m/s)");
+
+                // Pushing the throttle up from a stop lets go of the brake and carries on from 0.
+                yield return Tap(pad, GamepadButton.RightStick);
+                yield return new WaitForSeconds(2.2f);
+                Check(me.ForwardSpeed < 0.5f, "braked again");
+                InputSystem.QueueStateEvent(pad, new GamepadState { leftStick = new Vector2(0f, 1f) });
+                yield return new WaitForSeconds(0.4f);
+                InputSystem.QueueStateEvent(pad, new GamepadState());
+                yield return new WaitForSeconds(0.2f);
+                cur = _world.Pilots.Current(me.Id);
+                Check(!cur.Held(ControlButtons.Brake) && cur.Throttle > 0.1f && cur.Throttle < 0.6f, $"pushing the throttle up lets go of the brake and carries on from zero (throttle {cur.Throttle * 100f:0}%)");
+                yield return Tap(pad, GamepadButton.DpadUp);
+                yield return new WaitForSeconds(2.5f);
+
+                // A boost from a standstill leaves the ship cruising, not stopped.
+                yield return Tap(pad, GamepadButton.RightStick);
+                yield return new WaitForSeconds(2.2f);
+                Check(me.ForwardSpeed < 0.5f && me.BrakeOn, "braked once more");
+                yield return Tap(pad, GamepadButton.LeftStick);
+                yield return new WaitForSeconds(0.9f);
+                Check(me.AfterburnerOn && !me.BrakeOn && me.ForwardSpeed > top, $"L3 boosts from the standstill and lets go of the brake ({me.ForwardSpeed:0} m/s)");
+                yield return Tap(pad, GamepadButton.LeftStick);
+                yield return new WaitForSeconds(6.0f);
+                Check(!me.AfterburnerOn && me.ForwardSpeed > top * 0.9f && me.ForwardSpeed < top * 1.1f, $"after the boost the ship cruises, it does not stop ({me.ForwardSpeed:0} m/s)");
+            }
 
             // The HUD's switches, through the real scene: the battle map on a double tap of View, the pause screen's invert switches and HUD style, F9.
             {

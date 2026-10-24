@@ -53,14 +53,14 @@
     "primary": "needle",
     "primaryHardpoints": [
       [
-        -3.19,
-        -0.35,
-        3.64
+        -2.0,
+        -0.85,
+        4.6
       ],
       [
-        3.19,
-        -0.35,
-        3.64
+        2.0,
+        -0.85,
+        4.6
       ]
     ],
     "missiles": {
@@ -76,7 +76,8 @@
         -0.9,
         4.34
       ]
-    ]
+    ],
+    "hardpointsWhy": "USER REQUEST (2026-10-24 playtest: the lasers should come from the bottom left and bottom right of the main view, so you see a fuller view of them as they shoot). The cockpit eye is at (0, 0.4, 1.5) with a 55 degree vertical view (about 86 horizontal at 16:9); these muzzles sit 3.1 to 3.4 m ahead of the eye, 2.0 m out and 1.25 m below it: the corners of the picture, about 70% of the way out to the side edge and 78% of the way down to the bottom (screen NDC about +-0.70, -0.78), the heavy gun stays where it was, already low in the middle (about 0, -0.88). The guns still converge on the nose axis at the target range (or gunConvergenceRange), so shots land where the lead pip says."
   },
   "partsSource": "hpPercent: a share of the hull, FS2's way (ships.tbl GTF Ulysses $Subsystem: engines 35, weapons 20, sensors 10); two engine pods split the engines' share, each gun mount takes the weapons' share",
   "parts": [

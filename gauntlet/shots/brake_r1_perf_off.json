@@ -1,0 +1,17 @@
+{
+ "scene": "juice",
+ "sceneOptions": {
+  "script": [
+   { "t": 0.0, "do": "place", "pos": [-60, 92, -1300], "lookAt": [-130, 78, 400], "speed": 1.0, "throttle": 1.0 },
+   { "t": 0.02, "do": "input", "throttle": 1.0 },
+   { "t": 0.04, "do": "target", "name": "Reaper 2" },
+   { "t": 0.3, "do": "input", "throttle": 1.0, "brake": false },
+   { "t": 0.4, "do": "fire", "on": true }
+  ]
+ },
+ "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [],
+ "perf": [
+  { "name": "brake_on", "follow": true, "seconds": 4.5, "warmup": 0.8 }
+ ]
+}

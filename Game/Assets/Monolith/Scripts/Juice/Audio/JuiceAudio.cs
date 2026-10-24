@@ -15,8 +15,10 @@ namespace Monolith.Juice
         LaserTurret, TorpedoLaunch, JumpIn, JumpOut,
         /// <summary>Added with the boost: the ignition whoomph under the audio system's own roar, and the empty-tank sputter (BoostFx).</summary>
         BoostWhoomph, BoostSputter,
-        /// <summary>Added with the death sequence (DeathFx): the canopy cracking, the hull screaming, the decompression roar, the pilot's breathing, one heartbeat.</summary>
-        DeathCrack, DeathScream, DeathDecompress, DeathBreath, DeathHeartbeat,
+        /// <summary>Added with the death sequence (DeathFx): the canopy cracking, the hull tearing, the decompression roar, the pilot's breathing, one heartbeat.</summary>
+        DeathCrack, DeathTear, DeathDecompress, DeathBreath, DeathHeartbeat,
+        /// <summary>Added with the retro brake (BrakeFx): the valves slamming open as the ship takes the load, and the jets hissing.</summary>
+        BrakeThump, BrakeHiss,
     }
 
     /// <summary>

@@ -30,23 +30,30 @@ namespace Monolith.AudioTools
             return s.Edges(0.3f, 120f).Normalize(-1.5f);
         }
 
-        /// <summary>The hull tearing: metal screeching as it is pulled apart, a tone climbing and wavering, the shudder of plates letting go. 3.4 s.</summary>
-        public static Sd Scream()
+        /// <summary>
+        /// The hull tearing: a grinding, ripping roar of metal letting go, with plates popping. Broadband and irregular on purpose: nothing in it holds a pitch
+        /// or repeats at a steady rate (the first version, a rising stack of tones with a warble, was heard as a high-pitched whirring and removed). 3.4 s.
+        /// </summary>
+        public static Sd Tear()
         {
             const float L = 3.4f;
             var s = new Sd(L);
-            Func<float, float> warble = t => 1f + 0.035f * MathF.Sin(t * 23f) + 0.02f * MathF.Sin(t * 7.3f + 1f);
-            s.Fm(t => (360f + 900f * Dsp.Clamp01(t / 2.4f)) * warble(t), 1.51f, t => 2.5f + 4f * Dsp.Clamp01(t / 2f), t => 0.34f * Dsp.Smooth(t / 0.25f) * MathF.Exp(-MathF.Max(0f, t - 1.6f) * 1.4f));
-            s.Saw(t => (610f + 700f * Dsp.Clamp01(t / 2.8f)) * warble(t), t => 0.16f * Dsp.Smooth(t / 0.3f) * MathF.Exp(-MathF.Max(0f, t - 1.4f) * 1.2f));
-            s.Saw(t => (627f + 690f * Dsp.Clamp01(t / 2.8f)) * warble(t), t => 0.13f * Dsp.Smooth(t / 0.3f) * MathF.Exp(-MathF.Max(0f, t - 1.4f) * 1.2f));
-            s.Mix(Noise(L, 711u, t => Dsp.Smooth(t / 0.3f) * MathF.Exp(-MathF.Max(0f, t - 1.2f) * 0.9f)).BandPass(t => 1100f + 1800f * Dsp.Clamp01(t / 2.5f), 0.45f, 2), -4f);
-            s.Mix(Noise(L, 712u, t => Dsp.Smooth(t / 0.15f) * MathF.Exp(-t * 0.5f)).LowPass(160f, 0.3f, 2), 3f);                     // the rumble under it
-            s.Crackle(t => 22f * MathF.Exp(-t * 0.6f), t => 0.3f, 713u, 500f, 2600f, 12f);                                              // plates letting go
-            s.Tremolo(t => 9f + 6f * t, t => 0.28f);
-            s.Ladder(t => 700f + 5200f * Dsp.Clamp01(t / 2.2f), 0.35f, 1.4f);
-            s.Drive(1.8f);
+            // two slow random walks (no steady rate) drive how hard the grinding bites
+            var walkA = Noise(L, 711u, t => 1f, 0.02f).LowPass(6f, 0.1f);
+            var walkB = Noise(L, 714u, t => 1f, 0.02f).LowPass(11f, 0.1f);
+            float peakA = 1e-6f, peakB = 1e-6f;
+            for (int i = 0; i < walkA.N; i++) { peakA = MathF.Max(peakA, MathF.Abs(walkA.X[i])); peakB = MathF.Max(peakB, MathF.Abs(walkB.X[i])); }
+            Func<float, float> bite = t => { int i = Math.Min(walkA.N - 1, (int)(t * Sd.Rate)); return Math.Clamp(0.55f + 0.5f * walkA.X[i] / peakA, 0.05f, 1f); };
+            Func<float, float> bite2 = t => { int i = Math.Min(walkB.N - 1, (int)(t * Sd.Rate)); return Math.Clamp(0.5f + 0.5f * walkB.X[i] / peakB, 0.05f, 1f); };
+            Func<float, float> swell = t => Dsp.Smooth(t / 0.18f) * MathF.Exp(-MathF.Max(0f, t - 1.5f) * 0.85f);
+            s.Mix(Noise(L, 712u, t => swell(t) * bite(t)).BandPass(t => 700f + 500f * bite2(t), 0.12f, 1), -2f);              // the grind: wide band, never a note
+            s.Mix(Noise(L, 715u, t => swell(t) * bite2(t) * 0.8f).HighPass(2400f).LowPass(7500f, 0.1f), -9f);                    // the rip in the top
+            s.Mix(Noise(L, 716u, t => Dsp.Smooth(t / 0.12f) * MathF.Exp(-t * 0.55f) * (0.6f + 0.4f * bite(t))).LowPass(150f, 0.2f, 2), 3f);   // the weight under it
+            s.Crackle(t => 55f * MathF.Exp(-t * 0.45f) * bite2(t) + 3f, t => 0.34f, 713u, 500f, 3600f, 11f);                    // plates and rivets letting go
+            s.Crackle(t => 9f * MathF.Exp(-t * 0.5f), t => 0.6f, 717u, 120f, 420f, 28f, 0.1f);                                   // the bigger ones, low and dull
+            s.Drive(1.5f);
             s.Reverb(0.5f, 0.06f, 0.4f, 0.7f, 4f, 0.2f);
-            return s.Edges(1.0f, 400f).Normalize(-2f);
+            return s.Edges(0.6f, 400f).Normalize(-2f);
         }
 
         /// <summary>The air going: a boom, then a roar that thins as the cabin empties, debris rattling past, and at the end almost nothing. 3.4 s.</summary>

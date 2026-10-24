@@ -86,6 +86,7 @@ namespace Monolith.Game
                     _held.Pitch = (float)(o["pitch"] ?? 0f); _held.Yaw = (float)(o["yaw"] ?? 0f); _held.Roll = (float)(o["roll"] ?? 0f);
                     if (o["throttle"] != null) _held.Throttle = (float)o["throttle"];
                     if (o["afterburner"] != null) _held.Buttons = (bool)o["afterburner"] ? _held.Buttons | ControlButtons.Afterburner : _held.Buttons & ~ControlButtons.Afterburner;
+                    if (o["brake"] != null) _held.Buttons = (bool)o["brake"] ? _held.Buttons | ControlButtons.Brake : _held.Buttons & ~ControlButtons.Brake;
                     break;
                 case "fire": _fire = (bool)(o["on"] ?? true); break;
                 case "event": _box.Trigger((string)o["name"]); break;

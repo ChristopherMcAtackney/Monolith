@@ -33,6 +33,8 @@ namespace Monolith.Juice
         public BoostSettings boost = new BoostSettings();
         /// <summary>The player's death sequence (first person: the cabin tears apart, you are flung out, you die).</summary>
         public DeathSettings death = new DeathSettings();
+        /// <summary>The retro brake (R3): the forward lurch, the view narrowing, the flare at the nose, the thump and hiss, the rumble.</summary>
+        public BrakeSettings brake = new BrakeSettings();
         /// <summary>How slow the sandbox's slow-motion toggle runs the game (1 = real time).</summary>
         public float slowMo = 0.25f;
 
@@ -95,6 +97,27 @@ namespace Monolith.Juice
             /// <summary>Size of the flame on ships that burn, and the engine glow at the rim of the picture.</summary>
             public float flare = 1f;
             /// <summary>Volume of the ignition whoomph and the empty-tank sputter.</summary>
+            public float sound = 1f;
+        }
+
+        /// <summary>
+        /// The retro brake's feel (<see cref="BrakeFx"/>), the boost's mirror image: the view narrows where the boost widens. Each piece has its own level, 0 turns it off;
+        /// <c>intensity</c> scales them all together. The shake and rumble switches in the main settings still apply.
+        /// </summary>
+        public sealed class BrakeSettings
+        {
+            /// <summary>Off leaves the brake as physics only: the ship stops, nothing else happens.</summary>
+            public bool enabled = true;
+            public float intensity = 1f;
+            /// <summary>Degrees the view narrows by while the retros fire, and the extra thrown in on the click that settles back (the boost's kick in reverse; 0 keeps the view steady).</summary>
+            public float fovHold = 3f, fovPunch = 5f;
+            /// <summary>The forward lurch of the view (1 = about 0.17 m forward and a degree and a half of nod at cruise speed; 0 turns it off).</summary>
+            public float lurch = 1f;
+            /// <summary>Camera shake and pad rumble.</summary>
+            public float shake = 1f, rumble = 1f;
+            /// <summary>Size of the retro flare at the nose.</summary>
+            public float flare = 1f;
+            /// <summary>Volume of the thump and the hiss.</summary>
             public float sound = 1f;
         }
 
@@ -202,6 +225,7 @@ namespace Monolith.Juice
             s.hitStop ??= new HitStopSettings();
             s.boost ??= new BoostSettings();
             s.death ??= new DeathSettings();
+            s.brake ??= new BrakeSettings();
             return s;
         }
 
@@ -223,6 +247,9 @@ namespace Monolith.Juice
                 b.intensity = R(b.intensity); b.fovHold = R(b.fovHold); b.fovPunch = R(b.fovPunch); b.shake = R(b.shake); b.rumble = R(b.rumble);
                 b.lens = R(b.lens); b.streaks = R(b.streaks); b.flare = R(b.flare); b.sound = R(b.sound);
                 death.intensity = R(death.intensity); death.tumble = R(death.tumble);
+                var k = brake;
+                k.intensity = R(k.intensity); k.fovHold = R(k.fovHold); k.fovPunch = R(k.fovPunch); k.lurch = R(k.lurch); k.shake = R(k.shake); k.rumble = R(k.rumble);
+                k.flare = R(k.flare); k.sound = R(k.sound);
                 string path = UserPath;
                 File.WriteAllText(path, ToJson());
                 Source = path;
@@ -244,7 +271,7 @@ namespace Monolith.Juice
             JuiceSettings d = null;
             if (asset != null) { try { d = Parse(asset.text, ResourcePath); } catch (Exception) { } }
             d ??= new JuiceSettings();
-            effects = d.effects; levels = d.levels; hitStop = d.hitStop; boost = d.boost; death = d.death; slowMo = d.slowMo; preset = DetectPreset();
+            effects = d.effects; levels = d.levels; hitStop = d.hitStop; boost = d.boost; death = d.death; brake = d.brake; slowMo = d.slowMo; preset = DetectPreset();
         }
     }
 }

@@ -40,6 +40,10 @@ namespace Monolith.Core
         public float Throttle;
         public bool MatchingSpeed;
         public bool AfterburnerOn;
+        /// <summary>The retro-thruster brake is on (the pilot clicked R3: held until released, even at a standstill), and the retros are firing now (it is on and the ship is still moving forward). Owner: Flight.</summary>
+        public bool BrakeOn, Braking;
+        /// <summary>The throttle setting a second click of the brake will give back (0..1). Owner: Flight (the pilot sends it in the throttle while the brake is on), read by the HUD.</summary>
+        public float BrakeResume;
         public float Fuel, FuelMax;
         /// <summary>0..1, how loosened the damping is after a knock (1 right after a big hit, fading to 0 over ~2 s).</summary>
         public float Knock;

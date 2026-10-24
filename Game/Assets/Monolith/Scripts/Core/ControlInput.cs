@@ -46,6 +46,8 @@ namespace Monolith.Core
         OrderDisable = 1u << 19,
         OrderCover = 1u << 20,
         OrderForm = 1u << 21,
+        /// <summary>Held: the retro-thruster brake (the pilot clicked R3). The ship brakes hard to a stop; the throttle setting is 0 while it is held. The pilot releases it by clicking again, pushing the throttle up or boosting.</summary>
+        Brake = 1u << 22,
     }
 
     public struct ControlInput

@@ -72,6 +72,13 @@ namespace Monolith.Juice
         {
             LastAnglesDeg = Vector3.zero;
             if (_c == null) return;
+            if (_c.LurchShift != Vector3.zero || _c.LurchNodDeg != 0f)
+            {
+                // The brake's lurch: the head thrown forward against the harness (a nod and a push along the camera's own axes).
+                var lt = transform;
+                lt.rotation = lt.rotation * Quaternion.Euler(_c.LurchNodDeg, 0f, 0f);
+                lt.position += lt.rotation * _c.LurchShift;
+            }
             float scale = _c.Settings.ShakeScale;
             float shake = _c.Trauma.Shake * scale;
             if (shake <= 1e-4f)

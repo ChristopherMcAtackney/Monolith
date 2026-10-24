@@ -39,6 +39,7 @@ namespace Monolith.HudUi
             // flight
             f.Speed = ship.ForwardSpeed; f.TopSpeed = Mathf.Max(1f, ship.TopSpeed); f.BoostSpeed = Mathf.Max(f.TopSpeed, ship.AfterburnerSpeed);
             f.Throttle = ship.Throttle; f.Matching = ship.MatchingSpeed; f.Burning = ship.AfterburnerOn;
+            f.BrakeOn = ship.BrakeOn; f.Braking = ship.Braking; f.BrakeResume = ship.BrakeResume;
             f.Fuel01 = ship.FuelMax > 0f ? Mathf.Clamp01(ship.Fuel / ship.FuelMax) : 0f;
             f.SpeedScale = ship.SpeedScale;
 

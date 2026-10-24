@@ -422,7 +422,7 @@ namespace Monolith.Juice
             }
 
             // ---- the screams, the breathing, the heart
-            if (!_screamed && _t >= 0.2f) { _screamed = true; GameEvents.Raise(DeathEvents.HullScream, _cause, 3.2f); _c.Audio.Play(JuiceCue.DeathScream, _pos, Mathf.Clamp(0.9f * Mathf.Max(0.4f, s), 0f, 1.5f)); }
+            if (!_screamed && _t >= 0.2f) { _screamed = true; GameEvents.Raise(DeathEvents.HullScream, _cause, 3.2f); _c.Audio.Play(JuiceCue.DeathTear, _pos, Mathf.Clamp(0.9f * Mathf.Max(0.4f, s), 0f, 1.5f)); }
             if (!_breathed && _t >= 1.4f)
             {
                 _breathed = true;

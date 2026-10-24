@@ -23,6 +23,7 @@ namespace Monolith.Input
         public PadConfig pad = new PadConfig();
         public KeyboardConfig keyboard = new KeyboardConfig();
         public InvertConfig invert = new InvertConfig();
+        public BrakeConfig brake = new BrakeConfig();
 
         /// <summary>The file these came from (null for the built-in controls), so the pause screen can write the invert switches back.</summary>
         [JsonIgnore] public string SourcePath;
@@ -37,6 +38,21 @@ namespace Monolith.Input
             public bool flight = true;
             /// <summary>The cabin: the right stick's up/down and the arrow keys' up/down while walking round.</summary>
             public bool cabinLook = true;
+            public string why;
+        }
+
+        /// <summary>The retro-thruster brake (R3 / Left Ctrl): how a click is kept from steering, and where a boost from a standstill ends up.</summary>
+        public sealed class BrakeConfig
+        {
+            /// <summary>
+            /// Clicking the aim stick pushes it a little off centre, so for this long after the click the aim reads what it read
+            /// <see cref="aimLookBackSeconds"/> before the click, held while the button is down and for this long after letting go.
+            /// 0 turns the hold off.
+            /// </summary>
+            public float aimHoldSeconds = 0.15f;
+            public float aimLookBackSeconds = 0.1f;
+            /// <summary>The throttle setting a boost started at a standstill (throttle 0, braked or not) leaves behind, so the ship ends up cruising instead of stopped (1 = the ship's cruise speed).</summary>
+            public float boostFromRestThrottle = 1f;
             public string why;
         }
 
@@ -58,6 +74,8 @@ namespace Monolith.Input
                 secondaryFire, missileFire, throttleFull, throttleZero, throttleThird, throttleTwoThirds;
             /// <summary>Combat: step to the next missile type, target the nearest attacker.</summary>
             public string cycleMissile, targetAttacker;
+            /// <summary>Click: brake hard to a stop with the retro thrusters (and remember the throttle); click again to give the throttle back.</summary>
+            public string brake;
             /// <summary>The quick menu (hold <see cref="orders"/>): power picks, then wingman orders (reserved for the AI builder).</summary>
             public string menuPowerGuns, menuPowerShields, menuPowerEngines, menuPowerBalanced,
                 menuOrderAttack, menuOrderDisable, menuOrderCover, menuOrderForm;
@@ -89,7 +107,7 @@ namespace Monolith.Input
             public string throttleZero, throttleThird, throttleTwoThirds, throttleFull, afterburner, matchSpeed,
                 targetNext, targetAhead, primaryFire, why;
             public string secondaryFire, missileFire, countermeasure, cycleMissile, subsystemNext, targetAttacker,
-                powerGuns, powerShields, powerEngines, powerBalanced;
+                powerGuns, powerShields, powerEngines, powerBalanced, brake;
             /// <summary>The wingman orders (the pad's quick menu A, B, X, LB): attack my target, disable my target, cover me, form up.</summary>
             public string orderAttack, orderDisable, orderCover, orderForm;
             public SystemButtons system = new SystemButtons();

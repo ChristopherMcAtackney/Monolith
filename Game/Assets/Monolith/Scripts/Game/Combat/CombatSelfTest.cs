@@ -99,6 +99,7 @@ namespace Monolith.Game
                 Hammer();
                 Tunnelling();
                 Lead();
+                Muzzles();
                 Shields();
                 PowerAndParts();
                 Healing();
@@ -287,6 +288,40 @@ namespace Monolith.Game
             l2.Run(0.1f);
             Check(ac2.HasLead && ac2.LeadTime > 0.5f && ac2.LeadTime < 2f, $"the lead indicator is published for a target ahead (lead time {F(ac2.LeadTime)} s)");
             l2.Dispose();
+        }
+
+        static void Muzzles()
+        {
+            // Where the player's guns sit in the cockpit's view: the bottom left and bottom right of the picture, the heavy gun low in the middle.
+            var d = CombatCatalog.Get("vanguard_fighter");
+            var view = Monolith.View.ViewSettings.Load();
+            Vector3 eye = view.camera.Eye;
+            float tanV = Mathf.Tan(view.camera.fovVertical * 0.5f * Mathf.Deg2Rad), tanH = tanV * 16f / 9f;
+            Vector2 Ndc(Vector3 local) { Vector3 r = local - eye; return r.z > 0.5f ? new Vector2(r.x / r.z / tanH, r.y / r.z / tanV) : new Vector2(9f, 9f); }
+            bool two = d.PrimaryHardpoints.Length == 2;
+            Vector2 l = two ? Ndc(d.PrimaryHardpoints[0]) : default, r2 = two ? Ndc(d.PrimaryHardpoints[1]) : default;
+            bool corners = two && Mathf.Abs(l.x) > 0.5f && Mathf.Abs(l.x) < 0.92f && Mathf.Abs(r2.x) > 0.5f && Mathf.Abs(r2.x) < 0.92f && Mathf.Sign(l.x) != Mathf.Sign(r2.x)
+                && l.y < -0.55f && l.y > -0.92f && r2.y < -0.55f && r2.y > -0.92f;
+            Check(corners, $"the two guns sit at the bottom left and bottom right of the cockpit view (screen {F(l.x)}, {F(l.y)} and {F(r2.x)}, {F(r2.y)}; 0 is the middle, 1 the edge)");
+            Vector2 hv = d.HeavyHardpoints.Length == 1 ? Ndc(d.HeavyHardpoints[0]) : new Vector2(9f, 9f);
+            Check(Mathf.Abs(hv.x) < 0.2f && hv.y < -0.55f && hv.y > -0.92f, $"the heavy gun still sits low in the middle of it (screen {F(hv.x)}, {F(hv.y)})");
+
+            // Both guns, from those muzzles, put their shots where the nose points: the target's range when it is ahead (the lead pip's aim), 600 m when there is none.
+            foreach (bool targeted in new[] { true, false })
+                foreach (float range in new[] { 150f, 400f, 900f })
+                {
+                    var lab = new Lab();
+                    var (a, ac, ap) = lab.Ship("vanguard_fighter", Vector3.zero, Vector3.zero, 0);
+                    var (b, bc, _) = lab.Ship("gtf_ulysses", new Vector3(0f, 0f, range), Vector3.zero, 1, 0f);
+                    bc.ShieldMax = 0f; bc.Shield = 0f;
+                    if (targeted) a.Target = b.Id;
+                    ap.In.Buttons = ControlButtons.PrimaryFire; lab.Run(0.2f); ap.In.Buttons = ControlButtons.None;      // 0.15 s apart: one shot from each gun
+                    int shots = lab.Count(CombatEvents.WeaponFired, "needle");
+                    lab.Run(range / 485f + 0.6f);
+                    float loss = bc.HullMax - bc.Hull;
+                    Check(shots == 2 && Near(loss, 2f * 12f * 0.9f, 0.5f), $"both guns hit a target dead ahead at {F(range)} m ({(targeted ? "targeted" : "not targeted")}): {F(loss / 10.8f)} of {shots} shots landed");
+                    lab.Dispose();
+                }
         }
 
         // ------------------------------------------------------------------------------------------------ shield and power

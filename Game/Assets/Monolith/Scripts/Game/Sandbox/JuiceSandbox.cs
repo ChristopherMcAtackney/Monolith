@@ -309,6 +309,20 @@ namespace Monolith.Game
             boost.Add(PanelItem.Info(() => _world.Ships.Get(_player.Id) is ShipState me ? $"speed {me.ForwardSpeed:0} m/s   fuel {me.Fuel:0} of {me.FuelMax:0}   view +{Juice.Boost.FovKick:0.0} deg" : ""));
             _panel.Pages.Add(boost);
 
+            var brake = new PanelPage("BRAKE");
+            var bk = s.brake;
+            brake.Add(PanelItem.Info(() => "The retro brake's feel, the boost in reverse. Click R3 in flight (Left Ctrl on the keyboard), or use the button. Each slider is its own piece; 0 turns it off."));
+            brake.Add(PanelItem.Button("Brake (3 s)", () => Trigger("brake")), PanelItem.Toggle("Brake juice", () => bk.enabled, v => bk.enabled = v));
+            brake.Add(PanelItem.Slider("Intensity (all of it)", () => bk.intensity, v => bk.intensity = v, 0f, 2f, 0.05f));
+            brake.Add(PanelItem.Slider("View narrowing (degrees)", () => bk.fovHold, v => bk.fovHold = v, 0f, 12f, 0.5f, "0.#"));
+            brake.Add(PanelItem.Slider("Click kick (degrees)", () => bk.fovPunch, v => bk.fovPunch = v, 0f, 15f, 0.5f, "0.#"));
+            brake.Add(PanelItem.Slider("Forward lurch", () => bk.lurch, v => bk.lurch = v, 0f, 3f, 0.05f));
+            brake.Add(PanelItem.Slider("Click shake", () => bk.shake, v => bk.shake = v, 0f, 3f, 0.05f));
+            brake.Add(PanelItem.Slider("Pad rumble", () => bk.rumble, v => bk.rumble = v, 0f, 3f, 0.05f));
+            brake.Add(PanelItem.Slider("Retro flare", () => bk.flare, v => bk.flare = v, 0f, 3f, 0.05f));
+            brake.Add(PanelItem.Slider("Thump and hiss volume", () => bk.sound, v => bk.sound = v, 0f, 1.5f, 0.05f));
+            brake.Add(PanelItem.Info(() => _world.Ships.Get(_player.Id) is ShipState me ? $"speed {me.ForwardSpeed:0} m/s   brake {(me.BrakeOn ? (me.Braking ? "firing" : "on") : "off")}   view {Juice.Brake.FovKick:0.0} deg   lurch {Juice.Brake.Lurch * 100f:0} cm" : ""));
+
             var death = new PanelPage("DEATH");
             Juice.Death.WreckVisual = () => PlaceholderShips.Fighter("Wreck", ShipCatalog.Load(_player.ClassId).Size, _mats, _root).transform;
             var dt = s.death;
@@ -320,6 +334,7 @@ namespace Monolith.Game
             death.Add(PanelItem.Slider("Tumble speed (0 = steady view)", () => dt.tumble, v => dt.tumble = v, 0f, 1.5f, 0.05f));
             death.Add(PanelItem.Info(() => _world.Death.Active ? $"{_world.Death.Cause}  {_world.Death.Time:0.0} s  {_world.Death.Phase}" : _world.Death.Finished ? "over: the screen is black until it resets" : "ready"));
             _panel.Pages.Add(death);
+            _panel.Pages.Add(brake);
             if (CommandLine.Has("-mnDeathTest")) Combat.Schedule(CommandLine.GetFloat("-mnDeathAt", 3f), () => Trigger("death_" + CommandLine.Get("-mnDeathCause", "gunfire")));
         }
 
@@ -442,6 +457,7 @@ namespace Monolith.Game
                 case "you_hull": HitYou(true); break;
                 case "boost": _pilot.BoostFor(4f); _lastAction = "boost for 4 s"; break;
                 case "boost_dry": _pilot.BoostFor(60f); _lastAction = "boost until the tank runs dry"; break;
+                case "brake": _pilot.BrakeFor(3f); _lastAction = "brake for 3 s"; break;
                 case "wing_burn": WingBurn(5f); break;
                 case "death_gunfire": case "death_blast": case "death_beam": case "death_collision":
                     Juice.Death.Trigger(name.Substring(6)); _lastAction = "your death: " + name.Substring(6); break;
@@ -519,7 +535,7 @@ namespace Monolith.Game
                 Combat.Schedule(i * 0.07f, () =>
                 {
                     var m = _world.Ships.Get(_player.Id); if (m == null) return;
-                    Vector3 mz = m.Position + m.Rotation * new Vector3((k & 1) == 0 ? -2.9f : 2.9f, -0.35f, 3.4f);
+                    Vector3 mz = m.Position + m.Rotation * SandboxCombat.PlayerMuzzle(m, k & 1);
                     Vector3 aim = m.Position + m.Rotation * new Vector3((k & 1) == 0 ? 2f : -2f, 0.4f, 650f);
                     Combat.FireScripted(m.Id, 0, "laser_player", mz, (aim - mz).normalized, 620f, 14f, 2.6f);
                 });
@@ -630,17 +646,24 @@ namespace Monolith.Game
 
             /// <summary>Hold the afterburner for this long (the panel's boost buttons; the panel being open does not stop it).</summary>
             public void BoostFor(float seconds) { _boostLeft = seconds; }
+            float _brakeLeft;
+
+            /// <summary>Hold the retro brake for this long (the panel's brake button).</summary>
+            public void BrakeFor(float seconds) { _brakeLeft = seconds; }
 
             public SandboxPilot(PlayerPilot inner) { _inner = inner; }
 
             public ControlInput Sample(in SimFrame frame)
             {
                 bool boosting = _boostLeft > 0f;
+                bool braking = _brakeLeft > 0f;
+                if (braking) _brakeLeft -= frame.Dt;
                 if (boosting) _boostLeft -= frame.Dt;
-                if (Blocked) return new ControlInput { Throttle = boosting ? 1f : _throttle, Buttons = boosting ? ControlButtons.Afterburner : ControlButtons.None };
+                if (Blocked) return new ControlInput { Throttle = boosting ? 1f : _throttle, Buttons = (boosting ? ControlButtons.Afterburner : ControlButtons.None) | (braking ? ControlButtons.Brake : ControlButtons.None) };
                 var c = _inner.Sample(frame);
                 _throttle = c.Throttle;
                 if (boosting) c.Buttons |= ControlButtons.Afterburner;
+                if (braking) c.Buttons |= ControlButtons.Brake;
                 var pad = Gamepad.current;
                 if (pad != null && (pad.leftShoulder.isPressed || pad.rightShoulder.isPressed))
                     c.Buttons &= ~(ControlButtons.TargetNext | ControlButtons.MatchSpeed | ControlButtons.Countermeasure | ControlButtons.Orders | ControlButtons.SecondaryFire | ControlButtons.MissileFire);

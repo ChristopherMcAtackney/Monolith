@@ -367,11 +367,11 @@ namespace Monolith.Game
             lines.AddRange(_hudControls.SettingsLines());
             lines.Add("#CONTROLS");
             lines.Add("RT   LB   RB	FAST GUN   HEAVY GUN   FIRE MISSILE");
-            lines.Add("R3   B	NEXT MISSILE   DECOYS");
+            lines.Add("D-PAD RIGHT   B	NEXT MISSILE   DECOYS");
             lines.Add("LT   A   VIEW	TARGET AHEAD   NEXT HOSTILE   NEAREST ATTACKER");
             lines.Add("Y (TAP)	NEXT PART OF THE TARGET");
             lines.Add("HOLD Y	QUICK MENU: POWER ON THE D-PAD, WING ORDERS ON A  B  X  LB");
-            lines.Add("L3   X	AFTERBURNER   MATCH SPEED");
+            lines.Add("L3   R3   X	AFTERBURNER   BRAKE   MATCH SPEED");
             lines.Add("VIEW TWICE   B	BATTLE MAP (NOT PAUSED)");
             lines.Add("Lock-on missiles need a steady tone; heat-seekers need only the target in front.");
             return lines.ToArray();

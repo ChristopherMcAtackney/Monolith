@@ -1,0 +1,25 @@
+{
+ "scene": "juice",
+ "sceneOptions": {
+  "script": [
+   { "t": 0.0, "do": "place", "pos": [-60, 92, -470], "lookAt": [-130, 78, 400], "speed": 1.0, "throttle": 1.0 },
+   { "t": 0.02, "do": "input", "throttle": 1.0 },
+   { "t": 0.04, "do": "target", "name": "Reaper 2" },
+   { "t": 1.0, "do": "fire", "on": true },
+   { "t": 1.9, "do": "fire", "on": false }
+  ]
+ },
+ "defaults": { "width": 1280, "height": 720, "warmup": 1.0, "perfWarmup": 2.0 },
+ "stills": [
+  { "name": "guns_00_before", "follow": true, "warmup": 0.95 },
+  { "name": "guns_01_flash", "follow": true, "warmup": 0.0667 },
+  { "name": "guns_02_flash", "follow": true, "warmup": 0.0167 },
+  { "name": "guns_03_leave", "follow": true, "warmup": 0.0334 },
+  { "name": "guns_04_travel", "follow": true, "warmup": 0.0667 },
+  { "name": "guns_05_travel", "follow": true, "warmup": 0.0667 },
+  { "name": "guns_06_stream", "follow": true, "warmup": 0.12 },
+  { "name": "guns_07_stream", "follow": true, "warmup": 0.15 },
+  { "name": "guns_08_stream", "follow": true, "warmup": 0.15 },
+  { "name": "guns_09_after", "follow": true, "warmup": 0.9 }
+ ]
+}

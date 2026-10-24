@@ -34,6 +34,7 @@ namespace Monolith.Game
             yield return new WaitForSeconds(1.0f);
             if (CommandLine.Has("-mnJuiceSelfTest")) SelfTest();
             if (CommandLine.Has("-mnJuiceSelfTest")) yield return BoostCheck();
+            if (CommandLine.Has("-mnJuiceSelfTest")) yield return BrakeCheck();
             if (CommandLine.Has("-mnJuiceSelfTest")) yield return DeathCheck();
             if (CommandLine.Has("-mnRumbleTest")) yield return RumbleTest();
             if (CommandLine.Has("-mnPanelDrive")) yield return PanelDrive();
@@ -165,6 +166,56 @@ namespace Monolith.Game
             Check(!me.AfterburnerOn && me.Fuel < 40f, $"the burner is out on an empty tank (fuel {me.Fuel:0})");
 
             MnLog.Info($"JUICE boostcheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: ignition, view, dust, lens, release, off switch, dry tank");
+            if (fails > 0) Application.Quit(1);
+        }
+
+        /// <summary>
+        /// The retro brake, on the running sandbox: the button brakes the ship to a dead stop in about a second and a half, the view narrows and lurches,
+        /// it all eases back, letting go sends the ship off again, and the off switch leaves the stop with nothing added. About 13 s.
+        /// </summary>
+        IEnumerator BrakeCheck()
+        {
+            int fails = 0;
+            void Check(bool ok, string what) { if (!ok) { fails++; MnLog.Error("JUICE brakecheck FAILED: " + what); } }
+            var world = GameWorld.Current;
+            var juice = _box.Juice;
+            var fx = juice.Brake;
+            var me = world.Ships.Get(world.LocalPlayerShip);
+            var s = juice.Settings.brake;
+            yield return new WaitForSeconds(2.5f);                      // the last check's burner is out and the view has eased back
+            float cruise = me.ForwardSpeed;
+            Check(cruise > 20f && !me.BrakeOn, $"the ship is flying (cruise {cruise:0} m/s) before the brake");
+            Check(Mathf.Abs(world.FovKick) < 0.05f && fx.Lurch == 0f, "no brake, no kick and no lurch");
+
+            int b0 = fx.Brakes;
+            _box.Trigger("brake");
+            yield return new WaitForSeconds(0.1f);
+            float lurch = juice.Context.LurchShift.z, nod = juice.Context.LurchNodDeg;
+            Check(lurch > 0.05f && nod > 0.4f, $"the view lurches forward and nods ({lurch * 100f:0} cm, {nod:0.0} degrees a tenth of a second in)");
+            yield return new WaitForSeconds(0.2f);
+            Check(me.BrakeOn && fx.Brakes == b0 + 1, "the brake button brakes (one hard stop)");
+            Check(world.FovKick < -s.fovHold * 0.6f, $"the view narrows ({world.FovKick:0.0} degrees)");
+            Check(me.ForwardSpeed < cruise * 0.5f, $"the ship is slowing hard ({cruise:0} to {me.ForwardSpeed:0} m/s in 0.3 s)");
+            yield return new WaitForSeconds(1.7f);
+            Check(me.BrakeOn && !me.Braking && me.ForwardSpeed < 0.5f, $"two seconds in it is stopped and the brake is still on (speed {me.ForwardSpeed:0.0})");
+            Check(Mathf.Abs(world.FovKick) < 0.8f && Mathf.Abs(juice.Context.LurchShift.z) < 0.02f, $"the view has eased back ({world.FovKick:0.0} degrees, {juice.Context.LurchShift.z * 100f:0} cm)");
+            yield return new WaitForSeconds(1.8f);
+            Check(!me.BrakeOn, "the brake lets go after its 3 s");
+            yield return new WaitForSeconds(1.5f);
+            Check(me.ForwardSpeed > me.TopSpeed * 0.5f, $"letting go sends the ship off again ({me.ForwardSpeed:0} m/s)");
+            yield return new WaitForSeconds(2.0f);
+
+            // The off switch: the ship still stops, the treatment goes.
+            s.enabled = false;
+            int b1 = fx.Brakes;
+            _box.Trigger("brake");
+            yield return new WaitForSeconds(0.4f);
+            Check(me.BrakeOn && fx.Brakes == b1 && world.FovKick == 0f && juice.Context.LurchShift == Vector3.zero, "with the brake juice off the ship still brakes, with nothing added");
+            Check(me.ForwardSpeed < cruise * 0.5f, "... and it is still stopping hard");
+            s.enabled = true;
+            yield return new WaitForSeconds(3.4f);
+
+            MnLog.Info($"JUICE brakecheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: stop, view, lurch, release, off switch");
             if (fails > 0) Application.Quit(1);
         }
 

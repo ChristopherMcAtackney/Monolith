@@ -336,10 +336,10 @@ namespace Monolith.Game
             }
             lines.Add("#CONTROLS");
             lines.Add("RT   LB   RB	FAST GUN   HEAVY GUN   FIRE MISSILE");
-            lines.Add("R3   B	NEXT MISSILE   DECOYS");
+            lines.Add("D-PAD RIGHT   B	NEXT MISSILE   DECOYS");
             lines.Add("LT   A   VIEW	TARGET AHEAD   NEXT HOSTILE   NEAREST ATTACKER");
             lines.Add("HOLD Y	QUICK MENU: POWER ON THE D-PAD, WING ORDERS ON A  B  X  LB");
-            lines.Add("L3   X	AFTERBURNER   MATCH SPEED");
+            lines.Add("L3   R3   X	AFTERBURNER   BRAKE   MATCH SPEED");
             lines.Add("HOLD VIEW	STAND UP     TWICE: BATTLE MAP (NOT PAUSED)");
             lines.Add("SOUND	F3 F4 VOICE   F5 F6 MUSIC   F7 F8 EFFECTS   - AND = MASTER   F2 OFF");
             return lines.ToArray();

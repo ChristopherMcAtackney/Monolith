@@ -30,6 +30,25 @@ namespace Monolith.Input
         // The quick menu: hold the orders button to open it, tap it for the next subsystem.
         bool _menuHeld, _menuOpen, _tapPulse;
         int _menuTicks;
+        // The brake (R3): a click latches it and remembers the throttle; the next click, a throttle push, match speed or a boost lets go.
+        bool _brakeLatched, _prevBrakeButton, _presetPushed;
+        float _brakeResume = 2f / 3f, _lastCruise = 2f / 3f;
+        // A boost started at a standstill leaves the throttle at cruise; if the burner turns out to be refused the brake and throttle come back.
+        bool _prevAbRequest, _boostFromRest, _brakeBeforeBoost;
+        float _throttleBeforeBoost;
+        // Clicking the aim stick nudges it: the aim is held at what it read just before the click while the button is down and for a moment after.
+        const int AimHistory = 8;
+        const float AimHoldMaxPress = 0.5f;
+        readonly Vector2[] _aimHist = new Vector2[AimHistory];
+        int _aimHistAt;
+        bool _prevBrakePad, _aimHolding;
+        Vector2 _aimHeld;
+        float _aimHoldLeft, _aimHoldPress;
+
+        /// <summary>The retro brake is latched (the throttle setting is 0 and the previous one is remembered).</summary>
+        public bool BrakeLatched => _brakeLatched;
+        /// <summary>The throttle setting the next click of the brake gives back.</summary>
+        public float BrakeResume => _brakeResume;
 
         /// <summary>The quick menu (power picks, wingman orders) is open: the HUD draws it.</summary>
         public bool QuickMenuOpen => _menuOpen;
@@ -49,6 +68,9 @@ namespace Monolith.Input
             _ship = shipId;
             _synced = false;
             _abLatched = false;
+            _brakeLatched = false;
+            _boostFromRest = false;
+            _aimHolding = false;
         }
 
         public ControlInput Sample(in SimFrame frame)
@@ -66,11 +88,16 @@ namespace Monolith.Input
             var k = _cfg.keyboard;
             float pitchUp = 0f, yaw = 0f, roll = 0f, throttleRate = 0f;
             ControlButtons buttons = ControlButtons.None;
-            bool abButton = false, abHeld = false;
+            bool abButton = false, abHeld = false, brakeButton = false;
+            _presetPushed = false;
 
             if (pad != null)
             {
+                var b = p.buttons;
                 var aim = StickShaping.Radial(Stick(pad, p.aim.stick), p.aim.deadZone, p.aim.outerDeadZone, p.aim.exponent);
+                bool brakePad = Pressed(pad, b.brake);
+                aim = HoldAimThroughClick(aim, brakePad, frame.Dt);
+                brakeButton |= brakePad;
                 pitchUp += _cfg.invert.flight ? -aim.y : aim.y;      // inverted (the default): stick forward is nose down
                 yaw += aim.x;
                 float r = StickShaping.Axial(Axis(pad, p.roll.control), p.roll.deadZone, p.roll.outerDeadZone, p.roll.exponent);
@@ -78,7 +105,6 @@ namespace Monolith.Input
                 throttleRate += StickShaping.Axial(Axis(pad, p.throttle.control), p.throttle.deadZone, p.throttle.outerDeadZone,
                     p.throttle.exponent) * p.throttle.ratePerSecond;
 
-                var b = p.buttons;
                 // Y: a tap is "next subsystem"; held, it opens the quick menu and the buttons it names change meaning.
                 bool menuButton = Pressed(pad, b.orders);
                 if (menuButton)
@@ -116,7 +142,7 @@ namespace Monolith.Input
                 }
                 if (Pressed(pad, b.missileFire)) buttons |= ControlButtons.MissileFire;
                 if (Pressed(pad, b.targetAhead)) buttons |= ControlButtons.TargetReticle;
-                if (Pressed(pad, b.cycleMissile)) buttons |= ControlButtons.CycleMissile;
+                if (!menu && Pressed(pad, b.cycleMissile)) buttons |= ControlButtons.CycleMissile;      // D-pad right is "favour engines" while the quick menu is open
                 if (Pressed(pad, b.targetAttacker)) buttons |= ControlButtons.TargetAttacker;
                 abButton = Pressed(pad, b.afterburner);
                 if (!p.afterburnerToggle) abHeld |= abButton;
@@ -152,6 +178,7 @@ namespace Monolith.Input
                 if (Key(kb, k.targetNext) > 0f) buttons |= ControlButtons.TargetNext;
                 if (Key(kb, k.targetAhead) > 0f) buttons |= ControlButtons.TargetReticle;
                 abHeld |= Key(kb, k.afterburner) > 0f;
+                brakeButton |= Key(kb, k.brake) > 0f;
                 Preset(Key(kb, k.throttleZero) > 0f, ref _prevKbZero, 0f);
                 Preset(Key(kb, k.throttleThird) > 0f, ref _prevKbThird, 1f / 3f);
                 Preset(Key(kb, k.throttleTwoThirds) > 0f, ref _prevKbTwoThirds, 2f / 3f);
@@ -159,31 +186,71 @@ namespace Monolith.Input
             }
 
             _throttle = Mathf.Clamp01(_throttle + throttleRate * frame.Dt);
+            bool throttlePushed = throttleRate > 0f || _presetPushed;
+
+            // Brake click: stop hard and remember the throttle (a second click gives it back). Pushing the throttle up, matching
+            // speed or boosting lets go of it, and the throttle carries on from where the brake left it (0).
+            bool brakeClick = brakeButton && !_prevBrakeButton;
+            _prevBrakeButton = brakeButton;
+            if (!_brakeLatched && _throttle >= 0.1f) _lastCruise = _throttle;
+            if (brakeClick)
+            {
+                if (_brakeLatched) { _throttle = _brakeResume; _brakeLatched = false; }
+                else
+                {
+                    _brakeResume = _throttle >= 0.1f ? _throttle : _lastCruise;      // braked from a stop: the last real setting
+                    _throttle = 0f;
+                    _brakeLatched = true;
+                    _abLatched = false;                                               // the brake shuts the burner off
+                    _boostFromRest = false;
+                }
+            }
+            else if (_brakeLatched && (throttlePushed || (buttons & ControlButtons.MatchSpeed) != 0)) _brakeLatched = false;
 
             // Afterburner click: latch on, click again to drop it; let go of the latch when the burner goes out
             // (tank empty) or never lights (not enough fuel, or the 1.3 s restart lockout).
-            if (p.afterburnerToggle && abButton && !_prevAbButton)
+            if (p.afterburnerToggle && abButton && !_prevAbButton && !brakeClick)
             {
                 _abLatched = !_abLatched;
                 _abSeenOn = false;
                 _abLatchTicks = 0;
             }
             _prevAbButton = abButton;
+            bool abRequest = _abLatched || abHeld;
+            if (abRequest && !_prevAbRequest)
+            {
+                // A boost from a standstill (throttle 0, braked or not) must not end in a stop: it leaves the throttle at cruise.
+                _boostFromRest = false;
+                if (_brakeLatched || _throttle < 0.05f)
+                {
+                    _throttleBeforeBoost = _throttle; _brakeBeforeBoost = _brakeLatched;
+                    _throttle = Mathf.Clamp01(_cfg.brake.boostFromRestThrottle);
+                    _boostFromRest = _abLatched;      // only a click can be refused and taken back (a held key just stops when it is let go)
+                }
+                _brakeLatched = false;
+            }
+            _prevAbRequest = abRequest;
             if (_abLatched)
             {
                 _abLatchTicks++;
                 bool on = ship != null && ship.AfterburnerOn;
-                if (on) _abSeenOn = true;
-                if ((_abSeenOn && !on) || (!_abSeenOn && _abLatchTicks > 3)) _abLatched = false;
+                if (on) { _abSeenOn = true; _boostFromRest = false; }
+                if ((_abSeenOn && !on) || (!_abSeenOn && _abLatchTicks > 3))
+                {
+                    _abLatched = false;
+                    if (_boostFromRest && !_abSeenOn) { _throttle = _throttleBeforeBoost; _brakeLatched = _brakeBeforeBoost; }      // refused: nothing changed
+                    _boostFromRest = false;
+                }
             }
             if (_abLatched || abHeld) buttons |= ControlButtons.Afterburner;
+            if (_brakeLatched) buttons |= ControlButtons.Brake;
 
             return new ControlInput
             {
                 Pitch = Mathf.Clamp(pitchUp, -1f, 1f),
                 Yaw = Mathf.Clamp(yaw, -1f, 1f),
                 Roll = Mathf.Clamp(roll, -1f, 1f),
-                Throttle = _throttle,
+                Throttle = _brakeLatched ? _brakeResume : _throttle,      // while braked the ship ignores it and the HUD shows it as the throttle a second click gives back
                 Buttons = buttons,
             };
         }
@@ -223,8 +290,44 @@ namespace Monolith.Input
 
         void Preset(bool down, ref bool before, float value)
         {
-            if (down && !before) _throttle = value;
+            if (down && !before) { _throttle = value; if (value > 0f) _presetPushed = true; }
             before = down;
+        }
+
+        /// <summary>
+        /// R3 is the aim stick, and clicking a thumbstick in pushes it a little off centre. From the click until
+        /// <c>aimHoldSeconds</c> after the button comes up (never more than 0.5 s of holding) the aim reads what it read
+        /// <c>aimLookBackSeconds</c> before the click, so the nose carries straight on through it.
+        /// </summary>
+        Vector2 HoldAimThroughClick(Vector2 aim, bool clickDown, float dt)
+        {
+            var cfg = _cfg.brake;
+            Vector2 result = aim;
+            if (cfg.aimHoldSeconds > 0f)
+            {
+                if (clickDown && !_prevBrakePad)
+                {
+                    int back = Mathf.Clamp(Mathf.RoundToInt(cfg.aimLookBackSeconds / Mathf.Max(1e-4f, dt)), 0, AimHistory - 1);
+                    _aimHeld = _aimHist[((_aimHistAt - 1 - back) % AimHistory + AimHistory) % AimHistory];
+                    _aimHolding = true; _aimHoldLeft = cfg.aimHoldSeconds; _aimHoldPress = 0f;
+                }
+                if (_aimHolding)
+                {
+                    if (clickDown)
+                    {
+                        _aimHoldPress += dt;
+                        _aimHoldLeft = cfg.aimHoldSeconds;
+                        if (_aimHoldPress > AimHoldMaxPress) _aimHolding = false;      // held in on purpose: the stick is the player's again
+                    }
+                    else _aimHoldLeft -= dt;
+                    if (_aimHoldLeft <= 0f) _aimHolding = false;
+                    if (_aimHolding) result = _aimHeld;
+                }
+            }
+            _prevBrakePad = clickDown;
+            _aimHist[_aimHistAt] = aim;          // the raw reading, so the look-back never sees a held value
+            _aimHistAt = (_aimHistAt + 1) % AimHistory;
+            return result;
         }
 
         static Vector2 Stick(InputDevice d, string path) =>

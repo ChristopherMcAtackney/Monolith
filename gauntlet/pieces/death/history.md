@@ -29,7 +29,7 @@ white-out, more fire), **collision** (0.12 s, thrown along the contact normal). 
   releases them. The cabin FBX now imports readable (only under `Art/Cabin`, `ShipArtImport` version 6): ship models still do not.
 - **Named events for the audio** (`DeathEvents`, documented in `Core/DeathBoard.cs`): `death_start`, `death_canopy_crack`, `death_hull_scream`, `death_decompression`, `death_tumble`,
   `death_breath`, `death_heartbeat` (many; value 1 strong to 0.35 faint), `death_heartbeat_stop`, `death_silence`, `death_skip`, `death_end`. The juice also plays five sounds itself through
-  `IJuiceAudio`: `death_crack`, `death_scream`, `death_decompress` (the loudest sound in the game, bus "big"), `death_breath`, `death_heartbeat` (bus "ui": the duck at the breach and the collapse
+  `IJuiceAudio`: `death_crack`, `death_tear` (first built as `death_scream`, a tonal howl that the user heard as a high-pitched whirring; replaced, see `gauntlet/pieces/brake/history.md`), `death_decompress` (the loudest sound in the game, bus "big"), `death_breath`, `death_heartbeat` (bus "ui": the duck at the breach and the collapse
   afterwards leave them alone). 104 checks in the audio self-test pass with them.
 - **Settings** (`juice.json` `death`, the sandbox's DEATH page): `enabled` (off: the old banner), `intensity` (flashes, shake, pad), `tumble` (0 keeps the view steady, for anyone the spinning
   makes ill). The flash switch turns the white-out down to a quarter.

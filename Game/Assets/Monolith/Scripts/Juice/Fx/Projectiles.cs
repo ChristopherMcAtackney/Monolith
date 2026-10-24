@@ -91,12 +91,23 @@ namespace Monolith.Juice
             public Vector3 TrackPos, TrackVel;
         }
 
+        /// <summary>Where the near fade starts and how long it takes, in metres from the eye, for the player's own bolts (everyone else's: 18 and 55).</summary>
+        public const float PlayerNearStart = 1.2f, PlayerNearRange = 3.5f;
+        /// <summary>The widest a player bolt looks on screen, as half its width over its distance (radians, about 0.9 degrees), and the thinnest it is drawn (metres).</summary>
+        public const float PlayerBoltAngle = 0.011f, PlayerMinHalfWidth = 0.04f;
+        /// <summary>How long a flash at the player's own muzzle lasts (s), and how big it is against the weapon's table size: the muzzles are 3 to 4 m from the eye.</summary>
+        public const float PlayerFlashLife = 0.075f, PlayerFlashScale = 0.16f;
+
         readonly JuiceContext _c;
         readonly List<Proj> _list = new List<Proj>(256);
         readonly Dictionary<int, Proj> _tracked = new Dictionary<int, Proj>();
         int _seq;
 
         public int Count => _list.Count;
+
+        /// <summary>A flash at one of the player's own muzzles: kept in ship space and drawn where the muzzle is now, so it rides with the ship instead of being left behind at 70 m/s.</summary>
+        struct MuzzleFlashShip { public Vector3 Local, Dir; public WeaponLook Look; public float Age, Life, Seed; }
+        readonly List<MuzzleFlashShip> _flashes = new List<MuzzleFlashShip>(16);
 
         public Projectiles(JuiceContext c) { _c = c; }
 
@@ -169,19 +180,28 @@ namespace Monolith.Juice
 
         void MuzzleFlash(Vector3 pos, Vector3 dir, WeaponLook look, bool player)
         {
-            float size = look.MuzzleSize * (player ? 0.42f : 1f) * _c.Size;
-            float life = player ? 0.05f : 0.08f;
+            if (player && _c.Player != null && _c.Pose(_c.Player.Id, out Vector3 shipPos, out Quaternion shipRot) && _flashes.Count < 16)
+            {
+                // The player's own guns sit a few metres from the eye (bottom left and right of the view): the flash rides with the ship (drawn every frame where the
+                // muzzle is now), because the ship flies through a fixed point in a few hundredths of a second.
+                var inv = Quaternion.Inverse(shipRot);
+                _flashes.Add(new MuzzleFlashShip { Local = inv * (pos - shipPos), Dir = inv * dir, Look = look, Age = 0f, Life = PlayerFlashLife, Seed = (_seq % 7) * 0.13f });
+                return;
+            }
+            float size = look.MuzzleSize * _c.Size;
+            float ns = 4f, nr = 10f;
+            float life = 0.08f;
             var rgb = look.Colour * 2.2f;
             ref var g = ref _c.Particles.Add();
             g.Kind = FxKind.Glow; g.Pos = pos + dir * (size * 0.3f); g.Life = life; g.W0 = size * 0.55f; g.W1 = size * 0.8f; g.P1a = g.P1b = 0.75f;
-            g.C0 = g.C1 = g.C2 = new Vector4(rgb.x, rgb.y, rgb.z, 0f) * 1.8f; g.FadeExp = 1.2f; g.NearStart = 4f; g.NearRange = 10f;
+            g.C0 = g.C1 = g.C2 = new Vector4(rgb.x, rgb.y, rgb.z, 0f) * 1.8f; g.FadeExp = 1.2f; g.NearStart = ns; g.NearRange = nr;
             ref var f = ref _c.Particles.Add();
             f.Kind = FxKind.Flare; f.Pos = pos + dir * (size * 0.4f); f.Life = life * 1.3f; f.W0 = size * 1.5f; f.W1 = size * 2.1f; f.H0 = f.H1 = size * 0.5f;
-            f.C0 = f.C1 = f.C2 = new Vector4(rgb.x, rgb.y, rgb.z, 0f); f.FadeExp = 1.5f; f.NearStart = 4f; f.NearRange = 10f;
+            f.C0 = f.C1 = f.C2 = new Vector4(rgb.x, rgb.y, rgb.z, 0f); f.FadeExp = 1.5f; f.NearStart = ns; f.NearRange = nr;
             // A short hot lance along the barrel direction.
             ref var l = ref _c.Particles.Add();
             l.Kind = FxKind.Streak; l.Pos = pos + dir * (size * 1.2f); l.Dir = dir; l.Life = life; l.MinLen = size * 2.2f; l.W0 = l.W1 = look.HalfWidth * 0.9f;
-            l.C0 = l.C1 = l.C2 = new Vector4(look.Colour.x, look.Colour.y, look.Colour.z, look.Core * 0.8f); l.FadeExp = 1f; l.NearStart = 4f; l.NearRange = 10f;
+            l.C0 = l.C1 = l.C2 = new Vector4(look.Colour.x, look.Colour.y, look.Colour.z, look.Core * 0.8f); l.FadeExp = 1f; l.NearStart = ns; l.NearRange = nr;
             l.P1a = l.P1b = 0.5f; l.P2a = l.P2b = 0.3f;
         }
 
@@ -229,6 +249,12 @@ namespace Monolith.Juice
         public void Update(float dt)
         {
             float now = _c.RenderSimTime;
+            for (int i = _flashes.Count - 1; i >= 0; i--)
+            {
+                var f = _flashes[i];
+                f.Age += dt;
+                if (f.Age >= f.Life) _flashes.RemoveAt(i); else _flashes[i] = f;
+            }
             for (int i = _list.Count - 1; i >= 0; i--)
             {
                 var p = _list[i];
@@ -306,6 +332,31 @@ namespace Monolith.Juice
             }
         }
 
+
+        /// <summary>The flashes at the player's own muzzles, where the muzzles are this frame (they ride with the ship).</summary>
+        void DrawPlayerFlashes()
+        {
+            if (_flashes.Count == 0 || !_c.Settings.effects.muzzleFlash) return;
+            var me = _c.Player;
+            if (me == null || !_c.Pose(me.Id, out Vector3 pos, out Quaternion rot)) return;
+            var add = _c.Add;
+            float bright = _c.Bright;
+            for (int i = 0; i < _flashes.Count; i++)
+            {
+                var fl = _flashes[i];
+                var look = fl.Look;
+                float u = fl.Age / fl.Life;
+                float k = (1f - u) * (1f - u);
+                float size = look.MuzzleSize * PlayerFlashScale * _c.Size * (0.75f + 0.25f * (1f - u));
+                Vector3 at = pos + rot * fl.Local;
+                Vector3 dir = rot * fl.Dir;
+                var rgb = look.Colour * (2.2f * bright);
+                add.Quad(at + dir * (size * 0.3f), new Vector4(rgb.x, rgb.y, rgb.z, 0f) * (1.8f * k), FxKind.Glow, fl.Seed, Vector4.zero, size * Mathf.Lerp(0.8f, 0.55f, u), 0f, 0.75f, 0f, 0f, 0.4f, 1.6f);
+                add.Quad(at + dir * (size * 0.4f), new Vector4(rgb.x, rgb.y, rgb.z, 0f) * k, FxKind.Flare, fl.Seed + 0.5f, new Vector4(size * 0.5f, 0, 0, 0), size * Mathf.Lerp(2.1f, 1.5f, u), 0f, 0f, 0f, 0f, 0.4f, 1.6f);
+                var cc = new Vector4(look.Colour.x * bright, look.Colour.y * bright, look.Colour.z * bright, look.Core * 0.8f * bright * k);
+                add.Quad(at + dir * (size * 1.7f), cc, FxKind.Streak, fl.Seed + 0.25f, new Vector4(dir.x, dir.y, dir.z, size * 1.6f), look.HalfWidth * 0.08f, 0f, 0.5f, 0.3f, 0f, 0.4f, 1.6f);
+            }
+        }
         public void Draw()
         {
             var add = _c.Add;
@@ -314,6 +365,7 @@ namespace Monolith.Juice
             float bright = _c.Bright;
             float wScale = _c.Settings.levels.boltWidth;
             bool trails = _c.Settings.effects.missileTrails;
+            DrawPlayerFlashes();
 
             for (int i = 0; i < _list.Count; i++)
             {
@@ -326,12 +378,23 @@ namespace Monolith.Juice
                     Vector3 head = p.Origin + p.Dir * travelled;
                     if ((head - cam).sqrMagnitude > 30000f * 30000f) continue;
                     float len = Mathf.Min(look.Length, travelled + look.Length * 0.12f);
-                    float hw = look.HalfWidth * wScale;
+                    float hw = look.HalfWidth * wScale, hwHead = hw;
+                    // The player's own bolts start a few metres from the eye (the muzzles are at the bottom corners of the view): they show from a metre out, in full.
+                    float nearStart = p.Player ? PlayerNearStart : 18f, nearRange = p.Player ? PlayerNearRange : 55f;
+                    if (p.Player)
+                    {
+                        // A bolt that leaves a muzzle three metres from the eye must not start behind it, and must not be fatter on screen than a bolt in the distance: the
+                        // tail begins at the muzzle and the width is held to a fraction of a degree of the picture until the bolt is far enough for its real width to be thinner.
+                        len = Mathf.Min(look.Length, travelled);
+                        if (len < 0.3f) continue;
+                        hw = Mathf.Min(hw, Mathf.Max(PlayerMinHalfWidth, Vector3.Distance(head - p.Dir * (len * 0.5f), cam) * PlayerBoltAngle));
+                        hwHead = Mathf.Min(hwHead, Mathf.Max(PlayerMinHalfWidth, Vector3.Distance(head, cam) * PlayerBoltAngle));
+                    }
                     var col = look.Colour * bright;
                     add.Quad(head - p.Dir * (len * 0.5f), new Vector4(col.x, col.y, col.z, look.Core * bright), FxKind.Streak, p.Seed,
-                             new Vector4(p.Dir.x, p.Dir.y, p.Dir.z, len * 0.5f), hw, 0f, look.TailSharp, look.TailBright, 0f, 18f, 55f);
+                             new Vector4(p.Dir.x, p.Dir.y, p.Dir.z, len * 0.5f), hw, 0f, look.TailSharp, look.TailBright, 0f, nearStart, nearRange);
                     var hc = look.Colour * (bright * look.HeadStrength);
-                    add.Quad(head, new Vector4(hc.x, hc.y, hc.z, 0f), FxKind.Glow, p.Seed, Vector4.zero, hw * look.HeadGlow, 0f, 0.55f, 0f, 0f, 18f, 55f);
+                    add.Quad(head, new Vector4(hc.x, hc.y, hc.z, 0f), FxKind.Glow, p.Seed, Vector4.zero, hwHead * look.HeadGlow, 0f, 0.55f, 0f, 0f, nearStart, nearRange);
                 }
                 else
                 {

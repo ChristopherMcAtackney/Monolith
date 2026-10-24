@@ -44,6 +44,10 @@ namespace Monolith.Flight
         public bool Matching;
         public float Fuel;
         public bool AfterburnerOn;
+        /// <summary>The retro-thruster brake is held (<see cref="ControlButtons.Brake"/>), and the retros are firing: held and still moving forward.</summary>
+        public bool BrakeHeld, Braking;
+        /// <summary>While the brake is held: the throttle setting the pilot will give back on a second click (the pilot sends it in <see cref="ControlInput.Throttle"/>, which the brake ignores). 0 otherwise.</summary>
+        public float BrakeResume;
         /// <summary>Seconds this ship has been simulated.</summary>
         public float Time;
         /// <summary>Multiplies the top and afterburner speed goals: damaged engines cap the ship, the engines-favoured power choice adds a little. 1 normally.</summary>
@@ -105,12 +109,17 @@ namespace Monolith.Flight
                 bool moved = Math.Abs(input.Throttle - previous.Throttle) > c && Math.Abs(input.Throttle - Throttle) > c;
                 if (!hasTarget || moved) Matching = false;
             }
-            float throttle = Matching && Class.TopSpeed > 0f ? Mathf.Clamp01(targetSpeed / Class.TopSpeed) : Mathf.Clamp01(input.Throttle);
+            // The brake: held, it stops the ship hard on the retros (match speed is let go, the burner is shut off) and the throttle setting is zero.
+            bool brake = input.Held(ControlButtons.Brake);
+            BrakeHeld = brake;
+            BrakeResume = brake ? Mathf.Clamp01(input.Throttle) : 0f;
+            if (brake) { Matching = false; stopRequest = true; }
+            float throttle = brake ? 0f : Matching && Class.TopSpeed > 0f ? Mathf.Clamp01(targetSpeed / Class.TopSpeed) : Mathf.Clamp01(input.Throttle);
             Throttle = throttle;
 
             // 2. Goals.
-            float forward = Math.Min(1f, throttle + (key ? 1f : 0f));      // the key asks for full speed even when it cannot burn
-            if (AfterburnerOn) forward = 1f;
+            float forward = brake ? 0f : Math.Min(1f, throttle + (key ? 1f : 0f));      // the key asks for full speed even when it cannot burn; the brake overrules it
+            if (AfterburnerOn && !brake) forward = 1f;
             float pitchDown = -input.Pitch, yawRight = input.Yaw, rollLeft = -input.Roll;
             var goalSpin = new Vector3(
                 pitchDown * _maxTurn.x,
@@ -118,10 +127,13 @@ namespace Monolith.Flight
                 rollLeft * _maxTurn.z - yawRight * _maxTurn.y * _rules.AutoBankFraction);
 
             float goalSpeed, speedUp;
-            if (AfterburnerOn) { goalSpeed = forward * Class.AfterburnerSpeed; speedUp = Class.AfterburnerAccel; }
+            if (AfterburnerOn && !brake) { goalSpeed = forward * Class.AfterburnerSpeed; speedUp = Class.AfterburnerAccel; }
             else { goalSpeed = forward * Class.TopSpeed; speedUp = Class.ForwardAccel; }
             goalSpeed = Math.Max(goalSpeed * SpeedScale, -Class.ReverseSpeed);
-            RampSpeed = Ramp(RampSpeed, goalSpeed, goalSpeed >= RampSpeed ? speedUp : Class.ForwardDecel, dt);
+            float slowDown = brake && Class.BrakeDecel > 0f ? Class.BrakeDecel : Class.ForwardDecel;
+            Braking = brake && RampSpeed > 0.4f;
+            RampSpeed = Ramp(RampSpeed, goalSpeed, goalSpeed >= RampSpeed ? speedUp : slowDown, dt);
+            if (brake && RampSpeed < 0.4f && RampSpeed > -0.4f) RampSpeed = 0f;                 // the retros stop it, they do not creep
 
             // 3a. Velocity, in the frame the ship had at the start of the tick.
             float knock = KnockFraction;

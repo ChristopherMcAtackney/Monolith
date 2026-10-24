@@ -56,6 +56,9 @@ namespace Monolith.Juice
         /// <summary>The effect clock in seconds (sim time while running; stands still when paused).</summary>
         public float Time;
         public float Dt;
+        /// <summary>The brake's forward lurch, applied to the camera by <see cref="CameraShake"/> after the view has placed it: metres along the camera's own axes, and degrees of nod (positive = nose down).</summary>
+        public Vector3 LurchShift;
+        public float LurchNodDeg;
 
         public Vector3 CameraPosition => Camera != null ? Camera.transform.position : Vector3.zero;
         public float DistanceToCamera(Vector3 p) => Vector3.Distance(CameraPosition, p);

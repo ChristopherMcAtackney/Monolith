@@ -71,9 +71,11 @@ namespace Monolith.AudioTools
             l.Add(new SfxDef { Id = "afterburner_off", LevelDb = -16, Spatial = false, PitchVar = 0f, Build = v => SfxShip.AfterburnerOff() });
             l.Add(new SfxDef { Id = "afterburner_whoomph", LevelDb = -9, Spatial = false, PitchVar = 0.02f, Priority = 4f, Note = "the boost's ignition punch (juice), over afterburner_on", Build = v => SfxShip.AfterburnerWhoomph() });
             l.Add(new SfxDef { Id = "afterburner_sputter", LevelDb = -12, Spatial = false, PitchVar = 0.02f, Priority = 4f, Note = "the empty tank: four coughs and a flameout", Build = v => SfxShip.AfterburnerSputter() });
+            l.Add(new SfxDef { Id = "brake_thump", LevelDb = -8, Spatial = false, PitchVar = 0.02f, Priority = 4f, Note = "the retro brake engages (juice): the valves slam open and the ship takes the load", Build = v => SfxBrake.Thump() });
+            l.Add(new SfxDef { Id = "brake_hiss", LevelDb = -14, Spatial = false, PitchVar = 0.02f, Priority = 3f, Note = "the retro jets firing (juice): a gas hiss that falls away", Build = v => SfxBrake.Hiss() });
             // ---- the player's death (Juice/Fx/DeathFx.cs): heard from inside, mostly on the big bus so the duck that comes with the breach leaves them alone
             l.Add(new SfxDef { Id = "death_crack", Bus = "big", LevelDb = -5, Spatial = false, PitchVar = 0.02f, Priority = 5f, Note = "the canopy fractures (death)", Build = v => SfxDeath.Crack() });
-            l.Add(new SfxDef { Id = "death_scream", Bus = "big", LevelDb = -9, Spatial = false, PitchVar = 0.02f, Priority = 5f, Note = "the hull tears (death)", Build = v => SfxDeath.Scream() });
+            l.Add(new SfxDef { Id = "death_tear", Bus = "big", LevelDb = -9, Spatial = false, PitchVar = 0.02f, Priority = 5f, Note = "the hull tears (death): broadband, no tone", Build = v => SfxDeath.Tear() });
             l.Add(new SfxDef { Id = "death_decompress", Bus = "big", LevelDb = -2, Spatial = false, PitchVar = 0.01f, Priority = 6f, Note = "the canopy blows out, the air goes (death): the loudest sound there is", Build = v => SfxDeath.Decompress() });
             l.Add(new SfxDef { Id = "death_breath", Bus = "ui", LevelDb = -13, Spatial = false, PitchVar = 0f, Priority = 5f, Note = "your own breathing (death)", Build = v => SfxDeath.Breath() });
             l.Add(new SfxDef { Id = "death_heartbeat", Bus = "ui", LevelDb = -8, Spatial = false, PitchVar = 0.03f, Priority = 5f, Note = "one heartbeat (death)", Build = v => SfxDeath.Heartbeat() });

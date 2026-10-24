@@ -41,6 +41,7 @@ namespace Monolith.Juice
         Shockwaves _waves;
         Emitters _fx;
         BoostFx _boost;
+        BrakeFx _brake;
         DeathFx _death;
         Feel _feel;
         FxFrame _frame;
@@ -59,6 +60,8 @@ namespace Monolith.Juice
         public int ActiveDeaths => _explosions.ActiveDeaths;
         /// <summary>The boost (afterburner) juice: its state for the panel and the tests.</summary>
         public BoostFx Boost => _boost;
+        /// <summary>The retro-brake juice (R3): its state for the panel and the tests.</summary>
+        public BrakeFx Brake => _brake;
         /// <summary>The player's death sequence (a button in the sandbox, <c>-mnDeathTest</c>).</summary>
         public DeathFx Death => _death;
         public int DroppedQuads => _frame.Add.Dropped + _frame.Alpha.Dropped;
@@ -98,6 +101,7 @@ namespace Monolith.Juice
             _explosions = new Explosions(c, _fx, _feel, _debris, _waves); c.Explosions = _explosions;
             _beams = new Beams(c, _fx, _feel);
             _boost = new BoostFx(c);
+            _brake = new BrakeFx(c);
             _death = new DeathFx(c); c.Death = _death;
 
             // The one custom pass that draws it all, for this camera only.
@@ -242,6 +246,7 @@ namespace Monolith.Juice
             _frame.Alpha.Begin();
             c.Trauma.Tick(dt);
             _boost.Update(dt);                   // the boost: the view, the shake and rumble, the lens, the dust (after the trauma tick: it sustains)
+            _brake.Update(dt);                   // the brake: the view narrowing (after the boost wrote the kick), the lurch, the rumble
 
             _fx.Update(dt);
             _projectiles.Update(dt);
@@ -255,6 +260,7 @@ namespace Monolith.Juice
             _projectiles.Draw();
             _hits.Draw();
             _boost.Draw();
+            _brake.Draw();
             c.Particles.Update(dt);
             c.Particles.Write(_frame.Add, _frame.Alpha, c.Time, c.Bright, c.CameraPosition);
             _frame.Add.Upload();
@@ -295,7 +301,7 @@ namespace Monolith.Juice
         {
             var c = Context;
             c.Particles.Clear(); _fx.Clear(); _debris.Clear(); _explosions.Clear(); _beams.Clear(); _waves.Clear(); c.Lights.Clear();
-            c.Trauma.Clear(); c.Rumble.Stop(); c.HitStop.Clear(); _boost.Clear(); _death.Reset();
+            c.Trauma.Clear(); c.Rumble.Stop(); c.HitStop.Clear(); _boost.Clear(); _brake.Clear(); _death.Reset();
         }
 
         void OnApplicationFocus(bool focus)

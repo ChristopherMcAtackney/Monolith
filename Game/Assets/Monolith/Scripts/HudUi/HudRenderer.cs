@@ -294,9 +294,20 @@ namespace Monolith.HudUi
             T(I(Mathf.Max(0f, F.Speed)), new Vector2(nx, top), TextRole.Display, speedCol, TextAlign.Right);
             T("M/S  SPEED", new Vector2(nx, top + dCap + 14f * s), TextRole.Label, dim, TextAlign.Right);
             T("THROTTLE  " + Pct(F.Throttle), new Vector2(nx, top + dCap + 14f * s + Cap(TextRole.Label) + 10f * s), TextRole.Label, F.Matching ? ink : dim, TextAlign.Right);
-            if (F.Matching) T("MATCHING", new Vector2(nx, top - Cap(TextRole.Value) - 18f * s), TextRole.Value, ink, TextAlign.Right);
-            else if (F.EnginesDown) T("ENGINES OFF", new Vector2(nx, top - Cap(TextRole.Value) - 18f * s), TextRole.Value, warn, TextAlign.Right);
-            Box("speed", new Vector2(nx - 150f * s, top - Cap(TextRole.Value) - 20f * s), new Vector2(nx, top + dCap + 60f * s));
+            float statusY = top - Cap(TextRole.Value) - 18f * s;
+            float below = top + dCap + 60f * s;
+            if (F.BrakeOn)
+            {
+                // the retro brake: BRAKING while the retros fire (the word pulses), BRAKE ON once stopped, and the throttle a second click gives back
+                T(F.Braking ? "BRAKING" : "BRAKE ON", new Vector2(nx, statusY), TextRole.Value, F.Braking ? A(ink, Blink(7f, 0.65f)) : ink, TextAlign.Right);
+                float yRes = top + dCap + 14f * s + (Cap(TextRole.Label) + 10f * s) * 2f;
+                T("RESUME  " + Pct(F.BrakeResume), new Vector2(nx, yRes), TextRole.Label, dim, TextAlign.Right);
+                below = yRes + Cap(TextRole.Label) + 8f * s;
+                DrawBrakeMarks(g, speed01);
+            }
+            else if (F.Matching) T("MATCHING", new Vector2(nx, statusY), TextRole.Value, ink, TextAlign.Right);
+            else if (F.EnginesDown) T("ENGINES OFF", new Vector2(nx, statusY), TextRole.Value, warn, TextAlign.Right);
+            Box("speed", new Vector2(nx - 150f * s, top - Cap(TextRole.Value) - 20f * s), new Vector2(nx, below));
 
             // ---- right: weapon energy (thick), the afterburner's fuel (thin)
             bool lowEnergy = F.HasEnergy && F.Energy01 < 0.15f;
@@ -313,6 +324,36 @@ namespace Monolith.HudUi
             Box("energy", new Vector2(rx, top - Cap(TextRole.Value) - 20f * s), new Vector2(rx + 200f * s, top + dCap + 60f * s));
             Box("arcL", new Vector2(C.x - g.ROuter - 14f * s, C.y - g.ROuter * Mathf.Sin(g.Half) - 8f * s), new Vector2(C.x - g.R * Mathf.Cos(g.Half) * 0.9f, C.y + g.ROuter * Mathf.Sin(g.Half) + 8f * s));
             Box("arcR", new Vector2(C.x + g.R * Mathf.Cos(g.Half) * 0.9f, C.y - g.ROuter * Mathf.Sin(g.Half) - 8f * s), new Vector2(C.x + g.ROuter + 14f * s, C.y + g.ROuter * Mathf.Sin(g.Half) + 8f * s));
+        }
+
+        /// <summary>
+        /// The brake on the speed gauge: while the retros fire, a row of ticks runs down the thick band from the needle toward zero (they
+        /// bunch up as the speed falls), and the thin band shows the throttle a second click gives back as a ghost fill with its own marker.
+        /// </summary>
+        void DrawBrakeMarks(ArcGeom g, float speed01)
+        {
+            float resume01 = Mathf.Clamp01(F.BrakeResume * F.TopSpeed / F.BoostSpeed);
+            if (resume01 > 0.01f)
+            {
+                float aBot = GaugeAngle(true, g.Half, 0f), aRes = GaugeAngle(true, g.Half, resume01);
+                L.Band(C, g.RThin, g.T2, aBot, aRes, A(ink, 0.3f));
+                var d = new Vector2(Mathf.Cos(aRes), Mathf.Sin(aRes));
+                float r0 = g.RThin - g.T2 * 0.5f - 5f * s, r1 = g.RThin + g.T2 * 0.5f + 5f * s;
+                var tan = new Vector2(-d.y, d.x) * 4f * s;
+                L.Line(C + d * r0 + tan, C + d * r1 + tan, lw * 0.9f, ink);          // a bracket, open toward the fill
+                L.Line(C + d * r0 - tan, C + d * r1 - tan, lw * 0.9f, ink);
+            }
+            if (F.Braking && speed01 > 0.02f)
+            {
+                float phase = Mathf.Repeat(F.Time * 2.4f, 1f);
+                for (int k = 0; k < 4; k++)
+                {
+                    float f = Mathf.Repeat(1f - (k + phase) / 4f, 1f);                  // 1 at the needle, falling toward 0 over each cycle
+                    float a = GaugeAngle(true, g.Half, speed01 * f);
+                    var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                    L.Line(C + d * (g.R - g.T * 0.5f - 3f * s), C + d * (g.R + g.T * 0.5f + 3f * s), lw * 0.9f, A(ink, 0.2f + 0.7f * f));
+                }
+            }
         }
 
         /// <summary>One gauge: the thick band (<paramref name="main01"/>) and the thin one beside it (<paramref name="thin01"/>), on the left or the right of the reticle, filling from the bottom up.</summary>

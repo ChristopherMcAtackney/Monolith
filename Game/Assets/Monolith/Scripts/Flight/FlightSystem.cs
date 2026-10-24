@@ -127,6 +127,7 @@ namespace Monolith.Flight
             s.Throttle = m.Throttle;
             s.MatchingSpeed = m.Matching;
             s.AfterburnerOn = m.AfterburnerOn;
+            s.BrakeOn = m.BrakeHeld; s.Braking = m.Braking; s.BrakeResume = m.BrakeResume;
             s.Fuel = m.Fuel;
             s.Knock = m.KnockFraction;
         }

@@ -172,6 +172,11 @@ This is frame-rate independent, and `tau` (a time constant in seconds) sets how 
   throttle. To move again: push the throttle up as now, click R3 again to resume the previous throttle,
   or boost with L3 (a boost from a standstill leaves you at cruise afterwards, not stopped). Match target
   speed (X) stays the way to pace a capital ship and strip its turrets.
+  Built (brake piece, round 1): the player's fighter has retro thrusters (`brakeDecel`, a 0.35 s time constant against the 1.5 s slow-down: 70 m/s to under 2 m/s in 1.3 s, a dead stop in about 1.8 s,
+  235 m/s burner speed in about 2.2 s; four times quicker than the slow-down, so it is unmistakably a brake, and still a stop you watch happen (the lurch and the flare have time to read) and not a teleport; the FS2 classes have none and keep their own slow-down).
+  R3 latches it (Left Ctrl on the keyboard): the throttle goes to 0, the previous setting is remembered and shown on the speed gauge, and a second click, a throttle push, match speed or a boost lets go.
+  A boost from a standstill leaves the throttle at cruise (`boostFromRestThrottle`). Cycle missile moved from R3 to D-pad right (the two-thirds throttle preset gave way; the keyboard keeps 3).
+  The click is kept from steering: for 0.15 s after it the aim stick reads what it read 0.1 s before the click. See `gauntlet/pieces/brake/history.md`.
 - **Afterburner:** a higher goal speed with a fast ramp, burning a fuel bar that recharges when not in use.
   **User override (2026-10-24):** boosting felt weak, so the player's side gets more afterburner speed
   than FS2's numbers, for a really satisfying surge, and a full juice pass on the boost: a widening
@@ -204,6 +209,11 @@ All of these were proposed and accepted (user approved the list; details are cal
   indicator for guns. A terse target box: class, name, hull and shield, distance.
 - **Gun muzzles (user, 2026-10-24):** the player's guns fire from bottom-left and bottom-right of the
   view, converging on the aim point, so the bolts are seen in full as they travel.
+  Built (brake piece, round 1): the two Needle muzzles are at (+-2.0, -0.85, 4.6) in ship space, 3 m ahead of and 1.25 m below the cockpit eye: screen (+-0.70, -0.78),
+  about 70% of the way out and 78% of the way down. The guns still converge on the nose axis at the target's range (600 m with none), so shots land where the lead pip says (the combat
+  self-test fires both guns at a target dead ahead at 150, 400 and 900 m, targeted and not: all land). The player's bolts show from a metre out in full, are drawn no wider
+  than 0.6 degrees of the picture near the eye, and the muzzle flash rides with the ship instead of being left behind at 70 m/s. The heavy gun's muzzle stays where it was (already low in the middle).
+  See `gauntlet/pieces/brake/history.md`.
 - **Guns:** energy-based, from the weapon energy pool. Fast-firing anti-fighter gun; slow heavy gun for
   hulls and subsystems. Each weapon has separate damage multipliers against shields, hull and subsystems.
 - **Missiles:** limited ammo. A heat-seeker (fire and forget, easy to dodge); a lock-on missile that

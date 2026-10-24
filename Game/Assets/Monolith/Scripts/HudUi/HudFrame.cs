@@ -31,6 +31,9 @@ namespace Monolith.HudUi
         // ---- flight
         public float Speed, TopSpeed = 70f, BoostSpeed = 235f, Throttle, Fuel01 = 1f;
         public bool Matching, Burning, EnginesDown, EnginesCrippled;
+        /// <summary>The retro brake is on (the throttle is held at 0), the retros are firing, and the throttle a second click gives back.</summary>
+        public bool BrakeOn, Braking;
+        public float BrakeResume;
         public float SpeedScale = 1f;
 
         // ---- defence and energy
@@ -126,6 +129,7 @@ namespace Monolith.HudUi
             Lock = LockPhase.None; LockProgress = 0f; WeaponNeedsLock = false; WeaponSeeks = false; LockWeaponName = null;
             IncomingMissiles = 0; IncomingOffAxis = false; LockedOnMe = false; BeingLocked = 0;
             SensorStatic = 0f; Prompt = null; MissionRunning = false; MapOpen = false; QuickMenu = false; LastOrder = null;
+            BrakeOn = false; Braking = false; BrakeResume = 0f;
             Matching = false; Burning = false; EnginesDown = false; EnginesCrippled = false; LaunchersOffline = false; Mending = false;
         }
     }

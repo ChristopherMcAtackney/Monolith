@@ -43,6 +43,11 @@
       "unit": "s (slow-down time constant)",
       "source": "Starting point: GTF Ulysses FS2 retail ships.tbl (Root_fs2.vp, sha256 60266906...315ca), field $Forward decel (brief: start our fighter on the Ulysses' numbers; tune from playtests)"
     },
+    "brakeDecel": {
+      "value": 0.35,
+      "unit": "s (retro-thruster brake time constant)",
+      "source": "USER REQUEST (design section 4, brake bullet, 2026-10-24: R3 brakes hard to a full stop with retro thrusters, much faster than the normal slow-down). Ours, the player's fighter only: 0.35 s against the slow-down's 1.5 s, so 70 m/s is below 3.5 m/s in 1.2 s (95 percent in 1.05 s) and stopped in about 1.7 s, a peak of 200 m/s^2 (20 g, the lurch the juice sells); from the 235 m/s burner it stops in under 2.2 s. FS2 has no brake: the four reference classes have none."
+    },
     "afterburner": {
       "value": true,
       "unit": "bool",

@@ -23,6 +23,8 @@ namespace Monolith.Flight
         public float RotDamp;
         public float SideDamp;
         public float ForwardAccel, ForwardDecel;
+        /// <summary>Seconds (time constant) of the retro-thruster brake (the pilot clicks R3): much quicker than <see cref="ForwardDecel"/>. 0: the class has no retro thrusters and the brake slows it on its ordinary slow-down.</summary>
+        public float BrakeDecel;
         public bool HasAfterburner;
         public float AfterburnerSpeed, AfterburnerAccel, AfterburnerFuel, AfterburnerBurnRate, AfterburnerRechargeRate;
         public float Mass;
@@ -51,6 +53,7 @@ namespace Monolith.Flight
                 SideDamp = f.Float("sideDamp", 0f, 100f),
                 ForwardAccel = f.Float("forwardAccel", 0f, 1000f),
                 ForwardDecel = f.Float("forwardDecel", 0f, 1000f),
+                BrakeDecel = f.FloatOr("brakeDecel", 0f, 0f, 1000f),
                 HasAfterburner = f.Bool("afterburner"),
                 AfterburnerSpeed = f.Float("afterburnerSpeed", 0f, 10000f),
                 AfterburnerAccel = f.Float("afterburnerAccel", 0f, 1000f),
@@ -139,6 +142,13 @@ namespace Monolith.Flight
                 float v = t.Value<float>();
                 if (float.IsNaN(v) || v < min || v > max) throw new InvalidDataException($"{_where}: '{key}' = {v} is outside {min}..{max}");
                 return v;
+            }
+
+            /// <summary>An entry that may be left out (then <paramref name="fallback"/>); when present it is read, checked and needs its source note like any other.</summary>
+            public float FloatOr(string key, float fallback, float min, float max)
+            {
+                if (_block[key] == null) { _read.Add(key); return fallback; }
+                return Float(key, min, max);
             }
 
             public bool Bool(string key)

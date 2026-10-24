@@ -79,6 +79,42 @@ namespace Monolith.Flight
             m.Step(ab, off, float.NaN, dt);
             Check(!m.AfterburnerOn, "afterburner cannot restart within the 1.3 s lockout");
 
+            // The brake (the player's fighter has retro thrusters, the FS2 classes do not): much quicker than the ordinary slow-down, to a full stop, with the burner shut off.
+            var van = ShipCatalog.Load("vanguard_fighter");
+            var brake = new ControlInput { Throttle = 1f, Buttons = ControlButtons.Brake };
+            var cruise = new ControlInput { Throttle = 1f };
+            m = Fresh(van, rules, van.TopSpeed);
+            Hold(m, brake, 78);                                                          // 1.3 s
+            Check(m.LocalVelocity.z < 3.5f, $"the brake takes the fighter from {van.TopSpeed:0} m/s to under 3.5 m/s in 1.3 s (vz {m.LocalVelocity.z:0.0})");
+            Hold(m, brake, 42);                                                          // 2.0 s in all
+            Check(m.LocalVelocity.z == 0f && !m.Braking && m.BrakeHeld && m.Throttle == 0f, $"... and stops it dead, with the throttle setting at 0 (vz {m.LocalVelocity.z:0.00})");
+            m = Fresh(van, rules, van.TopSpeed);
+            Hold(m, new ControlInput { Throttle = 0f }, 78);
+            Check(m.LocalVelocity.z > 20f, $"without the brake a throttle cut is far slower (vz {m.LocalVelocity.z:0.0} after 1.3 s)");
+            m = Fresh(van, rules, van.TopSpeed);
+            m.Step(brake, cruise, float.NaN, dt);
+            Check(m.Braking, "the retros are firing while it brakes at speed");
+            m = Fresh(van, rules, van.TopSpeed);
+            m.Step(ab, off, float.NaN, dt);
+            Hold(m, ab, 120);
+            Check(m.AfterburnerOn && m.LocalVelocity.z > van.AfterburnerSpeed * 0.9f, $"the burner takes the fighter to {m.LocalVelocity.z:0} m/s");
+            Hold(m, brake, 150);                                                         // 2.5 s
+            Check(!m.AfterburnerOn && m.LocalVelocity.z < 1f, $"the brake shuts the burner off and stops it from burner speed in 2.5 s (vz {m.LocalVelocity.z:0.0})");
+            Hold(m, cruise, 300);
+            Check(m.LocalVelocity.z > van.TopSpeed * 0.9f && !m.BrakeHeld, $"released, the ship accelerates again (vz {m.LocalVelocity.z:0.0})");
+            m = Fresh(van, rules, van.TopSpeed);
+            Hold(m, new ControlInput { Throttle = 1f, Buttons = ControlButtons.Brake | ControlButtons.Afterburner }, 150);
+            Check(!m.AfterburnerOn && m.LocalVelocity.z < 1f, $"the brake overrules a held afterburner key (vz {m.LocalVelocity.z:0.0}, burner {m.AfterburnerOn})");
+            m = Fresh(cls, rules, cls.TopSpeed);
+            Hold(m, brake, 78);
+            Check(m.LocalVelocity.z > 20f, $"a class without retro thrusters brakes on its ordinary slow-down (vz {m.LocalVelocity.z:0.0} after 1.3 s)");
+            m = Fresh(van, rules, 0f);
+            m.Step(new ControlInput { Throttle = 0.2f }, idle, 35f, dt);
+            m.Step(new ControlInput { Throttle = 0.2f, Buttons = ControlButtons.MatchSpeed }, idle, 35f, dt);
+            Check(m.Matching, "match speed holds before the brake");
+            m.Step(brake, idle, 35f, dt);
+            Check(!m.Matching, "the brake lets go of match speed");
+
             if (failures.Count == 0)
             {
                 MnLog.Info($"SELFTEST flight OK ({checks} checks)");

@@ -6,6 +6,12 @@
     "cabinLook": true,
     "why": "Inverted, the flight-sim way (the user's default, 2026-10-24): push the stick up or forward and the nose goes DOWN, pull it back and the nose comes UP. The same for looking round the cabin: push the right stick up and the view goes down, pull it back and you look up. flight covers the aim stick and the keyboard's pitch keys (W is the stick pushed forward, so W is nose down); cabinLook covers the right stick and the arrow keys in the cabin. Set either to false for the other way round. The pause screen flips them too (LB flight, RB cabin look on the pad; I and O on the keyboard), and this file is read on the next start."
   },
+  "brake": {
+    "aimHoldSeconds": 0.15,
+    "aimLookBackSeconds": 0.1,
+    "boostFromRestThrottle": 1.0,
+    "why": "The retro-thruster brake: click R3 (Left Ctrl on the keyboard) and the ship brakes hard to a full stop with the throttle at 0; click again to get the throttle you had back, or push the throttle up, match speed (X) or boost (L3) to move off. R3 is the aim stick, and pressing a thumbstick in pushes it a little off centre, so for aimHoldSeconds after a click (and while it is down) the aim reads what it read aimLookBackSeconds before the click: the nose carries straight on through the click instead of twitching. 0.15 s covers the push and the let-go of a click and is well inside the ship's own 0.35 s turn lag, so it does not read as a delay. Set aimHoldSeconds to 0 to turn it off. boostFromRestThrottle: a boost started with the throttle at 0 (braked or just slowed to a stop) sets the throttle to this, so when the burner ends you are cruising (1 = full cruise speed) and not stopped."
+  },
   "pad": {
     "aim": {
       "stick": "rightStick",
@@ -43,8 +49,9 @@
       "throttleFull": "dpad/up",
       "throttleZero": "dpad/down",
       "throttleThird": "dpad/left",
-      "throttleTwoThirds": "dpad/right",
-      "cycleMissile": "rightStickPress",
+      "throttleTwoThirds": "",
+      "cycleMissile": "dpad/right",
+      "brake": "rightStickPress",
       "targetAttacker": "select",
       "menuPowerGuns": "dpad/up",
       "menuPowerShields": "dpad/left",
@@ -65,7 +72,7 @@
       "quit": "buttonEast"
     },
     "quickMenuHoldSeconds": 0.25,
-    "combatWhy": "Combat additions to the Squadrons-style layout the user has flown, nothing moved: RT fire the fast gun, LB the heavy gun, RB the selected missile (lock-on weapons fire once the tone is steady), B decoys, A next hostile, LT the ship in the reticle, X match speed. New: R3 (click the aim stick) steps to the next missile type, View (back) targets the nearest attacker, Y tapped steps through the target's parts (nearest the nose first, then the whole ship) and Y held opens the quick menu: D-pad up = favour guns, left = favour shields, right = favour engines, down = balanced; A, B, X, LB = the wingman orders (attack my target, disable my target, cover me, form up; F1 to F4 on the keyboard). While the menu is open the buttons it names do only what the menu says."
+    "combatWhy": "Combat additions to the Squadrons-style layout the user has flown, nothing moved: RT fire the fast gun, LB the heavy gun, RB the selected missile (lock-on weapons fire once the tone is steady), B decoys, A next hostile, LT the ship in the reticle, X match speed. New: R3 (click the aim stick) is the brake (see the brake block; it used to step the missile type, which moved to D-pad right, taking the place of the two-thirds throttle preset: the D-pad now has full, off and one-third), View (back) targets the nearest attacker, Y tapped steps through the target's parts (nearest the nose first, then the whole ship) and Y held opens the quick menu: D-pad up = favour guns, left = favour shields, right = favour engines, down = balanced; A, B, X, LB = the wingman orders (attack my target, disable my target, cover me, form up; F1 to F4 on the keyboard). While the menu is open the buttons it names do only what the menu says."
   },
   "keyboard": {
     "pitchDown": "w",
@@ -98,6 +105,7 @@
     "missileFire": "x",
     "countermeasure": "v",
     "cycleMissile": "c",
+    "brake": "leftCtrl",
     "subsystemNext": "g",
     "targetAttacker": "h",
     "powerGuns": "6",

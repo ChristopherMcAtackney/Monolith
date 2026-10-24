@@ -112,6 +112,14 @@ namespace Monolith.Game
 
         // ------------------------------------------------------------------------------------------------ the player's guns
 
+        /// <summary>Where one of the player's two guns is in ship space: the combat definition's hardpoints (the bottom left and bottom right of the cockpit view), so the sandbox shows what the game shows.</summary>
+        public static Vector3 PlayerMuzzle(ShipState me, int gun)
+        {
+            var d = CombatCatalog.Get(me.ClassId);
+            if (d != null && d.PrimaryHardpoints.Length >= 2) return d.PrimaryHardpoints[gun & 1];
+            return new Vector3(gun == 0 ? -2.9f : 2.9f, -0.35f, 3.4f);
+        }
+
         void PlayerGuns()
         {
             _playerCooldown -= Sim.Dt;
@@ -121,7 +129,7 @@ namespace Monolith.Game
             if (!input.Held(ControlButtons.PrimaryFire) || _playerCooldown > 0f) return;
             _playerCooldown = 0.115f;
             _leftGun = !_leftGun;
-            Vector3 muzzle = me.Position + me.Rotation * new Vector3(_leftGun ? -2.9f : 2.9f, -0.35f, 3.4f);
+            Vector3 muzzle = me.Position + me.Rotation * PlayerMuzzle(me, _leftGun ? 0 : 1);
             Vector3 aimPoint = me.Position + me.Rotation * new Vector3(0f, 0f, 650f);
             // Aim a little at whatever the target is, if it is close to the nose (a lead indicator would do this).
             var t = _world.Ships.Get(me.Target);
