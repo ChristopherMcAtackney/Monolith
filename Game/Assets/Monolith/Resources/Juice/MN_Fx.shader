@@ -218,7 +218,8 @@ Shader "Hidden/Monolith/Fx"
                 float3 ramp = lerp(Incandescent(T), PlasmaRamp(T), saturate(i.p.w));
                 // Palette above 1: gas, a pale cool haze whatever its temperature.
                 ramp = lerp(ramp, float3(0.80, 0.90, 1.0) * (0.3 + T), saturate(i.p.w - 1.0));
-                float bright = 0.08 + T * T * 1.4;
+                float ridge = pow(saturate(1.0 - abs(2.0 * n2 - 1.0)), 3.0);       // thin bright veins where the flame folds over itself
+                float bright = (0.08 + T * T * 1.4) * (0.78 + 0.55 * ridge);
                 return float4(colour * ramp * (dens * bright), 0);
             }
             else if (kind < 2.5)
@@ -377,7 +378,7 @@ Shader "Hidden/Monolith/Fx"
                 float3 w = mul(_MN_Object, float4(a.pos, 1.0)).xyz;
                 o.pos = mul(_MN_Matrix, float4(w, 1.0));
                 o.dir = a.pos;
-                float3 nOs = a.pos / (_ShieldRadii.xyz * _ShieldRadii.xyz);
+                float3 nOs = a.pos / _ShieldRadii.xyz;       // an ellipsoid's normal at unit-sphere point u is u / radii
                 o.nrm = normalize(mul((float3x3)_MN_ObjectRot, nOs));
                 o.view = normalize(w);
                 return o;

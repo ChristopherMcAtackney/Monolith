@@ -70,10 +70,6 @@ namespace Monolith.Juice
     /// </summary>
     public sealed class Projectiles
     {
-        const int TrailMax = 72;
-        const float TrailStep = 0.028f;
-        const float TrailLife = 1.7f;
-
         sealed class Proj
         {
             public WeaponLook Look;
@@ -85,10 +81,6 @@ namespace Monolith.Juice
             public Vector3 Pos, Vel;
             public float Age;
             public bool Dead;
-            public readonly Vector3[] Trail = new Vector3[TrailMax];
-            public readonly float[] TrailT = new float[TrailMax];
-            public int TrailHead, TrailCount;
-            public float TrailTimer;
         }
 
         readonly JuiceContext _c;
@@ -122,7 +114,7 @@ namespace Monolith.Juice
 
             if (s.effects.muzzleFlash) MuzzleFlash(e.Position, dir, look, player);
 
-            float gain = player ? 0.7f : Mathf.Lerp(0.9f, 0.5f, Mathf.Clamp01(dist / 3000f));
+            float gain = player ? 0.7f : Mathf.Lerp(0.6f, 0.12f, Mathf.Clamp01(dist / 2500f));
             _c.Audio.Play(look.Cue, e.Position, gain, dist);
             if (player)
             {
@@ -199,7 +191,7 @@ namespace Monolith.Juice
                 if (p.Look.Kind == ProjectileKind.Missile)
                 {
                     StepMissile(p, dt);
-                    if (p.Dead && p.TrailCount == 0) _list.RemoveAt(i);
+                    if (p.Dead) _list.RemoveAt(i);
                     continue;
                 }
                 if (now - p.T0 > p.Look.Life) _list.RemoveAt(i);
@@ -208,7 +200,6 @@ namespace Monolith.Juice
 
         void StepMissile(Proj p, float dt)
         {
-            p.TrailTimer += dt;
             if (!p.Dead)
             {
                 p.Age += dt;
@@ -227,35 +218,34 @@ namespace Monolith.Juice
                 p.Pos += p.Vel * dt;
                 if (p.Age > look.Life) p.Dead = true;
 
-                // Exhaust: a few small hot puffs that drift back and cool.
-                int puffs = _c.Settings.effects.missileTrails ? (_c.Rng.Chance(0.6f) ? 2 : 1) : 0;
-                for (int k = 0; k < puffs; k++)
+                // Exhaust: hot glows laid along the path flown this frame (no gaps at any speed) that drift back and cool, plus a few fire puffs.
+                if (_c.Settings.effects.missileTrails)
                 {
-                    ref var b = ref _c.Particles.Add();
-                    b.Kind = FxKind.Fire; b.Pos = p.Pos - fwd * (look.Length * 0.4f) + _c.Rng.OnSphere() * look.HalfWidth * 0.8f;
-                    b.Vel = -fwd * _c.Rng.Range(8f, 30f) + _c.Rng.OnSphere() * 5f;
-                    b.Life = _c.Rng.Range(0.30f, 0.55f); b.W0 = look.HalfWidth * 2.4f; b.W1 = look.HalfWidth * 4.5f; b.Seed = _c.Rng.F();
-                    b.P1a = 1.0f; b.P1b = 1.0f; b.P2a = 0.25f; b.P2b = 0.25f; b.Palette = 0f;
-                    var c = look.Colour * 1.5f;
-                    b.C0 = b.C1 = b.C2 = new Vector4(c.x, c.y, c.z, 0f); b.FadeExp = 0.8f; b.Soft = 3f; b.NearStart = 6f; b.NearRange = 16f;
+                    Vector3 from = p.Pos - p.Vel * dt;
+                    float stepLen = Mathf.Max(1.2f, look.HalfWidth * 2.2f);
+                    int n = Mathf.Clamp(Mathf.CeilToInt(p.Vel.magnitude * dt / stepLen), 1, 12);
+                    for (int k = 0; k < n; k++)
+                    {
+                        float t = (k + 0.5f) / n;
+                        Vector3 at = Vector3.Lerp(from, p.Pos, t) - fwd * (look.Length * 0.45f);
+                        ref var g = ref _c.Particles.Add();
+                        g.Kind = FxKind.Glow; g.Pos = at; g.Vel = -fwd * _c.Rng.Range(4f, 14f) + _c.Rng.OnSphere() * 1.5f; g.Drag = 1.2f;
+                        g.Life = _c.Rng.Range(0.9f, 1.5f); g.W0 = look.HalfWidth * 2.4f; g.W1 = look.HalfWidth * 6.5f; g.P1a = g.P1b = 0.35f;
+                        var c0 = look.Colour * 2.1f;
+                        g.C0 = new Vector4(c0.x, c0.y, c0.z, 0f); g.C1 = new Vector4(look.Colour.x, look.Colour.y * 0.7f, look.Colour.z * 0.5f, 0f); g.C2 = new Vector4(0.25f, 0.04f, 0f, 0f) * 0.4f;
+                        g.FadeExp = 1.4f; g.NearStart = 6f; g.NearRange = 16f; g.Seed = _c.Rng.F();
+                    }
+                    if (_c.Rng.Chance(0.55f))
+                    {
+                        ref var b = ref _c.Particles.Add();
+                        b.Kind = FxKind.Fire; b.Pos = p.Pos - fwd * (look.Length * 0.5f) + _c.Rng.OnSphere() * look.HalfWidth * 0.6f;
+                        b.Vel = -fwd * _c.Rng.Range(10f, 30f) + _c.Rng.OnSphere() * 4f;
+                        b.Life = _c.Rng.Range(0.35f, 0.6f); b.W0 = look.HalfWidth * 2.2f; b.W1 = look.HalfWidth * 4.2f; b.Seed = _c.Rng.F();
+                        b.P1a = 1.0f; b.P1b = 1.0f; b.P2a = 0.25f; b.P2b = 0.25f; b.Palette = 0f;
+                        var c = look.Colour * 1.2f;
+                        b.C0 = b.C1 = b.C2 = new Vector4(c.x, c.y, c.z, 0f); b.FadeExp = 0.8f; b.Soft = 3f; b.NearStart = 6f; b.NearRange = 16f;
+                    }
                 }
-            }
-            if (p.TrailTimer >= TrailStep)
-            {
-                p.TrailTimer -= TrailStep;
-                if (!p.Dead)
-                {
-                    p.TrailHead = (p.TrailHead + 1) % TrailMax;
-                    p.Trail[p.TrailHead] = p.Pos;
-                    p.TrailT[p.TrailHead] = _c.Time;
-                    p.TrailCount = Mathf.Min(TrailMax, p.TrailCount + 1);
-                }
-            }
-            // Drop trail points that have faded.
-            while (p.TrailCount > 0)
-            {
-                int tail = (p.TrailHead - p.TrailCount + 1 + TrailMax * 2) % TrailMax;
-                if (_c.Time - p.TrailT[tail] > TrailLife) p.TrailCount--; else break;
             }
         }
 
@@ -298,31 +288,6 @@ namespace Monolith.Juice
             var add = _c.Add;
             var look = p.Look;
             float hw = look.HalfWidth * _c.Settings.levels.boltWidth;
-            if (trails)
-            {
-                // The trail: a chain of streaks between recorded points, brighter and thicker near the head.
-                int n = p.TrailCount;
-                Vector3 prev = p.Dead ? (n > 0 ? p.Trail[p.TrailHead] : p.Pos) : p.Pos;
-                float prevT = p.Dead ? (n > 0 ? p.TrailT[p.TrailHead] : _c.Time) : _c.Time;
-                for (int k = 0; k < n; k++)
-                {
-                    int idx = (p.TrailHead - k + TrailMax * 2) % TrailMax;
-                    Vector3 pt = p.Trail[idx];
-                    Vector3 seg = prev - pt;
-                    float segLen = seg.magnitude;
-                    if (segLen > 0.05f)
-                    {
-                        float age = Mathf.Clamp01((_c.Time - p.TrailT[idx]) / TrailLife);
-                        float fade = Mathf.Pow(1f - age, 1.6f);
-                        Vector3 dir = seg / segLen;
-                        var col = look.Colour * (bright * fade * 0.85f);
-                        float w = hw * Mathf.Lerp(1.5f, 4.2f, age);
-                        add.Quad((prev + pt) * 0.5f, new Vector4(col.x, col.y, col.z, look.Core * fade * 0.35f * bright), FxKind.Streak, 0.31f,
-                                 new Vector4(dir.x, dir.y, dir.z, segLen * 0.5f + 0.4f), w, 0f, 0f, 1f);
-                    }
-                    prev = pt;
-                }
-            }
             if (!p.Dead)
             {
                 var hc = look.Colour * (bright * 2.6f);

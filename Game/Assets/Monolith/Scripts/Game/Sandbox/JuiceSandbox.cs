@@ -42,7 +42,7 @@ namespace Monolith.Game
         float _dirtyAt = -1f, _savedAt = -10f;
         string _lastAction = "ready";
         SandboxShip _cruiser, _destroyer;
-        int _kbEvent;
+        string _lastTrigger;
 
         static readonly Vector3 PlayerStart = new Vector3(0f, 90f, -250f);
 
@@ -73,6 +73,8 @@ namespace Monolith.Game
             // The juice, then everything that raises events for it.
             var settings = JuiceSettings.Load();
             if (opts != null && opts["preset"] != null) settings.ApplyPreset((string)opts["preset"]);
+            // A capture plan may change any setting for its run: "sceneOptions": { "juice": { "effects": { "lights": false } } }.
+            if (opts != null && opts["juice"] != null) Newtonsoft.Json.JsonConvert.PopulateObject(opts["juice"].ToString(), settings);
             self.Juice = JuiceDirector.Create(world, view.Camera, root.transform, settings);
             self.Juice.OwnsTimeScale = true;
             self.Combat = new SandboxCombat(world, flight, self.Juice, self._player.Id);
@@ -218,6 +220,7 @@ namespace Monolith.Game
             events.Add(PanelItem.Button("Shield hit", () => Trigger("shield_hit"), "RB+A"), PanelItem.Button("Hull hit", () => Trigger("hull_hit"), "RB+B"));
             events.Add(PanelItem.Button("Near miss", () => Trigger("near_miss"), "RB+X"), PanelItem.Button("Flak", () => Trigger("flak"), "RB+Y"));
             events.Add(PanelItem.Button("Missile", () => Trigger("missile")), PanelItem.Button("Laser volley", () => Trigger("volley")));
+            events.Add(PanelItem.Button("Subsystem destroyed", () => Trigger("subsystem")), PanelItem.Button("Repeat last", () => { if (_lastTrigger != null) Trigger(_lastTrigger); }));
             events.Add(PanelItem.Button("Hit on you: shield", () => Trigger("you_shield"), "LB+RB+A"), PanelItem.Button("Hit on you: hull", () => Trigger("you_hull"), "LB+RB+B"));
             events.Add(PanelItem.Toggle("Ambient battle", () => Combat.Battle, v => Combat.Battle = v), PanelItem.Toggle("Slow motion", () => _slowMo, SetSlowMo));
             events.Add(PanelItem.Info(() => "last: " + _lastAction));
@@ -347,10 +350,12 @@ namespace Monolith.Game
                 case "flak": Flak(); break;
                 case "missile": Missile(); break;
                 case "volley": Volley(); break;
+                case "subsystem": Subsystem(); break;
                 case "you_shield": HitYou(false); break;
                 case "you_hull": HitYou(true); break;
                 default: MnLog.Warn($"JUICE sandbox: unknown event '{name}'"); return;
             }
+            _lastTrigger = name;
             MnLog.Info($"JUICE sandbox event: {name}");
         }
 
@@ -378,6 +383,16 @@ namespace Monolith.Game
                 GameEvents.RaiseAt(CombatEvents.HitShield, point, (point - me.Position).normalized, "laser_player", 40f, t.Id, _player.Id);
                 _lastAction = $"shield hit on {t.Name}";
             }
+        }
+
+        void Subsystem()
+        {
+            var t = Combat.Pick(s => s.Alive && s.Team != 0 && s.Capital) ?? Combat.Pick(s => s.Alive && s.Team != 0);
+            if (t == null) { _lastAction = "no target"; return; }
+            var me = _world.Ships.Get(_player.Id);
+            Combat.SurfaceFacing(t, me.Position, out var point, out var normal);
+            GameEvents.RaiseAt(CombatEvents.SubsystemDestroyed, point, normal, "turret", t.Capital ? 18f : 6f, t.Id, _player.Id);
+            _lastAction = $"turret destroyed on {t.Name}";
         }
 
         void HitYou(bool hull)
@@ -476,13 +491,13 @@ namespace Monolith.Game
             var cruiser = _cruiser;
             Vector3 origin = cruiser != null && _world.Ships.Get(cruiser.Id) is ShipState cs ? cs.Position + cs.Rotation * new Vector3(0f, 90f, -200f) : me.Position + me.Rotation * new Vector3(0, 0, 900f);
             Vector3 centre = me.Position + me.Rotation * new Vector3(UnityEngine.Random.Range(-40f, 40f), UnityEngine.Random.Range(-20f, 30f), 230f);
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 14; i++)
             {
-                float ang = i / 9f * Mathf.PI * 2f + UnityEngine.Random.value;
-                Vector3 burst = centre + me.Rotation * new Vector3(Mathf.Cos(ang) * UnityEngine.Random.Range(40f, 85f), Mathf.Sin(ang) * UnityEngine.Random.Range(25f, 55f), UnityEngine.Random.Range(-45f, 60f));
+                float ang = i / 14f * Mathf.PI * 2f + UnityEngine.Random.value;
+                Vector3 burst = centre + me.Rotation * new Vector3(Mathf.Cos(ang) * UnityEngine.Random.Range(35f, 75f), Mathf.Sin(ang) * UnityEngine.Random.Range(20f, 48f), UnityEngine.Random.Range(-45f, 60f));
                 Vector3 dir = (burst - origin).normalized;
                 float tof = Vector3.Distance(origin, burst) / 720f;
-                float delay = i * 0.09f;
+                float delay = i * 0.06f;
                 Combat.Schedule(delay, () =>
                 {
                     GameEvents.RaiseAt(CombatEvents.WeaponFired, origin, dir, "flak_shell", 720f, cruiser != null ? cruiser.Id : GameWorld.NoShip, GameWorld.NoShip);
@@ -494,6 +509,7 @@ namespace Monolith.Game
 
         // ------------------------------------------------------------------------------------------------ hooks for the script
 
+        public void SetSlowMoForTest(bool on) => SetSlowMo(on);
         public GameWorld World => _world;
         public ShipState Player => _player;
         public void Say(string s) => _lastAction = s;

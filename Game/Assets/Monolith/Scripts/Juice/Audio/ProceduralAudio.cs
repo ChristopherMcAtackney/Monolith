@@ -27,7 +27,7 @@ namespace Monolith.Juice
         sealed class Voice
         {
             public AudioSource Source;
-            public float BaseVolume, Started, Priority;
+            public float BaseVolume, BasePitch = 1f, Started, Priority;
             public bool Ducks, InUse, Looping;
             public float TargetGain, Fade;
         }
@@ -46,6 +46,7 @@ namespace Monolith.Juice
         readonly JuiceSettings _settings;
         float _duck, _duckLeft, _duckTotal;
         float _time;
+        float _pitchScale = 1f;
 
         public float MasterVolume { get; set; } = 0.8f;
         public bool Enabled { get; set; } = true;
@@ -88,7 +89,8 @@ namespace Monolith.Juice
             s.transform.position = position;
             s.clip = clip;
             s.loop = false;
-            s.pitch = 1f + (float)(Hash(_time + gain) * 0.06 - 0.03);
+            v.BasePitch = 1f + (float)(Hash(_time + gain) * 0.06 - 0.03);
+            s.pitch = v.BasePitch * _pitchScale;
             s.minDistance = c.MinDistance; s.maxDistance = c.MaxDistance;
             v.BaseVolume = Mathf.Clamp01(gain * c.Gain); v.Ducks = !big; v.Started = _time; v.Priority = gain * (big ? 4f : 1f); v.InUse = true; v.Looping = false;
             s.volume = v.BaseVolume * MasterVolume * (v.Ducks ? 1f - _duck : 1f);
@@ -118,12 +120,19 @@ namespace Monolith.Juice
             if (v == null) return new LoopHandle();
             var s = v.Source;
             s.transform.position = position;
-            s.clip = c.Near; s.loop = true; s.pitch = 1f; s.minDistance = c.MinDistance; s.maxDistance = c.MaxDistance; s.volume = 0f;
+            v.BasePitch = 1f;
+            s.clip = c.Near; s.loop = true; s.pitch = _pitchScale; s.minDistance = c.MinDistance; s.maxDistance = c.MaxDistance; s.volume = 0f;
             v.Ducks = false; v.InUse = true; v.Looping = true; v.Started = _time; v.Priority = 99f;
             s.Play();
             var h = new LoopHandle { V = v, Owner = this, Gain = gain, C = c };
             _loops.Add(h);
             return h;
+        }
+
+        public void SetTimeScale(float scale)
+        {
+            // Slow motion deepens the sound, but not all the way (a quarter speed is not a quarter pitch).
+            _pitchScale = Mathf.Lerp(0.55f, 1f, Mathf.Clamp01(scale));
         }
 
         public void Duck(float amount, float seconds)
@@ -156,6 +165,7 @@ namespace Monolith.Juice
             }
             foreach (var v in _voices)
             {
+                if (v.InUse) v.Source.pitch = v.BasePitch * _pitchScale;
                 if (!v.InUse || v.Looping) continue;
                 v.Source.volume = v.BaseVolume * MasterVolume * (v.Ducks ? 1f - _duck : 1f);
             }

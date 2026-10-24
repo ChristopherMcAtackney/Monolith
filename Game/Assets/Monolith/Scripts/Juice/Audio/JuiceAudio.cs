@@ -35,6 +35,8 @@ namespace Monolith.Juice
         /// <summary>Lower everything else to <c>1 - amount</c> for <c>seconds</c> (the biggest moments duck the rest).</summary>
         void Duck(float amount, float seconds);
         void Update(float dt);
+        /// <summary>The game's speed (1 = normal): slow motion drops the pitch of what is playing.</summary>
+        void SetTimeScale(float scale);
     }
 
     /// <summary>Silence: used when sound is unavailable (no audio device, a headless run).</summary>
@@ -47,5 +49,6 @@ namespace Monolith.Juice
         public IJuiceLoop StartLoop(JuiceCue cue, Vector3 position, float gain = 1f) => new NullLoop();
         public void Duck(float amount, float seconds) { }
         public void Update(float dt) { }
+        public void SetTimeScale(float scale) { }
     }
 }

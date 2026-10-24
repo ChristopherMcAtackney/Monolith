@@ -307,24 +307,28 @@ namespace Monolith.Game
                 {
                     // Turrets: slow heavy bolts, many of them, at the other side's hull.
                     var foeCap = foes.Find(o => o.Capital);
-                    _nextShot[i] = Now + Rand(0.28f, 0.7f);
+                    _nextShot[i] = Now + Rand(0.12f, 0.34f);
                     var foeSt = foeCap != null ? _world.Ships.Get(foeCap.Id) : null;
                     if (foeSt == null) continue;
                     var look = _juice.Context.LookOf(s.Id);
                     Vector3 half = look != null ? look.HalfExtents : new Vector3(100, 80, 500);
-                    Vector3 local = new Vector3((_rng.NextDouble() < 0.5 ? -1f : 1f) * half.x * 0.92f, Rand(-0.2f, 0.7f) * half.y, Rand(-0.85f, 0.85f) * half.z);
-                    Vector3 muzzle = st.Position + st.Rotation * local;
-                    Vector3 target = foeSt.Position + foeSt.Rotation * new Vector3(Rand(-0.8f, 0.8f) * 100f, Rand(-0.6f, 0.6f) * 70f, Rand(-0.85f, 0.85f) * 520f);
-                    Vector3 dir = (target - muzzle).normalized;
-                    string id = s.Team == 0 ? "laser_heavy" : "laser_heavy_enemy";
-                    Fire(s.Id, s.Team, id, muzzle + dir * 8f, dir, 340f, 120f, 8f, true);
+                    int guns = _rng.NextDouble() < 0.45 ? 2 : 1;
+                    for (int g = 0; g < guns; g++)
+                    {
+                        Vector3 local = new Vector3((_rng.NextDouble() < 0.5 ? -1f : 1f) * half.x * 0.92f, Rand(-0.2f, 0.7f) * half.y, Rand(-0.85f, 0.85f) * half.z);
+                        Vector3 muzzle = st.Position + st.Rotation * local;
+                        Vector3 target = foeSt.Position + foeSt.Rotation * new Vector3(Rand(-0.8f, 0.8f) * 100f, Rand(-0.6f, 0.6f) * 70f, Rand(-0.85f, 0.85f) * 520f);
+                        Vector3 dir = (target - muzzle).normalized;
+                        string id = s.Team == 0 ? "laser_heavy" : "laser_heavy_enemy";
+                        Fire(s.Id, s.Team, id, muzzle + dir * 8f, dir, 340f, 120f, 8f, true);
+                    }
                 }
                 else if (s.Team == 1)
                 {
                     // Enemy fighters: bursts at the player's ship or, more often, at the friendly cruiser.
                     var me = _world.Ships.Get(_player);
                     bool atPlayer = me != null && _rng.NextDouble() < 0.45;
-                    _nextShot[i] = Now + Rand(0.9f, 2.4f);
+                    _nextShot[i] = Now + Rand(0.6f, 1.6f);
                     Vector3 target = atPlayer ? me.Position + me.Velocity * 0.3f : (foes.Find(o => o.Capital) is SandboxShip cap && _world.Ships.Get(cap.Id) is ShipState cs ? cs.Position + cs.Rotation * new Vector3(0, 0, Rand(-400f, 400f)) : st.Position + st.Forward * 800f);
                     int shots = _rng.Next(2, 5);
                     for (int k = 0; k < shots; k++)
@@ -345,7 +349,7 @@ namespace Monolith.Game
                 {
                     // Our wingmen: bursts at the enemy fighters.
                     var foe = foes.Find(o => !o.Capital && o.Alive);
-                    _nextShot[i] = Now + Rand(0.8f, 1.9f);
+                    _nextShot[i] = Now + Rand(0.5f, 1.3f);
                     if (foe == null) continue;
                     var foeSt = _world.Ships.Get(foe.Id);
                     if (foeSt == null) continue;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Monolith.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -11,6 +12,8 @@ namespace Monolith.Juice
         public Transform T;
         public Renderer[] Rends;
         public bool[] Glows;                 // which renderers take the heat glow (the ones that are not lights already)
+        /// <summary>This piece's own copies of the materials that glow (a material property block on an HDRP renderer renders wrongly, so heat goes on copies).</summary>
+        public readonly List<Material> HeatMats = new List<Material>();
         public Vector3 Vel, SpinAxis;
         public float SpinRate;
         public float Age, Life, Heat, HeatLife, HeatPeak;
@@ -31,12 +34,12 @@ namespace Monolith.Juice
     /// </summary>
     public sealed class Debris
     {
-        static readonly MaterialPropertyBlock Block = new MaterialPropertyBlock();
         static readonly int IdEmissive = Shader.PropertyToID("_EmissiveColor");
 
         readonly JuiceContext _c;
         readonly Emitters _fx;
         readonly List<DebrisPiece> _pieces = new List<DebrisPiece>(128);
+        readonly HashSet<Material> _heatCopies = new HashSet<Material>();
         readonly Transform _root;
         public int MaxPieces = 220;
         public static float LastSliceMs; public static int LastSliceTris;
@@ -92,7 +95,12 @@ namespace Monolith.Juice
                 var mf = r.GetComponent<MeshFilter>();
                 if (mf == null || mf.sharedMesh == null || !r.enabled) continue;
                 var mesh = mf.sharedMesh;
-                if (!mesh.isReadable) continue;
+                if (!mesh.isReadable)
+                {
+                    MnLog.Warn($"JUICE cannot cut '{mesh.name}' into pieces: the mesh is not readable (turn on Read/Write in its import settings); it will vanish whole instead");
+                    r.enabled = false;
+                    continue;
+                }
                 var verts = mesh.vertices; var norms = mesh.normals; var tans = mesh.tangents; var uvs = mesh.uv;
                 bool hasN = norms.Length == verts.Length, hasT = tans.Length == verts.Length, hasUV = uvs.Length == verts.Length;
                 var l2w = r.transform.localToWorldMatrix;
@@ -172,7 +180,22 @@ namespace Monolith.Juice
                     child.transform.SetParent(go.transform, false);
                     child.AddComponent<MeshFilter>().sharedMesh = m2;
                     var mr = child.AddComponent<MeshRenderer>();
-                    mr.sharedMaterials = part.Materials;
+                    var mats = part.Materials;
+                    bool glowsThis = true;
+                    foreach (var mat0 in mats)
+                        if (mat0 != null && !_heatCopies.Contains(mat0) && mat0.HasProperty(IdEmissive))
+                        {
+                            // A material that is already one of our heat copies glows by design; any other with an emissive colour is a light (windows, lamps).
+                            var ec0 = mat0.GetColor(IdEmissive);
+                            if (ec0.r + ec0.g + ec0.b > 0.01f) glowsThis = false;
+                        }
+                    if (glowsThis)
+                    {
+                        mats = (Material[])mats.Clone();
+                        for (int mi = 0; mi < mats.Length; mi++)
+                            if (mats[mi] != null) { mats[mi] = new Material(mats[mi]) { name = mats[mi].name.Replace(" (heat)", "") + " (heat)" }; piece.HeatMats.Add(mats[mi]); _heatCopies.Add(mats[mi]); }
+                    }
+                    mr.sharedMaterials = mats;
                     mr.shadowCastingMode = part.Source.shadowCastingMode;
                     mr.receiveShadows = part.Source.receiveShadows;
                     rl.Add(mr);
@@ -335,6 +358,8 @@ namespace Monolith.Juice
             if (p.Go != null) Object.Destroy(p.Go);
             foreach (var m in p.Meshes) if (m != null) Object.Destroy(m);
             p.Meshes.Clear();
+            foreach (var mat in p.HeatMats) if (mat != null) { _heatCopies.Remove(mat); Object.Destroy(mat); }
+            p.HeatMats.Clear();
         }
 
         public void Update(float dt)
@@ -382,17 +407,21 @@ namespace Monolith.Juice
             }
         }
 
+        static readonly bool NoHeat = CommandLine.Has("-mnJuiceNoHeat"), DebugHeat = CommandLine.Has("-mnJuiceDebugHeat");
+        static int _heatLogs;
+
         void ApplyHeat(DebrisPiece p)
         {
+            if (NoHeat) return;
             float h = Mathf.Clamp01(p.Heat);
             float T = 0.30f + 0.5f * h;
             var col = new Color(Mathf.Clamp01(T * 2.4f), Mathf.Clamp01((T - 0.38f) * 1.6f), Mathf.Clamp01((T - 0.85f) * 2.2f));
             // Modest: a hot hull glows dull orange, it does not become a light.
-            float nits = 19660f * 0.12f * h * h * _c.Bright;
-            Block.Clear();
-            Block.SetColor(IdEmissive, col * nits);
-            for (int i = 0; i < p.Rends.Length; i++)
-                if (p.Glows[i] && p.Rends[i] != null) p.Rends[i].SetPropertyBlock(Block);
+            float nits = 19660f * 0.85f * h * h * _c.Bright;
+            var heat = col * nits;
+            if (DebugHeat && _heatLogs++ < 6) MnLog.Info($"JUICE heat piece: h {h:0.000}, emissive nits {nits:0}, colour {col}, copies {p.HeatMats.Count}");
+            for (int i = 0; i < p.HeatMats.Count; i++)
+                if (p.HeatMats[i] != null) p.HeatMats[i].SetColor(IdEmissive, heat);
         }
 
         public void Clear()

@@ -53,9 +53,9 @@ namespace Monolith.Juice
             _c.Audio.Play(toPlayer ? JuiceCue.HitPlayerShield : JuiceCue.HitShield, e.Position, Mathf.Clamp(0.55f * m, 0.4f, 1f), dist);
             if (toPlayer)
             {
-                _c.Trauma.Add(0.15f * m);
+                _c.Trauma.Add(0.22f * m);
                 _c.Rumble.Pulse(0.30f * m, 0.55f, 0.16f);
-                EdgeFlash(ShieldBlue * (1.5f * m), 0.26f);
+                EdgeFlash(ShieldBlue * (0.9f * m), 0.24f);
                 CockpitSparks(_c.Rng.Int(3, 7), true);
             }
             else _feel.Impact(e.Position, 0.05f * m, 140f, 0.04f, 0.10f, 0.08f);
@@ -84,6 +84,43 @@ namespace Monolith.Juice
 
         // ------------------------------------------------------------------------------------------------ hulls
 
+        readonly System.Collections.Generic.Dictionary<int, int> _hullHits = new System.Collections.Generic.Dictionary<int, int>();
+
+        /// <summary>
+        /// Damage builds up where you can see it (design: visible, progressive damage): every few hits a ship takes leave a vent or a fire
+        /// burning on its hull for a while, attached to the hull so it travels with it.
+        /// </summary>
+        void Smoulder(in GameEvent e, ShipState ship, Vector3 normal, float big)
+        {
+            if (!_c.Settings.effects.hullHits) return;
+            _hullHits.TryGetValue(e.Entity, out int n);
+            _hullHits[e.Entity] = ++n;
+            int every = big > 0.5f ? 4 : 3;
+            if (n % every != 0) return;
+            var look = _c.LookOf(e.Entity);
+            Transform parent = look != null ? look.Visual : null;
+            float r = (1.6f + 5f * big) * _c.Size;
+            // A model may mark where its hull vents, sparks and burns (empties named FX_<kind>_<NN>): use the nearest one to the hit.
+            Transform site = null; float best = 80f;
+            if (look != null)
+                foreach (var t in look.FxSites)
+                {
+                    float d = Vector3.Distance(t.position, e.Position);
+                    if (d < best) { best = d; site = t; }
+                }
+            if (site != null)
+            {
+                string kind = site.name.Length > 3 ? site.name.Substring(3).ToLowerInvariant() : "";
+                if (kind.StartsWith("spark")) _fx.Sparks(site.position, Vector3.zero, site.forward, 50f, _c.N(10), 14f, 70f, 0.3f, 0.9f, 0.12f, SparkStyle.Metal, 0.5f);
+                else if (kind.StartsWith("fire")) _fx.Fireball(site.position + site.forward * r * 0.4f, Vector3.zero, r * 0.5f, r * 1.2f, 1.4f, 0.9f, 7f);
+                else if (kind.StartsWith("smoke")) _fx.Gas(site.position, site.forward * 12f, r * 0.6f, r * 2.2f, 2.2f, new Vector3(0.5f, 0.55f, 0.65f), 0.3f, 2f);
+                else _fx.Vent(site.position, site.forward, r, 14f + 10f * big, 22f + 30f * big, parent);
+                return;
+            }
+            _fx.Vent(e.Position + normal * 0.5f, normal, r, 14f + 10f * big, 22f + 30f * big, parent);
+            if (_c.Rng.Chance(0.6f)) _fx.Vent(e.Position + normal * 0.5f, (normal + _c.Rng.OnSphere() * 0.6f).normalized, r * 0.6f, 9f, 40f, parent, true);
+        }
+
         public void OnHullHit(in GameEvent e)
         {
             var s = _c.Settings;
@@ -110,15 +147,16 @@ namespace Monolith.Juice
                 if (s.effects.debris)
                     _fx.Embers(e.Position + n * 0.5f, vel, R * 0.3f, _c.N(Mathf.RoundToInt(3 + 3 * m)), 14f + 30f * big, 0.9f, 2.2f, 0.45f + 0.5f * big);
                 _fx.Scorch(e.Position + n * 0.15f, R * (0.75f + 0.25f * big), 26f + 10f * big);
+                if (ship != null) Smoulder(e, ship, n, big);
             }
             if (s.effects.lights) _c.Lights.Flash(e.Position + n * (R + 2f), new Color(1f, 0.66f, 0.34f), 6e7f * m * (1f + 2f * big) * _c.Bright, 140f + 260f * big, 0.14f + 0.08f * big, 2f);
 
             _c.Audio.Play(toPlayer ? JuiceCue.HitPlayerHull : JuiceCue.HitHull, e.Position, Mathf.Clamp(0.6f * m, 0.45f, 1f), dist);
             if (toPlayer)
             {
-                _c.Trauma.Add(0.30f * m);
+                _c.Trauma.Add(0.40f * m);
                 _c.Rumble.Pulse(0.75f * m, 0.35f, 0.22f);
-                EdgeFlash(new Vector3(1f, 0.46f, 0.12f) * (1.8f * m), 0.30f);
+                EdgeFlash(new Vector3(1f, 0.46f, 0.12f) * (1.0f * m), 0.28f);
                 CockpitSparks(_c.Rng.Int(7, 15), false);
             }
             else _feel.Impact(e.Position, 0.07f * m * (1f + big), 220f, 0.08f, 0.12f, 0.1f);
@@ -212,9 +250,11 @@ namespace Monolith.Juice
             count = _c.N(count * 3);
             for (int i = 0; i < count; i++)
             {
-                Vector3 p = cam.position + cam.forward * _c.Rng.Range(8f, 30f) + cam.right * _c.Rng.Range(-14f, 14f) + cam.up * _c.Rng.Range(-8f, 9f);
-                Vector3 d = (p - cam.position).normalized + _c.Rng.OnSphere() * 0.6f;
-                _fx.Sparks(p, Vector3.zero, d.normalized, 35f, 1, 40f, 150f, 0.3f, 0.75f, 0.12f, plasma ? SparkStyle.Plasma : SparkStyle.Metal, 0.8f, 1.2f);
+                // Specks fly past at the edges of the view, thin and quick: the middle of the picture (target and HUD) stays clear.
+                float side = _c.Rng.Chance(0.5f) ? -1f : 1f, vert = _c.Rng.Chance(0.5f) ? -1f : 1f;
+                Vector3 p = cam.position + cam.forward * _c.Rng.Range(10f, 34f) + cam.right * (side * _c.Rng.Range(9f, 18f)) + cam.up * (vert * _c.Rng.Range(1f, 9f));
+                Vector3 d = (cam.right * side * 0.7f + cam.up * vert * 0.3f - cam.forward * 0.4f + _c.Rng.OnSphere() * 0.35f).normalized;
+                _fx.Sparks(p, Vector3.zero, d, 25f, 1, 25f, 85f, 0.25f, 0.6f, 0.035f, plasma ? SparkStyle.Plasma : SparkStyle.Metal, 0.9f, 0.8f);
             }
         }
 

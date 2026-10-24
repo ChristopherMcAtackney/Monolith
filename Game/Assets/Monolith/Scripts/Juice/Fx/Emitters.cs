@@ -108,8 +108,27 @@ namespace Monolith.Juice
                 Vector3 d = every ? _c.Rng.OnSphere() : _c.Rng.InCone(dir, coneDeg);
                 float sp = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 1.6f));
                 s.Kind = FxKind.Streak; s.Pos = pos; s.Vel = inherit + d * sp; s.Dir = d; s.Drag = drag; s.Life = _c.Rng.Range(lifeMin, lifeMax);
-                s.W0 = s.W1 = width * _c.Rng.Range(0.7f, 1.3f); s.Stretch = _c.Rng.Range(0.012f, 0.05f); s.MinLen = Mathf.Max(1.0f, width * _c.Rng.Range(3f, 9f)); s.P1a = s.P1b = 0.4f; s.P2a = 0.6f; s.P2b = 0.2f;
-                s.C0 = c0; s.C1 = c1; s.C2 = c2; s.FadeExp = 0.55f; s.Seed = _c.Rng.F(); s.Flicker = 0.25f;
+                s.W0 = s.W1 = width * _c.Rng.Range(0.7f, 1.3f); s.Stretch = _c.Rng.Range(0.01f, 0.034f); s.MinLen = Mathf.Max(1.0f, width * _c.Rng.Range(3f, 9f)); s.P1a = s.P1b = 0.4f; s.P2a = 0.6f; s.P2b = 0.2f;
+                s.C0 = c0; s.C1 = c1; s.C2 = c2; s.FadeExp = 0.55f; s.Seed = _c.Rng.F(); s.Flicker = 0.25f; s.NearStart = 4f; s.NearRange = 14f;
+            }
+        }
+
+        /// <summary>
+        /// A fine spray of tiny hot dots with barely a trail (FS2's explosions throw hundreds): they hang in the air a moment, cool from white
+        /// to orange to red and wink out.
+        /// </summary>
+        public void Specks(Vector3 pos, Vector3 inherit, float radius, int count, float speedMin, float speedMax, float lifeMin, float lifeMax, float size = 0.07f)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                ref var s = ref _c.Particles.Add();
+                Vector3 d = _c.Rng.OnSphere();
+                float sp = Mathf.Lerp(speedMin, speedMax, Mathf.Pow(_c.Rng.F(), 0.8f));
+                s.Kind = FxKind.Streak; s.Pos = pos + d * radius * 0.2f * _c.Rng.F(); s.Vel = inherit + d * sp; s.Dir = d; s.Drag = 0.55f;
+                s.Life = _c.Rng.Range(lifeMin, lifeMax); s.W0 = s.W1 = size * _c.Rng.Range(0.7f, 1.5f); s.Stretch = _c.Rng.Range(0.004f, 0.012f); s.MinLen = size * 5f;
+                s.P1a = s.P1b = 0.3f; s.P2a = 0.8f; s.P2b = 0.5f;
+                s.C0 = V4(new Vector3(1f, 0.93f, 0.72f) * 13f, 7f); s.C1 = V4(new Vector3(1f, 0.5f, 0.12f) * 5f, 1f); s.C2 = V4(new Vector3(0.5f, 0.07f, 0.01f) * 0.6f);
+                s.FadeExp = 0.6f; s.Seed = _c.Rng.F(); s.Flicker = 0.55f; s.NearStart = 4f; s.NearRange = 14f;
             }
         }
 
@@ -200,9 +219,9 @@ namespace Monolith.Juice
             if (!_c.Settings.effects.explosions) return;
             float life = 0.40f + R * 0.011f;
             Vector3 core = plasmaFlash ? new Vector3(0.78f, 0.9f, 1f) : WarmWhite;
-            Flash(pos, R * 2.1f, core * (46f * intensity), 0.10f + R * 0.0006f, 0.75f, 2f, 1.3f, inherit);
-            Flash(pos, R * 3.4f, Orange * (1.7f * intensity), 0.26f + R * 0.004f, 0.08f, 1.8f, 1.5f, inherit);
-            Flare(pos, R * 6.5f, R * 0.30f, Vector3.Lerp(WarmWhite, core, 0.5f) * (20f * intensity), 0.20f + R * 0.001f);
+            Flash(pos, R * 2.1f, core * (26f * intensity), 0.10f + R * 0.0006f, 0.75f, 2f, 1.3f, inherit);
+            Flash(pos, R * 3.0f, Orange * (1.0f * intensity), 0.24f + R * 0.004f, 0.08f, 2.0f, 1.4f, inherit);
+            Flare(pos, R * 6.5f, R * 0.30f, Vector3.Lerp(WarmWhite, core, 0.5f) * (12f * intensity), 0.20f + R * 0.001f);
 
             int balls = Mathf.Min(_c.N(Mathf.RoundToInt(3 + R * 0.28f)), 46);
             for (int i = 0; i < balls; i++)
@@ -214,6 +233,7 @@ namespace Monolith.Juice
             }
             int sparks = Mathf.Min(_c.N(Mathf.RoundToInt(70 + R * 6f)), 900);
             Sparks(pos, inherit, Vector3.up, 360f, sparks, 30f + R * 1.2f, 110f + R * 7f, 0.5f, 1.3f + R * 0.012f, 0.10f + R * 0.008f, SparkStyle.Hot, 0.45f, intensity);
+            Specks(pos, inherit, R, Mathf.Min(_c.N(Mathf.RoundToInt(40 + R * 4f)), 900), 25f + R * 1.5f, 90f + R * 8f, 0.6f, 1.4f + R * 0.012f, 0.06f + R * 0.0012f);
             Embers(pos, inherit, R * 0.6f, _c.N(Mathf.RoundToInt(6 + R * 0.25f)), 10f + R * 0.6f, 1.2f, 2.8f + R * 0.015f, 0.55f + R * 0.03f);
             if (ring) Ring(pos, R * 0.4f, R * (3.2f + R * 0.01f), 0.34f + R * 0.004f, BlueWhite * (0.55f * intensity), 0.045f, 2f);
 

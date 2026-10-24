@@ -14,6 +14,8 @@ namespace Monolith.Juice
         /// <summary>Shield bubble radii in metres (zero = no shield).</summary>
         public Vector3 ShieldRadii;
         public string SizeClass;
+        /// <summary>Empty children named FX_&lt;kind&gt;_&lt;NN&gt; (spark, vent, fire, smoke) that the ship's model marks on its hull, forward pointing out of the surface.</summary>
+        public readonly System.Collections.Generic.List<Transform> FxSites = new System.Collections.Generic.List<Transform>();
         public ShieldDraw Shield;
         public float ShieldRim;
         public float Radius;

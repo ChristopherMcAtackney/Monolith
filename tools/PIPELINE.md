@@ -70,6 +70,13 @@ Flight: `-mnScene flight` (the playtest; `Play.bat` in a playtest folder passes 
 `-batchmode -nographics -mnFlightScenarios gauntlet\shots\flight_scenarios.json -mnShip "GTF Ulysses" -mnOut dir`
 (traces only; `tools\flight.ps1` runs it for every class, then `tools\fs2ref\compare.py`, and also runs the flight self-test).
 
+Juice sandbox: `-mnScene juice` (the panel is Start; settings save to `juice.json` next to the exe, or `-mnJuice file`). A plan with
+`"scene": "juice"` and `"sceneOptions": { "script": [ {"t": 3.0, "do": "event", "name": "capital_death"} ] }` drives it (steps are
+documented in `Scripts/Game/Sandbox/SandboxScript.cs`); `python tools\juice\make_plan.py spec.json plan.json` turns absolute shot
+times into the plan's warm-ups, `tools\juice\sheet.py` and `clip.py` make contact sheets and clips from the stills. Check flags:
+`-mnJuiceSelfTest`, `-mnPanelDrive`, `-mnRumbleTest`, `-mnDumpSounds dir`, `-mnPanelShot file.png`, `-mnShakeLog file.csv`,
+`-mnJuiceHitchLog`, `-mnAudioMute`. Captures make no sound and never write `juice.json`.
+
 ## Blender
 
 `tools\blender.ps1 <script.py> [-Blend file.blend] [-TimeoutMin 20] [-- script args]` runs

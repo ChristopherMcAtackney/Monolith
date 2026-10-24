@@ -1,3 +1,5 @@
+using System.IO;
+using Monolith.Core;
 using UnityEngine;
 
 namespace Monolith.Juice
@@ -45,16 +47,24 @@ namespace Monolith.Juice
     [DefaultExecutionOrder(60)]
     public sealed class CameraShake : MonoBehaviour
     {
-        public const float MaxPitchDeg = 3.4f, MaxYawDeg = 3.4f, MaxRollDeg = 5.5f, MaxShiftM = 0.16f;
+        public const float MaxPitchDeg = 4.4f, MaxYawDeg = 4.4f, MaxRollDeg = 7.0f, MaxShiftM = 0.2f;
         public const float Frequency = 21f;
 
         JuiceContext _c;
+        StreamWriter _log;
         public Vector3 LastAnglesDeg { get; private set; }
 
         public static CameraShake Create(JuiceContext c)
         {
             var s = c.Camera.gameObject.AddComponent<CameraShake>();
             s._c = c;
+            // -mnShakeLog file.csv writes time, trauma, scale and the angles applied every frame (to check the shake without eyes).
+            string path = CommandLine.Get("-mnShakeLog");
+            if (!string.IsNullOrEmpty(path))
+            {
+                s._log = new StreamWriter(path, false);
+                s._log.WriteLine("time_s,trauma,shake,pitch_deg,yaw_deg,roll_deg");
+            }
             return s;
         }
 
@@ -64,7 +74,11 @@ namespace Monolith.Juice
             if (_c == null) return;
             float scale = _c.Settings.ShakeScale;
             float shake = _c.Trauma.Shake * scale;
-            if (shake <= 1e-4f) return;
+            if (shake <= 1e-4f)
+            {
+                _log?.WriteLine($"{_c.Time:0.000},{_c.Trauma.Value:0.000},0,0,0,0");
+                return;
+            }
             shake = Mathf.Min(shake, 1.6f);
             float t = _c.Time * Frequency;
             float pitch = Noise(t, 11.3f), yaw = Noise(t, 27.9f), roll = Noise(t * 0.8f, 43.1f);
@@ -74,7 +88,10 @@ namespace Monolith.Juice
             tr.rotation = tr.rotation * Quaternion.Euler(angles);
             tr.position += tr.rotation * shift;
             LastAnglesDeg = angles;
+            _log?.WriteLine($"{_c.Time:0.000},{_c.Trauma.Value:0.000},{shake:0.000},{angles.x:0.000},{angles.y:0.000},{angles.z:0.000}");
         }
+
+        void OnDestroy() { _log?.Dispose(); _log = null; }
 
         /// <summary>Smooth noise in -1..1: two octaves of Perlin.</summary>
         static float Noise(float t, float seed)

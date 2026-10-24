@@ -104,9 +104,9 @@ namespace Monolith.Juice
         // ---- master helpers (every effect asks these) ---------------------------------------------------------------------
 
         /// <summary>Shake scale: zero when camera shake is off.</summary>
-        public float ShakeScale => effects.cameraShake ? Mathf.Max(0f, levels.shake) : 0f;
-        public float RumbleScale => effects.rumble ? Mathf.Max(0f, levels.rumble) : 0f;
-        public float FlashScale => Mathf.Max(0f, levels.flash);
+        [JsonIgnore] public float ShakeScale => effects.cameraShake ? Mathf.Max(0f, levels.shake) : 0f;
+        [JsonIgnore] public float RumbleScale => effects.rumble ? Mathf.Max(0f, levels.rumble) : 0f;
+        [JsonIgnore] public float FlashScale => Mathf.Max(0f, levels.flash);
 
         // ---- IO ---------------------------------------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ namespace Monolith.Juice
         /// <summary>Captures never write the user's file.</summary>
         public static bool ReadOnly => CommandLine.Has("-mnCapture") || CommandLine.Has("-mnJuiceReadOnly");
 
-        public string Source { get; private set; } = "built-in numbers";
+        [JsonIgnore] public string Source { get; private set; } = "built-in numbers";
 
         public static JuiceSettings Load()
         {
@@ -173,6 +173,11 @@ namespace Monolith.Juice
             try
             {
                 preset = DetectPreset();
+                about = "Your juice settings, saved by the sandbox as you tune. Copy this file over Game/Assets/Monolith/Resources/Juice/juice_defaults.json to make them the game's defaults.";
+                var l = levels;
+                l.shake = R(l.shake); l.rumble = R(l.rumble); l.flash = R(l.flash); l.size = R(l.size); l.density = R(l.density);
+                l.shove = R(l.shove); l.boltWidth = R(l.boltWidth); l.beamWidth = R(l.beamWidth); l.volume = R(l.volume);
+                hitStop.ms = R(hitStop.ms); hitStop.scale = R(hitStop.scale); slowMo = R(slowMo);
                 string path = UserPath;
                 File.WriteAllText(path, ToJson());
                 Source = path;
@@ -184,6 +189,8 @@ namespace Monolith.Juice
                 return false;
             }
         }
+
+        static float R(float v) => (float)System.Math.Round(v, 3);
 
         /// <summary>Back to the shipped defaults (does not delete the user's file until Save).</summary>
         public void ResetToDefaults()

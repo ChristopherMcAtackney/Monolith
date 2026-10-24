@@ -121,7 +121,7 @@ namespace Monolith.Juice
                 Source = e.Entity, Target = e.Other, Id = e.Subject, MuzzleWorld = e.Position,
                 AimDir = e.Direction.sqrMagnitude > 0.5f ? e.Direction.normalized : Vector3.forward,
                 Colour = team == 0 ? new Vector3(0.20f, 1.0f, 0.34f) : new Vector3(1.0f, 0.13f, 0.08f),
-                HalfWidth = 19f, Key = _keySeq += 3,
+                HalfWidth = 24f, Key = _keySeq += 3,
             };
             if (!string.IsNullOrEmpty(e.Subject))
             {
@@ -276,7 +276,10 @@ namespace Monolith.Juice
             Vector3 mz = CurrentMuzzle(b);
             float fade = b.Phase == Phase.Fading ? Mathf.Pow(1f - Mathf.Clamp01(b.FadeT / 0.5f), 2f) : 1f;
             float onRamp = Mathf.Clamp01(b.T / 0.12f);
-            float width = b.HalfWidth * _c.Settings.levels.beamWidth * fade * Mathf.Lerp(0.45f, 1f, onRamp) * (1f + 0.04f * Mathf.Sin(_c.Time * 41f));
+            // A beam keeps its presence at range: it swells a little with distance so a ship-killer seen from three kilometres is still fat.
+            float dMid = _c.DistanceToCamera(b.HasEnd ? (mz + b.End) * 0.5f : mz);
+            float far = 1f + 0.9f * Mathf.Clamp01(dMid / 3500f);
+            float width = b.HalfWidth * far * _c.Settings.levels.beamWidth * fade * Mathf.Lerp(0.45f, 1f, onRamp) * (1f + 0.04f * Mathf.Sin(_c.Time * 41f));
             ComputeEnd(b, mz);
             Vector3 end = b.HasEnd ? b.End : mz + b.AimDir * 4000f;
             Vector3 dirv = end - mz;
@@ -304,11 +307,11 @@ namespace Monolith.Juice
                 // Impact: a blinding spot, a long flare, sparks flung off the hull, molten scorch trail, small blasts.
                 float flick = 0.85f + 0.3f * Mathf.Sin(_c.Time * 53f + b.Key);
                 var ig = Vector3.Lerp(b.Colour, Vector3.one, 0.55f) * (30f * bright * flick);
-                add.Quad(end + b.EndNormal * 2f, new Vector4(ig.x, ig.y, ig.z, 0f), FxKind.Glow, 0.3f, Vector4.zero, width * 3.4f, 0f, 0.75f, 0f);
+                add.Quad(end + b.EndNormal * 2f, new Vector4(ig.x, ig.y, ig.z, 0f), FxKind.Glow, 0.3f, Vector4.zero, width * 4.4f, 0f, 0.75f, 0f);
                 var og = Emitters.Orange * (6f * bright);
                 add.Quad(end + b.EndNormal * 3f, new Vector4(og.x, og.y, og.z, 0f), FxKind.Glow, 0.6f, Vector4.zero, width * 7f, 0f, 0.1f, 0f);
                 var ifl = Vector3.Lerp(b.Colour, Vector3.one, 0.6f) * (26f * bright);
-                add.Quad(end + b.EndNormal * 2f, new Vector4(ifl.x, ifl.y, ifl.z, 0f), FxKind.Flare, 0.5f, new Vector4(width * 0.7f, 0, 0, 0), width * 13f, 0f, 0f, 0f);
+                add.Quad(end + b.EndNormal * 2f, new Vector4(ifl.x, ifl.y, ifl.z, 0f), FxKind.Flare, 0.5f, new Vector4(width * 0.8f, 0, 0, 0), width * 18f, 0f, 0f, 0f);
 
                 if (b.Phase == Phase.Firing)
                 {

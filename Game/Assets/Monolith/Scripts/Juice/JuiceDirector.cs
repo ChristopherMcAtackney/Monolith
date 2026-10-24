@@ -135,9 +135,10 @@ namespace Monolith.Juice
         {
             // Captures are silent unless -mnAudio is given (nobody wants a battle playing through the speakers during a render run).
             bool dump = CommandLine.Has("-mnDumpSounds");
-            if (!dump && (CommandLine.Has("-mnNoAudio") || Application.isBatchMode || (CommandLine.Has("-mnCapture") && !CommandLine.Has("-mnAudio")))) return new NullAudio();
+            if (!dump && !CommandLine.Has("-mnAudioMute") && (CommandLine.Has("-mnNoAudio") || Application.isBatchMode || (CommandLine.Has("-mnCapture") && !CommandLine.Has("-mnAudio")))) return new NullAudio();
             try
             {
+                if (CommandLine.Has("-mnAudioMute")) AudioListener.volume = 0f;      // run every sound path, hear none of it (tests)
                 var a = new ProceduralAudio(settings);
                 if (dump) a.Dump(CommandLine.Get("-mnDumpSounds"));
                 return a;
@@ -159,6 +160,8 @@ namespace Monolith.Juice
             {
                 var b = Debris.LocalBounds(visual);
                 look.LocalCentre = b.center; look.HalfExtents = b.extents;
+                foreach (var t in visual.GetComponentsInChildren<Transform>(true))
+                    if (t.name.StartsWith("FX_", StringComparison.Ordinal)) look.FxSites.Add(t);
                 if (st != null) look.Radius = Mathf.Max(look.Radius, 0.5f * b.size.magnitude * 0.7f);
             }
             look.SizeClass = JuiceContext.SizeClassFromRadius(look.Radius);
@@ -191,13 +194,26 @@ namespace Monolith.Juice
             var me = c.Player;
             if (me != null && me.AfterburnerOn) c.Rumble.Sustain(0.12f, 0.07f);
             c.Rumble.Update(real);
+            c.Audio.SetTimeScale(BaseTimeScale);
             c.Audio.Update(real);
         }
+
+        static readonly bool HitchLog = CommandLine.Has("-mnJuiceHitchLog");
+        int _gcBefore;
+        float _lastRealTime;
 
         void LateUpdate()
         {
             if (!_built) return;
             var c = Context;
+            if (HitchLog)
+            {
+                float now = Time.realtimeSinceStartup, frameMs = (now - _lastRealTime) * 1000f;
+                int gc = System.GC.CollectionCount(0);
+                if (_lastRealTime > 0f && frameMs > 10f)
+                    MnLog.Info($"HITCH {frameMs:0.0} ms at t={c.Time:0.00}s: particles {c.Particles.Count}, quads {_frame.Add.Count}, lights {c.Lights.Active}, debris {_debris.Count}, gen0 GCs this frame {gc - _gcBefore}");
+                _gcBefore = gc; _lastRealTime = now;
+            }
             var sim = c.World.Sim;
             float real = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
             float dt = sim.OneTickPerFrame ? Sim.Dt : real * sim.TimeScale;

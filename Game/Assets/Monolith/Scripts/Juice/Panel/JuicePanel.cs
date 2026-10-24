@@ -152,6 +152,15 @@ namespace Monolith.Juice
             Mouse();
         }
 
+        /// <summary>Where a control is on screen now (for tests that click it); false when it is not on the page being shown.</summary>
+        public bool TryGetRect(string label, out Rect rect)
+        {
+            foreach (var h in _hit)
+                if (h.item.Label == label) { rect = h.rect; return true; }
+            rect = default;
+            return false;
+        }
+
         void ChangePage(int d)
         {
             if (Pages.Count == 0) return;

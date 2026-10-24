@@ -1,0 +1,51 @@
+{
+ "scene": "juice",
+ "width": 1280,
+ "height": 720,
+ "script": [
+  {
+   "t": 0.0,
+   "do": "place",
+   "pos": [
+    -100,
+    80,
+    250
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "speed": 0.0,
+   "throttle": 0.0
+  },
+  {
+   "t": 1.0,
+   "do": "event",
+   "name": "you_hull"
+  },
+  {
+   "t": 1.5,
+   "do": "event",
+   "name": "you_shield"
+  },
+  {
+   "t": 2.0,
+   "do": "event",
+   "name": "you_hull"
+  },
+  {
+   "t": 2.1,
+   "do": "event",
+   "name": "you_hull"
+  }
+ ],
+ "series": [
+  {
+   "name": "shake",
+   "from": 0.9,
+   "to": 4.2,
+   "step": 0.0333333
+  }
+ ]
+}

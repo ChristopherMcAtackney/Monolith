@@ -97,7 +97,7 @@ namespace Monolith.Juice
             Blast(pos, vel, R, 1f, JuiceCue.ExplosionSmall, false);
             _fx.Sparks(pos, vel, Vector3.up, 360f, _c.N(26), 80f, 300f, 0.5f, 1.5f, 0.12f, SparkStyle.Metal, 0.4f);
             Pieces(visual, pos, vel, 5, 22f, 85f, 1.7f, false, 1.2f);
-            _feel.Impact(pos, 0.30f, 260f, 0.5f, 0.32f, 0.32f, success);
+            _feel.Impact(pos, 0.42f, 300f, 0.55f, 0.35f, 0.34f, success);
             if (success) _feel.MaybeHitStop(0.5f);
         }
 
@@ -110,7 +110,7 @@ namespace Monolith.Juice
             Later(0.17f, () => { Blast(second, vel, R, 1.1f, JuiceCue.ExplosionMedium, false); _fx.Vent(second, shipFwd, 4f, 1.2f, 50f); });
             Pieces(visual, pos, vel, 7, 20f, 75f, 2.1f, false, 1.2f);
             _fx.Sparks(pos, vel, Vector3.up, 360f, _c.N(44), 90f, 340f, 0.5f, 1.7f, 0.14f, SparkStyle.Metal, 0.4f);
-            _feel.Impact(pos, 0.48f, 420f, 0.7f, 0.42f, 0.45f, success);
+            _feel.Impact(pos, 0.62f, 480f, 0.75f, 0.45f, 0.48f, success);
             if (success) _feel.MaybeHitStop(0.7f);
         }
 
@@ -199,8 +199,10 @@ namespace Monolith.Juice
                                 Transform visual, ShipLook look, Vector3 pos, Vector3 vel, float scale, bool success)
             {
                 _c = c; _fx = fx; _feel = feel; _debris = debris; _waves = waves; _owner = owner; _success = success; _scale = scale; _vel = vel; _centre = pos;
-                _tBreak = c.Rng.Range(3.0f, 3.6f) * Mathf.Lerp(0.7f, 1f, scale);
-                _tFinal = _tBreak + c.Rng.Range(3.4f, 4.0f) * Mathf.Lerp(0.7f, 1f, scale);
+                // The timing has its own random source, so a death takes the same time whatever else is going on (captures rely on it).
+                var timing = new FxRng(77 + (int)(scale * 10f));
+                _tBreak = timing.Range(3.0f, 3.6f) * Mathf.Lerp(0.7f, 1f, scale);
+                _tFinal = _tBreak + timing.Range(3.4f, 4.0f) * Mathf.Lerp(0.7f, 1f, scale);
                 if (visual != null)
                 {
                     _hull = debris.Adopt(visual, vel);
@@ -285,7 +287,7 @@ namespace Monolith.Juice
                 else
                 {
                     _afterT += dt;
-                    for (int n = 0; n < 2 && _shatterQueue.Count > 0; n++)
+                    for (int n = 0; n < 1 && _shatterQueue.Count > 0; n++)
                     {
                         var s = _shatterQueue[_shatterQueue.Count - 1];
                         _shatterQueue.RemoveAt(_shatterQueue.Count - 1);
@@ -311,9 +313,9 @@ namespace Monolith.Juice
                 for (int i = 0; i < _sections.Count; i++)
                 {
                     var s = _sections[i];
-                    Vector3 along = axis * ((i - mid) * _c.Rng.Range(4.5f, 8.5f) * _scale);
-                    Vector3 lateral = _c.Rng.OnSphere() * _c.Rng.Range(4f, 13f) * _scale;
-                    _debris.Launch(s, _vel + along + lateral, _c.Rng.Range(0.012f, 0.06f), 0.15f, 5f, 40f);
+                    Vector3 along = axis * ((i - mid) * _c.Rng.Range(9f, 17f) * _scale);
+                    Vector3 lateral = _c.Rng.OnSphere() * _c.Rng.Range(7f, 22f) * _scale;
+                    _debris.Launch(s, _vel + along + lateral, _c.Rng.Range(0.03f, 0.10f), 0.15f, 5f, 40f);
                     s.LocalCentre = Vector3.zero;
                     s.TrailRate = 7f; s.TrailLeft = 6f;
                 }
@@ -328,7 +330,7 @@ namespace Monolith.Juice
                     if (i + 1 < _sections.Count) _debris.Burn(_sections[i + 1], cut, 5.5f, 5.5f, R * 0.45f);
                 }
                 Vector3 centre = Pos;
-                _c.Lights.Flash(centre, new Color(1f, 0.86f, 0.66f), 5e9f * _c.Bright * _scale, 2400f, 0.9f, 1.6f);
+                _c.Lights.Flash(centre, new Color(1f, 0.86f, 0.66f), 1.5e9f * _c.Bright * _scale, 2400f, 0.9f, 1.6f);
                 _fx.Flash(centre, Mathf.Max(60f, _bounds.extents.z * 0.20f), Emitters.WarmWhite * 30f, 0.16f, 0.6f, 2f, 1.3f, _vel);
                 _c.Audio.Play(JuiceCue.BreakUp, centre, 1f, _c.DistanceToCamera(centre));
                 _c.Audio.Duck(0.5f, 2f);
@@ -343,24 +345,25 @@ namespace Monolith.Juice
                 _phase = 2;
                 Vector3 centre = _sections.Count > 0 ? AverageSectionPos() : Pos;
                 _centre = centre;
-                float R = Mathf.Clamp(_bounds.extents.z * 0.34f, 120f, 460f) * _c.Size * Mathf.Lerp(0.7f, 1f, _scale);
+                float R = Mathf.Clamp(_bounds.extents.z * 0.5f, 150f, 650f) * _c.Size * Mathf.Lerp(0.7f, 1f, _scale);
                 var white = new Vector3(0.82f, 0.92f, 1f);
-                _fx.Flash(centre, R * 1.35f, white * 90f, 0.14f, 0.8f, 2.4f, 1.25f, _vel);
-                _fx.Flash(centre, R * 3.6f, Emitters.Orange * 3.2f, 0.55f, 0.04f, 1.8f, 1.5f, _vel);
-                _fx.Flare(centre, R * 9f, R * 0.55f, Vector3.Lerp(Emitters.WarmWhite, white, 0.5f) * 26f, 0.45f, 1.5f);
+                _fx.Flash(centre, R * 1.2f, white * 34f, 0.14f, 0.8f, 2.4f, 1.25f, _vel);
+                _fx.Flash(centre, R * 3.0f, Emitters.Orange * 0.9f, 0.5f, 0.04f, 2.2f, 1.4f, _vel);
+                _fx.Flare(centre, R * 9f, R * 0.55f, Vector3.Lerp(Emitters.WarmWhite, white, 0.5f) * 12f, 0.4f, 1.6f);
                 int balls = Mathf.Min(_c.N(40), 56);
                 for (int i = 0; i < balls; i++)
                 {
                     Vector3 off = _c.Rng.OnSphere() * R * 0.7f * Mathf.Pow(_c.Rng.F(), 0.6f);
                     float rr = R * _c.Rng.Range(0.35f, 0.75f);
                     _fx.Fireball(centre + off, _vel + off.normalized * R * _c.Rng.Range(0.3f, 0.9f), rr * 0.8f, rr * _c.Rng.Range(1.4f, 2.0f),
-                                 _c.Rng.Range(1.6f, 2.8f), _c.Rng.Range(1.0f, 1.2f), _c.Rng.Range(8f, 11f), i < balls / 5 ? 0.25f : 0f, 0.7f);
+                                 _c.Rng.Range(1.6f, 2.8f), _c.Rng.Range(1.0f, 1.2f), _c.Rng.Range(6f, 8.5f), i < balls / 5 ? 0.25f : 0f, 0.7f);
                 }
-                _fx.Sparks(centre, _vel, Vector3.up, 360f, _c.N(480), 120f, 1100f, 1.0f, 3.2f, 0.35f, SparkStyle.Hot, 0.35f, 1.2f);
+                _fx.Sparks(centre, _vel, Vector3.up, 360f, _c.N(300), 120f, 1100f, 1.0f, 3.2f, 0.3f, SparkStyle.Hot, 0.35f, 1.2f);
                 _fx.Sparks(centre, _vel, Vector3.up, 360f, _c.N(90), 200f, 1500f, 0.8f, 2.2f, 0.3f, SparkStyle.Plasma, 0.35f, 0.9f);
+                _fx.Specks(centre, _vel, R, _c.N(900), 60f + R * 0.4f, 380f + R * 2.4f, 1.0f, 3.4f, 0.28f);
                 _fx.Embers(centre, _vel, R * 0.9f, _c.N(90), 60f + R * 0.3f, 3f, 8f, 3.2f);
                 _fx.Ring(centre, R * 0.3f, R * 8f, 1.5f, white * 0.3f, 0.02f, 1.8f);
-                _c.Lights.Flash(centre, new Color(1f, 0.9f, 0.76f), 4.5e4f * R * R * _c.Bright, 5200f, 1.3f, 1.5f);
+                _c.Lights.Flash(centre, new Color(1f, 0.9f, 0.76f), 1.6e4f * R * R * _c.Bright, 5200f, 1.3f, 1.5f);
                 _c.Audio.Play(JuiceCue.ExplosionLarge, centre, 1f, _c.DistanceToCamera(centre));
                 _c.Audio.Duck(0.65f, 3.2f);
 

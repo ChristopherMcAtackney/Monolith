@@ -12,7 +12,9 @@ it), `GameWorld` (shared state, one named owner per field), `GameEvents` (named 
 `CommandLine` (`-mn` flags), `MnLog` (`[MN]` log lines), `ControlInput` (pitch, yaw, roll, throttle, buttons) with
 `IPilotSource` and `Pilots` (every ship's input each tick, whoever is flying), `ShipState`/`ShipRegistry` (every ship's
 published flight state, `GameWorld.Ships`), `ShipKnock`/`KnockQueue` (shoves for Flight to apply, `GameWorld.Knocks`),
-`ScriptedPilot` (keyed inputs, optionally looping) and `CoreSelfTest`.
+`ScriptedPilot` (keyed inputs, optionally looping) and `CoreSelfTest`. Events can say where they happened
+(`GameEvents.RaiseAt`: position, direction, a second ship); `CombatEvents` names the ones weapons, AI and missions raise
+(`weapon_fired`, `hit_shield`, `hit_hull`, `ship_destroyed`, `beam_fire`, `flak_burst`...) and what each field means.
 
 **Capture** (`Monolith.Capture`) is the headless picture-taker. In the built player, `-mnCapture plan.json -mnOut dir`
 renders stills at exact resolutions with fixed game time and runs real-time perf runs, writing PNGs, `perf_*.json` and
@@ -36,11 +38,19 @@ dead zones and response curves in `Resources/Input/controls.json` (or `-mnContro
 graphics after post-processing, so captures show it. Both View and Hud draw through HDRP custom passes with
 `Resources/Shaders/MN_Lines.shader`.
 
+**Juice** (`Monolith.Juice`) turns combat events into light, fire, sparks, debris, camera shake, pad rumble and sound, and
+knows nothing about who raised them. One HDRP custom pass draws every glow, bolt, beam, spark, fireball and shield ripple in
+the HDR buffer before post-processing (`Resources/Juice/MN_Fx.shader`); hull visuals registered with
+`JuiceDirector.RegisterShip` are cut into lit pieces when they die; a capital ship dies in stages and its shockwave shoves ships
+through `GameWorld.Knocks`. Sounds are placeholders built in code behind `IJuiceAudio`. Settings (presets, switches, levels) are
+`juice.json` next to the game, falling back to `Resources/Juice/juice_defaults.json`. Detail: `Scripts/Juice/README.md`.
+
 **Game** (`Monolith.Game`) is the composition root. `GameBootstrap` runs after the Boot scene loads and creates
 `GameRoot`, which builds the clock, the world and every system, and registers them. Today it also builds the smoke scene
 (`SmokeWorld`: camera, sun, sphere and box) and, with `-mnScene flight` or a plan's `"scene": "flight"`, the flight
-playtest (`FlightPlaytest`: the Sky, placeholder ships from `PlaceholderShips`, layout in `Resources/Flight/playtest.json`).
-It is the only assembly allowed to reference the others.
+playtest (`FlightPlaytest`: the Sky, placeholder ships from `PlaceholderShips`, layout in `Resources/Flight/playtest.json`) or,
+with `-mnScene juice`, the juice sandbox (`Sandbox/JuiceSandbox`: the fighter, targets, two capital hulls, stand-in weapons and
+the panel). It is the only assembly allowed to reference the others.
 
 **Editor** (`Monolith.Editor`, namespace `Monolith.EditorTools`, editor only) is scripted project set-up and building:
 `Batch.Run` wrapper, `Setup.Project` (HDRP asset and global settings, colour space, Input System, player settings, the
