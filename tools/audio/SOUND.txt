@@ -23,6 +23,7 @@ Everything makes sound now, and all of it was made for this game (nothing from a
             little clipping on the shouting, a louder noise bed, a squelch that snaps open and shut, a few brief drop-outs as the signal breaks up. It is also louder (calm -23, tense -21.5,
             frantic -19.5 LUFS). The wingmen's acknowledgements exist in a tense and a frantic take and the game plays the one the music asks for: tense in the quiet and at first contact,
             frantic in the fight (battle 2 and 3). Earth never panics. 36 calm, 50 tense and 70 frantic recordings.
+            To hear the difference without playing: frantic_reel.mp3 next to Play.bat (52 s: six lines, each as the old calm read, then the tense one where there is one, then the frantic one).
   Effects   guns (a snap, a falling zap, a thump), the heavy gun, capital turrets, flak, missiles and torpedoes with their hiss as they pass, decoys, the lock tone and the missile warning (sequencer pings),
             shield and hull hits (heavier and with a cabin boom when they are on you), explosions in three sizes, a capital ship's break-up, death and shockwave, beams (charge, crack, roar, the bite, the fall),
             the engine hum (its pitch follows your speed) and the afterburner roar, cabin air, hull alarms when you are hurt, creaks under hits, the jump flash, and a deep horn when an Earth corvette or

@@ -1,0 +1,6 @@
+{
+ "scene": "mission", "width": 1280, "height": 720,
+ "script": [],
+ "options": { "mission": "dogfight", "pilot": "ai", "invulnerable": true, "hud": true, "dust": false },
+ "series": [ { "name": "dop", "from": 0.5, "to": 13.0, "step": 0.0333333 } ]
+}

@@ -29,6 +29,9 @@ $a = Join-Path $out 'Audio'
 New-Item -ItemType Directory -Force (Join-Path $a 'music'), (Join-Path $a 'sfx'), (Join-Path $a 'vo') | Out-Null
 Copy-Item (Join-Path $root 'Game\Assets\StreamingAssets\Audio\AUDIO_LIST.txt') (Join-Path $out 'AUDIO_LIST.txt')
 Copy-Item (Join-Path $root 'tools\audio\SOUND.txt') (Join-Path $out 'SOUND.txt')
+# the voices heard without playing: the old calm reads against the tense and frantic ones (tools\audio\make_voice_reel.py)
+$reel = Join-Path $root 'gauntlet\captures\audio\r1\clips\frantic_reel.mp3'
+if (Test-Path $reel) { Copy-Item $reel (Join-Path $out 'frantic_reel.mp3') }
 
 # the controls the other playtests use, if there are any
 $ctl = Get-ChildItem $PlaytestRoot -Recurse -Filter controls.json -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $out 'controls.json') } | Select-Object -First 1
