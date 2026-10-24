@@ -1,0 +1,57 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Choir 1",
+   "offset": [
+    11,
+    5,
+    -46
+   ],
+   "look": "target"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "act_t16",
+   "follow": true,
+   "warmup": 16.0
+  },
+  {
+   "name": "act_t19",
+   "follow": true,
+   "warmup": 3.0
+  },
+  {
+   "name": "act_t22",
+   "follow": true,
+   "warmup": 3.0
+  },
+  {
+   "name": "act_t25",
+   "follow": true,
+   "warmup": 3.0
+  },
+  {
+   "name": "act_t28",
+   "follow": true,
+   "warmup": 3.0
+  },
+  {
+   "name": "act_t31",
+   "follow": true,
+   "warmup": 3.0
+  }
+ ]
+}

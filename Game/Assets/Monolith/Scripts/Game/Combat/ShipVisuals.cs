@@ -51,6 +51,13 @@ namespace Monolith.Game
         public void SetHullDamage(float damage01) => _damage.SetHullDamage(damage01);
         public void ResetDamage() => _damage.ResetDamage();
 
+        /// <summary>A gun mount's tag in the model, "gun:primary" or "gun:heavy": which of the ship's guns going offline it counts for (null for any other part).</summary>
+        static string GunOf(string[] tags)
+        {
+            if (tags != null) foreach (var t in tags) if (t != null && t.StartsWith("gun:")) return t.Substring(4);
+            return null;
+        }
+
         /// <summary>The model's named parts as combat parts, in the model's own (ship-local) frame.</summary>
         public static List<PartDef> Parts(ShipDamage damage)
         {
@@ -63,7 +70,7 @@ namespace Monolith.Game
                     Name = s.name, Kind = s.Kind,
                     Position = root.InverseTransformPoint(s.transform.position),
                     Forward = root.InverseTransformDirection(s.transform.forward),
-                    Radius = s.Radius, HpWeight = s.Hp,
+                    Radius = s.Radius, HpWeight = s.Hp, Gun = GunOf(s.Tags),
                 });
             }
             return list;

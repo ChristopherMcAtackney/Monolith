@@ -1,0 +1,46 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_heavy",
+  "pitch": 9,
+  "yaw": 149,
+  "roll": -30
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "hero_three_quarter",
+   "pos": [
+    -16.407,
+    0.443,
+    3.667
+   ],
+   "rot": [
+    1.711,
+    103.634,
+    -27.854
+   ],
+   "fov": 34
+  },
+  {
+   "name": "hero_front_quarter",
+   "pos": [
+    -3.109,
+    -3.444,
+    -15.689
+   ],
+   "rot": [
+    -12.15,
+    10.531,
+    17.054
+   ],
+   "fov": 34
+  }
+ ],
+ "perf": []
+}

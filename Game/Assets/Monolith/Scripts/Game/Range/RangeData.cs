@@ -38,6 +38,8 @@ namespace Monolith.Game
         public sealed class DroneSpec
         {
             public string @class, callsign;
+            /// <summary>A ship model (Resources/ShipArt) to show it with, and the combat definition to fight with when that is not its class's (Earth's fighters: same numbers, parts from the model).</summary>
+            public string model, def;
             public float[] pos, rot;
             public float speedFraction, throttle, loop;
             public List<PlaytestData.InputKey> keys = new List<PlaytestData.InputKey>();

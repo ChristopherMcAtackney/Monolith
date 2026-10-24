@@ -1,0 +1,104 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_interceptor",
+  "pitch": 9,
+  "yaw": 149,
+  "roll": -30,
+  "damage": {
+   "destroy": [
+    "SUB_engine_S",
+    "SUB_mount_P",
+    "SUB_sensors_eye",
+    "SUB_launcher_rack"
+   ],
+   "health": {
+    "SUB_engine_P": 0.3,
+    "SUB_mount_H": 0.0
+   },
+   "debrisAge": 0.6,
+   "hull": 0.7,
+   "hits": [
+    {
+     "pos": [
+      -1.1,
+      -0.264,
+      0.451
+     ],
+     "normal": [
+      -0.783,
+      -0.494,
+      -0.379
+     ],
+     "radius": 0.9,
+     "severity": 0.9
+    },
+    {
+     "pos": [
+      -1.111,
+      -1.479,
+      -2.639
+     ],
+     "normal": [
+      -0.359,
+      0.855,
+      -0.374
+     ],
+     "radius": 0.8,
+     "severity": 0.8
+    },
+    {
+     "pos": [
+      -1.327,
+      0.84,
+      1.646
+     ],
+     "normal": [
+      -0.359,
+      0.855,
+      -0.374
+     ],
+     "radius": 0.7,
+     "severity": 0.7
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "damage_three_quarter",
+   "pos": [
+    -12.078,
+    0.326,
+    2.699
+   ],
+   "rot": [
+    1.71,
+    103.63,
+    -27.853
+   ],
+   "fov": 34
+  },
+  {
+   "name": "damage_rake",
+   "pos": [
+    -2.655,
+    -0.149,
+    -9.706
+   ],
+   "rot": [
+    -1.669,
+    11.286,
+    17.809
+   ],
+   "fov": 34
+  }
+ ],
+ "perf": []
+}

@@ -1,0 +1,1532 @@
+{
+ "lods": {
+  "0": {
+   "triangles": 6436,
+   "vertices": 13172,
+   "subsystemTriangles": 6352
+  },
+  "1": {
+   "triangles": 1828,
+   "vertices": 3916
+  },
+  "2": {
+   "triangles": 772,
+   "vertices": 1840
+  }
+ },
+ "subsystems": [
+  {
+   "name": "SUB_engine_P",
+   "kind": "engine",
+   "radius": 2.12,
+   "hp": 1.0,
+   "tags": [
+    "propulsion"
+   ],
+   "position": [
+    -2.38,
+    0.0,
+    -6.0
+   ],
+   "forward": [
+    -0.0,
+    -0.0,
+    -1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_engine_P__base",
+     "SUB_engine_P__core",
+     "SUB_engine_P__plume"
+    ],
+    "destroyed": [
+     "SUB_engine_P__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_engine_P__debris_00",
+     "position": [
+      0.44,
+      0.0,
+      1.15
+     ],
+     "velocity": [
+      3.1406,
+      6.8385,
+      3.0548
+     ],
+     "spin": [
+      -29.6756,
+      -45.2443,
+      189.342
+     ]
+    },
+    {
+     "name": "SUB_engine_P__debris_01",
+     "position": [
+      -0.385,
+      0.165,
+      1.26
+     ],
+     "velocity": [
+      -1.2591,
+      7.9822,
+      5.4317
+     ],
+     "spin": [
+      114.4144,
+      11.3345,
+      -51.4188
+     ]
+    },
+    {
+     "name": "SUB_engine_P__debris_02",
+     "position": [
+      0.0,
+      -0.275,
+      0.81
+     ],
+     "velocity": [
+      -2.7965,
+      5.7927,
+      8.7953
+     ],
+     "spin": [
+      -62.7778,
+      35.1343,
+      52.0199
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_engine_S",
+   "kind": "engine",
+   "radius": 2.12,
+   "hp": 1.0,
+   "tags": [
+    "propulsion"
+   ],
+   "position": [
+    2.38,
+    0.0,
+    -6.0
+   ],
+   "forward": [
+    -0.0,
+    -0.0,
+    -1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_engine_S__base",
+     "SUB_engine_S__core",
+     "SUB_engine_S__plume"
+    ],
+    "destroyed": [
+     "SUB_engine_S__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_engine_S__debris_00",
+     "position": [
+      0.44,
+      0.0,
+      1.15
+     ],
+     "velocity": [
+      -3.7306,
+      4.2315,
+      -0.3807
+     ],
+     "spin": [
+      -158.8522,
+      70.9095,
+      -45.0893
+     ]
+    },
+    {
+     "name": "SUB_engine_S__debris_01",
+     "position": [
+      -0.385,
+      0.165,
+      1.26
+     ],
+     "velocity": [
+      7.8183,
+      6.219,
+      5.0552
+     ],
+     "spin": [
+      -140.9935,
+      88.2617,
+      -47.7504
+     ]
+    },
+    {
+     "name": "SUB_engine_S__debris_02",
+     "position": [
+      0.0,
+      -0.275,
+      0.81
+     ],
+     "velocity": [
+      -5.0058,
+      4.0621,
+      5.3821
+     ],
+     "spin": [
+      96.0915,
+      5.4999,
+      -63.5201
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_mount_P",
+   "kind": "mount",
+   "radius": 1.8,
+   "hp": 0.5,
+   "tags": [
+    "gun:primary",
+    "weapon"
+   ],
+   "position": [
+    -4.06,
+    -0.35,
+    3.25
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_mount_P__base"
+    ],
+    "destroyed": [
+     "SUB_mount_P__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_mount_P__debris_00",
+     "position": [
+      0.066,
+      0.0,
+      1.022
+     ],
+     "velocity": [
+      -2.3655,
+      4.5544,
+      0.5333
+     ],
+     "spin": [
+      -5.5519,
+      65.1719,
+      89.1827
+     ]
+    },
+    {
+     "name": "SUB_mount_P__debris_01",
+     "position": [
+      0.0,
+      0.0,
+      0.438
+     ],
+     "velocity": [
+      0.6873,
+      2.6916,
+      1.8378
+     ],
+     "spin": [
+      -64.461,
+      -73.9193,
+      -74.9275
+     ]
+    },
+    {
+     "name": "SUB_mount_P__debris_02",
+     "position": [
+      -0.1716,
+      0.0858,
+      0.146
+     ],
+     "velocity": [
+      1.7414,
+      3.9182,
+      3.7145
+     ],
+     "spin": [
+      -24.558,
+      -40.0628,
+      -3.5984
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_mount_S",
+   "kind": "mount",
+   "radius": 1.8,
+   "hp": 0.5,
+   "tags": [
+    "gun:primary",
+    "weapon"
+   ],
+   "position": [
+    4.06,
+    -0.35,
+    3.25
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_mount_S__base"
+    ],
+    "destroyed": [
+     "SUB_mount_S__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_mount_S__debris_00",
+     "position": [
+      0.066,
+      0.0,
+      1.022
+     ],
+     "velocity": [
+      2.3291,
+      6.1892,
+      -1.798
+     ],
+     "spin": [
+      -29.3556,
+      48.6241,
+      106.4726
+     ]
+    },
+    {
+     "name": "SUB_mount_S__debris_01",
+     "position": [
+      0.0,
+      0.0,
+      0.438
+     ],
+     "velocity": [
+      1.4266,
+      2.9917,
+      0.8862
+     ],
+     "spin": [
+      105.8637,
+      41.5303,
+      -117.7701
+     ]
+    },
+    {
+     "name": "SUB_mount_S__debris_02",
+     "position": [
+      -0.1716,
+      0.0858,
+      0.146
+     ],
+     "velocity": [
+      -1.3301,
+      4.0666,
+      -2.3528
+     ],
+     "spin": [
+      -100.8127,
+      -1.4382,
+      98.7655
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_mount_H",
+   "kind": "mount",
+   "radius": 1.68,
+   "hp": 1.0,
+   "tags": [
+    "gun:heavy",
+    "weapon"
+   ],
+   "position": [
+    0.0,
+    -0.9,
+    4.08
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_mount_H__base"
+    ],
+    "destroyed": [
+     "SUB_mount_H__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_mount_H__debris_00",
+     "position": [
+      0.08,
+      0.0,
+      1.085
+     ],
+     "velocity": [
+      1.661,
+      6.6747,
+      2.2036
+     ],
+     "spin": [
+      -23.4248,
+      43.9362,
+      -22.8736
+     ]
+    },
+    {
+     "name": "SUB_mount_H__debris_01",
+     "position": [
+      0.0,
+      0.0,
+      0.465
+     ],
+     "velocity": [
+      -2.5887,
+      1.2939,
+      0.0703
+     ],
+     "spin": [
+      -85.7791,
+      -68.2761,
+      -1.3578
+     ]
+    },
+    {
+     "name": "SUB_mount_H__debris_02",
+     "position": [
+      -0.272,
+      0.136,
+      0.155
+     ],
+     "velocity": [
+      2.7667,
+      2.973,
+      -3.8003
+     ],
+     "spin": [
+      -66.7216,
+      152.2028,
+      -55.0672
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_sensors_eye",
+   "kind": "sensors",
+   "radius": 1.82,
+   "hp": 1.0,
+   "tags": [
+    "radar"
+   ],
+   "position": [
+    0.0,
+    0.97,
+    2.16
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_sensors_eye__base",
+     "SUB_sensors_eye__head"
+    ],
+    "destroyed": [
+     "SUB_sensors_eye__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_sensors_eye__debris_00",
+     "position": [
+      0.0,
+      0.288,
+      0.0
+     ],
+     "velocity": [
+      -4.2429,
+      4.2644,
+      1.765
+     ],
+     "spin": [
+      60.7554,
+      57.824,
+      113.7325
+     ]
+    },
+    {
+     "name": "SUB_sensors_eye__debris_01",
+     "position": [
+      0.3,
+      0.36,
+      -0.3
+     ],
+     "velocity": [
+      -0.81,
+      5.6365,
+      0.581
+     ],
+     "spin": [
+      23.2925,
+      -2.9668,
+      -6.9164
+     ]
+    },
+    {
+     "name": "SUB_sensors_eye__debris_02",
+     "position": [
+      -0.45,
+      0.432,
+      -0.15
+     ],
+     "velocity": [
+      6.0294,
+      7.8424,
+      2.9685
+     ],
+     "spin": [
+      -33.5838,
+      73.3335,
+      102.4063
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SUB_launcher_rack",
+   "kind": "launcher",
+   "radius": 1.2,
+   "hp": 1.0,
+   "tags": [
+    "missile"
+   ],
+   "position": [
+    0.0,
+    -1.05,
+    -0.8
+   ],
+   "forward": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "up": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "parts": {
+    "intact": [
+     "SUB_launcher_rack__base",
+     "SUB_launcher_rack__missiles"
+    ],
+    "destroyed": [
+     "SUB_launcher_rack__destroyed"
+    ]
+   },
+   "debris": [
+    {
+     "name": "SUB_launcher_rack__debris_00",
+     "position": [
+      -0.135,
+      0.0,
+      0.0
+     ],
+     "velocity": [
+      -0.7021,
+      3.7973,
+      -7.101
+     ],
+     "spin": [
+      24.2198,
+      59.6335,
+      91.9394
+     ]
+    },
+    {
+     "name": "SUB_launcher_rack__debris_01",
+     "position": [
+      0.135,
+      0.0,
+      0.0
+     ],
+     "velocity": [
+      1.7877,
+      6.2615,
+      7.0424
+     ],
+     "spin": [
+      89.7221,
+      170.947,
+      7.9708
+     ]
+    },
+    {
+     "name": "SUB_launcher_rack__debris_02",
+     "position": [
+      0.0,
+      0.0,
+      -0.32
+     ],
+     "velocity": [
+      -0.5332,
+      1.6515,
+      2.1996
+     ],
+     "spin": [
+      -16.1766,
+      -36.9165,
+      12.0207
+     ]
+    }
+   ]
+  }
+ ],
+ "hooks": [
+  {
+   "name": "FX_spark_00",
+   "kind": "spark",
+   "size": 0.4,
+   "position": [
+    0.0,
+    1.17,
+    -2.4
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_01",
+   "kind": "vent",
+   "size": 0.6,
+   "position": [
+    0.0,
+    1.13,
+    -2.65
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_02",
+   "kind": "spark",
+   "size": 0.4,
+   "position": [
+    1.36,
+    0.0,
+    -0.6
+   ],
+   "direction": [
+    1.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_03",
+   "kind": "vent",
+   "size": 0.6,
+   "position": [
+    1.32,
+    0.0,
+    -0.375
+   ],
+   "direction": [
+    1.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_04",
+   "kind": "spark",
+   "size": 0.4,
+   "position": [
+    3.6,
+    0.36,
+    4.3
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_05",
+   "kind": "vent",
+   "size": 0.6,
+   "position": [
+    3.6,
+    0.32,
+    4.025
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_06",
+   "kind": "spark",
+   "size": 0.4,
+   "position": [
+    -3.2,
+    0.36,
+    4.3
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_vent_07",
+   "kind": "vent",
+   "size": 0.6,
+   "position": [
+    -3.2,
+    0.32,
+    4.05
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "name": "FX_spark_08",
+   "kind": "spark",
+   "size": 0.4,
+   "position": [
+    0.0,
+    -0.94,
+    -2.6
+   ],
+   "direction": [
+    -0.0,
+    -1.0,
+    -0.0
+   ]
+  },
+  {
+   "name": "FX_vent_09",
+   "kind": "vent",
+   "size": 0.6,
+   "position": [
+    0.0,
+    -0.9,
+    -2.375
+   ],
+   "direction": [
+    -0.0,
+    -1.0,
+    -0.0
+   ]
+  },
+  {
+   "name": "FX_fire_10",
+   "kind": "fire",
+   "size": 0.9,
+   "position": [
+    2.38,
+    0.0,
+    -6.1
+   ],
+   "direction": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "FX_fire_11",
+   "kind": "fire",
+   "size": 0.9,
+   "position": [
+    -2.38,
+    0.0,
+    -6.1
+   ],
+   "direction": [
+    -0.0,
+    -0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "FX_vent_12",
+   "kind": "vent",
+   "size": 0.7,
+   "position": [
+    0.0,
+    1.04,
+    -1.6
+   ],
+   "direction": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  }
+ ],
+ "damageSites": [
+  {
+   "name": "DMG_site_00",
+   "radius": 0.5,
+   "position": [
+    0.0,
+    1.05,
+    -2.4
+   ],
+   "normal": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "breachTriangles": 516
+  },
+  {
+   "name": "DMG_site_01",
+   "radius": 0.45,
+   "position": [
+    1.24,
+    0.0,
+    -0.6
+   ],
+   "normal": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "breachTriangles": 476
+  },
+  {
+   "name": "DMG_site_02",
+   "radius": 0.55,
+   "position": [
+    3.6,
+    0.24,
+    4.3
+   ],
+   "normal": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "breachTriangles": 472
+  },
+  {
+   "name": "DMG_site_03",
+   "radius": 0.5,
+   "position": [
+    -3.2,
+    0.24,
+    4.3
+   ],
+   "normal": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "breachTriangles": 460
+  },
+  {
+   "name": "DMG_site_04",
+   "radius": 0.45,
+   "position": [
+    0.0,
+    -0.82,
+    -2.6
+   ],
+   "normal": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "breachTriangles": 488
+  }
+ ],
+ "lights": [
+  {
+   "pos": [
+    -6.1,
+    1.45,
+    5.4
+   ],
+   "kind": "strobe",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.14,
+   "blink": "strobe"
+  },
+  {
+   "pos": [
+    -5.95,
+    -0.2,
+    3.55
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.1,
+   "blink": null
+  },
+  {
+   "pos": [
+    -2.38,
+    0.66,
+    -1.7
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.09,
+   "blink": null
+  },
+  {
+   "pos": [
+    -1.7,
+    1.9,
+    -5.8
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.09,
+   "blink": null
+  },
+  {
+   "pos": [
+    6.1,
+    1.45,
+    5.4
+   ],
+   "kind": "strobe",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.14,
+   "blink": "strobe"
+  },
+  {
+   "pos": [
+    5.95,
+    -0.2,
+    3.55
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.1,
+   "blink": null
+  },
+  {
+   "pos": [
+    2.38,
+    0.66,
+    -1.7
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.09,
+   "blink": null
+  },
+  {
+   "pos": [
+    1.7,
+    1.9,
+    -5.8
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.09,
+   "blink": null
+  },
+  {
+   "pos": [
+    -0.2,
+    3.02,
+    -6.0
+   ],
+   "kind": "strobe",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.12,
+   "blink": "strobe"
+  },
+  {
+   "pos": [
+    0.0,
+    0.0,
+    6.4
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    1,
+    1
+   ],
+   "size": 0.08,
+   "blink": null
+  },
+  {
+   "pos": [
+    0.7,
+    -1.88,
+    -3.3
+   ],
+   "kind": "strobe",
+   "colour": [
+    1,
+    0.07,
+    0.05
+   ],
+   "size": 0.1,
+   "blink": "strobe"
+  }
+ ],
+ "subsystemTriangles": {
+  "intact": 6352,
+  "destroyed": 1940,
+  "debris": 448
+ },
+ "collisionTriangles": 156,
+ "bounds": {
+  "min": [
+   -6.2384,
+   -1.9325,
+   -7.1
+  ],
+  "max": [
+   6.2253,
+   3.1434,
+   7.5
+  ],
+  "size": [
+   12.4637,
+   5.0759,
+   14.6
+  ],
+  "length": 14.6
+ },
+ "id": "earth_fighter",
+ "name": "Dominion fighter",
+ "materials": [
+  "mn_earth_plate",
+  "mn_earth_trim",
+  "mn_earth_lights",
+  "mn_earth_engine",
+  "mn_earth_chrome",
+  "mn_earth_plate_b",
+  "mn_earth_plate_c",
+  "mn_earth_plume",
+  "mn_earth_plate_d",
+  "mn_earth_plate_e",
+  "mn_earth_wear",
+  "mn_earth_paint"
+ ],
+ "materialSet": "Assets/Monolith/Art/EarthHull/earth_hull.materials.json",
+ "damagePoints": [
+  {
+   "p": [
+    1.5816,
+    -0.1832,
+    -4.0172
+   ],
+   "n": [
+    0.1644,
+    0.9864,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    1.0895,
+    -0.0537,
+    1.3382
+   ],
+   "n": [
+    0.9975,
+    0.0,
+    0.0708
+   ]
+  },
+  {
+   "p": [
+    -1.6007,
+    -0.1864,
+    -3.2153
+   ],
+   "n": [
+    -0.1644,
+    0.9864,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    2.6039,
+    -0.22,
+    4.6179
+   ],
+   "n": [
+    0.0,
+    -1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    6.0794,
+    0.3917,
+    4.0388
+   ],
+   "n": [
+    0.9882,
+    -0.1524,
+    0.0174
+   ]
+  },
+  {
+   "p": [
+    -0.8573,
+    0.826,
+    -2.3609
+   ],
+   "n": [
+    -0.7059,
+    0.7059,
+    -0.0594
+   ]
+  },
+  {
+   "p": [
+    -0.0482,
+    0.3,
+    4.3151
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -0.6849,
+    -0.099,
+    -6.4438
+   ],
+   "n": [
+    -0.9933,
+    0.0,
+    -0.1159
+   ]
+  },
+  {
+   "p": [
+    -1.5694,
+    0.22,
+    3.8846
+   ],
+   "n": [
+    0.0,
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    0.2524,
+    0.9217,
+    -2.8354
+   ],
+   "n": [
+    0.0,
+    0.9991,
+    -0.0421
+   ]
+  },
+  {
+   "p": [
+    -2.4348,
+    -0.22,
+    4.7455
+   ],
+   "n": [
+    0.0,
+    -1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    1.3609,
+    1.5515,
+    -5.1083
+   ],
+   "n": [
+    0.7171,
+    -0.6969,
+    0.0077
+   ]
+  },
+  {
+   "p": [
+    -1.0921,
+    -0.22,
+    4.6836
+   ],
+   "n": [
+    0.0,
+    -1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -0.0992,
+    2.3027,
+    -3.6793
+   ],
+   "n": [
+    0.995,
+    0.0995,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -0.618,
+    0.6024,
+    -5.6027
+   ],
+   "n": [
+    -0.7015,
+    0.7015,
+    -0.1257
+   ]
+  },
+  {
+   "p": [
+    -1.0059,
+    0.6864,
+    0.8461
+   ],
+   "n": [
+    -0.705,
+    0.705,
+    0.0773
+   ]
+  },
+  {
+   "p": [
+    0.2893,
+    -1.2108,
+    -3.3026
+   ],
+   "n": [
+    -0.8694,
+    -0.4928,
+    -0.0367
+   ]
+  },
+  {
+   "p": [
+    1.2303,
+    -0.22,
+    4.257
+   ],
+   "n": [
+    0.0,
+    -1.0,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    -0.176,
+    2.1278,
+    -4.9934
+   ],
+   "n": [
+    -0.995,
+    -0.0995,
+    -0.0
+   ]
+  },
+  {
+   "p": [
+    -5.9483,
+    0.3362,
+    4.0794
+   ],
+   "n": [
+    0.9882,
+    0.1524,
+    -0.0174
+   ]
+  },
+  {
+   "p": [
+    0.7442,
+    0.0388,
+    3.3341
+   ],
+   "n": [
+    0.9918,
+    0.0,
+    0.1275
+   ]
+  },
+  {
+   "p": [
+    0.8626,
+    -0.8462,
+    -2.0585
+   ],
+   "n": [
+    0.7059,
+    -0.7059,
+    -0.0594
+   ]
+  },
+  {
+   "p": [
+    0.7892,
+    -0.204,
+    -5.5499
+   ],
+   "n": [
+    0.9933,
+    0.0,
+    -0.1159
+   ]
+  },
+  {
+   "p": [
+    -0.8076,
+    -0.781,
+    1.7921
+   ],
+   "n": [
+    -0.705,
+    -0.705,
+    0.0773
+   ]
+  },
+  {
+   "p": [
+    0.2712,
+    -0.5964,
+    -6.5163
+   ],
+   "n": [
+    -0.0,
+    -0.9954,
+    -0.0954
+   ]
+  },
+  {
+   "p": [
+    -1.1704,
+    0.2032,
+    -1.286
+   ],
+   "n": [
+    -0.998,
+    0.0,
+    -0.063
+   ]
+  },
+  {
+   "p": [
+    1.0548,
+    -0.1999,
+    -3.1162
+   ],
+   "n": [
+    0.998,
+    0.0,
+    -0.063
+   ]
+  },
+  {
+   "p": [
+    -0.1257,
+    0.9849,
+    -1.3325
+   ],
+   "n": [
+    0.0,
+    0.9991,
+    -0.0421
+   ]
+  },
+  {
+   "p": [
+    -0.4268,
+    -0.9527,
+    0.5428
+   ],
+   "n": [
+    0.0,
+    -0.9979,
+    0.0644
+   ]
+  },
+  {
+   "p": [
+    -0.5399,
+    -0.5215,
+    3.5932
+   ],
+   "n": [
+    -0.7001,
+    -0.7001,
+    0.14
+   ]
+  },
+  {
+   "p": [
+    -1.5972,
+    -0.2466,
+    -4.2564
+   ],
+   "n": [
+    0.1644,
+    -0.9864,
+    0.0
+   ]
+  },
+  {
+   "p": [
+    0.1059,
+    0.8671,
+    1.8706
+   ],
+   "n": [
+    -0.0,
+    0.9979,
+    0.0644
+   ]
+  }
+ ],
+ "lodScreenHeights": [
+  0.1,
+  0.03,
+  0.006
+ ],
+ "scorchScale": 0.13,
+ "engineLights": {
+  "SUB_engine_P": {
+   "z": 0.7,
+   "candela": 10000.0,
+   "range": 18.0,
+   "fade": 150.0
+  },
+  "SUB_engine_S": {
+   "z": 0.7,
+   "candela": 10000.0,
+   "range": 18.0,
+   "fade": 150.0
+  }
+ }
+}

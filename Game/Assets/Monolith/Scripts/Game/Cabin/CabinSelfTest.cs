@@ -412,7 +412,8 @@ namespace Monolith.Game
                 { ""t"": 25.0, ""do"": ""stand"" }, { ""do"": ""walk"", ""to"": ""breaker"" }, { ""do"": ""face"", ""at"": ""breaker"" }, { ""do"": ""press"" }, { ""do"": ""wait"", ""seconds"": 2.0 },
                 { ""t"": 60.0, ""do"": ""walk"", ""to"": ""panel_engine"" }, { ""do"": ""face"", ""at"": ""panel_engine"" }, { ""do"": ""use"", ""seconds"": 7.0 },
                 { ""do"": ""walk"", ""to"": ""breaker"" }, { ""do"": ""face"", ""at"": ""breaker"" }, { ""do"": ""press"" }, { ""do"": ""wait"", ""seconds"": 2.0 }, { ""do"": ""sit"" },
-                { ""t"": 100.0, ""do"": ""stand"" }, { ""do"": ""walk"", ""to"": ""panel_engine"" }, { ""do"": ""face"", ""at"": ""panel_engine"" }, { ""do"": ""use"", ""seconds"": 7.0 }, { ""do"": ""sit"" } ]";
+                { ""t"": 100.0, ""do"": ""stand"" }, { ""do"": ""walk"", ""to"": ""panel_engine"" }, { ""do"": ""face"", ""at"": ""panel_engine"" }, { ""do"": ""use"", ""seconds"": 7.0 }, { ""do"": ""sit"" },
+                { ""t"": 150.0, ""do"": ""stand"" }, { ""do"": ""walk"", ""to"": ""panel_engine"" }, { ""do"": ""face"", ""at"": ""panel_engine"" }, { ""do"": ""use"", ""seconds"": 7.0 }, { ""do"": ""sit"" } ]";   // a last look at the panel: when the drones hit the engine again depends on how they fly
             using (var lab = new AiLab(2))
             {
                 var cfg = CabinConfig.Load(out _);

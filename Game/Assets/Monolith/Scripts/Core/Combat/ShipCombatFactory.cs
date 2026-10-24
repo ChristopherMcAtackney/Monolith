@@ -62,7 +62,10 @@ namespace Monolith.Core
         /// </summary>
         public static void AddModelParts(ShipCombatDef def, IEnumerable<PartDef> modelParts)
         {
-            foreach (var mp in modelParts)
+            var list = new List<PartDef>(modelParts);
+            // A class that lists both its own parts (the stand-ins a headless lab uses) and what its model's parts are worth gets only the model's, when a model is there.
+            if (def.PartKinds.Count > 0 && def.Parts.Count > 0 && list.Exists(m => def.PartKinds.ContainsKey(m.Kind))) def.Parts = new List<PartDef>();
+            foreach (var mp in list)
             {
                 if (!def.PartKinds.TryGetValue(mp.Kind, out var kind)) continue;
                 def.Parts.Add(new PartDef

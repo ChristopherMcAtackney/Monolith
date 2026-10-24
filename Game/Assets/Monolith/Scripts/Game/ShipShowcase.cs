@@ -36,12 +36,15 @@ namespace Monolith.Game
             public int forceLod = -1;
             public Fighter fighter;
             public Damage damage;
+            /// <summary>More ship models in the picture (for scale shots): model id, world position and Euler rotation.</summary>
+            public List<Extra> ships;
             /// <summary>Look-development: names of materials to leave out of the picture (e.g. ["MN_EarthWear", "MN_EarthPaint"] shows the bare plating), to tell which layer makes a mark.</summary>
             public List<string> hideMaterials;
             /// <summary>Any <see cref="SkyOptions"/> fields to override by name, for look development (e.g. {"AmbientNits": 2000}); the defaults are the game's.</summary>
             public JObject sky;
 
 
+            public sealed class Extra { public string ship; public float[] pos, rot; }
             public sealed class Fighter { public float[] pos, rot; public string cls = "vanguard_fighter"; }
             public sealed class HullHit { public float[] pos, normal; public float radius = 3f, severity = 0.6f; }
             public sealed class Damage
@@ -76,6 +79,13 @@ namespace Monolith.Game
             var sunInShip = Quaternion.Inverse(shipGo.transform.rotation) * rig.SunDirection;
             MnLog.Info($"SHOWCASE sun in the ship's frame (x starboard, y up, z bow): {sunInShip.x:0.000}, {sunInShip.y:0.000}, {sunInShip.z:0.000}");
             if (opts.forceLod >= 0) shipGo.GetComponent<LODGroup>().ForceLOD(opts.forceLod);
+            if (opts.ships != null)
+                foreach (var e in opts.ships)
+                {
+                    var go = ShipArtCatalog.Instantiate(e.ship, root);
+                    go.transform.SetPositionAndRotation(V3(e.pos), Quaternion.Euler(V3(e.rot)));
+                    if (opts.forceLod >= 0) go.GetComponent<LODGroup>().ForceLOD(opts.forceLod);
+                }
             if (opts.hideMaterials != null && opts.hideMaterials.Count > 0)
                 foreach (var r in shipGo.GetComponentsInChildren<Renderer>(true))
                 {

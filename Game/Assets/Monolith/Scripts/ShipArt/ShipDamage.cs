@@ -38,6 +38,8 @@ namespace Monolith.ShipArt
         [SerializeField] Material _decalMaterial;
         [SerializeField] Vector3[] _damagePoints = new Vector3[0], _damageNormals = new Vector3[0];
         [SerializeField] int _maxDecals = 96;
+        /// <summary>1 for a capital ship; small ships (fighters) scale every scorch and the depth of its projection down, so a hit's radius (metres, set for big hulls) still reads right.</summary>
+        [SerializeField] float _scorchScale = 1f;
 
         readonly List<ShipSubsystem> _subs = new List<ShipSubsystem>();
         readonly List<ShipFxHook> _hooks = new List<ShipFxHook>();
@@ -54,9 +56,9 @@ namespace Monolith.ShipArt
         public int DecalCount => _decals.FindAll(d => d != null && d.gameObject.activeSelf).Count;
         public event Action<ShipSubsystem, SubsystemState, SubsystemState> SubsystemChanged;
 
-        public void Configure(Material decalMaterial, Vector3[] points, Vector3[] normals)
+        public void Configure(Material decalMaterial, Vector3[] points, Vector3[] normals, float scorchScale = 1f)
         {
-            _decalMaterial = decalMaterial; _damagePoints = points; _damageNormals = normals;
+            _decalMaterial = decalMaterial; _damagePoints = points; _damageNormals = normals; _scorchScale = Mathf.Max(0.02f, scorchScale);
         }
 
         void Awake() => Collect();
@@ -96,7 +98,7 @@ namespace Monolith.ShipArt
             severity01 = Mathf.Clamp01(severity01);
             int row = severity01 < 0.25f ? 0 : severity01 < 0.55f ? 1 : severity01 < 0.85f ? 2 : 3;
             int seed = Mathf.RoundToInt(worldPoint.x * 7.1f + worldPoint.y * 13.7f + worldPoint.z * 3.3f);
-            PlaceDecal(worldPoint, worldNormal, Mathf.Max(0.5f, radiusMetres) * 4.0f, row, seed);
+            PlaceDecal(worldPoint, worldNormal, Mathf.Max(0.5f, radiusMetres) * 4.0f * _scorchScale, row, seed);
             for (int i = 0; i < _sites.Count; i++)
             {
                 float d = Vector3.Distance(_sites[i].transform.position, worldPoint);
@@ -174,9 +176,9 @@ namespace Monolith.ShipArt
             var n = normal.normalized;
             var t = dp.transform;
             t.gameObject.SetActive(true);
-            t.position = point + n * 0.6f;          // the projection volume reaches 1.25 m below the surface point and 2.25 m above it (plates stand up to half a metre)
+            t.position = point + n * (0.6f * _scorchScale);          // the projection volume reaches 1.25 m below the surface point and 2.25 m above it (plates stand up to half a metre)
             t.rotation = Quaternion.LookRotation(-n, Mathf.Abs(Vector3.Dot(n, Vector3.up)) > 0.95f ? Vector3.forward : Vector3.up) * Quaternion.Euler(0f, 0f, spin);
-            dp.size = new Vector3(size, size, 3.5f);
+            dp.size = new Vector3(size, size, 3.5f * _scorchScale);
             dp.pivot = Vector3.zero;
             dp.uvScale = new Vector2(0.25f, 0.25f);
             dp.uvBias = new Vector2(col * 0.25f, row * 0.25f);

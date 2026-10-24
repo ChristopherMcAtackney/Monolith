@@ -7,7 +7,9 @@ import os
 import bpy
 import mathutils
 
-DEFAULT_COLOURS = {"mn_earth_plate": (0.16, 0.16, 0.18, 1), "mn_earth_trim": (0.5, 0.5, 0.55, 1), "mn_earth_lights": (1.0, 0.95, 0.8, 1), "mn_earth_engine": (1.0, 0.5, 0.2, 1)}
+DEFAULT_COLOURS = {"mn_earth_plate": (0.16, 0.16, 0.18, 1), "mn_earth_trim": (0.5, 0.5, 0.55, 1), "mn_earth_lights": (1.0, 0.95, 0.8, 1), "mn_earth_engine": (1.0, 0.5, 0.2, 1),
+                   "mn_earth_plate_b": (0.09, 0.09, 0.10, 1), "mn_earth_plate_c": (0.26, 0.26, 0.28, 1), "mn_earth_plate_d": (0.40, 0.40, 0.42, 1), "mn_earth_plate_e": (0.55, 0.55, 0.58, 1),
+                   "mn_earth_chrome": (0.62, 0.64, 0.68, 1), "mn_earth_plume": (0.5, 0.65, 1.0, 1), "mn_earth_wear": (0.16, 0.16, 0.18, 1), "mn_earth_paint": (0.16, 0.16, 0.18, 1)}
 
 
 def render_views(out_dir, views, size=(1280, 720), sun=(0.4, 0.55, -0.75), colours=None, lens=50.0, hide=("_COL",), only_lod=0, show=(), clip=(0.5, 5000.0)):

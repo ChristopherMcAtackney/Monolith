@@ -132,10 +132,10 @@ namespace Monolith.Game
 
         static readonly Slot[] Slots =
         {
-            new Slot { Name = "Reaper 1", Class = "gtf_ulysses", Kind = "fighter", Team = 1, Pos = new Vector3(45, 105, 260), Rot = new Vector3(0, 200, 0), Yaw = 0.16f, Speed = 0.3f },
+            new Slot { Name = "Reaper 1", Class = "gtf_ulysses", Model = "earth_interceptor", Kind = "fighter", Team = 1, Pos = new Vector3(45, 105, 260), Rot = new Vector3(0, 200, 0), Yaw = 0.16f, Speed = 0.3f },
             new Slot { Name = "Reaper 2", Class = "gtf_myrmidon", Kind = "fighter", Team = 1, Pos = new Vector3(-130, 78, 400), Rot = new Vector3(0, 160, 0), Yaw = -0.14f, Speed = 0.3f },
-            new Slot { Name = "Reaper 3", Class = "gtf_ulysses", Kind = "fighter", Team = 1, Pos = new Vector3(190, 150, 540), Rot = new Vector3(0, 245, 0), Yaw = 0.12f, Speed = 0.3f },
-            new Slot { Name = "Hammer 1", Class = "gtb_artemis", Kind = "bomber", Team = 1, Pos = new Vector3(-30, 172, 730), Rot = new Vector3(0, 190, 0), Yaw = 0.09f, Speed = 0.3f },
+            new Slot { Name = "Reaper 3", Class = "gtf_ulysses", Model = "earth_interceptor", Kind = "fighter", Team = 1, Pos = new Vector3(190, 150, 540), Rot = new Vector3(0, 245, 0), Yaw = 0.12f, Speed = 0.3f },
+            new Slot { Name = "Hammer 1", Class = "gtb_artemis", Model = "earth_bomber", Kind = "bomber", Team = 1, Pos = new Vector3(-30, 172, 730), Rot = new Vector3(0, 190, 0), Yaw = 0.09f, Speed = 0.3f },
             new Slot { Name = "Vanguard 2", Class = "gtf_myrmidon", Kind = "wingman", Team = 0, Pos = new Vector3(-75, 82, -160), Rot = new Vector3(0, 20, 0), Yaw = 0.2f, Speed = 0.3f },
             new Slot { Name = "Vanguard 3", Class = "gtf_ulysses", Kind = "wingman", Team = 0, Pos = new Vector3(100, 100, -200), Rot = new Vector3(0, -30, 0), Yaw = -0.18f, Speed = 0.3f },
             new Slot { Name = "Resolute", Class = "juice_corvette", Kind = "cruiser", Team = 1, Pos = new Vector3(170, 70, 700), Rot = new Vector3(0, 98f, 0), Model = "earth_corvette" },
@@ -194,7 +194,14 @@ namespace Monolith.Game
             }
             else
             {
-                visual = PlaceholderShips.Fighter(s.Name, cls.Size, _mats, _root).transform;
+                if (s.Model != null && ShipArtCatalog.Exists(s.Model))
+                {
+                    var go = ShipArtCatalog.Instantiate(s.Model, _root);
+                    go.name = s.Name;
+                    visual = go.transform;
+                    damage = new ShipArtJuiceDamage(go);
+                }
+                else visual = PlaceholderShips.Fighter(s.Name, cls.Size, _mats, _root).transform;
                 var keys = new List<ScriptedPilot.Key>
                 {
                     new ScriptedPilot.Key(0f, new ControlInput { Yaw = s.Yaw, Throttle = s.Speed, Pitch = 0.02f }),

@@ -198,7 +198,27 @@ namespace Monolith.Game
         {
             var klass = ShipCatalog.Load(cls);
             var st = _flight.Spawn(klass, pos, rot, speedFraction * klass.TopSpeed, speedFraction, team, callsign);
-            if (Visual)
+            if (ShipArtCatalog.Exists(cls))
+            {
+                // A real model (Earth's fighters): the same calls, in the same order, as the mission host makes, so the two stay tick for tick the same.
+                var go = ShipArtCatalog.Instantiate(cls, _root);
+                var damage = go.GetComponent<ShipDamage>();
+                var parts = damage != null ? ShipArtVisual.Parts(damage) : null;
+                string defId = CombatCatalog.Get(cls) != null ? cls : null;
+                if (Visual)
+                {
+                    var lod = go.GetComponent<LODGroup>();
+                    if (lod != null) { lod.ForceLOD(0); WarmLods.Add(lod); }
+                    _views.Register(st.Id, go.transform);
+                    _rig.Spawn(st, defId, damage != null ? new ShipArtVisual(_w, st.Id, damage, juiceShowsWrecksAndHits: true) : null, go.transform, _juice, parts, 1f, null, damage != null ? new ShipArtJuiceDamage(go) : null);
+                }
+                else
+                {
+                    _rig.Spawn(st, defId, null, null, null, parts);
+                    UnityEngine.Object.Destroy(go);
+                }
+            }
+            else if (Visual)
             {
                 var go = PlaceholderShips.Fighter(callsign, klass.Size, _mats, _root);
                 _views.Register(st.Id, go.transform);

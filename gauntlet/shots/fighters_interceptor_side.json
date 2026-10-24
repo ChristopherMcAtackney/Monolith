@@ -1,0 +1,46 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_interceptor",
+  "pitch": 1,
+  "yaw": 133,
+  "roll": -16
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "side_silhouette",
+   "pos": [
+    -13.349,
+    -5.143,
+    -14.183
+   ],
+   "rot": [
+    -14.792,
+    43.265,
+    -1.035
+   ],
+   "fov": 30
+  },
+  {
+   "name": "top_silhouette",
+   "pos": [
+    -3.539,
+    19.357,
+    -4.29
+   ],
+   "rot": [
+    73.97,
+    39.521,
+    -129.455
+   ],
+   "fov": 30
+  }
+ ],
+ "perf": []
+}

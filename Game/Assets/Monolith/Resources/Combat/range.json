@@ -38,6 +38,8 @@
   "drones": [
     {
       "class": "gtf_ulysses",
+      "def": "earth_interceptor",
+      "model": "earth_interceptor",
       "callsign": "Reaper 1",
       "pos": [
         -150,
@@ -86,6 +88,8 @@
     },
     {
       "class": "gtf_ulysses",
+      "def": "earth_interceptor",
+      "model": "earth_interceptor",
       "callsign": "Reaper 3",
       "pos": [
         -40,
@@ -117,6 +121,8 @@
     },
     {
       "class": "gtb_artemis",
+      "def": "earth_bomber",
+      "model": "earth_bomber",
       "callsign": "Hammer 1",
       "pos": [
         -330,
@@ -141,6 +147,8 @@
     },
     {
       "class": "gtf_hercules",
+      "def": "earth_heavy",
+      "model": "earth_heavy",
       "callsign": "Reaper 4",
       "pos": [
         420,

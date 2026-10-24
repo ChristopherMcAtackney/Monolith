@@ -291,7 +291,8 @@ namespace Monolith.EditorTools
                             var light = lg.GetComponent<Light>();
                             light.color = new Color(0.58f, 0.76f, 1f);
                             light.range = (float)spec["range"];
-                            data.shapeRadius = 0.15f;
+                            data.shapeRadius = (float?)spec["radius"] ?? 0.15f;
+                            if (spec["fade"] != null) data.fadeDistance = (float)spec["fade"];       // small ships: the light is only worth drawing near the camera
                             data.EnableShadows(false);
                             data.SetIntensity((float)spec["candela"], LightUnit.Candela);
                             lights.Add(data); candela.Add((float)spec["candela"]);
@@ -357,7 +358,7 @@ namespace Monolith.EditorTools
                 var dmg = go.AddComponent<ShipDamage>();
                 var pts = new List<Vector3>(); var nrm = new List<Vector3>();
                 if (raw["damagePoints"] is JArray dp) foreach (var p in dp) { pts.Add(V3(p["p"])); nrm.Add(V3(p["n"])); }
-                dmg.Configure(mats.Decal, pts.ToArray(), nrm.ToArray());
+                dmg.Configure(mats.Decal, pts.ToArray(), nrm.ToArray(), (float?)raw["scorchScale"] ?? 1f);
 
                 string prefabPath = $"{ResRoot}/{id}.prefab";
                 PrefabUtility.SaveAsPrefabAsset(go, prefabPath);

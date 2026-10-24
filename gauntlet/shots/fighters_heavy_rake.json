@@ -1,0 +1,46 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_heavy",
+  "pitch": 12,
+  "yaw": 106,
+  "roll": -11
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "raking",
+   "pos": [
+    7.224,
+    2.383,
+    -11.36
+   ],
+   "rot": [
+    8.153,
+    -36.136,
+    1.595
+   ],
+   "fov": 34
+  },
+  {
+   "name": "raking_close",
+   "pos": [
+    2.786,
+    0.846,
+    -6.959
+   ],
+   "rot": [
+    1.897,
+    -34.295,
+    0.99
+   ],
+   "fov": 40
+  }
+ ],
+ "perf": []
+}

@@ -127,9 +127,10 @@ class Kit:
 
     # ---------------------------------------------------------------------------------------------- plating
     def plate_patch(self, patch, key, u_range=None, v_range=None, rows=(5.0, 12.0), cols=(3.0, 8.0), gap=0.14, height=(0.12, 0.34), chamfer=0.12,
-                    margin=0.2, sub_prob=0.0, sub=(1.2, 3.2), sub_height=(0.04, 0.10), stagger=True, step=0.0, mb=None):
+                    margin=0.2, sub_prob=0.0, sub=(1.2, 3.2), sub_height=(0.04, 0.10), stagger=True, step=0.0, mb=None, min_size=0.4):
         """Armour plates over a planar patch: rows along the ship, columns across, every plate its own height and its own place in the
-        plate tile. ``u_range``/``v_range`` limit the region in metres. Larger plates may carry smaller ones (``sub_prob``): the layered look."""
+        plate tile. ``u_range``/``v_range`` limit the region in metres. Larger plates may carry smaller ones (``sub_prob``): the layered look.
+        ``min_size`` is the smallest plate side in metres (0.4 for capital hulls; fighters use about 0.2)."""
         self.last_cells = np.zeros((0, 5))
         self.last_tones = np.zeros(0, int)
         if self.lod >= 1:
@@ -140,18 +141,18 @@ class Kit:
         ua, ub = (0.0, Lu) if u_range is None else u_range
         va, vb = (0.0, Lv) if v_range is None else v_range
         ua, ub, va, vb = ua + margin, ub - margin, va + margin, vb - margin
-        if ub - ua < 0.8 or vb - va < 0.8:
+        if ub - ua < 2 * min_size or vb - va < 2 * min_size:
             return 0
         cells = []
         v = va
         ri = 0
-        while v < vb - 0.5:
+        while v < vb - 1.25 * min_size:
             rl = rng.uniform(*rows)
             if vb - (v + rl) < rows[0] * 0.6:
                 rl = vb - v
             u = ua
             first = True
-            while u < ub - 0.4:
+            while u < ub - min_size:
                 cw = rng.uniform(*cols)
                 if first and stagger:
                     cw *= rng.uniform(0.35, 1.0)
@@ -167,7 +168,7 @@ class Kit:
         C = np.array(cells)
         g = gap * 0.5
         a0, a1, b0, b1 = C[:, 0] + g, C[:, 1] - g, C[:, 2] + g, C[:, 3] - g
-        ok = (a1 - a0 > 0.4) & (b1 - b0 > 0.4)
+        ok = (a1 - a0 > min_size) & (b1 - b0 > min_size)
         a0, a1, b0, b1, ri_ = a0[ok], a1[ok], b0[ok], b1[ok], C[ok, 4]
         m = len(a0)
         if m == 0:
@@ -554,7 +555,7 @@ class Kit:
         a = c - x * pw / 2 - y * ph / 2
         mb.quad_rect(a, a + x * pw, a + x * pw + y * ph, a + y * ph, info["uv"], PAINT)
 
-    def edge_wear(self, patch, cells, tones, key, mb=None, chip_p=0.62, grime_p=0.5):
+    def edge_wear(self, patch, cells, tones, key, mb=None, chip_p=0.62, grime_p=0.5, min_w=0.5, min_l=0.8, min_width=0.08):
         """Paint ageing along plate edges, laid just inside each plate's top face (alpha blended): edge chips (flakes of top paint gone to primer with a scrape of bare
         metal inside, many at the edge and thinning inward, a worn line of metal along it) and edge grime (dirt gathered at the edge, with short drips). Light
         plates collect more grime, dark plates show their chips more."""
@@ -571,7 +572,7 @@ class Kit:
         count = 0
         for ci, (a0, a1, b0, b1, h) in enumerate(cells):
             w, l = a1 - a0, b1 - b0
-            if w < 0.5 or l < 0.8:
+            if w < min_w or l < min_l:
                 continue
             tone = int(tones[ci]) if ci < len(tones) else 1
             for edge in range(4):
@@ -582,7 +583,7 @@ class Kit:
                     name = (grimes if kind == "grime" else chips)[int(rng.integers(len(grimes if kind == "grime" else chips)))]
                     pw, ph = P[name]["metres"]
                     width = min(ph, 0.4 * min(w, l))
-                    if width < 0.08:
+                    if width < min_width:
                         continue
                     if edge == 0:    # the high-u lateral edge: runs along +ev, inward is toward lower u
                         origin, x = patch.pt(a1 / Lu, b0 / Lv), ev

@@ -193,6 +193,16 @@ namespace Monolith.Game
             var keys = new List<ScriptedPilot.Key>();
             foreach (var k in d.keys) keys.Add(new ScriptedPilot.Key(k.t, k.ToInput()));
             _world.Pilots.Attach(st.Id, new ScriptedPilot(keys, d.loop));
+            if (!string.IsNullOrEmpty(d.model) && ShipArtCatalog.Exists(d.model))
+            {
+                var go = ShipArtCatalog.Instantiate(d.model, _root);
+                var damage = go.GetComponent<ShipDamage>();
+                var lod = go.GetComponent<LODGroup>();
+                if (lod != null && _world.Tick < 5) { lod.ForceLOD(0); _warmLods.Add(lod); }
+                _views.Register(st.Id, go.transform);
+                _rig.Spawn(st, d.def, new ShipArtVisual(_world, st.Id, damage, juiceShowsWrecksAndHits: true), go.transform, _juice, ShipArtVisual.Parts(damage), 1f, null, new ShipArtJuiceDamage(go));
+                return st;
+            }
             var visual = PlaceholderShips.Fighter(d.callsign, cls.Size, _mats, _root);
             _views.Register(st.Id, visual.transform);
             _rig.Spawn(st, null, new PlaceholderVisual(visual.transform), visual.transform, _juice);

@@ -1,0 +1,101 @@
+{
+ "scene": "corvette",
+ "sceneOptions": {
+  "ship": "earth_corvette",
+  "pitch": 7,
+  "yaw": 142,
+  "roll": -24,
+  "ships": [
+   {
+    "ship": "earth_interceptor",
+    "pos": [
+     -43.33,
+     -19.816,
+     -56.337
+    ],
+    "rot": [
+     7,
+     142,
+     -24
+    ]
+   },
+   {
+    "ship": "earth_heavy",
+    "pos": [
+     -73.604,
+     -37.231,
+     -56.819
+    ],
+    "rot": [
+     7,
+     142,
+     -24
+    ]
+   },
+   {
+    "ship": "earth_bomber",
+    "pos": [
+     -89.137,
+     -43.276,
+     -91.026
+    ],
+    "rot": [
+     7,
+     142,
+     -24
+    ]
+   }
+  ]
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.5,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "scale_formation",
+   "pos": [
+    -188.849,
+    -14.508,
+    -4.644
+   ],
+   "rot": [
+    7.59,
+    115.326,
+    -24.97
+   ],
+   "fov": 36
+  },
+  {
+   "name": "scale_with_corvette",
+   "pos": [
+    -334.101,
+    10.38,
+    69.777
+   ],
+   "rot": [
+    3.982,
+    105.341,
+    -23.72
+   ],
+   "fov": 40
+  },
+  {
+   "name": "scale_close",
+   "pos": [
+    -112.133,
+    -29.23,
+    -42.14
+   ],
+   "rot": [
+    6.417,
+    118.664,
+    -25.025
+   ],
+   "fov": 40
+  }
+ ],
+ "perf": []
+}

@@ -59,28 +59,29 @@ def torn_plate(K, mb, origin, normal, size, rng, thickness=0.12, rect_name="burn
     mb.extrude(prof, fr, 0, thickness, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
 
 
-def wreck_stump(K, mb, fr, radius, height, key, plates=5, embers=3, rect_name="burnt"):
-    """What is left where a turret or housing stood: a scorched, ragged floor, torn plates leaning out of it, glowing embers."""
+def wreck_stump(K, mb, fr, radius, height, key, plates=5, embers=3, rect_name="burnt", s=1.0):
+    """What is left where a turret or housing stood: a scorched, ragged floor, torn plates leaning out of it, glowing embers. ``s`` scales the fixed
+    dimensions (floor thickness, plate thickness, ember size) for small parts."""
     rng = K.rng("stump", key)
     rect = K.rect(rect_name)
     k = 9
     ang = np.linspace(0, 2 * math.pi, k, endpoint=False) + rng.uniform(-0.15, 0.15, k)
     r = radius * rng.uniform(0.75, 1.1, k)
     prof = np.stack([np.sin(ang) * r, np.cos(ang) * r], axis=1)
-    mb.extrude(prof, Frame(fr.p(0, 0, 0.1), fr.u, fr.f), 0, 0.5 + 0.2 * radius * 0.3, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
+    mb.extrude(prof, Frame(fr.p(0, 0, 0.1 * s), fr.u, fr.f), 0, (0.5 + 0.2 * radius * 0.3) * s, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
     for i in range(plates):
         th = rng.uniform(0, 2 * math.pi)
         rr = radius * rng.uniform(0.35, 0.9)
         phi = math.radians(rng.uniform(35, 80))
         dirn = fr.d(math.cos(th) * math.sin(phi), math.sin(th) * math.sin(phi), math.cos(phi) * 0.4)
         z = rng.uniform(0.25, 0.7) * height
-        o = fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.5 + z)
-        torn_plate(K, mb, o, dirn, radius * rng.uniform(0.35, 0.7), rng, rect_name=rect_name)
+        o = fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.5 * s + z)
+        torn_plate(K, mb, o, dirn, radius * rng.uniform(0.35, 0.7), rng, thickness=0.12 * s, rect_name=rect_name)
     for i in range(embers):
         th = rng.uniform(0, 2 * math.pi)
         rr = radius * rng.uniform(0.1, 0.6)
-        o = fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.62)
-        _ember(K, mb, o, fr.u, rng.uniform(0.18, 0.35))
+        o = fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.62 * s)
+        _ember(K, mb, o, fr.u, rng.uniform(0.18, 0.35) * s)
 
 
 def _ember(K, mb, pos, normal, size):
@@ -156,11 +157,12 @@ def gun_turret(K, sb, fr, key, s=1.0, barrels=2, barrel_len=4.6, barrel_r=0.26, 
 
 # ------------------------------------------------------------------------------------------------ engines
 
-def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0):
+def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0, s=1.0, bell_segs=40, bell_n=10, plume_shells=8, plume_segs=18):
     """A recessed engine in the show's manner: small, hard and hot. A chrome bell flaring from a throat into the hull, dark inside with an ember glow
     near the throat, and a flat white-blue combustion disc at the throat that blooms; a short, tapering flare of nested additive shells streams out of
     the lip (its own part, ``plume``, so a wreck loses it, and the runtime ``EngineGlow`` flickers and scales it). ``fr``: origin at the hull face,
-    y = the way the exhaust goes (out the back)."""
+    y = the way the exhaust goes (out the back). ``s`` scales the fixed dimensions (wall, collars, the housing) for small ships (a fighter's engine is
+    about a fifth of a corvette's); ``bell_segs``, ``bell_n``, ``plume_shells`` and ``plume_segs`` set how finely it is drawn."""
     if sb.lod == 2:
         sb.part().box(fr, (exit_r * 2, length, exit_r * 2), PLATE, centre=(0, length / 2, 0), chamfer=exit_r * 0.4)
         return
@@ -171,66 +173,69 @@ def engine_nozzle(K, sb, fr, key, throat=1.7, exit_r=3.4, length=7.0, hull_y=0.0
     plume = sb.part("plume")
     inner_rect = (0.0, 1.0, 1.0, 0.52)
     disc_rect = (0.1, 0.02, 0.9, 0.48)
-    N = 10
+    N = bell_n
     t = np.linspace(0, 1, N)
-    prof_in = [(throat + (exit_r - throat) * (tt ** 0.62), 1.0 + length * tt) for tt in t]
-    wall = 0.32
+    prof_in = [(throat + (exit_r - throat) * (tt ** 0.62), s + length * tt) for tt in t]
+    wall = 0.32 * s
     prof_out = [(r + wall, y) for r, y in prof_in]
-    base.lathe(prof_out, fr, CHROME, segs=40, tile=4.0)
-    base.lathe([(prof_out[-1][0], prof_out[-1][1]), (prof_out[-1][0], prof_out[-1][1] + 0.25), (prof_in[-1][0], prof_out[-1][1] + 0.25)], fr, CHROME, segs=40, tile=4.0)
-    base.lathe([(prof_in[-1][0], prof_out[-1][1] + 0.25), (prof_in[-1][0], prof_out[-1][1])], fr, CHROME, segs=40, tile=4.0)
-    core.lathe(prof_in, fr, ENGINE, segs=40, rect=inner_rect, flip=True)                       # the dark funnel with its ember glow
-    core.disc(fr, throat * 1.04, 1.0, ENGINE, segs=32, facing=1.0, rect=disc_rect)             # the hot disc at the throat
+    base.lathe(prof_out, fr, CHROME, segs=bell_segs, tile=4.0)
+    base.lathe([(prof_out[-1][0], prof_out[-1][1]), (prof_out[-1][0], prof_out[-1][1] + 0.25 * s), (prof_in[-1][0], prof_out[-1][1] + 0.25 * s)], fr, CHROME, segs=bell_segs, tile=4.0)
+    base.lathe([(prof_in[-1][0], prof_out[-1][1] + 0.25 * s), (prof_in[-1][0], prof_out[-1][1])], fr, CHROME, segs=bell_segs, tile=4.0)
+    core.lathe(prof_in, fr, ENGINE, segs=bell_segs, rect=inner_rect, flip=True)                       # the dark funnel with its ember glow
+    core.disc(fr, throat * 1.04, s, ENGINE, segs=max(bell_segs * 4 // 5, 8), facing=1.0, rect=disc_rect)             # the hot disc at the throat
     for tt in (0.3, 0.6):
         r = throat + (exit_r - throat) * (tt ** 0.62) + wall
-        y = 1.0 + length * tt
-        base.lathe([(r, y - 0.12), (r + 0.2, y - 0.07), (r + 0.2, y + 0.07), (r, y + 0.12)], fr, CHROME, segs=40, tile=4.0)
+        y = s + length * tt
+        base.lathe([(r, y - 0.12 * s), (r + 0.2 * s, y - 0.07 * s), (r + 0.2 * s, y + 0.07 * s), (r, y + 0.12 * s)], fr, CHROME, segs=bell_segs, tile=4.0)
     hb = exit_r * 1.3
-    base.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.1, 0), chamfer=hb * 0.3, tile=6.0)
-    base.lathe([(throat + wall + 0.1, 0.9), (exit_r * 0.8, 0.9), (exit_r * 0.8, 1.3), (throat + wall + 0.1, 1.3)], fr, CHROME, segs=40, tile=4.0)
+    base.box(fr, (hb * 2, 1.6 * s, hb * 2), PLATE, centre=(0, 0.1 * s, 0), chamfer=hb * 0.3, tile=6.0)
+    base.lathe([(throat + wall + 0.1 * s, 0.9 * s), (exit_r * 0.8, 0.9 * s), (exit_r * 0.8, 1.3 * s), (throat + wall + 0.1 * s, 1.3 * s)], fr, CHROME, segs=bell_segs, tile=4.0)
     # the flare: eight nested additive shells (two per texture column: faint violet outside, blue, blue-white, a white core), short and tapering. Many thin
     # shells, not a few fat ones, so the flare's edge falls off in steps too small to see and it reads as light, not as a glass cone.
-    y_lip = prof_out[-1][1] + 0.1
+    y_lip = prof_out[-1][1] + 0.1 * s
     radii = (1.05, 0.95, 0.84, 0.73, 0.62, 0.50, 0.39, 0.28)
     lens = (3.9, 3.6, 3.2, 2.8, 2.4, 2.0, 1.6, 1.3)
-    for k, (r0, ln) in enumerate(zip(radii, lens)):
+    picks = sorted(set(int(round(i)) for i in np.linspace(0, 7, plume_shells))) if plume_shells < 8 else range(8)
+    for k in picks:
+        r0, ln = radii[k], lens[k]
         col = k // 2
         pts = []
         for i in range(6):
             tt = i / 5
             pts.append((max(exit_r * r0 * ((1.0 - tt ** 0.9) * (1.0 + 0.10 * math.sin(tt * math.pi))), 0.01), y_lip + exit_r * ln * tt))
-        plume.lathe(pts, fr, PLUME, segs=18, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0))
-        plume.lathe(pts, fr, PLUME, segs=18, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0), flip=True)
+        plume.lathe(pts, fr, PLUME, segs=plume_segs, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0))
+        plume.lathe(pts, fr, PLUME, segs=plume_segs, rect=(col / 4.0, 1.0, (col + 1) / 4.0, 0.0), flip=True)
     # ---- wreck: the bell torn open on one side, dead and dark with a few embers; no gradient
     d = sb.variant("destroyed")
     burnt = K.rect("burnt")
     rng = K.rng("engine-wreck", key)
     a0 = rng.uniform(0, 360)
-    prof_cut = [(r, y * 0.0 + y) for r, y in prof_in[:6]]
+    prof_cut = [(r, y * 0.0 + y) for r, y in prof_in[:max(3, int(round(N * 0.6)))]]
     prof_cut_out = [(r + wall, y) for r, y in prof_cut]
-    d.lathe(prof_cut_out, fr, TRIM, segs=28, rect=burnt, arc=(a0, a0 + 250))
-    d.lathe(prof_cut, fr, TRIM, segs=28, rect=burnt, flip=True, arc=(a0, a0 + 250))
-    d.box(fr, (hb * 2, 1.6, hb * 2), PLATE, centre=(0, 0.1, 0), chamfer=hb * 0.3, tile=6.0)
-    d.disc(fr, throat * 1.1, 1.0, TRIM, segs=24, facing=1.0, rect=burnt)
+    wsegs = max(min(28, bell_segs), 10)
+    d.lathe(prof_cut_out, fr, TRIM, segs=wsegs, rect=burnt, arc=(a0, a0 + 250))
+    d.lathe(prof_cut, fr, TRIM, segs=wsegs, rect=burnt, flip=True, arc=(a0, a0 + 250))
+    d.box(fr, (hb * 2, 1.6 * s, hb * 2), PLATE, centre=(0, 0.1 * s, 0), chamfer=hb * 0.3, tile=6.0)
+    d.disc(fr, throat * 1.1, s, TRIM, segs=max(wsegs * 6 // 7, 8), facing=1.0, rect=burnt)
     for i in range(4):
         th = rng.uniform(0, 2 * math.pi)
         rr = throat * rng.uniform(0.2, 0.9)
-        _ember(K, d, fr.p(math.cos(th) * rr, 1.05, math.sin(th) * rr), fr.f, rng.uniform(0.25, 0.5))
+        _ember(K, d, fr.p(math.cos(th) * rr, 1.05 * s, math.sin(th) * rr), fr.f, rng.uniform(0.25, 0.5) * s)
     for i in range(4):
         th = a0 + 250 + rng.uniform(5, 100)
         r_ = prof_cut[-1][0] + wall
-        torn_plate(K, d, fr.p(math.sin(math.radians(th)) * r_, prof_cut[-1][1] + rng.uniform(0, 2), math.cos(math.radians(th)) * r_),
-                   fr.d(math.sin(math.radians(th)), 0.3, math.cos(math.radians(th))), exit_r * rng.uniform(0.18, 0.35), rng, thickness=0.2)
+        torn_plate(K, d, fr.p(math.sin(math.radians(th)) * r_, prof_cut[-1][1] + rng.uniform(0, 2) * s, math.cos(math.radians(th)) * r_),
+                   fr.d(math.sin(math.radians(th)), 0.3, math.cos(math.radians(th))), exit_r * rng.uniform(0.18, 0.35), rng, thickness=0.2 * s)
     debris_set(K, sb, fr, key, [
-        {"kind": "chunk", "size": (exit_r * 0.9, 3.0, exit_r * 0.5), "at": (exit_r * 0.8, 1.0 + length * 0.8, 0.0), "speed": 7},
-        {"kind": "plate", "size": (exit_r, exit_r, 0.2), "at": (-exit_r * 0.7, 1.0 + length * 0.9, exit_r * 0.3), "speed": 9},
-        {"kind": "chunk", "size": (2.2, 2.2, 1.6), "at": (0.0, 3.0, -exit_r * 0.5), "speed": 10},
+        {"kind": "chunk", "size": (exit_r * 0.9, 3.0 * s, exit_r * 0.5), "at": (exit_r * 0.8, s + length * 0.8, 0.0), "speed": 7},
+        {"kind": "plate", "size": (exit_r, exit_r, 0.2 * s), "at": (-exit_r * 0.7, s + length * 0.9, exit_r * 0.3), "speed": 9},
+        {"kind": "chunk", "size": (2.2 * s, 2.2 * s, 1.6 * s), "at": (0.0, 3.0 * s, -exit_r * 0.5), "speed": 10},
     ])
 
 
 # ------------------------------------------------------------------------------------------------ breach (hull damage site)
 
-def breach(K, fr, radius, key):
+def breach(K, fr, radius, key, s=1.0):
     """The look of a hull torn open: a scorched crater floor that fills the plating, ragged petals of plate bent out of it, embers.
     Built in ship space around the site's frame (y = outward normal... here local z is used as out-of-surface: pass a frame with u = the normal)."""
     mb = MeshBuilder("breach")
@@ -240,18 +245,18 @@ def breach(K, fr, radius, key):
     ang = np.linspace(0, 2 * math.pi, k, endpoint=False) + rng.uniform(-0.12, 0.12, k)
     r = radius * rng.uniform(0.62, 0.92, k)
     prof = np.stack([np.sin(ang) * r, np.cos(ang) * r], axis=1)
-    mb.extrude(prof, Frame(fr.p(0, 0, 0.45), fr.u, fr.f), 0, 0.4, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
+    mb.extrude(prof, Frame(fr.p(0, 0, 0.45 * s), fr.u, fr.f), 0, 0.4 * s, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
     # a second, smaller, deeper-looking floor and a ring of petals
-    mb.extrude(prof * 0.55, Frame(fr.p(0, 0, 0.8), fr.u, fr.f), 0, 0.15, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
+    mb.extrude(prof * 0.55, Frame(fr.p(0, 0, 0.8 * s), fr.u, fr.f), 0, 0.15 * s, TRIM, rect=rect, caps=(True, True), cap_mat=TRIM, cap_rect=rect)
     for i in range(11):
         th = (i + rng.uniform(-0.3, 0.3)) * 2 * math.pi / 11
         rr = radius * rng.uniform(0.7, 1.0)
         phi = math.radians(rng.uniform(25, 60))
         nrm = fr.d(-math.cos(th) * math.sin(phi), -math.sin(th) * math.sin(phi), math.cos(phi))
-        o = fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.6 + radius * rng.uniform(0.08, 0.3))
-        torn_plate(K, mb, o, nrm, radius * rng.uniform(0.25, 0.5), rng, thickness=0.18)
+        o = fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.6 * s + radius * rng.uniform(0.08, 0.3))
+        torn_plate(K, mb, o, nrm, radius * rng.uniform(0.25, 0.5), rng, thickness=0.18 * s)
     for i in range(6):
         th = rng.uniform(0, 2 * math.pi)
         rr = radius * rng.uniform(0.1, 0.55)
-        _ember(K, mb, fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.98), fr.u, rng.uniform(0.25, 0.6))
+        _ember(K, mb, fr.p(math.cos(th) * rr, math.sin(th) * rr, 0.98 * s), fr.u, rng.uniform(0.25, 0.6) * s)
     return mb
