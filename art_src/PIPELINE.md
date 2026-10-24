@@ -88,6 +88,35 @@ Conventions the fighters add to the contract:
 - Manifest keys: `scorchScale` (hit radii are set for capital hulls; a fighter's scorch is a fraction of that), `damagePoints`, `lodScreenHeights`, `engineLights` (per engine: `z`, `candela`, `range`, `fade`, `radius`) and `engineFollowsShip` (the glow follows the world ship's throttle and afterburner; set by `ShipArtSetup` on `EngineGlow.FollowShip`).
 - Wiring a model into a mission needs nothing: `GameMissionHost` uses `ShipArtCatalog.Exists(class)`. The hand-written scenes (`DogfightBattle.SpawnFighter`, `CombatRange.SpawnDrone` with the `model` and `def` fields in `range.json`, the juice sandbox slots) say it themselves. Hull break-up sections are baked by `JuiceSetup.BakeSections` for every ShipArt prefab (run it after `Setup.Project` whenever a model changes).
 
+## The diaspora's ships (`mndiaspora`, `art_src\diaspora_hull`, `art_src\diaspora`)
+
+Our side's look is the opposite of Earth's, from the same kit (design section 9): warm, patched and part living where Earth is black, chrome and perfect. Everything
+comes through the same pipeline, so nothing in the game knows the difference except the material set the manifest names.
+
+- **The texture set** (`art_src\diaspora_hull\build_diaspora_hull_textures.py`, about two minutes, `-- trim` and so on for one part, `-- none` only rewrites the HDRP
+  recipes) is the Earth set re-graded and extended, with the **same atlas layout and trim piece names**, so every kit function runs on it unchanged. Five plate
+  batches in the kit's tone order (`PLATE_B` rust oxide, `PLATE` bone-olive, `PLATE_C` olive drab, `PLATE_D` bare repair steel with its own normal and mask maps,
+  `PLATE_E` faded teal), dull steel in the `CHROME` slot, the lamp palette's swatch 0 is warm white and swatch 1 the graft's teal, amber engines. Three more slots:
+  `BIO` (12; the cabin's own dark ribbed texture), `GLYPH` (13; the cabin's glyph strip, emissive) and `GLASS` (14; a tinted opaque dome with a faint glow). New trim
+  pieces: `glyph_a`, `glyph_b`, `hazard`, `weld`, `cable`, `container_a/b/c`, `deck`, `name_mercy`; the atlas dropped four Earth pieces the diaspora does not use (radiator,
+  heat tiles, sensor grid, chrome panel) to make room. The damage decals, the detail map, the bio and the glyph textures are copies.
+- **The kit** (`tools\blender_lib\mndiaspora.py`, capital parts in `mndiaspora_cap.py`): `set_paint()` (the per-region mix of batches; call before building),
+  `sweep` (a smooth tube along a path: veins, ribs, cables), `ribbed_shell` and `bio_hoop` (the dark grown shells; `lod=2` is a plain cone), `repair_patch` (plates welded over
+  damage with a bead and bolts), `pipe_run`, `container`, `hazard_band`, `glyph_band`, `weld`; small-ship parts (`sensor_eye`, `needle_gun`, `fighter_engine`) and
+  capital parts (`gun_turret`, `beam_lance`, `hangar_bay`, `reactor_heart`, `bridge_pod`, `sensor_crest`, `bio_fin`). `mnship.Ship` is given `mndiaspora.MATERIALS`
+  (15 names, the first twelve in the capital kit's order).
+- **The models**: `art_src\diaspora\build_vanguard_fighter.py` (the player's fighter and the Sable wingmen; its nose pod is the cabin's arch and canopy, taken
+  from `art_src\cabin\build_cabin.py`) and `build_diaspora_cruiser.py` (the Small Mercy). Run each with `tools\blender.ps1 <script> [-- --preview]`; Workbench renders
+  go to `art_src\diaspora\_preview` (the flat preview colours are in `mnpreview.DEFAULT_COLOURS`; the previews understate the game's look, the paint overlay shows
+  as ochre blocks). The ship id is the **class id** (`vanguard_fighter`, `diaspora_cruiser`), so `GameMissionHost` picks the model by itself.
+- **Conventions added to the contract**: a combat ship def with a model lists `partKinds` (hp per kind) and keeps its old `parts` as stand-ins for the headless lab
+  (`ShipCombatFactory.AddModelParts` swaps them when a model is there); kinds the def does not list (the Mercy's `hangar` bays) are decorative but destructible through `ShipDamage`,
+  and the juice's staged capital death takes them one after another like any part. The player's own ship is never drawn, so it keeps the stand-in parts.
+- **After any model change**: `Setup.Project` (prefabs), `JuiceSetup.BakeSections` (the hull break-up cuts for every ShipArt prefab), then `Build.Player`.
+- **Captures**: `tools\ship\make_diaspora_plan.py` (every ship alone in three lighting sets, damage, the finger-four, the Mercy next to Earth's corvette) and
+  `make_diaspora_action.py` (spectator cameras on a Sable wingman and on the Mercy in the dogfight); `gauntlet\missions\mercy_death_test.mission.json` starts the Mercy at 2 percent
+  hull for the staged-death frames (a fixed camera: the spectator camera hands back to the cockpit when its ship dies).
+
 ## Adding a ship
 
 1. Copy `art_src\earth_corvette`, rename. Reuse `earth_hull` textures for Earth ships; a new faction gets its own `art_src\<set>` script (copy it, change the look: albedo, trim pieces, markings, emissive colours).

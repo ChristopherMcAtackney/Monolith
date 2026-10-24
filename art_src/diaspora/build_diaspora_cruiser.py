@@ -352,6 +352,24 @@ def build(ctx):
                 D.sweep(hull, D.arc_path(np.array([side * 25.0, -146.0 + 3.0 * k, 3.5 - 2.0 * k]), np.array([side * 17.0, -140.0 + 3.0 * k, 5.0 - 2.5 * k]), 2.0, n=6, up=ZHAT),
                         0.5, BIO, sides=6)
 
+    # --- the ventral boat pod to port (a flat plated pod under the main hull), a gantry crane over the starboard hangars, and the prow's two grown horns ---
+    pod = [st(-18, 6, 4.5, 1.6, -12, -28.5), st(-10, 11, 4.5, 2.0, -12, -28.5), st(40, 11, 4.5, 2.0, -12, -28.5), st(50, 6, 4.5, 1.6, -12, -28.5)]
+    bands = K.loft(pod)
+    build_bands(K, bands, "pod")
+    if lod <= 1:
+        rails(K, pod, 0.2)
+        for y in (-6.0, 34.0):
+            K.pipe(P(-12, y, -24.0), P(-12, y, -21.5), 0.8, sides=6)
+        K.truss(P(36.0, -4.0, 25.0), P(56.0, -4.0, 40.0), 1.2, 5.0)
+        K.truss(P(56.0, -4.0, 40.0), P(56.0, 24.0, 40.0), 1.2, 5.0)
+        K.pipe(P(56.0, 24.0, 40.0), P(56.0, 24.0, 29.0), 0.18, sides=4)
+        hull.box(Frame(P(56.0, 24.0, 28.0), YHAT, ZHAT), (3.0, 3.0, 2.2), PLATE_D, chamfer=0.3, tile=4.0)
+    for side in (1, -1):
+        D.ribbed_shell(hull, P(side * 8.0, 146.0, 7.0), P(side * 17.0, 196.0, 15.0), 2.6, 0.45, 8, 0.2, segs=14 if lod == 0 else 8, key=f"horn{side}", lod=lod)
+        if lod <= 1:
+            K.light(P(side * 17.0, 196.0, 15.0), (side, 1, 1), LIGHT_TEAL, 0.9, "running")
+            K.light(P(side * 12.6, 171.0, 11.2), (side, 0, 1), LIGHT_AMBER, 0.6, "running")
+
     # --- the prow: a ram of worn steel, a docking collar with a ring of lamps, a heat-scarred nose plate ---
     pf = Frame((0, 0, 0), YHAT, ZHAT)
     hull.extrude(regular_poly(8, 7.5), pf, 160.0, 176.0, STEEL, s1=(0.25, 0.25), tile=3.0, caps=(False, True), cap_mat=STEEL)

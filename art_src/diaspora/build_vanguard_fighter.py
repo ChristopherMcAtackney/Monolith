@@ -287,8 +287,6 @@ def build(ctx):
             F.hatch(K, P(x, y, z), Y, Z, scale=sc, name=nm, lift=0.01)
         K.strip(P(1.215, -1.5, 0.0), Y, X, 2.0, "light_bar", lift=0.0, scale=0.28)
         K.strip(P(-1.215, -1.5, 0.0), -Y, -X, 2.0, "light_bar", lift=0.0, scale=0.28)
-        for sd in (1, -1):                                       # the cabin's lamps along the pod's sill, and a row of work lights under the canopy
-            K.strip(P(sd * 1.40, 1.55, 0.02), Y * 1.0, X * sd, 1.5, "light_bar", lift=0.0, scale=0.3) if sd > 0 else K.strip(P(-1.40, 3.05, 0.02), -Y, -X, 1.5, "light_bar", lift=0.0, scale=0.3)
         K.strip(P(1.3, -1.45, -0.28), Y, X, 2.6, "cable", lift=0.0, scale=0.3)
         K.strip(P(-1.3, -1.4, -0.28), -Y, -X, 2.6, "cable", lift=0.0, scale=0.3)
         D.pipe_run(K, hull, [P(1.0, -2.6, 0.95), P(1.0, -3.4, 0.9), P(0.75, -4.2, 0.74)], 0.045, "pipeA", bracket=0.8)
@@ -335,6 +333,12 @@ def build(ctx):
             K.light(P(side * NAC_X, -2.0, NAC_Z + 1.02), Z, LIGHT_AMBER, 0.09, "running")
             K.light(P(side * (NAC_X + 0.7), -5.5, NAC_Z + 0.55), (side, 0, 0.5), LIGHT_COLD, 0.08, "running")
         K.light(P(0.0, 2.2, 1.08), Z, LIGHT_COLD, 0.07, "running")
+        # rows of small lamps along the wings' leading edges and the nacelles' shells: the lamps that give the scale away from a distance
+        for side in (1, -1):
+            for x in np.linspace(1.9, 4.3, 5):
+                K.light(P(side * x, 2.6 - (x - 1.3) * 0.41 - 0.15, 0.17 - (x - 1.3) * 0.065), (0, 0.3, 1), LIGHT_AMBER, 0.07, "running")
+            for yy in (-3.2, -4.0, -4.8):
+                K.light(P(side * (NAC_X + 0.55), yy, NAC_Z + 0.78), (side, 0, 1), LIGHT_COLD if yy < -3.5 else LIGHT_AMBER, 0.07, "running")
 
     # --- the collision proxy ---
     if lod == 0:

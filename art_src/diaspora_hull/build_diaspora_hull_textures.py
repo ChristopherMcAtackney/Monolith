@@ -1621,7 +1621,8 @@ def main():
     materials["materials"].append({"blender": "mn_dia_glyph", "name": "MN_DiaGlyph", "baseColor": [1.0, 1.0, 1.0], "baseMap": "dia_glyph_albedo", "normalMap": "dia_glyph_normal", "maskMap": "dia_glyph_mask",
                                    "normalScale": 1.0, "metallicRemap": [0, 1], "smoothnessRemap": [0, 0.8], "aoRemap": [0, 1],
                                    "emissiveMap": "dia_glyph_emissive", "emissiveColor": [1.0, 1.0, 1.0], "emissiveNits": 22000})
-    materials["materials"].append({"blender": "mn_dia_glass", "name": "MN_DiaGlass", "baseColor": [0.16, 0.24, 0.27], "metallic": 0.0, "smoothness": 0.88})
+    materials["materials"].append({"blender": "mn_dia_glass", "name": "MN_DiaGlass", "baseColor": [0.27, 0.40, 0.45], "metallic": 0.0, "smoothness": 0.84,
+                                   "emissiveColor": [0.25, 0.85, 0.75], "emissiveNits": 140})
     with open(os.path.join(OUT, "dia_hull.materials.json"), "w") as f:
         json.dump(materials, f, indent=1)
     log("done")

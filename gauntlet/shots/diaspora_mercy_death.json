@@ -5,16 +5,7 @@
   "pilot": "ai",
   "invulnerable": true,
   "hud": false,
-  "dust": false,
-  "spectate": {
-   "ship": "Small Mercy",
-   "offset": [
-    330.0,
-    110.0,
-    -480.0
-   ],
-   "look": "ship"
-  }
+  "dust": false
  },
  "defaults": {
   "width": 1920,
@@ -25,147 +16,423 @@
  "stills": [
   {
    "name": "death_00",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 10.0
+   "warmup": 3.0
   },
   {
    "name": "death_01",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_02",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_03",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_04",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_05",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_06",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_07",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_08",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_09",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_10",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_11",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_12",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_13",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_14",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_15",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_16",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_17",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_18",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_19",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_20",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_21",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_22",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
   },
   {
    "name": "death_23",
-   "follow": true,
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
    "fov": 46,
-   "warmup": 1.5
+   "warmup": 0.45
+  },
+  {
+   "name": "death_24",
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
+   "fov": 46,
+   "warmup": 0.45
+  },
+  {
+   "name": "death_25",
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
+   "fov": 46,
+   "warmup": 0.45
+  },
+  {
+   "name": "death_26",
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
+   "fov": 46,
+   "warmup": 0.45
+  },
+  {
+   "name": "death_27",
+   "pos": [
+    330.0,
+    70.0,
+    -380.0
+   ],
+   "lookAt": [
+    0.0,
+    -70.0,
+    40.0
+   ],
+   "fov": 46,
+   "warmup": 0.45
   }
  ],
  "perf": []

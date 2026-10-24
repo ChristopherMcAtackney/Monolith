@@ -26,7 +26,8 @@ SUNS = {"hero": (0.60, 0.52, 0.45), "side": (0.86, 0.34, 0.25), "rake": (0.93, 0
 def fighter_shots(which):
     L = SHIPS["vanguard_fighter"]["L"]
     if which == "hero":
-        return [("hero_three_quarter", (0.78 * L, 0.34 * L, -0.80 * L), (0.0, 0.0, 0.03 * L), 34), ("hero_front_quarter", (0.7 * L, 0.28 * L, 0.85 * L), (0.0, 0.0, -0.02 * L), 34)]
+        return [("hero_three_quarter", (0.78 * L, 0.34 * L, -0.80 * L), (0.0, 0.0, 0.03 * L), 34), ("hero_front_quarter", (0.7 * L, 0.28 * L, 0.85 * L), (0.0, 0.0, -0.02 * L), 34),
+                ("mid_three_quarter", (3.0 * L, 1.1 * L, -3.4 * L), (0.0, 0.0, 0.0), 22)]
     if which == "side":
         return [("side_silhouette", (1.9 * L, 0.04 * L, 0.0), (0.0, 0.0, 0.0), 30), ("top_silhouette", (0.0, 1.9 * L, 0.0), (0.0, 0.0, 0.0), 30)]
     return [("raking", (0.55 * L, 0.42 * L, 0.65 * L), (0.0, 0.0, -0.1 * L), 34), ("raking_close", (0.38 * L, 0.2 * L, 0.3 * L), (0.0, 0.0, -0.18 * L), 40)]
@@ -34,7 +35,8 @@ def fighter_shots(which):
 
 def cruiser_shots(which):
     if which == "hero":
-        return [("hero_three_quarter", (250.0, 95.0, -330.0), (0.0, 6.0, -10.0), 40), ("hero_bow_quarter", (190.0, 80.0, 360.0), (0.0, 4.0, 60.0), 42)]
+        return [("hero_three_quarter", (250.0, 95.0, -330.0), (0.0, 6.0, -10.0), 40), ("hero_bow_quarter", (190.0, 80.0, 360.0), (0.0, 4.0, 60.0), 42),
+                ("far_three_quarter", (620.0, 230.0, -760.0), (0.0, 6.0, 0.0), 26)]
     if which == "side":
         return [("side_silhouette", (560.0, 6.0, 0.0), (0.0, 4.0, 0.0), 34), ("top_silhouette", (0.0, 560.0, 0.0), (0.0, 0.0, 0.0), 34)]
     return [("raking", (170.0, 52.0, -110.0), (20.0, 6.0, -20.0), 46), ("raking_close", (96.0, 34.0, -70.0), (26.0, 4.0, -20.0), 50),
@@ -84,29 +86,29 @@ def damaged(cid):
 
 
 def formation():
-    """Four Vanguards in a finger-four with the Mercy astern and below: the wingmen as the player sees them."""
-    sun = (0.62, 0.50, -0.40)
+    """Four Vanguards in a finger-four, the Sun ahead and to starboard so their fronts and tops are lit: the wingmen as the player sees them."""
+    sun = (0.50, 0.46, 0.62)
     orient, err = M.solve_orientation(sun)
     R = lambda p: M.world(p, orient)
-    ships = [{"ship": "vanguard_fighter", "pos": R((-19.0, -1.2, -17.0)), "rot": list(orient)},
-             {"ship": "vanguard_fighter", "pos": R((20.0, 1.0, -21.0)), "rot": list(orient)},
-             {"ship": "vanguard_fighter", "pos": R((-38.0, -2.5, -36.0)), "rot": list(orient)},
-             {"ship": "diaspora_cruiser", "pos": R((70.0, -80.0, -420.0)), "rot": list(orient)}]
+    ships = [{"ship": "vanguard_fighter", "pos": R((-15.0, -0.8, -12.0)), "rot": list(orient)},
+             {"ship": "vanguard_fighter", "pos": R((17.0, 1.4, -17.0)), "rot": list(orient)},
+             {"ship": "vanguard_fighter", "pos": R((-30.0, -2.0, -26.0)), "rot": list(orient)},
+             {"ship": "diaspora_cruiser", "pos": R((60.0, -140.0, -760.0)), "rot": list(orient)}]
     opts = {"ship": "vanguard_fighter", "pitch": orient[0], "yaw": orient[1], "roll": orient[2], "ships": ships}
-    stills = [M.shot("formation_aft", (14.0, 6.0, -62.0), (-4.0, 0.0, -8.0), 40, orient), M.shot("formation_side", (92.0, 8.0, -14.0), (-8.0, 0.0, -14.0), 40, orient),
-              M.shot("formation_front", (30.0, 10.0, 56.0), (-8.0, 0.0, -14.0), 46, orient)]
+    stills = [M.shot("formation_front", (30.0, 14.0, 34.0), (-4.0, -1.0, -14.0), 44, orient), M.shot("formation_side", (60.0, 8.0, -14.0), (-6.0, 0.0, -14.0), 40, orient),
+              M.shot("formation_lead", (17.0, 6.0, 20.0), (-2.0, 0.0, -8.0), 42, orient), M.shot("formation_aft", (-22.0, 14.0, -52.0), (-6.0, -1.0, -14.0), 42, orient)]
     write("diaspora_formation", {"scene": "corvette", "sceneOptions": opts, "defaults": {"width": 1920, "height": 1080, "warmup": 1.5, "perfWarmup": 2.0}, "stills": stills, "perf": []})
 
 
 def contrast():
-    """The Small Mercy and Earth's corvette side by side: the same length, the opposite look."""
+    """The Small Mercy and Earth's corvette side by side, flying the same way: the same length, the opposite look."""
     sun = (0.55, 0.50, 0.30)
     orient, err = M.solve_orientation(sun)
     R = lambda p: M.world(p, orient)
-    ships = [{"ship": "earth_corvette", "pos": R((0.0, 0.0, 700.0)), "rot": list(orient)}]
+    ships = [{"ship": "earth_corvette", "pos": R((-200.0, 14.0, 90.0)), "rot": list(orient)}]
     opts = {"ship": "diaspora_cruiser", "pitch": orient[0], "yaw": orient[1], "roll": orient[2], "ships": ships}
-    stills = [M.shot("contrast_wide", (-380.0, 160.0, -420.0), (0.0, 0.0, 330.0), 52, orient), M.shot("contrast_pair", (150.0, 70.0, 220.0), (0.0, 10.0, 520.0), 62, orient),
-              M.shot("contrast_split", (520.0, 40.0, 340.0), (0.0, 10.0, 340.0), 40, orient)]
+    stills = [M.shot("contrast_wide", (360.0, 95.0, 330.0), (-100.0, 6.0, 40.0), 52, orient), M.shot("contrast_pair", (300.0, 60.0, -420.0), (-100.0, 6.0, 20.0), 46, orient),
+              M.shot("contrast_split", (120.0, 200.0, 150.0), (-100.0, 0.0, 40.0), 56, orient)]
     write("diaspora_contrast", {"scene": "corvette", "sceneOptions": opts, "defaults": {"width": 1920, "height": 1080, "warmup": 1.5, "perfWarmup": 2.0}, "stills": stills, "perf": []})
 
 

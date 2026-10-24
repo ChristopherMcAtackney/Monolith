@@ -1,17 +1,17 @@
 {
  "lods": {
   "0": {
-   "triangles": 73552,
-   "vertices": 141914,
+   "triangles": 80768,
+   "vertices": 154562,
    "subsystemTriangles": 38294
   },
   "1": {
-   "triangles": 10034,
-   "vertices": 17810
+   "triangles": 11766,
+   "vertices": 20250
   },
   "2": {
-   "triangles": 2278,
-   "vertices": 5130
+   "triangles": 2366,
+   "vertices": 5302
   }
  },
  "subsystems": [
@@ -2752,6 +2752,66 @@
  "lights": [
   {
    "pos": [
+    17.0,
+    15.0,
+    196.0
+   ],
+   "kind": "running",
+   "colour": [
+    0.8,
+    0.9,
+    1
+   ],
+   "size": 0.9,
+   "blink": null
+  },
+  {
+   "pos": [
+    12.6,
+    11.2,
+    171.0
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.6,
+   "blink": null
+  },
+  {
+   "pos": [
+    -17.0,
+    15.0,
+    196.0
+   ],
+   "kind": "running",
+   "colour": [
+    0.8,
+    0.9,
+    1
+   ],
+   "size": 0.9,
+   "blink": null
+  },
+  {
+   "pos": [
+    -12.6,
+    11.2,
+    171.0
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.6,
+   "blink": null
+  },
+  {
+   "pos": [
     -12.0,
     2.0,
     150.0
@@ -3679,16 +3739,16 @@
    -172.0
   ],
   "max": [
-   49.1172,
+   57.5,
    54.5,
-   178.4725
+   196.7747
   ],
   "size": [
-   98.2345,
+   106.6172,
    93.5,
-   350.4725
+   368.7747
   ],
-  "length": 350.47
+  "length": 368.77
  },
  "id": "diaspora_cruiser",
  "name": "Small Mercy (diaspora cruiser)",

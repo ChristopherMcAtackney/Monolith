@@ -1,13 +1,13 @@
 {
  "lods": {
   "0": {
-   "triangles": 10440,
-   "vertices": 18202,
+   "triangles": 10692,
+   "vertices": 18834,
    "subsystemTriangles": 5928
   },
   "1": {
-   "triangles": 3936,
-   "vertices": 6780
+   "triangles": 4192,
+   "vertices": 7420
   },
   "2": {
    "triangles": 1188,
@@ -1057,6 +1057,246 @@
     0.0,
     1.08,
     2.2
+   ],
+   "kind": "running",
+   "colour": [
+    0.8,
+    0.9,
+    1
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    1.9,
+    0.131,
+    2.204
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    2.5,
+    0.092,
+    1.958
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    3.1,
+    0.053,
+    1.712
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    3.7,
+    0.014,
+    1.466
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    4.3,
+    -0.025,
+    1.22
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    2.55,
+    0.66,
+    -3.2
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    2.55,
+    0.66,
+    -4.0
+   ],
+   "kind": "running",
+   "colour": [
+    0.8,
+    0.9,
+    1
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    2.55,
+    0.66,
+    -4.8
+   ],
+   "kind": "running",
+   "colour": [
+    0.8,
+    0.9,
+    1
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -1.9,
+    0.131,
+    2.204
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -2.5,
+    0.092,
+    1.958
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -3.1,
+    0.053,
+    1.712
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -3.7,
+    0.014,
+    1.466
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -4.3,
+    -0.025,
+    1.22
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -2.55,
+    0.66,
+    -3.2
+   ],
+   "kind": "running",
+   "colour": [
+    1,
+    0.62,
+    0.18
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -2.55,
+    0.66,
+    -4.0
+   ],
+   "kind": "running",
+   "colour": [
+    0.8,
+    0.9,
+    1
+   ],
+   "size": 0.07,
+   "blink": null
+  },
+  {
+   "pos": [
+    -2.55,
+    0.66,
+    -4.8
    ],
    "kind": "running",
    "colour": [
