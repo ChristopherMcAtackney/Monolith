@@ -156,3 +156,23 @@ Every still is 1920 x 1080 from the built game (HUD off, no cockpit dust, nothin
 - **Follow shots in a mission plan need an explicit `fov`**: the sky's warm-up leaves the camera at 140 degrees for its first frames and the capture reads its base field of view from it (existing; noted in `tools/PIPELINE.md`). I did not change the capture harness.
 - **The start-screen self-test lists the missions by a hard-coded name list and row numbers**; I updated it for five missions and the next mission added will break it again.
 - Only Jupiter, Io and Europa have body files. Another planet is a map, a `.body.json` (radius, pole, winds, atmosphere) and a mission block; a body with no belts and zones would want its own look numbers.
+
+## Round 1 verdict (lead, 2026-10-25)
+Blind round `jupiter_r1`: three pairs, three separate critics, our frames against real spacecraft photos of Jupiter (references in
+`reference/jupiter/`, critics only; keys `gauntlet/keys/jupiter_r1.json`): 08 the Great Red Spot near the limb against Voyager 1's Great
+Red Spot at the limb; 09 Io's shadow on the Spot against Cassini's PIA02860 (Io and its shadow); 06 the terminator against Voyager 1's
+enhanced-colour close-up of the Spot.
+
+**Lost 3 of 3 (certain, very likely, certain).** The giveaways agree on one thing: resolution of the cloud structure.
+- "Smooth, soft, low-contrast gradients with swirls that blur into mush" against "sharp turbulent eddies, filaments and sheared edges at
+  every scale, small dark and bright spots"; "soft, blurry streaks that look procedurally smeared". The 120 km/pixel map is stretched
+  past its resolution at these framings (the history's known gap), and the added noise detail reads as smear, not turbulence.
+- The terminator frame: the night side "fades into the black with a smooth, featureless gradient and no real limb", and "a broken dotted
+  arc and a few stray dashes" in the dark where the limb haze should be: an artifact to find (likely the haze ring's sampling).
+- The moon shadow: "a perfectly flat, pure-black ellipse with no penumbra", and no moon in frame.
+- Palette: pastel and washed out against Voyager's deeper orange-browns (partly the references: Voyager's are enhanced).
+
+Read as pointers: round 2's biggest lever is real detail where the camera goes close (a sharper source map such as JunoCam or Hubble
+OPAL mosaics for the near views, or keeping the framings at a distance the 8k map can carry), then the limb artifact and a penumbra on
+moon shadows. The battlescape frames (ships against the planet) were not judged: The Expanse pool has only four planet frames, none of
+the same framing. Those wait for the user's eye.
