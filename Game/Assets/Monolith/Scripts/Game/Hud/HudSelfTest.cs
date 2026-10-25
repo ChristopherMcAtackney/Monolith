@@ -176,6 +176,11 @@ namespace Monolith.Game
             foreach (var s in HudStyles.Styles) Check(s.ArcThick >= 12f && s.ArcThick > 1.8f * s.ArcThin, $"{s.Name}: the main bar is a thick band ({N(s.ArcThick)} px) with a thin one beside it ({N(s.ArcThin)} px)");
             var w = new HudStyle { Ink = HudStyle.Srgb(255, 128, 0) };
             Check(Mathf.Abs(w.Ink.g - 0.2158f) < 0.01f, "colours are authored as sRGB and stored linear (the HUD's target is sRGB)");
+            // the target readout's range text: every distance reads, including the half metre below a kilometre that its metre cache had no slot for
+            var rts = new List<string>();
+            try { foreach (var d in new[] { 0f, 999.4f, 999.5f, 999.99f, 1000f, 1049f, 1051f, 99900f, 250000f, -5f, float.NaN }) rts.Add(HudRenderer.RangeText(d)); } catch (Exception e) { rts.Add("threw " + e.GetType().Name); }
+            string rt = string.Join("|", rts);
+            Check(rt == "0 M|999 M|1.0 KM|1.0 KM|1.0 KM|1.0 KM|1.1 KM|99.9 KM|250 KM|0 M|0 M", "the target range reads at every distance, 999.5 m to 1 km included (it threw there): " + rt);
         }
 
         // ------------------------------------------------------------------------------------------------ geometry

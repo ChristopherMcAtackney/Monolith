@@ -248,9 +248,10 @@ namespace Monolith.HudUi
 
         static readonly string[] RangeM = new string[1000], RangeKm = new string[1000];
 
-        static string RangeText(float dist)
+        public static string RangeText(float dist)
         {
-            if (dist >= 1000f)
+            if (!(dist >= 0f)) return "0 M";                        // no distance (or not a number): the caches below are indexed by it
+            if (dist >= 999.5f)                                     // 999.5 to 1000 rounds to 1000 M, which the 1000-entry metre cache has no slot for (an IndexOutOfRangeException in the HUD's target readout): read it as 1.0 KM
             {
                 int d = Mathf.RoundToInt(dist / 100f);              // tenths of a kilometre
                 if (d >= 1000) return (d / 10).ToString(CultureInfo.InvariantCulture) + " KM";
