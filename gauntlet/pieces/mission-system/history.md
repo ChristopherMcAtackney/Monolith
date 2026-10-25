@@ -243,6 +243,11 @@ hundredth of a second, event by event, up to the Tamsin leaving (the 150th is th
   the Compline heavies and the Lauds and Prime attackers that the AI escort (2.0 kills a run on Hard) does not stop; 5 of the 82 survivors end under 5% hull. Not changed: it is a balance call and
   these are only an AI pilot's numbers. The lever is the Tamsin's `hullScale` (6 now), measured over 100 seeds: 7 gives Hard 90 of 100, 8 gives 98 of 100 (Medium 100 of 100 either way, its lowest hull
   mean 38% and 40% against 35%); the cost is that the freighter reads as tougher, and at 8 it lives through two bomber waves (its comment says it should not).
+- **A HUD exception, fixed (not the mission's).** The windowed smoke run of the playtest folder (Hard, the AI flying, 5.5 minutes in real time; it ends exactly as the headless run does: victory at 315.3 s,
+  3 kills, 5 on the player) logged one `IndexOutOfRangeException` in `HudRenderer.RangeText`, the target readout: a range of 999.5 to 1000 m rounds to 1000 and the metre text cache has 1000 slots (0 to 999).
+  It would hit any windowed session each time a target's range crosses a kilometre inside that half metre (a closing target moves 3 m a frame). Now that range reads 1.0 KM (and a negative or NaN range 0 M); the
+  HUD self-test reads eleven distances and fails on the old code with the same exception (125 -> 126 checks). Its own commit, so it can be taken or dropped alone. The frozen playtest folder (built after it)
+  played the same Hard crossing windowed, end to end, with no exception or error in its log.
 - **Insane** (not tuned): 8 of 100. The Tamsin is lost in 92 (at 243 s on average), so "Spooling" is reached in 34 and the bombers in 40; no cap on the player, 3 to 10 attackers.
 
 ### The escort by level (100 seeds each, the AI flying an invulnerable player; `captures/mission-system/r3/base100` and `final100`)
@@ -262,7 +267,7 @@ Insane loses it at 268.6 s.
 `tools\mission.ps1 -Exe` at Very easy, Easy, Medium and Hard, all four missions, seed 0: **16 of 16 PASS**. Nothing that passed on main fails, and every number but the escort's is the
 one the Oculus round 2 recorded (Very easy / Easy / Medium / Hard: oort 653.8 / 630.2 / 671.4 / 692.2 s; dogfight 427.4 / 381.9 / 410.6 s, and on Hard the Mercy lost at 459.5 s, as before;
 cabin 120.2 / 140.6 / 142.5 / 127.6 s). The escort, which failed on main at Very easy and Easy ("Lantern here") and at Hard (11 on the player), passes. Mission self-test **96 of 96**
-(94 + the 2 above). Port check SAME at Very easy, Easy, Medium and Hard (900 s each, every ship to the bit, timelines identical). AI 39 of 39, combat 115 of 115, HUD 125 of 125, start screen
+(94 + the 2 above). Port check SAME at Very easy, Easy, Medium and Hard (900 s each, every ship to the bit, timelines identical). AI 39 of 39, combat 115 of 115, HUD 126 of 126 (125 + the range check), start screen
 109 of 109, cabin 75 of 75, audio PASS (150 checks; no radio line added, no voice made).
 
 ### Known gaps
