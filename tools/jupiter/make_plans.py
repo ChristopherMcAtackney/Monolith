@@ -65,14 +65,18 @@ def direction_to_point(J, D, n):
     return norm(add(scale(J, D), n))
 
 
-def moon_direction(b, body, orbit_deg):
-    """Where a moon lies in the sky (unit vector from the viewer), by the same orbit rule as BackdropState (OrbitDeg from the sunward point, 90 toward the planet's east)."""
+MOONS = {"io": (421700.0, 1.769), "europa": (671100.0, 3.551)}      # orbit radius km, period days
+
+
+def moon_direction(b, body, orbit_deg, seconds=0.0):
+    """Where a moon lies in the sky (unit vector from the viewer) `seconds` into the mission, by the same orbit rule as BackdropState (OrbitDeg from the sunward point, 90 toward the
+    planet's east, going round MoonSpeed times faster than real)."""
     J, S, P, D, E1, E2 = frame(b)
-    orbit_km = {"io": 421700.0, "europa": 671100.0}[body]
+    orbit_km, days = MOONS[body]
     a = orbit_km / RADIUS_KM
     sun_eq = norm(add(S, P, -dot(S, P)))
     east = norm(cross(sun_eq, P))
-    t = math.radians(orbit_deg)
+    t = math.radians(orbit_deg + 360.0 / (days * 86400.0) * b.get("MoonSpeed", 100.0) * seconds)
     c = add(scale(sun_eq, a * math.cos(t)), east, a * math.sin(t))
     return norm(add(c, J, D))
 
@@ -119,13 +123,15 @@ def main():
     stills.append(still("grs", direction_to_point(J, D, n), 18))
     stills.append(still("grs_close", direction_to_point(J, D, n), 7))
 
-    # the moons
-    io = moon_direction(b, "io", 300)
-    eu = moon_direction(b, "europa", 205)
-    stills.append(still("io_beside_jupiter", norm(add(io, J, 1.0)), 38))
-    stills.append(still("io_close", io, 2.2))
-    stills.append(still("europa_beside_jupiter", norm(add(eu, J, 1.0)), 60))
-    stills.append(still("europa_close", eu, 1.6))
+    # the moons (they go round, so these are the first shots of the plan and each is aimed where its moon is at that second)
+    moon_stills = []
+    t_now = 0.0
+    for name, body, orbit, fov, beside in (("io_close", "io", 300, 2.2, False), ("europa_close", "europa", 205, 1.6, False),
+                                           ("io_beside_jupiter", "io", 300, 38, True), ("europa_beside_jupiter", "europa", 205, 60, True)):
+        t_now += 0.5
+        d = moon_direction(b, body, orbit, t_now)
+        moon_stills.append(still(name, norm(add(d, J, 1.0)) if beside else d, fov, warmup=0.5))
+    stills = moon_stills + stills
 
     # a hull in front of the planet (planetshine): the camera 90 m from the hull, on the line from the hull away from the planet
     cam = scale(J, -90.0)
@@ -138,7 +144,7 @@ def main():
     stills.append({"name": "hull_planetshine", "pos": [round(c, 2) for c in add(cam2, (0, 12, 0))], "lookAt": [0, 0, 0], "fov": 40, "warmup": 1.0})
     stills.append({"name": "hull_planetshine_low", "pos": [round(c, 2) for c in add(cam2, (14, -4, 0))], "lookAt": [0, 0, 0], "fov": 40, "warmup": 1.0})
 
-    # Io's shadow crossing the clouds: Io swings sunward and its shadow is on the lit disc from about 4 to 5 minutes (a plan of its own, so the times are the planet's clock)
+    # Io's shadow crossing the clouds: Io swings sunward and its shadow is on the lit disc from about 4.4 to 4.8 minutes (a plan of its own, so the times are the planet's clock)
     shadow = []
     prev = 0.0
     for i, t in enumerate((235.0, 250.0, 265.0, 280.0, 295.0, 315.0)):

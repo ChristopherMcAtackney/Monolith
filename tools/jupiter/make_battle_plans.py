@@ -76,6 +76,14 @@ def main():
     with open(os.path.join(SHOTS, "jupiter_r1_perf_dogfight.json"), "w") as f:
         json.dump(perf_off, f, indent=1)
 
+    # the planet's own cost inside the battle: the same fight (same sim ticks, same seeds) with and without the planet, GPU time from -mnPerfSync (tools\capture.ps1 -PlayerArgs "-mnPerfSync")
+    for tag, no in (("planet", False), ("noplanet", True)):
+        ab = {"scene": "mission", "sceneOptions": {"mission": "jupiter", "pilot": "ai", "invulnerable": True, "hud": True, "dust": True, "noBackdrop": no},
+              "defaults": {"width": 1920, "height": 1080, "warmup": 0.0, "perfWarmup": 3.0},
+              "perf": [{"name": f"ab_{tag}_opening", "seconds": 30, "follow": True, "fov": 55}, {"name": f"ab_{tag}_middle", "seconds": 30, "follow": True, "fov": 55}]}
+        with open(os.path.join(SHOTS, f"jupiter_r1_perf_ab_{tag}.json"), "w") as f:
+            json.dump(ab, f, indent=1)
+
 
 if __name__ == "__main__":
     main()

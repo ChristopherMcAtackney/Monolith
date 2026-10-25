@@ -33,6 +33,66 @@
  },
  "stills": [
   {
+   "name": "io_close",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    1.794,
+    -20.734,
+    0
+   ],
+   "fov": 2.2,
+   "warmup": 0.5
+  },
+  {
+   "name": "europa_close",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    3.067,
+    48.071,
+    0
+   ],
+   "fov": 1.6,
+   "warmup": 0.5
+  },
+  {
+   "name": "io_beside_jupiter",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    5.836,
+    1.405,
+    0
+   ],
+   "fov": 38,
+   "warmup": 0.5
+  },
+  {
+   "name": "europa_beside_jupiter",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    6.165,
+    36.056,
+    0
+   ],
+   "fov": 60,
+   "warmup": 0.5
+  },
+  {
    "name": "jupiter_full",
    "pos": [
     -20000,
@@ -159,62 +219,6 @@
     0
    ],
    "fov": 7
-  },
-  {
-   "name": "io_beside_jupiter",
-   "pos": [
-    -20000,
-    0,
-    0
-   ],
-   "rot": [
-    5.832,
-    1.537,
-    0
-   ],
-   "fov": 38
-  },
-  {
-   "name": "io_close",
-   "pos": [
-    -20000,
-    0,
-    0
-   ],
-   "rot": [
-    1.795,
-    -20.647,
-    0
-   ],
-   "fov": 2.2
-  },
-  {
-   "name": "europa_beside_jupiter",
-   "pos": [
-    -20000,
-    0,
-    0
-   ],
-   "rot": [
-    6.171,
-    36.149,
-    0
-   ],
-   "fov": 60
-  },
-  {
-   "name": "europa_close",
-   "pos": [
-    -20000,
-    0,
-    0
-   ],
-   "rot": [
-    3.07,
-    48.163,
-    0
-   ],
-   "fov": 1.6
   },
   {
    "name": "hull_before_jupiter",

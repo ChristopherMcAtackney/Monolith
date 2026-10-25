@@ -1,0 +1,31 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "jupiter",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": true,
+  "dust": true,
+  "noBackdrop": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 3.0
+ },
+ "perf": [
+  {
+   "name": "ab_noplanet_opening",
+   "seconds": 30,
+   "follow": true,
+   "fov": 55
+  },
+  {
+   "name": "ab_noplanet_middle",
+   "seconds": 30,
+   "follow": true,
+   "fov": 55
+  }
+ ]
+}

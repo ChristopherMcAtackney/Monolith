@@ -18,7 +18,7 @@
     "motion": { "spin": 0.06, "windScale": 120, "grsSpin": 0.5, "moons": 100 },
     "motionWhy": "slow motion, ours, for reading (the body's own defaults, written here so the mission shows them): the planet turns 0.06 degree a second (real 0.01), the bands slide at 120 times their real winds, the Great Red Spot turns once in 12 minutes, the moons go round 100 times faster than real (Io once in 25 minutes, Europa once in 51)",
     "moons": [ { "body": "io", "orbitDeg": 300 }, { "body": "europa", "orbitDeg": 205 } ],
-    "moonsWhy": "ours: they start where their orbits (421,700 and 671,100 km from the planet's centre, in its equator plane) put them at these angles from the sunward point: Io 8 degrees left of the planet's limb, a seven pixel disc at 1080p, Europa 14 degrees right of it, four pixels. Io swings sunward and its shadow crosses the lit clouds from about 4 to 5.5 minutes into the fight; Europa goes behind the planet at about 9 minutes"
+    "moonsWhy": "ours: they start where their orbits (421,700 and 671,100 km from the planet's centre, in its equator plane) put them at these angles from the sunward point: Io 8 degrees left of the planet's limb, a seven pixel disc at 1080p, Europa 14 degrees right of it, four pixels. Io swings sunward and its shadow comes onto the lit clouds about 4.4 minutes into the fight and crosses the edge of the Great Red Spot at about 4.7; Europa goes behind the planet at about 9 minutes"
   },
   "difficulty": "Medium",
   "player": "Sable 1",
