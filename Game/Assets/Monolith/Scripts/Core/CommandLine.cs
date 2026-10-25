@@ -14,13 +14,24 @@ namespace Monolith.Core
 
         static string[] _args;
         static string[] Args => _args ??= Environment.GetCommandLineArgs();
+        static string[] _overlay = Array.Empty<string>();
 
         /// <summary>Replace the argument list (tests, editor play mode).</summary>
         public static void SetArgs(string[] args) => _args = args;
 
+        /// <summary>
+        /// Flags the game adds to the command line while it runs (the start screen launching a scenario: <c>-mnMission oort -mnDifficulty Hard</c>), read before the real ones, so every scene
+        /// starts the way it does from a command line. <see cref="ClearOverlay"/> takes them off again.
+        /// </summary>
+        public static void SetOverlay(params string[] args) => _overlay = args ?? Array.Empty<string>();
+
+        public static void ClearOverlay() => _overlay = Array.Empty<string>();
+
         public static bool Has(string flag)
         {
             Check(flag);
+            foreach (var a in _overlay)
+                if (string.Equals(a, flag, StringComparison.OrdinalIgnoreCase)) return true;
             foreach (var a in Args)
                 if (string.Equals(a, flag, StringComparison.OrdinalIgnoreCase)) return true;
             return false;
@@ -29,6 +40,9 @@ namespace Monolith.Core
         public static string Get(string flag, string fallback = null)
         {
             Check(flag);
+            var o = _overlay;
+            for (int i = 0; i < o.Length - 1; i++)
+                if (string.Equals(o[i], flag, StringComparison.OrdinalIgnoreCase)) return o[i + 1];
             var a = Args;
             for (int i = 0; i < a.Length - 1; i++)
                 if (string.Equals(a[i], flag, StringComparison.OrdinalIgnoreCase)) return a[i + 1];

@@ -48,6 +48,14 @@ namespace Monolith.Game
             ("settle", "Settling", 85f),
         };
 
+        /// <summary>Some of the steps, in the plan's order (a start screen's two halves each run a part of it).</summary>
+        public static (string id, string label, float weight)[] PlanOf(params string[] ids)
+        {
+            var list = new List<(string, string, float)>();
+            foreach (var p in Plan) if (System.Array.IndexOf(ids, p.id) >= 0) list.Add(p);
+            return list.ToArray();
+        }
+
         static readonly List<InputDevice> Switched = new List<InputDevice>();
 
         public static IEnumerator Run(GameRoot root)
@@ -117,6 +125,118 @@ namespace Monolith.Game
                 if (!released) { SwitchOnInput(); if (root.World != null) root.Sim.Held = false; }
                 if (LoadingScreen.Current != null) LoadingScreen.Current.Close();
             }
+        }
+
+        // ------------------------------------------------------------------------------------------------ a start with the start screen: two halves
+
+        /// <summary>
+        /// The first half of a start that ends at the start screen: the splash and the bar while the sound decodes and the assets are read (no world: which scenario is played is not known yet), then
+        /// <paramref name="makeMenu"/> puts the start screen up behind the loading screen (it returns the screen's camera) and the loading screen fades off it. The assets stay held, so the scenarios
+        /// that follow find them in memory.
+        /// </summary>
+        public static IEnumerator RunBoot(GameRoot root, System.Func<Camera> makeMenu)
+        {
+            var screen = LoadingScreen.Show(null);
+            var meter = new LoadMeter(PlanOf("start", "ships", "cabin", "effects", "sky", "sound"), LoadMeter.LoadWeights());
+            screen.Meter = meter;
+            var oldPriority = Application.backgroundLoadingPriority;
+            Application.backgroundLoadingPriority = ThreadPriority.High;
+            SwitchOffInput();
+            bool released = false;
+            try
+            {
+                yield return null;
+                yield return null;
+                StartupProbe.Mark("loading screen on display");
+                meter.Finish("start");
+                var sound = AudioRig.BeginPreload(root);
+                if (sound != null) { meter.Begin("sound"); root.StartCoroutine(TrackSound(meter, sound)); }
+                yield return Preload(meter, "ships", Manifest("ships"));
+                yield return Preload(meter, "cabin", Manifest("cabin"));
+                yield return Preload(meter, "effects", Manifest("effects"));
+                yield return Preload(meter, "sky", Manifest("sky"));
+                StartupProbe.Mark("assets loaded");
+                Application.backgroundLoadingPriority = oldPriority;
+                yield return WaitForSound(meter, sound);
+                StartupProbe.Mark("sound ready");
+                var cam = makeMenu();
+                if (cam != null) screen.AttachTo(cam);
+                yield return null;
+                meter.SaveStats();
+                yield return screen.FillUp(0.7f);
+                SwitchOnInput();
+                released = true;
+                StartupProbe.Mark("start screen on display");
+                yield return screen.FadeOut(CommandLine.GetFloat("-mnLoadingFade", 0.55f));
+                MnLog.Info($"LOADING (to the start screen) done in {meter.ElapsedMs:0} ms: " + StepsText(meter));
+            }
+            finally
+            {
+                Application.backgroundLoadingPriority = oldPriority;
+                if (!released) SwitchOnInput();
+                if (LoadingScreen.Current != null) LoadingScreen.Current.Close();
+            }
+        }
+
+        /// <summary>
+        /// The second half: a scenario was chosen. The loading screen comes up over the start screen (<paramref name="onCovered"/> then takes that down), <paramref name="build"/> makes the world with the
+        /// clock held, the cabin cut, the sky and the cabin are warmed behind the screen as in an ordinary start, and the screen fades into the scenario. <paramref name="done"/> is told whether it
+        /// was built (when it was not, the screen comes down and the caller shows the start screen again).
+        /// </summary>
+        public static IEnumerator RunLaunch(GameRoot root, System.Func<bool> build, System.Action onCovered, System.Action<bool> done)
+        {
+            var screen = LoadingScreen.Show(null);
+            var meter = new LoadMeter(PlanOf("world", "deathcut", "skywarm", "cabinwarm", "settle"), LoadMeter.LoadWeights());
+            screen.Meter = meter;
+            var oldPriority = Application.backgroundLoadingPriority;
+            Application.backgroundLoadingPriority = ThreadPriority.High;
+            SwitchOffInput();
+            bool released = false, ok = false;
+            try
+            {
+                yield return null;
+                yield return null;
+                onCovered?.Invoke();
+                meter.Begin("world");
+                yield return null;
+                bool built = false;
+                try { built = build(); }
+                catch (System.Exception e) { MnLog.Error("LOADING the scenario could not be built: " + e); }
+                if (!built) yield break;
+                root.Sim.Held = true;
+                if (root.World.MainCamera != null) screen.AttachTo(root.World.MainCamera);
+                meter.Finish("world");
+                Application.backgroundLoadingPriority = oldPriority;
+                var death = Object.FindObjectOfType<JuiceDirector>()?.Death;
+                death?.PrepareSoon();
+                yield return WarmDeath(meter, death);
+                yield return WarmSky(meter);
+                yield return WarmCabin(meter);
+                yield return Settle(meter);
+                meter.SaveStats();
+                yield return screen.FillUp(0.7f);
+                root.Sim.Held = false;
+                SwitchOnInput();
+                released = true;
+                ok = true;
+                done?.Invoke(true);
+                yield return screen.FadeOut(CommandLine.GetFloat("-mnLoadingFade", 0.55f));
+                MnLog.Info($"LOADING (a scenario) done in {meter.ElapsedMs:0} ms: " + StepsText(meter));
+            }
+            finally
+            {
+                Application.backgroundLoadingPriority = oldPriority;
+                if (!released) { SwitchOnInput(); if (root.World != null) root.Sim.Held = false; }
+                if (LoadingScreen.Current != null) LoadingScreen.Current.Close();
+                if (!ok) done?.Invoke(false);
+            }
+        }
+
+        static string StepsText(LoadMeter m)
+        {
+            var parts = new List<string>();
+            foreach (var st in m.Steps) parts.Add(st.Id + " " + st.Ms.ToString("0") + " ms");
+            return string.Join(", ", parts);
         }
 
         static string Ms(LoadMeter m, string id)

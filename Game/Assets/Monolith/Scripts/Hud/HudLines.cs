@@ -75,6 +75,12 @@ namespace Monolith.Hud
         /// <summary>The picture <see cref="Image"/> draws (one per canvas).</summary>
         public Texture ImageTexture;
 
+        /// <summary>Let go of the mesh (its owner is going away: a scene taken down must not leave one mesh a canvas behind).</summary>
+        public void Dispose()
+        {
+            if (Mesh != null) Object.Destroy(Mesh);
+        }
+
         public HudLines()
         {
             Mesh = new Mesh { name = "MN_Hud", indexFormat = IndexFormat.UInt32, hideFlags = HideFlags.HideAndDontSave };

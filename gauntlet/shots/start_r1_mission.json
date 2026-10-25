@@ -1,0 +1,37 @@
+{
+ "scene": "start",
+ "sceneOptions": {
+  "scenario": "dogfight",
+  "level": "Medium",
+  "fade": 1.0
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.5
+ },
+ "stills": [
+  {
+   "name": "start_mission",
+   "warmup": 0.5
+  },
+  {
+   "name": "start_mission_219",
+   "width": 2560,
+   "height": 1080,
+   "warmup": 0.25
+  },
+  {
+   "name": "start_mission_43",
+   "width": 1440,
+   "height": 1080,
+   "warmup": 0.25
+  },
+  {
+   "name": "start_mission_54",
+   "width": 1350,
+   "height": 1080,
+   "warmup": 0.25
+  }
+ ]
+}

@@ -73,6 +73,7 @@ namespace Monolith.HudUi
             foreach (var s in _subs) s.Dispose();
             _subs.Clear();
             _missiles?.Dispose();
+            _lines?.Dispose();
         }
 
         // ------------------------------------------------------------------------------------------------ the feeds

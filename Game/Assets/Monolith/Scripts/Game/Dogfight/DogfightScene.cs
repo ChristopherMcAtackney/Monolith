@@ -163,7 +163,7 @@ namespace Monolith.Game
                 _hud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { SetPaused(false); Restart(); }
-                else if (_pad.SystemPressed(SystemAction.Quit)) Application.Quit(0);
+                else if (_pad.SystemPressed(SystemAction.Quit)) StartFlow.QuitOrMenu();
                 return;
             }
             if (_pad.SystemPressed(SystemAction.Pause)) { SetPaused(true); return; }
@@ -172,7 +172,7 @@ namespace Monolith.Game
                 bool again = pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame;
                 bool quit = pad != null && pad.buttonEast.wasPressedThisFrame || kb != null && kb.f10Key.wasPressedThisFrame;
                 if (again) Restart();
-                else if (quit) Application.Quit(0);
+                else if (quit) StartFlow.QuitOrMenu();
             }
         }
 
@@ -198,7 +198,7 @@ namespace Monolith.Game
                 "PAUSED",
                 "START	RESUME",
                 "Y	FLY AGAIN",
-                "B	QUIT",
+                "B	" + StartFlow.QuitWord,
                 $"D-PAD LEFT / RIGHT	DIFFICULTY   {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "   (NEXT RUN)" : ""),
             };
             lines.AddRange(_hudControls.SettingsLines());
@@ -231,7 +231,7 @@ namespace Monolith.Game
             if (_battle.Outcome != DogfightBattle.State.Fighting)
             {
                 _hud.Banner = _battle.OutcomeText;
-                _hud.BannerSub = _pad != null ? "A / ENTER  FLY AGAIN        B / F10  QUIT" : null;
+                _hud.BannerSub = _pad != null ? "A / ENTER  FLY AGAIN        B / F10  " + StartFlow.QuitWord : null;
             }
         }
 

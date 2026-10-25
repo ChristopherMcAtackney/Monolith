@@ -84,6 +84,7 @@ namespace Monolith.HudUi
             lw = L.Lw();
             ink = L.Ink; dim = L.Dim; faint = L.Faint; warn = L.Warn;
             Boxes.Clear();
+            if (F.Menu != null) { DrawMenu(); return; }
 
             bool screen = F.Overlay != null && F.Overlay.Length > 0;       // a pause, briefing or debrief screen: the flight HUD steps back
             if (screen) { }
@@ -357,7 +358,7 @@ namespace Monolith.HudUi
         }
 
         /// <summary>One gauge: the thick band (<paramref name="main01"/>) and the thin one beside it (<paramref name="thin01"/>), on the left or the right of the reticle, filling from the bottom up.</summary>
-        void Gauge(ArcGeom g, bool left, float main01, float thin01, Color mainCol, Color thinCol, float mark01)
+        void Gauge(ArcGeom g, bool left, float main01, float thin01, Color mainCol, Color thinCol, float mark01, bool presets = true)
         {
             float aBot = left ? Mathf.PI - g.Half : g.Half, aTop = left ? Mathf.PI + g.Half : -g.Half;
             float At(float t) => Mathf.Lerp(aBot, aTop, Mathf.Clamp01(t));
@@ -407,7 +408,7 @@ namespace Monolith.HudUi
                 var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
                 L.Line(C + d * (g.R - g.T * 0.5f - 7f * s), C + d * (g.RThin + g.T2 * 0.5f + 4f * s), lw * 1.2f, ink);
             }
-            if (left)
+            if (left && presets)
                 foreach (var f in new[] { 1f / 3f, 2f / 3f })
                 {
                     float a = At(f * F.TopSpeed / F.BoostSpeed);

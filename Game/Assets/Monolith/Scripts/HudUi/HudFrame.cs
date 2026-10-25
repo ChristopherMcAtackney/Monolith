@@ -19,6 +19,8 @@ namespace Monolith.HudUi
 
         // ---- the screen
         public float Width = 1920f, Height = 1080f;
+        /// <summary>The start screen's contents; when set the frame is the menu and nothing else (see <see cref="HudMenu"/>).</summary>
+        public HudMenu Menu;
         /// <summary>Real seconds, for blinks and the radar's sweep.</summary>
         public float Time;
 

@@ -249,7 +249,7 @@ namespace Monolith.Game
                 foreach (var l in _host.WarmLods) if (l != null) l.ForceLOD(-1);
                 _host.WarmLods.Clear();
             }
-            if (_file == null) { _hud.Overlay = new[] { "MISSION NOT LOADED", _error ?? "" }; if (Keyboard.current?.f10Key.wasPressedThisFrame == true || Gamepad.current?.buttonEast.wasPressedThisFrame == true) Application.Quit(1); return; }
+            if (_file == null) { _hud.Overlay = new[] { "MISSION NOT LOADED", _error ?? "" }; if (Keyboard.current?.f10Key.wasPressedThisFrame == true || Gamepad.current?.buttonEast.wasPressedThisFrame == true) StartFlow.QuitOrMenu(1); return; }
             if (_deathAt >= 0f && !_deathFired && _world.Time >= _deathAt) { _deathFired = true; KillPlayer(_deathCause); }
             UpdateInfo();
             if (UpdateDeath()) return;                      // the player's death sequence has the screen and the buttons
@@ -260,7 +260,7 @@ namespace Monolith.Game
             if (_briefing)
             {
                 if (pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame) SetBriefing(false);
-                else if (pad != null && pad.buttonEast.wasPressedThisFrame || kb != null && kb.f10Key.wasPressedThisFrame) Application.Quit(0);
+                else if (pad != null && pad.buttonEast.wasPressedThisFrame || kb != null && kb.f10Key.wasPressedThisFrame) StartFlow.QuitOrMenu();
                 return;
             }
             if (_paused)
@@ -271,7 +271,7 @@ namespace Monolith.Game
                 _hud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { SetPaused(false); Restart(); }
-                else if (_pad.SystemPressed(SystemAction.Quit)) Application.Quit(0);
+                else if (_pad.SystemPressed(SystemAction.Quit)) StartFlow.QuitOrMenu();
                 return;
             }
             if (_pad.SystemPressed(SystemAction.Pause)) { SetPaused(true); return; }
@@ -282,7 +282,7 @@ namespace Monolith.Game
                 bool again = !standing && (pad != null && pad.buttonSouth.wasPressedThisFrame || kb != null && kb.enterKey.wasPressedThisFrame);
                 bool quit = !standing && (pad != null && pad.buttonEast.wasPressedThisFrame) || kb != null && kb.f10Key.wasPressedThisFrame;
                 if (again) Restart();
-                else if (quit) Application.Quit(0);
+                else if (quit) StartFlow.QuitOrMenu();
             }
         }
 
@@ -312,7 +312,7 @@ namespace Monolith.Game
             foreach (var o in _file.Objectives) if (!o.Hidden) lines.Add($"{o.Kind.ToUpperInvariant()}	{o.Text}");
             lines.Add("");
             lines.Add($"A   ENTER	LAUNCH     ({_ai.LevelName.ToUpperInvariant()})");
-            lines.Add("B   F10	QUIT");
+            lines.Add("B   F10	" + StartFlow.QuitWord);
             return lines.ToArray();
         }
 
@@ -323,7 +323,7 @@ namespace Monolith.Game
                 "PAUSED",
                 "START	RESUME",
                 "Y	FLY AGAIN",
-                "B	QUIT",
+                "B	" + StartFlow.QuitWord,
                 $"D-PAD LEFT / RIGHT	DIFFICULTY   {_ai.Data.Difficulty.Levels[_nextLevel].ToUpperInvariant()}" + (_nextLevel != _ai.Level ? "   (NEXT RUN)" : ""),
             };
             lines.AddRange(_hudControls != null ? _hudControls.SettingsLines() : new List<string>());
@@ -430,7 +430,7 @@ namespace Monolith.Game
                     var lines = new List<string> { "" };
                     lines.AddRange(_rt.Debrief());
                     lines.Add("");
-                    lines.Add("A / ENTER  FLY AGAIN        B / F10  QUIT");
+                    lines.Add("A / ENTER  FLY AGAIN        B / F10  " + StartFlow.QuitWord);
                     if (!_paused) _hud.Overlay = lines.ToArray();
                 }
             }

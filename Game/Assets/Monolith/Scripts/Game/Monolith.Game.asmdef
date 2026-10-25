@@ -15,6 +15,7 @@
         "Monolith.Collision",
         "Monolith.HudUi",
         "Monolith.Loading",
+        "Monolith.StartScreen",
         "Monolith.Juice",
         "Monolith.ShipArt",
         "Monolith.AI",

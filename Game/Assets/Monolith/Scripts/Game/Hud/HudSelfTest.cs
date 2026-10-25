@@ -59,6 +59,7 @@ namespace Monolith.Game
                 DataInterface();
                 Layout(1f);
                 ScaleAndOpacity();
+                StartMenuScreen();
                 PauseScreens();
                 Cost();
             }
@@ -575,6 +576,73 @@ namespace Monolith.Game
                 Check(best08 <= best1 * 1.15 + 0.01, $"{st.Name}: building a busy frame at opacity {N(dop)} takes {best08:0.000} ms against {best1:0.000} ms at full strength (best of 5: the opacity is one compare a vertex)");
             }
             Layout(ds);
+        }
+
+        // ------------------------------------------------------------------------------------------------ the start screen, drawn by the HUD's renderer
+
+        static void StartMenuScreen()
+        {
+            var L = new HudLines { RecordTexts = true };
+            var R = new HudRenderer();
+            string[] panels = { "menuTitle", "menuCorner", "menuScenarios", "menuLevels", "menuGauges", "menuAbout", "menuHint" };
+            int shots = 0, offScreen = 0, overlap = 0, textOverlap = 0, tiny = 0, empty = 0;
+            var firstFail = new List<string>();
+            // the plain game's list, a list with twelve more missions (it scrolls), and a very long mission name
+            for (int variant = 0; variant < 3; variant++)
+            {
+                var menu = Monolith.Game.StartCatalog.Build(null, useSaved: false);
+                if (variant >= 1)
+                    for (int i = 0; i < 12; i++) menu.Entries.Insert(4 + i, new Monolith.Start.StartEntry { Id = "extra" + i, Title = variant == 2 && i == 3 ? "The Very Long Name Of A Mission Somebody Wrote Beside The Game" : "Extra mission " + i, Detail = "A mission someone wrote, with a briefing that goes on for quite a while so that the line about it has to wrap onto more than one line and then be cut short at four lines whatever it says after that.", Kind = Monolith.Start.EntryKind.Mission });
+                var data = new HudMenu();
+                menu.Build(data);
+                var cursors = new List<(int index, bool level)> { (0, false), (0, true), (menu.Entries.Count - 5, false), (menu.Entries.Count - 2, false), (menu.Entries.Count - 1, false) };
+                foreach (var st in HudStyles.Styles)
+                    foreach (var (w, h) in Sizes)
+                        foreach (var (index, level) in cursors)
+                        {
+                            menu.Index = index; menu.LevelFocus = level; menu.Level = level ? 4 : 2;
+                            menu.Sync(data);
+                            data.Corner = "HUD  " + st.Title + "   F9"; data.Hint = "D-PAD  MOVE          A  CHOOSE          B  QUIT ROW"; data.Fade = 1f;
+                            var f = new HudFrame { Width = w, Height = h, Menu = data, Time = 1f };
+                            L.Clear(HudRenderer.ScaleFor(w, h), st);
+                            R.Draw(L, f);
+                            shots++;
+                            string tag = $"{st.Name} {w}x{h} v{variant} cursor {index}{(level ? " level" : "")}";
+                            if (L.VertexCount < 400 || L.Texts.Count < 12) { empty++; if (firstFail.Count < 12) firstFail.Add($"{tag}: only {L.VertexCount} vertices and {L.Texts.Count} words"); }
+                            foreach (var t in L.Texts)
+                            {
+                                if (t.Bounds.xMin < -1f || t.Bounds.yMin < -1f || t.Bounds.xMax > w + 1f || t.Bounds.yMax > h + 1f) { offScreen++; if (firstFail.Count < 12) firstFail.Add($"{tag}: '{t.Text}' leaves the screen {t.Bounds}"); }
+                                if (t.Cap < 8.5f) { tiny++; if (firstFail.Count < 12) firstFail.Add($"{tag}: '{t.Text}' is {t.Cap} px tall"); }
+                            }
+                            foreach (var p in panels)
+                                if (R.Boxes.TryGetValue(p, out var r) && (r.xMin < -2f || r.yMin < -2f || r.xMax > w + 2f || r.yMax > h + 2f)) { offScreen++; if (firstFail.Count < 12) firstFail.Add($"{tag}: {p} leaves the screen {r}"); }
+                            for (int i = 0; i < panels.Length; i++)
+                                for (int j = i + 1; j < panels.Length; j++)
+                                    if (R.Boxes.TryGetValue(panels[i], out var a) && R.Boxes.TryGetValue(panels[j], out var b) && Overlaps(a, b, 3f)) { overlap++; if (firstFail.Count < 12) firstFail.Add($"{tag}: {panels[i]} {a} overlaps {panels[j]} {b}"); }
+                            for (int i = 0; i < L.Texts.Count; i++)
+                                for (int j = i + 1; j < L.Texts.Count; j++)
+                                    if (Overlaps(L.Texts[i].Bounds, L.Texts[j].Bounds, 2.5f)) { textOverlap++; if (firstFail.Count < 12) firstFail.Add($"{tag}: '{L.Texts[i].Text}' overlaps '{L.Texts[j].Text}'"); }
+                        }
+            }
+            foreach (var m in firstFail) MnLog.Info("HUD detail: " + m);
+            Check(empty == 0, $"the start screen draws something real in every style and shape ({shots} frames: 3 lists x 3 styles x 8 screen shapes x 5 cursors; {empty} nearly empty)");
+            Check(offScreen == 0, $"the start screen: nothing leaves the screen ({offScreen} words or panels off screen)");
+            Check(overlap == 0, $"the start screen: no two panels overlap ({overlap} overlaps)");
+            Check(textOverlap == 0, $"the start screen: no two words overlap ({textOverlap} overlaps)");
+            Check(tiny == 0, $"the start screen: no type under 8.5 px tall ({tiny})");
+
+            // it is drawn in the HUD's own style: the three styles draw it differently, and a fade-in draws less
+            var menu0 = Monolith.Game.StartCatalog.Build(null, useSaved: false);
+            var d0 = new HudMenu(); menu0.Build(d0); menu0.Sync(d0); d0.Fade = 1f; d0.Hint = "x"; d0.Corner = "y";
+            var counts = new List<int>();
+            foreach (var st in HudStyles.Styles)
+            {
+                L.Clear(1f, st); R.Draw(L, new HudFrame { Width = 1920f, Height = 1080f, Menu = d0, Time = 1f });
+                counts.Add(L.VertexCount);
+            }
+            Check(counts[0] != counts[1] && counts[1] != counts[2], $"the start screen reads differently in the three styles ({counts[0]}, {counts[1]}, {counts[2]} vertices)");
+            L.Clear(1f, HudStyles.Styles[0]); d0.Fade = 0f; R.Draw(L, new HudFrame { Width = 1920f, Height = 1080f, Menu = d0, Time = 1f });
+            Check(L.VertexCount == 0, "faded out, the start screen draws nothing");
         }
 
         // ------------------------------------------------------------------------------------------------ the pause screens

@@ -64,7 +64,7 @@ namespace Monolith.Cabin
 
         public void Dispose()
         {
-            foreach (var d in _all) { if (d.RT != null) { d.RT.Release(); UnityEngine.Object.Destroy(d.RT); } if (d.Mat != null) UnityEngine.Object.Destroy(d.Mat); }
+            foreach (var d in _all) { if (d.RT != null) { d.RT.Release(); UnityEngine.Object.Destroy(d.RT); } if (d.Mat != null) UnityEngine.Object.Destroy(d.Mat); d.Lines?.Dispose(); }
             _all.Clear();
             if (_line != null) UnityEngine.Object.Destroy(_line);
         }
