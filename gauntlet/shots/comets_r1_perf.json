@@ -39,6 +39,38 @@
    "follow": true,
    "warmup": 178.0,
    "seconds": 30
+  },
+  {
+   "name": "hero_close_300m",
+   "pos": [
+    3249.5,
+    2544.6,
+    -4741.3
+   ],
+   "lookAt": [
+    2400,
+    2200,
+    -3800
+   ],
+   "fov": 60,
+   "warmup": 0.5,
+   "seconds": 12
+  },
+  {
+   "name": "pass_close_60m",
+   "pos": [
+    -585.0,
+    -153.0,
+    662.5
+   ],
+   "lookAt": [
+    -664,
+    -181,
+    750
+   ],
+   "fov": 60,
+   "warmup": 0.5,
+   "seconds": 12
   }
  ]
 }

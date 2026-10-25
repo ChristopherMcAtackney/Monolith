@@ -1,0 +1,125 @@
+{
+ "about": "The comets' one layered surface material (art_src/oort_art/build_comet_textures.py): crust, dust and ice, blended by the vertex colour.",
+ "materials": [
+  {
+   "blender": "mn_comet_surface",
+   "name": "MN_CometSurface",
+   "shader": "HDRP/LayeredLit",
+   "vertexColors": "multiply",
+   "enableInstancing": true,
+   "layers": [
+    {
+     "baseColor": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "baseMap": "comet_crust_albedo",
+     "normalMap": "comet_crust_normal",
+     "maskMap": "comet_crust_mask",
+     "metallicRemap": [
+      0,
+      0
+     ],
+     "aoRemap": [
+      0,
+      1
+     ],
+     "uvDetail": 1,
+     "detailTiling": [
+      1,
+      1
+     ],
+     "normalScale": 1.0,
+     "smoothnessRemap": [
+      0,
+      0.5
+     ],
+     "tiling": [
+      1,
+      1
+     ],
+     "detailMap": "comet_detail",
+     "detailAlbedo": 0.5,
+     "detailNormal": 0.7,
+     "detailSmoothness": 0.4,
+     "specularAA": true
+    },
+    {
+     "baseColor": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "baseMap": "comet_dust_albedo",
+     "normalMap": "comet_dust_normal",
+     "maskMap": "comet_dust_mask",
+     "metallicRemap": [
+      0,
+      0
+     ],
+     "aoRemap": [
+      0,
+      1
+     ],
+     "uvDetail": 1,
+     "detailTiling": [
+      1,
+      1
+     ],
+     "normalScale": 0.7,
+     "smoothnessRemap": [
+      0,
+      0.4
+     ],
+     "tiling": [
+      0.5,
+      0.5
+     ],
+     "detailMap": "comet_detail",
+     "detailAlbedo": 0.4,
+     "detailNormal": 0.5,
+     "detailSmoothness": 0.3,
+     "specularAA": true
+    },
+    {
+     "baseColor": [
+      0.6,
+      0.62,
+      0.66
+     ],
+     "baseMap": "oort_ice_albedo",
+     "normalMap": "oort_ice_normal",
+     "maskMap": "oort_ice_mask",
+     "metallicRemap": [
+      0,
+      0
+     ],
+     "aoRemap": [
+      0,
+      1
+     ],
+     "uvDetail": 1,
+     "detailTiling": [
+      1,
+      1
+     ],
+     "normalScale": 1.0,
+     "smoothnessRemap": [
+      0,
+      0.6
+     ],
+     "tiling": [
+      1,
+      1
+     ],
+     "detailMap": "comet_detail",
+     "detailAlbedo": 0.3,
+     "detailNormal": 0.4,
+     "detailSmoothness": 0.3,
+     "specularAA": true
+    }
+   ]
+  }
+ ]
+}

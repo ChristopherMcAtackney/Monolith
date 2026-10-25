@@ -31,7 +31,7 @@ MATERIAL_SET = "Assets/Monolith/Art/EarthHull/comets.materials.json"
 MATERIAL = "mn_comet_surface"                   # one layered material: crust, dust and ice, blended by the vertex colour (R dust, G ice)
 T0 = time.time()
 LOD_SCREEN = [0.2, 0.065, 0.02, 0.0025]        # relative screen height each level starts at (the last is also where the body is culled)
-HERO_LOD = dict(min_boulder=(0.0, 1.8, 4.5, 9.0, 1e9), lod_screen=[0.3, 0.14, 0.05, 0.016, 0.002])      # the two large ones carry five levels: 330k triangles for the close view
+HERO_LOD = dict(min_boulder=(0.0, 3.0, 6.0, 12.0, 1e9), lod_screen=[0.3, 0.14, 0.05, 0.016, 0.002])      # the two large ones carry five levels: 330k triangles for the close view
 TILE, DETAIL = 150.0, 4.0                   # metres per texture tile (UV0) and per detail tile (UV1), at the model's own size
 
 
@@ -74,7 +74,7 @@ def spec_a():
     shape = Shape([dict(c=(-250, 0, -10), a=(370, 310, 295), p=2.5, rot=(0, 0, 10)), dict(c=(330, 20, 35), a=(235, 205, 200), p=2.4, rot=(0, 12, -8))], blend=110.0)
     ice = IceSites([(at(shape, d), r) for d, r in [((0.78, -0.40, 0.40), 12), ((-0.80, 0.45, 0.35), 24), ((-0.2, 0.2, 0.95), 16), ((0.55, 0.70, 0.30), 14), ((-0.55, -0.75, 0.30), 14), ((0.2, -0.9, -0.3), 10)]], seed=3)
     return dict(id="comet_a", name="Bilobe", shape=shape, seed=17, terrain=terrain_a, ice=ice, fit=1.5, hero=True, **HERO_LOD,
-                boulders=dict(count=1100, rmin=1.2, rmax=15.0, clusters=20, cluster_frac=0.45, cliff=3.5, hollow=1.2, floor=0.8, base=0.15, lv2_r=4.0))
+                boulders=dict(count=2600, rmin=1.2, rmax=22.0, clusters=44, cluster_frac=0.55, cliff=3.5, hollow=1.2, floor=0.8, base=0.15, lv2_r=4.0))
 
 
 # ================================================================================================ B: the long, terraced one
@@ -110,7 +110,7 @@ def spec_b():
     shape = Shape([dict(c=(-140, 0, 0), a=(440, 262, 238), p=2.4, rot=(0, 0, 14)), dict(c=(345, 28, 12), a=(330, 192, 172), p=2.3, rot=(0, 8, -10))], blend=95.0)
     ice = IceSites([(at(shape, d), r) for d, r in [((0.7, 0.4, 0.6), 12), ((-0.9, 0.2, 0.4), 26), ((0.15, 0.9, 0.3), 18), ((-0.3, 0.1, 0.95), 13), ((0.3, -0.8, 0.4), 16)]], seed=5)
     return dict(id="comet_b", name="Terraced", shape=shape, seed=29, terrain=terrain_b, ice=ice, fit=1.5, hero=True, **HERO_LOD,
-                boulders=dict(count=1100, rmin=1.2, rmax=14.0, clusters=18, cluster_frac=0.45, cliff=3.5, hollow=1.0, floor=0.8, base=0.15, lv2_r=4.0))
+                boulders=dict(count=2600, rmin=1.2, rmax=20.0, clusters=40, cluster_frac=0.55, cliff=3.5, hollow=1.0, floor=0.8, base=0.15, lv2_r=4.0))
 
 
 # ================================================================================================ C: a lumpy potato

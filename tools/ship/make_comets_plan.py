@@ -112,6 +112,11 @@ def perf():
             {"name": "field_drift_follow", "follow": True, "warmup": 20.0, "seconds": 20},
             {"name": "strike_follow", "follow": True, "warmup": 70.0, "seconds": 25},
             {"name": "archon_fight_follow", "follow": True, "warmup": 178.0, "seconds": 30}]
+    # the close views, the heaviest for the comets: the biggest model at its highest level of detail filling the frame, and a pass at 60 m among the field's rocks (the camera is still, so these two
+    # measure the rocks and nothing else; they come last, so the mission's own timing above is not moved)
+    for name, rock, d, phase, fov, elev, side in (("hero_close_300m", ROCKS[4], 300, 70, 60, 14, 1), ("pass_close_60m", FIELD[161], 60, 70, 60, 12, 1)):
+        st = rock_shot(name, rock, d, phase, fov, elev, side)
+        runs.append({"name": name, "pos": st["pos"], "lookAt": st["lookAt"], "fov": fov, "warmup": 0.5, "seconds": 12})
     return mission_plan([], runs)
 
 
