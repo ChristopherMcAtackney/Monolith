@@ -181,7 +181,7 @@ namespace Monolith.Game
             {
                 yield return new WaitForSeconds(6.0f);
                 float top = me.TopSpeed * Mathf.Clamp(me.SpeedScale, 0.3f, 1.2f);      // damaged or favoured engines move the cruise speed
-                Check(me.ForwardSpeed > top * 0.8f, $"flying at cruise (shoved a little by the range's gunners) before the brake ({me.ForwardSpeed:0} of {top:0} m/s)");
+                Check(me.ForwardSpeed > top * 0.8f, $"flying at cruise before the brake (the range has no gunners in this run, so nothing shoves the ship) ({me.ForwardSpeed:0} of {top:0} m/s)");
                 Clear(); _maxAim = 0f;
                 // A real click on the aim stick pushes it off centre; the pilot must not turn the ship for it.
                 InputSystem.QueueStateEvent(pad, new GamepadState(GamepadButton.RightStick) { rightStick = new Vector2(0.35f, -0.30f) });

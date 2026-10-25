@@ -288,30 +288,19 @@ namespace Monolith.Weapons
                         Point = near, Direction = away, Normal = away, Part = c.Shield > 0f ? -1 : -2, Kind = DamageKind.Blast, OnShield = c.Shield > 0f,
                     });
                 }
-                // Parts near the blast take it too (a torpedo that goes off on the hull kills the turrets round the hole). The blast spreads its
-                // subsystem damage over the parts it reaches, the three nearest at most (FS2 spends a blast's subsystem damage on the nearest
-                // subsystems first), so one flak burst cannot strip a small ship of everything and one torpedo on a cruiser's flank does not wear
-                // down every part from the bow to the stern.
+                // Parts near the blast take it too (a torpedo that goes off on the hull kills the turrets round the hole). FS2's blast hurts the
+                // subsystems nearest it first, so the blast spends its part damage on the nearest parts only, three at most, each falling off
+                // with its own distance from the inner to the outer radius and sharing the damage evenly: one torpedo cannot strip a capital ship
+                // of every part within 270 m, and one flak burst cannot strip a small ship of everything.
                 if (c.Shield <= 0f && def.SubsystemMult > 0f)
                 {
-                    int n0 = -1, n1 = -1, n2 = -1; float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
-                    for (int k = 0; k < c.Parts.Count; k++)
+                    int picked = NearestBlastParts(c, point, def.BlastOuter);
+                    float share = picked > 0 ? 1f / picked : 1f;
+                    for (int n = 0; n < picked; n++)
                     {
+                        int k = _bpIndex[n];
                         var part = c.Parts[k];
-                        if (part.Destroyed) continue;
-                        float pd = Mathf.Max(0f, Vector3.Distance(part.WorldPosition(ship), point) - part.Radius);
-                        if (pd >= def.BlastOuter) continue;
-                        if (pd < d0) { n2 = n1; d2 = d1; n1 = n0; d1 = d0; n0 = k; d0 = pd; }
-                        else if (pd < d1) { n2 = n1; d2 = d1; n1 = k; d1 = pd; }
-                        else if (pd < d2) { n2 = k; d2 = pd; }
-                    }
-                    int reached = (n0 >= 0 ? 1 : 0) + (n1 >= 0 ? 1 : 0) + (n2 >= 0 ? 1 : 0);
-                    float share = reached > 0 ? 1f / reached : 1f;
-                    for (int j = 0; j < reached; j++)
-                    {
-                        int k = j == 0 ? n0 : j == 1 ? n1 : n2;
-                        float pd = j == 0 ? d0 : j == 1 ? d1 : d2;
-                        var part = c.Parts[k];
+                        float pd = _bpReach[n];
                         float pf = pd <= def.BlastInner ? 1f : 1f - (pd - def.BlastInner) / Mathf.Max(0.01f, def.BlastOuter - def.BlastInner);
                         _world.Damage.Add(new DamageRequest
                         {
@@ -328,6 +317,37 @@ namespace Monolith.Weapons
                     _world.Knocks.Add(new ShipKnock { Ship = c.Id, Impulse = impulse, Point = local, Shock = def.Shockwave > 0f ? Mathf.Clamp01(f * 0.8f) : 0f });
                 }
             }
+        }
+
+        // The parts a blast reaches, nearest first: at most BlastPartsMax of the living parts whose surface is inside the outer radius, ordered by the
+        // signed distance from the blast point to the part's surface (the order a direct hit picks the struck part in, so the part a torpedo strikes is
+        // always the first), the lower index first on a tie. Filled into reused arrays: nothing is allocated in a blast.
+        public const int BlastPartsMax = 3;
+        readonly int[] _bpIndex = new int[BlastPartsMax];
+        readonly float[] _bpOrder = new float[BlastPartsMax];       // the signed surface distance: what the picking sorts by
+        readonly float[] _bpReach = new float[BlastPartsMax];       // the surface distance, never below 0: what the falloff reads
+
+        int NearestBlastParts(ShipCombat c, Vector3 point, float outer)
+        {
+            int count = 0;
+            var ship = c.Ship;
+            for (int k = 0; k < c.Parts.Count; k++)
+            {
+                var part = c.Parts[k];
+                if (part.Destroyed) continue;
+                float signed = Vector3.Distance(part.WorldPosition(ship), point) - part.Radius;
+                float reach = Mathf.Max(0f, signed);
+                if (reach >= outer) continue;
+                // Slot it among the nearest, pushing the farther ones down (and the farthest out when the slots are full).
+                int at = count;
+                while (at > 0 && signed < _bpOrder[at - 1]) at--;
+                if (at >= BlastPartsMax) continue;
+                int last = Mathf.Min(count, BlastPartsMax - 1);
+                for (int j = last; j > at; j--) { _bpIndex[j] = _bpIndex[j - 1]; _bpOrder[j] = _bpOrder[j - 1]; _bpReach[j] = _bpReach[j - 1]; }
+                _bpIndex[at] = k; _bpOrder[at] = signed; _bpReach[at] = reach;
+                if (count < BlastPartsMax) count++;
+            }
+            return count;
         }
     }
 }

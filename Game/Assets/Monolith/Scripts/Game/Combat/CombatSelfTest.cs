@@ -108,6 +108,7 @@ namespace Monolith.Game
                 Decoys();
                 Torpedo();
                 Blast();
+                BlastParts();
                 Collisions();
                 Targeting();
                 Deaths();
@@ -591,6 +592,82 @@ namespace Monolith.Game
                 float expected = 45f * f * 0.8f;
                 float taken = bc.ShieldMax - bc.Shield;
                 Check(Near(taken, expected, 0.6f) && f > 0f && f < 1f, $"a ship {F(d)} m from the blast takes the falloff: 45 x {F(f)} x 0.8 = {F(expected)} off its shield ({F(taken)})");
+            }
+            lab.Dispose();
+        }
+
+        /// <summary>
+        /// A torpedo bursting on a capital ship spends its part damage on the nearest parts only (FS2: a blast hurts the subsystems nearest it first):
+        /// three at most, each falling off with its own distance from the inner radius to the outer, and the hull takes what it always did. The Archon has
+        /// 22 parts over a kilometre; its hull is scaled up a hundredfold so no part dies and every share can be read off its hit points. Struck on its
+        /// back the burst reaches a dozen parts, all the nearest three close in; struck on the prow it reaches four, and the third nearest is at the edge
+        /// of the blast, so its share has fallen away. (The old blast hurt every part within 270 m at a third each: thirteen parts at once.)
+        /// </summary>
+        static void BlastParts()
+        {
+            BlastPartsAt("on its back", new Vector3(0f, 700f, -110f), 8, false);
+            BlastPartsAt("on its prow", new Vector3(0f, 0f, 1300f), 4, true);
+        }
+
+        static void BlastPartsAt(string where, Vector3 from, int minReached, bool needsFalloff)
+        {
+            var lab = new Lab();
+            var (cap, cc, _) = lab.Ship("earth_destroyer", Vector3.zero, Vector3.zero, 1, 0f, null, 100f, "Archon");
+            cc.Shield = 0f;
+            var (a, ac, _) = lab.Ship("vanguard_fighter", from, Quaternion.LookRotation(-from.normalized).eulerAngles, 0);
+            var torpedo = WeaponCatalog.Require("torpedo_heavy");
+            var hp0 = new float[cc.Parts.Count];
+            for (int k = 0; k < hp0.Length; k++) hp0[k] = cc.Parts[k].Hp;
+            float hull0 = cc.Hull;
+            lab.W.Fire.Add(new FireRequest { Ship = a.Id, Part = -1, Weapon = "torpedo_heavy", Origin = Vector3.zero, AimPoint = cap.Position, Target = cap.Id });
+            GameEvent hit = default; bool found = false;
+            for (int i = 0; i < 60 * 40 && !found; i++)
+            {
+                lab.W.Sim.StepOnce();
+                foreach (var e in lab.Events) if (e.Id == CombatEvents.HitHull && e.Entity == cap.Id) { hit = e; found = true; break; }
+            }
+            // Where the parts were when the burst went off (the blast then shoves the ship, so read them now).
+            var partAt = new Vector3[cc.Parts.Count];
+            for (int k = 0; k < partAt.Length; k++) partAt[k] = cc.Parts[k].WorldPosition(cap);
+            lab.Run(0.2f);
+            Check(found, $"a torpedo struck the Archon {where}");
+            if (found)
+            {
+                // Which parts the blast could reach, nearest first (the surface distance a direct hit picks its part by; the lower index first on a tie).
+                var reachable = new List<(int k, float signed)>();
+                for (int k = 0; k < cc.Parts.Count; k++)
+                {
+                    float signed = Vector3.Distance(partAt[k], hit.Position) - cc.Parts[k].Radius;
+                    if (Mathf.Max(0f, signed) < torpedo.BlastOuter) reachable.Add((k, signed));
+                }
+                reachable.Sort((p, q) => { int c = p.signed.CompareTo(q.signed); return c != 0 ? c : p.k.CompareTo(q.k); });
+                var nearest = new List<int>();
+                for (int n = 0; n < reachable.Count && n < 3; n++) nearest.Add(reachable[n].k);
+                var hurt = new List<int>();
+                for (int k = 0; k < cc.Parts.Count; k++) if (hp0[k] - cc.Parts[k].Hp > 0.001f) hurt.Add(k);
+                string Names(List<int> l) { var parts = new List<string>(); foreach (var k in l) parts.Add(cc.Parts[k].Name); return string.Join(", ", parts); }
+
+                Check(reachable.Count >= minReached, $"{where}: the burst at {hit.Position} reaches {reachable.Count} of the Archon's 22 parts within {F(torpedo.BlastOuter)} m (enough to tell three from all of them)");
+                Check(hurt.Count <= 3, $"{where}: one torpedo damages at most three parts ({hurt.Count}: {Names(hurt)})");
+                var hurtSorted = new List<int>(hurt); hurtSorted.Sort();
+                var nearSorted = new List<int>(nearest); nearSorted.Sort();
+                Check(hurtSorted.Count == nearSorted.Count && hurtSorted.TrueForAll(k => nearSorted.Contains(k)), $"{where}: and they are the nearest ones to the burst (expected {Names(nearest)}; hurt {Names(hurt)})");
+                Check(Near(hull0 - cc.Hull, 6800f * torpedo.HullMult, 1f), $"{where}: the hull takes what it always did: {F(hull0 - cc.Hull)} of {F(6800f * torpedo.HullMult)}");
+
+                // Each of the three takes its share of the blast, falling off with its own distance (the part the torpedo struck also took the hit itself).
+                float beyondInner = 0f;
+                for (int n = 0; n < nearest.Count; n++)
+                {
+                    float reach = Mathf.Max(0f, reachable[n].signed);
+                    float f = reach <= torpedo.BlastInner ? 1f : 1f - (reach - torpedo.BlastInner) / (torpedo.BlastOuter - torpedo.BlastInner);
+                    if (reach > torpedo.BlastInner) beyondInner = Mathf.Max(beyondInner, reach);
+                    float blast = torpedo.Damage * f / nearest.Count * torpedo.SubsystemMult;
+                    float lost = hp0[nearest[n]] - cc.Parts[nearest[n]].Hp;
+                    float strike = torpedo.Damage * torpedo.SubsystemMult;
+                    bool ok = Near(lost, blast, blast * 0.01f + 0.5f) || (n == 0 && Near(lost, blast + strike, blast * 0.01f + 0.5f));
+                    Check(ok, $"{where}: {cc.Parts[nearest[n]].Name}, {F(reach)} m from the burst, takes {F(lost)} (blast share {F(blast)}: 6800 x {F(f)} / {nearest.Count} x {F(torpedo.SubsystemMult)}{(n == 0 ? ", or that plus the strike " + F(strike) : "")})");
+                }
+                if (needsFalloff) Check(beyondInner > 0f, $"{where}: one of the three is past the inner radius, so the falloff is exercised ({F(beyondInner)} m)");
             }
             lab.Dispose();
         }
