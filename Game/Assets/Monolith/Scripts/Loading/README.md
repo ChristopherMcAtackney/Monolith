@@ -27,6 +27,9 @@ The picture is never stretched. It is scaled the same both ways to fill the scre
 
 `Resources/Loading/preload.json` is written by `Editor/LoadingManifest` before every player build (and from the menu Monolith / Loading), so a new ship or flipbook is in it without anyone remembering; `-mnLoadingSelfTest` checks every entry loads.
 
+## A start that ends at the start screen
+A plain start (no mission or scene on the command line: `Scripts/StartScreen/README.md`) uses the same screen in two halves, `LoadingFlow.RunBoot` (the splash and the bar while the sound decodes and the assets are read, with no world: the steps `start`, `ships`, `cabin`, `effects`, `sky`, `sound`; then the start screen is built behind it and the screen fades off it) and, once a scenario is chosen, `LoadingFlow.RunLaunch` (the screen comes up over the start screen and the steps `world`, `deathcut`, `skywarm`, `cabinwarm`, `settle` run for that scenario, then it fades into it). The preloaded assets stay held for the whole run, so the second scenario finds them in memory. `loading_stats.json` keeps what each half wrote (a half writes only its own steps).
+
 ## Measuring a start
 `-mnStartupProbe [seconds]` logs `STARTUP +ms: label` milestones (process start to `boot scene loaded`, `loading screen on display`, `world built`, `sound ready`, `flyable`) and, once flyable, every frame's time for the next seconds (mean, p99, worst, counts over 33/50/100 ms, the worst five and when). `-mnOut dir` also writes `startup.json`; `-mnStartupQuit` ends the run after the window; `-mnStartupDrive` presses the first-use keys (afterburner, guns, missile, countermeasure, brake, stand up, pause) with a virtual keyboard so the hitches that only come the first time something is used are in the numbers; `-mnNoLoadingScreen` is the old start, for comparing. `-mnStartupDrive` also marks `sound decoded` in the old start.
 

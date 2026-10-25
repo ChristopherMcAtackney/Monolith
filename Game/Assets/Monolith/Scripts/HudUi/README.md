@@ -8,7 +8,7 @@ warnings, terse tracked type, and a hint of the aliens' glyphs as ornament only 
 | Where | What |
 |---|---|
 | `Monolith.Hud` (the kit, `Scripts/Hud/`) | What draws: `HudLines` (the canvas: lines, boxes, triangles, rings, thick arc bands, cells, brackets, ellipses, type from a distance-field font), `HudFont` (a baked font atlas and its metrics), `HudStyle` and `HudStyles` (the looks, the one in use, `-mnHudStyle`, `hud.json`), `HudRadar` and `HudMap` (the radar and the battle map), `HudContacts` and `HudMissiles` (what is on them), `HudPass` (the custom pass that puts a canvas on the finished frame), `HudCollapse` (the cabin's fold of the HUD into its displays). The cabin's displays draw with this kit too. Shader: `Resources/Shaders/MN_Lines.shader`, passes 3 (shapes) and 4 (type). Fonts: `Resources/Fonts/`, licences in `docs/licences/fonts.md`. |
-| `Monolith.HudUi` (this folder) | The HUD itself: `HudFrame` (everything it draws, as plain data), `HudReader` (reads `GameWorld` into a frame: the one place the HUD reads the game), `HudRenderer` (draws a frame: the layout; reads nothing else), `PilotHud` (the component: owns the notices, the radio feed, the overlay, the banner, the info lines and the footer; reads, draws, and puts it on the frame after post-processing), `CombatAudio` (the lock and missile-warning stand-in tones, silent when the audio system owns them). |
+| `Monolith.HudUi` (this folder) | The HUD itself (and the start screen, `HudMenu` and `HudRenderer.Menu.cs`: see `Scripts/StartScreen/README.md`): `HudFrame` (everything it draws, as plain data), `HudReader` (reads `GameWorld` into a frame: the one place the HUD reads the game), `HudRenderer` (draws a frame: the layout; reads nothing else), `PilotHud` (the component: owns the notices, the radio feed, the overlay, the banner, the info lines and the footer; reads, draws, and puts it on the frame after post-processing), `CombatAudio` (the lock and missile-warning stand-in tones, silent when the audio system owns them). |
 | `Game/Hud/` | `HudControls` (what every playable scene shares: F9 and the pause screen's HUD style switch, the battle map switch for scenes with no cabin, the invert switches), `HudSelfTest` (`-mnHudSelfTest`). |
 
 ## The data interface
@@ -58,7 +58,18 @@ The cabin's map switch (`GameWorld.Cabin.MapOpen`, seated) opens the same map. R
 
 `halo` (amber, Oxanium, thick segmented arcs close in), `meridian` (pale cyan, B612, wide continuous arcs with a fine scale, no ornament), `cipher` (green-teal, Jura, heavy plate arcs with rows of glyphs).
 A style is a `HudStyle` in `Hud/HudStyle.cs`: colours (written as sRGB; the HUD's target is sRGB so they are converted), the typeface, the type scale in cap heights, tracking, the glow, the arc geometry and the glyph density.
-`-mnHudStyle name`, F9 at any time, the pause screen (D-pad up and down, H), or `hud.json` next to the game (`{"style": "halo", "textScale": 1.0}`; `-mnHudText 1.2` sets the type size).
+`-mnHudStyle name`, F9 at any time, the pause screen (D-pad up and down, H), or `hud.json` next to the game (`{"style": "halo", "textScale": 1.0, "scale": 0.86, "opacity": 0.8}`; `-mnHudText 1.2` sets the type size).
+
+## Size and strength (`scale`, `opacity`)
+
+Two player settings in `hud.json` beside `style` and `textScale`, for all three styles (`HudStyles.Scale`, `HudStyles.Opacity`; `-mnHudScale 1 -mnHudOpacity 1` for one run; hand-written values are held to 0.5..1.5 and 0.25..1, a file that is missing, unreadable or has the wrong type means the defaults):
+
+- **`scale`, default 0.86**: how big the flight HUD is against the design size (1 is the old HUD). The layout, the gauges, the glow and the type all follow it; the type's small-screen floor (0.72 of its design size) follows it too, so a smaller HUD keeps the same room for its words on a small screen.
+  At 1080p the smallest type is a 11.2 px cap height (label), 14.2 px (body), 19.8 px (value), 41 px (display), against 13, 16.5, 23 and 48 at the design size; the HUD covers 79% of the screen area it did.
+- **`opacity`, default 0.80**: every vertex the HUD draws has its alpha scaled by it (`HudLines.Opacity`, one compare a vertex: the ink, the plates and shadows, the glow and the keyline with them), so the view shows through. The dimmest text (`Dim`, 0.62) keeps 50% of full brightness.
+- **Warnings stay at full strength** (our judgement): anything drawn in the style's accent colour (an incoming missile and its plate and pointer, being locked on, hull critical, a lost system, energy low, the damage frame) is exempt from the opacity, so at 80% the warning is the loudest thing on the screen by more than before. They are still scaled with the rest of the layout. (A dark plate behind a warning is dimmed like every plate; the warning's own colour and its keyline are not.)
+- **The pause, briefing and debrief screens and the battle map keep the design size and full strength** (`PilotHud`): they are screens the player opens to read, not the flight HUD that sits on the view.
+- The cabin's displays, the loading screen and the start screen are not part of it.
 
 ## Type and light
 
@@ -68,7 +79,7 @@ bright hull. The HUD's render target is sRGB and blends in linear light, so the 
 
 ## Checks
 
-`Monolith.exe -batchmode -nographics -mnHudSelfTest [-mnOut dir]` (89 checks): the fonts and their licence, that every character in the mission and ship files has a glyph, the type scale, the styles, the gauges' and the radar's
+`Monolith.exe -batchmode -nographics -mnHudSelfTest [-mnOut dir]` (122 checks; 90 before the scale, opacity and start screen): the fonts and their licence, that every character in the mission and ship files has a glyph, the type scale, the styles, the gauges' and the radar's
 geometry, a real world read into a frame (speed, throttle, fuel, hull, shield, energy, the guns, missiles and decoys, the target, the contacts, the sensors' static, the systems list, a missile in flight, the mission and the cabin's boards),
-the layout of every style at eight screen shapes in six states (nothing off screen, no two panels or words overlapping, the middle of the screen clear), the pause screens' switches, and the CPU cost of a frame. `-mnHudCost` logs the
+the layout of every style at eight screen shapes in six states (nothing off screen, no two panels or words overlapping, the middle of the screen clear), once at the design size and once at the default scale, the scale and opacity (where they come from, the limits, a bad `hud.json`, what a save keeps, the alpha of every vertex at opacity 0.5 with the warnings untouched, the type readable at 1080p, the area covered, the cost of the opacity), the start screen at eight shapes in three styles, the pause screens' switches, and the CPU cost of a frame. `-mnHudCost` logs the
 HUD's own CPU time per frame in a running game. Capture plans: `gauntlet/shots/hud/hud_r1_*.json` (made from `gauntlet/shots/specs/hud_r1_*.json` by `tools/juice/make_plan.py`); `tools/hud/capture_moments.ps1` takes every moment in every style and makes the side-by-side sheets.

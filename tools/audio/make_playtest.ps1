@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Makes the audio playtest folder: the built player, Play.bat (takes a mission name), the missions to edit, the Audio folder for your own sound, and SOUND.txt.
+  Makes the audio playtest folder: the built player, Play.bat (takes plain words: a mission or scene to play, or none for the start screen), the missions to edit, the Audio folder for your own sound, and SOUND.txt.
 
 .EXAMPLE
   powershell -NoProfile -ExecutionPolicy Bypass -File tools\audio\make_playtest.ps1 -PlaytestRoot C:\Users\chris\Monolith\Playtest
@@ -9,7 +9,7 @@ param(
     [string]$PlaytestRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot)) 'Playtest'),
     [string]$Date = (Get-Date -Format 'yyyy-MM-dd'),
     [string]$Suffix = 'audio',                 # the folder is Monolith_<date>_<suffix>
-    [string]$DefaultMission = 'escort'         # what Play.bat starts when it is given no mission
+    [string]$DefaultMission = ''               # a mission Play.bat plays when it is given none; empty (the default): the start screen, to pick a scenario and a difficulty
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path (Split-Path $PSScriptRoot)
@@ -67,7 +67,7 @@ Copy-Item (Join-Path $root 'tools\audio\OPTIONS.txt') (Join-Path $out 'OPTIONS.t
 $bat = @'
 @echo off
 rem Monolith playtest. Play.bat [words, in any order]: OPTIONS.txt lists every one.
-rem   Play.bat                       @@DEFAULT@@ (the default mission), fullscreen 1920x1080, Medium
+rem   Play.bat                       the start screen: pick a scenario and a difficulty (the last ones are remembered), fullscreen 1920x1080
 rem   Play.bat oort hard skip god    The Oculus on Hard, no briefing, you can't die
 rem   Play.bat flight window         free flight, in a window
 rem   Words starting with - (and numbers) go to the game as they are: Play.bat oort -mnFps 30
@@ -136,7 +136,8 @@ goto next
 shift
 goto args
 :run
-set "WHAT=-mnMission "%MISSION%""
+set "WHAT="
+if defined MISSION set "WHAT=-mnMission "%MISSION%""
 if defined SCENE set "WHAT=-mnScene %SCENE%"
 set "CTL="
 if exist "%~dp0controls.json" set "CTL=-mnControls "%~dp0controls.json""
