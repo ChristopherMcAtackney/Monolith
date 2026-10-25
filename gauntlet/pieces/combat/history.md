@@ -199,3 +199,59 @@ Playtest: `Playtest\Monolith_2026-10-24_fixes2\` (FIXES2.txt).
 - The pad drive no longer exercises incoming fire; the gunners are covered by the combat self-test and the range captures.
 - A blast takes the three nearest **living** parts, so a second torpedo on the same spot takes the next three; with the shield up it still does no part damage.
   The part a torpedo strikes is one of the three (no fourth), unless no part is within reach of the strike.
+
+## Round 3 (stutter builder, 2026-10-25): the merged main, and the checks that were left flaky
+
+Worktree `stutter-wt` from main 23d98d3, which is two branches (the fixes round, the start screen) that were each checked alone and never built together. The death's half-second frame is the death piece's
+Round 2; the same commits fix the two flaky checks the fixes round left (below).
+
+### Baseline: the merged main, built whole, before any change
+Nothing failed. Combat 115/115; AI 39/39; cabin 75/75; HUD 125/125; start screen 109/109; loading 55/55; mission self-test 81/81; audio PASS (150 checks, 37 s); `-mnScene juice -mnJuiceSelfTest` OK (headless,
+worst frame since the hit 39 ms); `-mnScene range -mnPadDrive` 42/42; `tools\mission.ps1 -Exe` all four PASS on Medium (cabin 142.5 s, dogfight 410.6, escort 296.3, oort 671.4: the fixes round's figures to the
+decisecond); `tools\flight.ps1` 35/35 on the four FS2 classes, the player's fighter (info) 31/35 as before.
+
+### 1. The juice self-test's boost check: the root cause (a fault of the game, not only of the check)
+Reproduced every time: `-mnScene juice -mnJuiceSelfTest -mnFps 30` and `-mnFps 15` fail on "running the tank dry makes the sputter (after 12.0 s)" and then "the burner is out on an empty tank (fuel 300)"
+(the tank had refilled while the check waited its 12 s out); 60 fps passes. A log line at the moment the burner goes out (temporary) shows why:
+`30 fps: burner went out: fuel 0.83, key True, empty False, dt 33.3 ms` against `60 fps: fuel 0.00, key True, empty True, dt 16.7 ms`.
+`BoostFx` decided that the tank had run out by reading `Fuel <= 0.5` on the frame in which the burner was seen to go out. The flight model starts refilling the tick after the cut-off (`ShipFlight` step 5), so a
+frame that runs a second tick after it sees 0.83 and takes the cut-off for a let-go: no sputter, no coughs, no pad stutter. A headless run has frames shorter than a tick, 60 fps vsync has exactly one, which is why it
+always passed there; a loaded machine's frames run several ticks (failed once in three under 20 busy processes). So **the empty-tank sputter was missed in play too**, at any frame rate under 60 and after any stall.
+Fix at the source: `ShipFlight.EmptyCutOuts` counts the cut-offs in the tick they happen (`ShipState.FuelCutOuts`, Flight's, read by `BoostFx`, which compares it with the last frame's). A counter only: the flight traces are
+unchanged (`tools\flight.ps1` 35/35 x4, the player's fighter 31/35, as before). The check keeps its thresholds and now runs the tank dry through a 30 fps cap on every run, so the old test fails the default headless
+run too (checked by putting it back: "running the tank dry makes the sputter, through frames of two ticks" and "the burner is out on an empty tank" fail).
+
+### 2. The pad drive's "tapping Y": the root cause
+`PlayerPilot` judges the Y button in sim ticks (`_menuTicks * Dt >= quickMenuHoldSeconds`, 0.25 s: a tap is the next part, a hold is the quick menu). The pad drive made its tap with the wall clock (queue the press, wait
+0.12 s of `realtimeSinceStartup`, queue the release). A frame that takes longer than the tap, which a loaded machine produces and an idle one does not, swallows it: the press and the release are both processed before
+the catch-up ticks run, which see Y up. Reproduced on demand with a new `-mnPadStall ms` (the main thread asleep once while Y is down): with the old tap **100 ms passes** (7 ticks), **200 and 300 ms fail** (0 ticks,
+"next part asked for: False, quick menu opened: False"); the other way round a stall that ends with Y still down is a tap that opens the menu (15 ticks). On the idle machine the pilot saw the old tap for 7 ticks, under 20
+busy processes 9, 7, 8 and 6 (longest frame in the tap 17 to 38 ms): a failure needs a frame of 120 ms or more, which is why it came once in a few runs and not in the ten the fixes round tried idle.
+Fix in the check: the tap is released from inside the sim (a watcher after the pilot counts the ticks the pilot has sampled Y down and lets go with `InputState.Change` after exactly 7), the hold waits 32 ticks, and the pad
+drive stalls the main thread for 200 ms during the tap on every run (`-mnPadStall 0` for none), so the old tap fails it every time; with the stall the new tap is still 7 ticks (300 ms too).
+
+### 3. Found by proving the first: the brake check and the boost check's view samples under load
+The first round of proofs under 20 busy processes (boost fix only) passed the boost check 5 of 5 and failed the **brake check once** ("two seconds in it is stopped and the brake is still on"); the next failed the
+boost check's "still easing back a moment after release (+0.2 degrees)" and the brake check's "the view lurches forward and nods (0 cm)", and at 15 fps the lurch sample (5 cm, the threshold 5). All the same fault as the Y tap
+in another form: every wait was in seconds of the wall clock, but the burner's and the brake's timers are the sim's (a long frame costs it 0.25 s at most), the view's easing is the effects' (a long frame costs it
+0.1 s) and the three drift apart under load, so "2.0 s after the click" or "0.12 s after the release" lands on a different part of the motion. Each moment is now waited for on the clock its condition is about
+(`SimTo`, `FxTo`, `Both`), with the effects' ones counted from the frame the effects drew the click or the burner going out; the lurch, a spring that peaks inside a tenth of a second, is judged by its peak in the first
+0.3 s against the same two thresholds (one sample "a tenth of a second in" lands on a different part of it at every frame rate). No threshold was changed.
+
+### Proofs (final build; every run exits 0 and prints no check failure)
+- **Juice self-test (boost, brake, death, settings): 29 of 29**: idle headless 3, windowed 1920x1080 2 (visible window), `-mnFps 30` 2, `-mnFps 15` 2, under 20 busy processes 12, under 40 busy processes 8
+  (30 to 100 s a run). Before: `-mnFps 30` and `-mnFps 15` fail every time (3 of 3), once in three under load; the rounds of proofs in between failed 3 of 27 runs under 20 busy processes and 1 run at 15 fps (section 3).
+- **Pad drive (42 checks, with the 200 ms stall in the tap): 16 of 16** (and the final full set's run): idle 5, windowed 3, `-mnFps 30` 3, under 20 busy processes 5; the pilot saw the tap for exactly 7 ticks every time.
+  The old tap with the same stall: 100 ms pass, 200 ms and 300 ms FAIL.
+- The death check's measurements (the eye 14.3 to 15.4 m from the wreck at 1.15 to 1.21 s, limit 6; the camera 0.01 to 0.08 m off the eye, limit 3) are unchanged in every one of those runs.
+
+### Checks (the final build, `Game\Builds\Win`)
+Combat 115/115; AI 39/39; cabin 75/75; HUD 125/125; start screen 109/109; loading **58/58** (3 new: the lens dust drawn on a worker thread is the same dirt); mission self-test 81/81; audio PASS (150 checks, 38 s);
+juice self-test OK (worst frame in the death's first second 8 ms, since the hit 39 ms, headless); pad drive 42/42; `tools\mission.ps1 -Exe`: cabin 142.5 s, dogfight 410.6, escort 296.3, oort 671.4, all PASS on Medium (identical
+to the baseline); `tools\flight.ps1`: 35/35 x4, the player's fighter 31/35 (info). Playtest: `Playtest\Monolith_2026-10-25_stutter\` (STUTTER.txt).
+
+### Known gaps
+- Waits in seconds of the wall clock remain in the sandbox's panel-drive check and the pad drive's other steps (the brake's 2.2 s waits, the double-tap of View): they have not failed under load, and no step of the
+  pad drive but the Y tap judges something the pilot counts in ticks. The next one that does fail will be this fault again; `SimTo`, `FxTo` and `WaitTicks` are the tools.
+- The old-tap evidence needed a stall of the main thread on demand; a run under 20 busy processes alone never produced the failure in the four runs tried with the instrumented old tap (9, 7, 8 and 6 ticks).
+- The pad drive still builds the range with no emplacements or turrets (the fixes round), so incoming fire is not exercised by it.
