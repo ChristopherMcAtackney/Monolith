@@ -37,6 +37,7 @@ namespace Monolith.Look
         {
             Camera = camera;
             Options = options;
+            DustTexture.Prepare();                      // the lens dust is drawn on a worker thread from now on, so the first time the Sun is in view costs nothing
 
             _lens = new LensPass { name = "Monolith Lens", owner = this };
             _lensVolume = MakeVolume("Lens", CustomPassInjectionPoint.BeforePostProcess, _lens);
@@ -79,7 +80,11 @@ namespace Monolith.Look
             if (_meterVolume != null) _meterVolume.enabled = on && Options.SceneMeter;
         }
 
-        void LateUpdate() => Apply();     // cheap, and keeps Options edits live
+        void LateUpdate()
+        {
+            Apply();                      // cheap, and keeps Options edits live
+            DustTexture.Poll();           // the lens dust, made from the worker's pixels the frame they are ready
+        }
 
         /// <summary>Remove the look from the camera.</summary>
         public void Disable() => Destroy(gameObject);

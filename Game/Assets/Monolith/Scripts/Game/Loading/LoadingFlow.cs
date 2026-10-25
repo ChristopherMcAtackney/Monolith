@@ -27,7 +27,12 @@ namespace Monolith.Game
             get
             {
                 if (Application.isBatchMode) return false;
-                foreach (var f in Drivers) if (CommandLine.Has(f)) return false;
+                foreach (var f in Drivers)
+                {
+                    // The death test in a mission is played the way the game is: behind the loading screen, then the sim (the sandbox has no loading screen to take the test through).
+                    if (f == "-mnDeathTest" && CommandLine.Has("-mnMission")) continue;
+                    if (CommandLine.Has(f)) return false;
+                }
                 return true;
             }
         }

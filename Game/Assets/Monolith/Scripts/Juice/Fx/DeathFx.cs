@@ -300,7 +300,7 @@ namespace Monolith.Juice
                 Vector3 at2 = _rootPos + _rootRot * local;
                 _c.Fx.Vent(at2, (_pos - at2) + rng.OnSphere() * 0.8f, 0.18f, rng.Range(1.0f, 2.4f), rng.Range(18f, 34f));
             }
-            MnLog.Info($"DEATH begins: {_cause}, {_parts.Count} cabin pieces, breach at {_k.Blow:0.00} s, out along {_dirOut}");
+            MnLog.Info($"DEATH begins: {_cause}, {_parts.Count} cabin pieces, breach at {_k.Blow:0.00} s, out along {_dirOut} (frame {UnityEngine.Time.frameCount})");
         }
 
         Vector3 _shoveDir;

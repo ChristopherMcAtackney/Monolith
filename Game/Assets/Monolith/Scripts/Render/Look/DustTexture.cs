@@ -1,24 +1,106 @@
+using System;
+using System.Threading;
+using Monolith.Core;
 using UnityEngine;
 
 namespace Monolith.Look
 {
     /// <summary>
-    /// The dirt on the lens or canopy, drawn once at start-up from a fixed seed (so it is the same every run): 2048 x 1024, three
+    /// The dirt on the lens or canopy, drawn from a fixed seed (so it is the same every run): 2048 x 1024, three
     /// channels the glare lights up differently. R is fine dust, fibres and scratches; G is greasy smudges; B is out-of-focus dust discs
     /// (bokeh), soft and lumpy. It sits still on the screen, as dirt on glass does.
+    /// <para>
+    /// Drawing it takes half a second of arithmetic (534 ms measured), and it used to be done on the main thread inside the lens pass the first time the Sun was in front of the
+    /// camera: a 0.5 s frame wherever that first happened (behind the loading screen in a played start, in the middle of the player's death in the juice sandbox and its checks,
+    /// where the tumble first turns the camera to the Sun). Now <see cref="Prepare"/> starts the drawing on a worker thread as soon as the look is built, the camera look polls
+    /// <see cref="Poll"/> once a frame and makes the texture from the finished pixels (a few milliseconds) as soon as they are ready, and <see cref="Get"/> waits for the worker if
+    /// the lens needs the texture before that (a capture whose first frame has the Sun in it), so the picture is the same as before whichever way it arrives.
+    /// </para>
     /// </summary>
     public static class DustTexture
     {
         public const int Width = 2048, Height = 1024;
+        const int Seed = 7;
         static Texture2D _shared;
+        static Thread _worker;
+        static Color32[] _pixels;
+        static double _drawMs;
+        static string _error;
 
+        /// <summary>The texture, made (the pixels waited for, or drawn here if nothing started them) and uploaded now if it is not already.</summary>
         public static Texture2D Get()
         {
-            if (_shared == null) _shared = Create(7);
+            if (_shared == null)
+            {
+                if (_worker == null && _pixels == null) Prepare();
+                Finish(true);
+            }
             return _shared;
         }
 
-        public static Texture2D Create(int seed)
+        /// <summary>The texture exists (the lens can use it this frame without a pause).</summary>
+        public static bool Ready => _shared != null;
+
+        /// <summary>Start drawing the dirt on a worker thread (once; nothing to do when the texture exists). Only plain arithmetic runs on it: no engine objects.</summary>
+        public static void Prepare()
+        {
+            if (_shared != null || _worker != null || _pixels != null) return;
+            var worker = new Thread(() =>
+            {
+                try
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    var px = Draw(Seed);
+                    _drawMs = sw.Elapsed.TotalMilliseconds;
+                    _pixels = px;
+                }
+                catch (Exception e) { _error = e.Message; }               // the main thread draws it itself (and says so) rather than lose the lens dust
+            })
+            { IsBackground = true, Name = "MN lens dust", Priority = System.Threading.ThreadPriority.BelowNormal };
+            _worker = worker;
+            worker.Start();
+        }
+
+        /// <summary>Once a frame: when the worker has finished, make the texture from its pixels (never waits).</summary>
+        public static void Poll()
+        {
+            if (_shared == null && _worker != null && !_worker.IsAlive) Finish(false);
+        }
+
+        static void Finish(bool wait)
+        {
+            if (_worker != null)
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                if (wait) _worker.Join(); else if (_worker.IsAlive) return;
+                _worker = null;
+                if (wait && sw.Elapsed.TotalMilliseconds > 5.0) MnLog.Info($"LOOK the lens dust texture was waited for: {sw.Elapsed.TotalMilliseconds:0} ms (the drawing took {_drawMs:0} ms on its thread)");
+            }
+            var swTex = System.Diagnostics.Stopwatch.StartNew();
+            if (_pixels == null) { _pixels = Draw(Seed); MnLog.Warn("LOOK the lens dust texture had to be drawn on the main thread" + (_error != null ? " (the worker failed: " + _error + ")" : "")); }
+            _shared = Upload(_pixels);
+            _pixels = null;
+            MnLog.Info($"LOOK the lens dust texture is ready at frame {Time.frameCount}: drawn in {_drawMs:0} ms off the main thread, made in {swTex.Elapsed.TotalMilliseconds:0.0} ms");
+        }
+
+        /// <summary>The finished texture for a seed, drawn here and now (the tools; the game goes through <see cref="Get"/>).</summary>
+        public static Texture2D Create(int seed) => Upload(Draw(seed));
+
+        static Texture2D Upload(Color32[] pixels)
+        {
+            var tex = new Texture2D(Width, Height, TextureFormat.RGBA32, false, true)
+            {
+                name = "MN_LensDust",
+                wrapMode = TextureWrapMode.Repeat,
+                filterMode = FilterMode.Bilinear,
+            };
+            tex.SetPixels32(pixels);
+            tex.Apply(false, true);
+            return tex;
+        }
+
+        /// <summary>The pixels. Plain arithmetic on arrays (no engine objects), so it can run on any thread (the loading self-test checks that a thread draws the same dirt).</summary>
+        public static Color32[] Draw(int seed)
         {
             var rng = new System.Random(seed);
             float Rand() => (float)rng.NextDouble();
@@ -90,15 +172,7 @@ namespace Monolith.Look
             for (int i = 0; i < pixels.Length; i++)
                 pixels[i] = new Color32((byte)(Mathf.Clamp01(r[i]) * 255f + 0.5f), (byte)(Mathf.Clamp01(g[i]) * 255f + 0.5f), (byte)(Mathf.Clamp01(b[i]) * 255f + 0.5f), 255);
 
-            var tex = new Texture2D(Width, Height, TextureFormat.RGBA32, false, true)
-            {
-                name = "MN_LensDust",
-                wrapMode = TextureWrapMode.Repeat,
-                filterMode = FilterMode.Bilinear,
-            };
-            tex.SetPixels32(pixels);
-            tex.Apply(false, true);
-            return tex;
+            return pixels;
         }
 
         /// <summary>Adds a soft disc: value amp at the centre, falling to 0 at radius with the given power.</summary>
