@@ -15,7 +15,7 @@ To use them, make a shortcut to Play.bat and add the words to the end of its Tar
 THE START SCREEN (Play.bat with no mission or scene word)
   After the loading screen you choose what to play, in the HUD's own look (F9 changes the style):
     Xbox pad:  D-pad or left stick to move, A to choose, B to go back.     Keyboard:  arrows, Enter, Esc.
-  Scenario: the missions (The Dogfight, The Oculus, The Crossing, Dead Water, and any file you put in the Missions folder, by the name written
+  Scenario: the missions (The Dogfight, The Oculus, The Crossing, Dead Water, Jupiter Skirmish (test), and any file you put in the Missions folder, by the name written
   in it) and the sandboxes (free flight, the combat range, the explosions sandbox). A on a mission moves you to Difficulty (Very easy, Easy,
   Medium, Hard, Insane); A there launches it. A sandbox launches at once. B jumps to QUIT at the bottom of the list; B or A there closes the game.
   When a mission ends, or you quit from the pause screen (B), you are back on this screen, not on the desktop (F10 does it in the explosions
@@ -29,6 +29,7 @@ WHAT TO PLAY (one of these; with none, the start screen)
   oort          The Oculus: the Oort Cloud strike on the comet outpost, the slice's main mission
   escort        The Crossing: get the crippled freighter Tamsin to the jump point
   cabin         Dead Water: hide from the Lector's scans (go dark, hand repairs)
+  jupiter       Jupiter Skirmish (test): the Dogfight's fight in front of Jupiter (the planet backdrop: Cassini's map, Io and Europa, slow bands, a turning Great Red Spot)
   <name>        any other mission file in the Missions folder, by name
 
   flight        free flight, nothing to fight (the flight model on its own)

@@ -34,6 +34,8 @@ namespace Monolith.Sky
         public Vector4Parameter ambientShape = new Vector4Parameter(new Vector4(0.7f, 1f, 0f, 0f));          // away-from-Sun gradient, Milky Way gain
         /// <summary>Nits of one display unit: 1.2 * 2^EV100 of the reference exposure.</summary>
         public FloatParameter nitsPerUnit = new FloatParameter(19660.8f);
+        /// <summary>The planet in the sky (null: none). Held by reference: the rig retunes it in place.</summary>
+        public BackdropParameter backdrop = new BackdropParameter(null);
 
         public override int GetHashCode()
         {
@@ -49,6 +51,7 @@ namespace Monolith.Sky
                 hash = hash * 23 + ambientShape.GetHashCode();
                 hash = hash * 23 + sunDirection.GetHashCode();
                 hash = hash * 23 + nitsPerUnit.GetHashCode();
+                hash = hash * 23 + (backdrop.value != null && backdrop.value.Active ? backdrop.value.BakeHash : 0);
             }
             return hash;
         }

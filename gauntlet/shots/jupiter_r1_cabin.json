@@ -1,0 +1,42 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "jupiter",
+  "hud": false,
+  "dust": false,
+  "invulnerable": true,
+  "cabin": {
+   "script": [
+    {
+     "t": 1.0,
+     "do": "stand"
+    },
+    {
+     "do": "face",
+     "yaw": 10,
+     "pitch": -5
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "cabin_seated",
+   "follow": true,
+   "warmup": 0.5,
+   "fov": 55
+  },
+  {
+   "name": "cabin_standing_fore",
+   "follow": true,
+   "warmup": 6.0,
+   "fov": 62
+  }
+ ]
+}

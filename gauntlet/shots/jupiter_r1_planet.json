@@ -1,0 +1,329 @@
+{
+ "scene": "sky",
+ "sceneOptions": {
+  "Backdrop": {
+   "Body": "jupiter",
+   "DistanceKm": 200000,
+   "Azimuth": 24,
+   "Elevation": -9,
+   "HasSun": true,
+   "SunAzimuth": -100,
+   "SunElevation": 6,
+   "SunDistanceAu": 5.2,
+   "GrsLongitude": -22,
+   "Planetshine": 3,
+   "AmbientScale": 0.3,
+   "Moons": [
+    {
+     "Body": "io",
+     "OrbitDeg": 300
+    },
+    {
+     "Body": "europa",
+     "OrbitDeg": 205
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "io_close",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    1.794,
+    -20.734,
+    0
+   ],
+   "fov": 2.2,
+   "warmup": 0.5
+  },
+  {
+   "name": "europa_close",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    3.067,
+    48.071,
+    0
+   ],
+   "fov": 1.6,
+   "warmup": 0.5
+  },
+  {
+   "name": "io_beside_jupiter",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    5.836,
+    1.405,
+    0
+   ],
+   "fov": 38,
+   "warmup": 0.5
+  },
+  {
+   "name": "europa_beside_jupiter",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    6.165,
+    36.056,
+    0
+   ],
+   "fov": 60,
+   "warmup": 0.5
+  },
+  {
+   "name": "jupiter_full",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 60,
+   "warmup": 1.0
+  },
+  {
+   "name": "jupiter_full_wide",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 85,
+   "warmup": 1.0
+  },
+  {
+   "name": "limb_terminator_north",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    -10.666,
+    24.387,
+    0
+   ],
+   "fov": 16
+  },
+  {
+   "name": "limb_terminator_south",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    28.666,
+    23.567,
+    0
+   ],
+   "fov": 16
+  },
+  {
+   "name": "limb_lit",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    8.092,
+    4.128,
+    0
+   ],
+   "fov": 14
+  },
+  {
+   "name": "terminator_middle",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    8.96,
+    40.198,
+    0
+   ],
+   "fov": 22
+  },
+  {
+   "name": "terminator_wide",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    8.96,
+    40.198,
+    0
+   ],
+   "fov": 45
+  },
+  {
+   "name": "grs",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    21.653,
+    12.944,
+    0
+   ],
+   "fov": 18
+  },
+  {
+   "name": "grs_close",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    21.653,
+    12.944,
+    0
+   ],
+   "fov": 7
+  },
+  {
+   "name": "hull_before_jupiter",
+   "pos": [
+    -36.16,
+    14.08,
+    -81.21
+   ],
+   "lookAt": [
+    0,
+    0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 1.0
+  },
+  {
+   "name": "hull_before_jupiter_wide",
+   "pos": [
+    -36.16,
+    14.08,
+    -81.21
+   ],
+   "lookAt": [
+    0,
+    0,
+    0
+   ],
+   "fov": 70,
+   "warmup": 1.0
+  },
+  {
+   "name": "hull_planetshine",
+   "pos": [
+    36.16,
+    -2.08,
+    81.21
+   ],
+   "lookAt": [
+    0,
+    0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 1.0
+  },
+  {
+   "name": "hull_planetshine_low",
+   "pos": [
+    50.16,
+    -18.08,
+    81.21
+   ],
+   "lookAt": [
+    0,
+    0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 1.0
+  },
+  {
+   "name": "drift_0",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 0.5
+  },
+  {
+   "name": "drift_1",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 40.0
+  },
+  {
+   "name": "drift_2",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 80.0
+  }
+ ]
+}

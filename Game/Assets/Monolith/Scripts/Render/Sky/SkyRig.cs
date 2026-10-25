@@ -21,6 +21,9 @@ namespace Monolith.Sky
         public Light Sun { get; private set; }
         /// <summary>World-space unit vector from the viewer toward the Sun.</summary>
         public Vector3 SunDirection { get; private set; }
+        /// <summary>The backdrop planet in use (null: none).</summary>
+        public BackdropState Backdrop => _backdrop;
+        float AmbientScale => _backdrop != null ? Mathf.Max(Options.Backdrop.AmbientScale, 0f) : 1f;
 
         HDAdditionalLightData _sunData;
         MonolithSky _sky;
@@ -33,6 +36,7 @@ namespace Monolith.Sky
         CameraLook _look;
         RenderQuality.RenderQuality _quality;
         HDAdditionalCameraData _cameraData;
+        BackdropState _backdrop;
         HDAdditionalCameraData.ClearColorMode _previousClear;
 
         /// <summary>Turn the sky on for this camera. Returns the rig; keep it if you want to retune or turn the sky off later.</summary>
@@ -73,6 +77,11 @@ namespace Monolith.Sky
             env.skyAmbientMode.Override(SkyAmbientMode.Dynamic);
             _sky = _skyProfile.Add<MonolithSky>(true);
             _skyVolume = MakeVolume("SkyVolume", _skyProfile, 20f);
+            if (options.Backdrop != null && options.Backdrop.Enabled)
+            {
+                try { _backdrop = BackdropState.Create(options.Backdrop); }
+                catch (System.Exception e) { MnLog.Error("SKY backdrop could not be built (the sky goes without it): " + e.Message); }
+            }
 
             // Exposure and look.
             if (options.ConfigureExposure || options.ConfigureLook)
@@ -113,7 +122,9 @@ namespace Monolith.Sky
         {
             var o = Options;
 
-            SunDirection = SkyMath.EclipticToWorld(o.SunEclipticLongitude, o.SunEclipticLatitude, o.SkyRotationEuler);
+            SunDirection = _backdrop != null && o.Backdrop.HasSun
+                ? BackdropState.AzEl(o.Backdrop.SunAzimuth, o.Backdrop.SunElevation)
+                : SkyMath.EclipticToWorld(o.SunEclipticLongitude, o.SunEclipticLatitude, o.SkyRotationEuler);
             Sun.transform.rotation = Quaternion.LookRotation(-SunDirection, Vector3.up);
             Sun.color = o.SunColor;
             _sunData.SetIntensity(o.SunLux, LightUnit.Lux);
@@ -136,9 +147,15 @@ namespace Monolith.Sky
             _sky.milkyWayTint.Override(o.MilkyWayTint);
             _sky.blackLift.Override(o.BlackLift);
             _sky.ambientColor.Override(o.AmbientColor);
-            _sky.ambientNits.Override(o.AmbientNits);
+            _sky.ambientNits.Override(o.AmbientNits * AmbientScale);
             _sky.ambientShape.Override(new Vector4(o.AmbientAwayFromSun, o.AmbientMilkyWay, 0f, 0f));
             _sky.nitsPerUnit.Override(nitsPerUnit);
+
+            if (_backdrop != null)
+            {
+                _backdrop.Configure(o.Backdrop, SunDirection, o.SunLux, o.SkyRotationEuler);
+                _sky.backdrop.Override(_backdrop);
+            }
 
             if (_look != null)
             {
@@ -200,7 +217,7 @@ namespace Monolith.Sky
             float nitsPerUnit = 1.2f * Mathf.Pow(2f, ev);
             float lum = Mathf.Max(0.2126f * o.SunColor.r + 0.7152f * o.SunColor.g + 0.0722f * o.SunColor.b, 1e-4f);
             _sky.nitsPerUnit.Override(nitsPerUnit);
-            _sky.ambientNits.Override(o.AmbientNits * ambientScale);
+            _sky.ambientNits.Override(o.AmbientNits * ambientScale * AmbientScale);
             if (_look != null) { _look.SetSun(SunDirection, new Color(o.SunColor.r / lum, o.SunColor.g / lum, o.SunColor.b / lum, 1f), nitsPerUnit); _look.Apply(); }
             if (_exposure != null && o.Exposure == SkyExposure.Fixed) _exposure.fixedExposure.Override(ev);
         }

@@ -256,10 +256,12 @@
    "file": "earth_warden/dogfight_earth_bombers.wav",
    "sources": [
     "dogfight:earth_bombers",
+    "jupiter:earth_bombers",
     "radio.json:earth_bombers"
    ],
    "lineIds": [
     "dogfight:earth_bombers",
+    "jupiter:earth_bombers",
     "radio:earth_bombers:1"
    ]
   },
@@ -271,10 +273,12 @@
    "file": "earth_warden/dogfight_earth_wave_1.wav",
    "sources": [
     "dogfight:earth_wave_1",
+    "jupiter:earth_wave_1",
     "radio.json:earth_wave"
    ],
    "lineIds": [
     "dogfight:earth_wave_1",
+    "jupiter:earth_wave_1",
     "radio:earth_wave:1"
    ]
   },
@@ -285,10 +289,12 @@
    "say": "You return to us, and you will be ascended.",
    "file": "earth_warden/dogfight_earth_wave_2.wav",
    "sources": [
-    "dogfight:earth_wave_2"
+    "dogfight:earth_wave_2",
+    "jupiter:earth_wave_2"
    ],
    "lineIds": [
-    "dogfight:earth_wave_2"
+    "dogfight:earth_wave_2",
+    "jupiter:earth_wave_2"
    ]
   },
   {
@@ -299,10 +305,12 @@
    "file": "earth_warden/dogfight_earth_wave_3.wav",
    "sources": [
     "dogfight:earth_wave_3",
+    "jupiter:earth_wave_3",
     "radio.json:earth_wave"
    ],
    "lineIds": [
     "dogfight:earth_wave_3",
+    "jupiter:earth_wave_3",
     "radio:earth_wave:3"
    ]
   },
@@ -314,10 +322,12 @@
    "file": "earth_warden/dogfight_earth_wave_4.wav",
    "sources": [
     "dogfight:earth_wave_4",
+    "jupiter:earth_wave_4",
     "radio.json:earth_wave"
    ],
    "lineIds": [
     "dogfight:earth_wave_4",
+    "jupiter:earth_wave_4",
     "radio:earth_wave:4"
    ]
   },
@@ -328,10 +338,12 @@
    "say": "You have no place here anymore.",
    "file": "earth_warden/dogfight_earth_wave_5.wav",
    "sources": [
-    "dogfight:earth_wave_5"
+    "dogfight:earth_wave_5",
+    "jupiter:earth_wave_5"
    ],
    "lineIds": [
-    "dogfight:earth_wave_5"
+    "dogfight:earth_wave_5",
+    "jupiter:earth_wave_5"
    ]
   },
   {
@@ -341,10 +353,12 @@
    "say": "This will all be over soon.",
    "file": "earth_warden/dogfight_earth_wave_6.wav",
    "sources": [
-    "dogfight:earth_wave_6"
+    "dogfight:earth_wave_6",
+    "jupiter:earth_wave_6"
    ],
    "lineIds": [
-    "dogfight:earth_wave_6"
+    "dogfight:earth_wave_6",
+    "jupiter:earth_wave_6"
    ]
   },
   {
@@ -536,10 +550,12 @@
    "say": "Warden's beam weapon is down!!!",
    "file": "mercy/dogfight_beams_down_tense.wav",
    "sources": [
-    "dogfight:beams_down"
+    "dogfight:beams_down",
+    "jupiter:beams_down"
    ],
    "lineIds": [
-    "dogfight:beams_down"
+    "dogfight:beams_down",
+    "jupiter:beams_down"
    ]
   },
   {
@@ -550,10 +566,12 @@
    "file": "mercy/dogfight_beams_threat_frantic.wav",
    "sources": [
     "dogfight:beams_threat",
+    "jupiter:beams_threat",
     "radio.json:beams_threat"
    ],
    "lineIds": [
     "dogfight:beams_threat",
+    "jupiter:beams_threat",
     "radio:beams_threat:1"
    ]
   },
@@ -565,10 +583,12 @@
    "file": "mercy/dogfight_bombers_frantic.wav",
    "sources": [
     "dogfight:bombers",
+    "jupiter:bombers",
     "radio.json:bombers"
    ],
    "lineIds": [
     "dogfight:bombers",
+    "jupiter:bombers",
     "radio:bombers:1"
    ]
   },
@@ -580,10 +600,12 @@
    "file": "mercy/dogfight_capital_hurt_frantic.wav",
    "sources": [
     "dogfight:capital_hurt",
+    "jupiter:capital_hurt",
     "radio.json:capital_hurt"
    ],
    "lineIds": [
     "dogfight:capital_hurt",
+    "jupiter:capital_hurt",
     "radio:capital_hurt:1"
    ]
   },
@@ -594,10 +616,12 @@
    "say": "Sable flight, Warden's three klicks out. Keep the drones off us and we'll all get home!",
    "file": "mercy/dogfight_opening_tense.wav",
    "sources": [
-    "dogfight:opening"
+    "dogfight:opening",
+    "jupiter:opening"
    ],
    "lineIds": [
-    "dogfight:opening"
+    "dogfight:opening",
+    "jupiter:opening"
    ]
   },
   {
@@ -608,10 +632,12 @@
    "file": "sable1/dogfight_lost_capital_frantic.wav",
    "sources": [
     "dogfight:lost_capital",
+    "jupiter:lost_capital",
     "radio.json:lost_capital"
    ],
    "lineIds": [
     "dogfight:lost_capital",
+    "jupiter:lost_capital",
     "radio:lost_capital:1"
    ]
   },
@@ -622,10 +648,12 @@
    "say": "Sable two is gone!",
    "file": "sable1/dogfight_sable2_lost_frantic.wav",
    "sources": [
-    "dogfight:sable2_lost"
+    "dogfight:sable2_lost",
+    "jupiter:sable2_lost"
    ],
    "lineIds": [
-    "dogfight:sable2_lost"
+    "dogfight:sable2_lost",
+    "jupiter:sable2_lost"
    ]
   },
   {
@@ -635,10 +663,12 @@
    "say": "Lost Sable three! Keep flying!",
    "file": "sable1/dogfight_sable3_lost_frantic.wav",
    "sources": [
-    "dogfight:sable3_lost"
+    "dogfight:sable3_lost",
+    "jupiter:sable3_lost"
    ],
    "lineIds": [
-    "dogfight:sable3_lost"
+    "dogfight:sable3_lost",
+    "jupiter:sable3_lost"
    ]
   },
   {
@@ -649,10 +679,12 @@
    "file": "sable1/dogfight_won.wav",
    "sources": [
     "dogfight:won",
+    "jupiter:won",
     "radio.json:won"
    ],
    "lineIds": [
     "dogfight:won",
+    "jupiter:won",
     "radio:won:1"
    ]
   },
@@ -1173,10 +1205,12 @@
    "file": "sable2/dogfight_lost_capital_frantic.wav",
    "sources": [
     "dogfight:lost_capital",
+    "jupiter:lost_capital",
     "radio.json:lost_capital"
    ],
    "lineIds": [
     "dogfight:lost_capital",
+    "jupiter:lost_capital",
     "radio:lost_capital:1"
    ]
   },
@@ -1188,10 +1222,12 @@
    "file": "sable2/dogfight_sable2_lost_frantic.wav",
    "sources": [
     "dogfight:sable2_lost",
+    "jupiter:sable2_lost",
     "radio.json:wingman_lost"
    ],
    "lineIds": [
     "dogfight:sable2_lost",
+    "jupiter:sable2_lost",
     "radio:wingman_lost:1"
    ]
   },
@@ -1202,10 +1238,12 @@
    "say": "Lost Sable three! Keep flying!",
    "file": "sable2/dogfight_sable3_lost_frantic.wav",
    "sources": [
-    "dogfight:sable3_lost"
+    "dogfight:sable3_lost",
+    "jupiter:sable3_lost"
    ],
    "lineIds": [
-    "dogfight:sable3_lost"
+    "dogfight:sable3_lost",
+    "jupiter:sable3_lost"
    ]
   },
   {
@@ -1216,10 +1254,12 @@
    "file": "sable2/dogfight_won.wav",
    "sources": [
     "dogfight:won",
+    "jupiter:won",
     "radio.json:won"
    ],
    "lineIds": [
     "dogfight:won",
+    "jupiter:won",
     "radio:won:1"
    ]
   },
@@ -1868,10 +1908,12 @@
    "file": "sable3/dogfight_lost_capital_frantic.wav",
    "sources": [
     "dogfight:lost_capital",
+    "jupiter:lost_capital",
     "radio.json:lost_capital"
    ],
    "lineIds": [
     "dogfight:lost_capital",
+    "jupiter:lost_capital",
     "radio:lost_capital:1"
    ]
   },
@@ -1883,10 +1925,12 @@
    "file": "sable3/dogfight_sable2_lost_frantic.wav",
    "sources": [
     "dogfight:sable2_lost",
+    "jupiter:sable2_lost",
     "radio.json:wingman_lost"
    ],
    "lineIds": [
     "dogfight:sable2_lost",
+    "jupiter:sable2_lost",
     "radio:wingman_lost:1"
    ]
   },
@@ -1897,10 +1941,12 @@
    "say": "Lost Sable three! Keep flying!",
    "file": "sable3/dogfight_sable3_lost_frantic.wav",
    "sources": [
-    "dogfight:sable3_lost"
+    "dogfight:sable3_lost",
+    "jupiter:sable3_lost"
    ],
    "lineIds": [
-    "dogfight:sable3_lost"
+    "dogfight:sable3_lost",
+    "jupiter:sable3_lost"
    ]
   },
   {
@@ -1911,10 +1957,12 @@
    "file": "sable3/dogfight_won.wav",
    "sources": [
     "dogfight:won",
+    "jupiter:won",
     "radio.json:won"
    ],
    "lineIds": [
     "dogfight:won",
+    "jupiter:won",
     "radio:won:1"
    ]
   },

@@ -1,0 +1,124 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "jupiter",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Warden",
+   "offset": [
+    120,
+    80,
+    420
+   ],
+   "world": true,
+   "look": "Small Mercy"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "warden_t006",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6.0
+  },
+  {
+   "name": "warden_t012",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t018",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t024",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t030",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t036",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t042",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t048",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t054",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t060",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "warden_t070",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "warden_t080",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "warden_t090",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "warden_t100",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "warden_t110",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "warden_t120",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  }
+ ]
+}

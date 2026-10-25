@@ -97,7 +97,7 @@ namespace Monolith.Game
                 var builtIn = StartCatalog.Missions(Path.Combine(dir, "nothing here"));
                 var names = new List<string>();
                 foreach (var m in builtIn) names.Add(m.Name);
-                Check(string.Join("|", names) == "The Dogfight|The Oculus|The Crossing|Dead Water", $"the missions are listed by their display names, in order: {string.Join(", ", names)}");
+                Check(string.Join("|", names) == "The Dogfight|The Oculus|The Crossing|Dead Water|Jupiter Skirmish (test)", $"the missions are listed by their display names, in order: {string.Join(", ", names)}");
                 bool blurbs = true;
                 foreach (var m in builtIn) if (string.IsNullOrEmpty(m.Detail) || m.Detail.Length > 300) blurbs = false;
                 Check(blurbs, "each mission has a line from its own briefing to read (two sentences at most)");
@@ -109,7 +109,7 @@ namespace Monolith.Game
                 var beside = StartCatalog.Missions(missions);
                 var bn = new List<string>();
                 foreach (var m in beside) bn.Add(m.Id + "=" + m.Name);
-                Check(beside.Count == 6 && beside[0].Name == "The Dogfight" && beside[1].Name == "The Oculus (my edit)" && beside[1].Beside, $"a file in the Missions folder replaces the built-in mission of its name, in its place: {string.Join(", ", bn)}");
+                Check(beside.Count == 7 && beside[0].Name == "The Dogfight" && beside[1].Name == "The Oculus (my edit)" && beside[1].Beside, $"a file in the Missions folder replaces the built-in mission of its name, in its place: {string.Join(", ", bn)}");
                 Check(beside.Exists(m => m.Name == "The Test Run" && m.Detail == "A mission someone wrote. It has two sentences."), "a mission added in the Missions folder is listed by its display name with the first two sentences of its briefing");
                 Check(beside.Exists(m => m.Id == "broken" && m.Detail != null && m.Detail.StartsWith("This file could not be read")), "a broken file is listed by its file name and says it cannot be read");
 
@@ -117,7 +117,7 @@ namespace Monolith.Game
                 var menu = StartCatalog.Build(missions, useSaved: false);
                 int missionsN = 0, sandboxN = 0, quitN = 0;
                 foreach (var e in menu.Entries) { if (e.Kind == EntryKind.Mission) missionsN++; else if (e.Kind == EntryKind.Sandbox) sandboxN++; else quitN++; }
-                Check(missionsN == 6 && sandboxN == 3 && quitN == 1 && menu.Entries[menu.Entries.Count - 1].Kind == EntryKind.Quit, $"the screen lists {missionsN} missions, {sandboxN} sandboxes and a quit row, quit last");
+                Check(missionsN == 7 && sandboxN == 3 && quitN == 1 && menu.Entries[menu.Entries.Count - 1].Kind == EntryKind.Quit, $"the screen lists {missionsN} missions, {sandboxN} sandboxes and a quit row, quit last");
                 var sb = new List<string>();
                 foreach (var e in menu.Entries) if (e.Kind == EntryKind.Sandbox) sb.Add(e.Title);
                 Check(string.Join("|", sb) == "Free flight|Combat range|Explosions sandbox", $"the sandboxes are free flight, the combat range and the explosions sandbox ({string.Join(", ", sb)})");
@@ -156,9 +156,9 @@ namespace Monolith.Game
                 // what is drawn from it
                 var hm = new HudMenu();
                 m1.LevelFocus = false; m1.Index = 0; m1.Build(hm); m1.Sync(hm);
-                Check(hm.Rows.Count == 10 && hm.Rows[0].Heading && hm.Rows[0].Label == "Missions" && hm.Rows[5].Heading && hm.Rows[5].Label == "Sandboxes" && hm.Rows[9].Quit && hm.Selected == 1, $"the HUD's menu data has two headings, the entries and the quit row ({hm.Rows.Count} rows, the cursor on row {hm.Selected})");
-                m1.Index = 4; m1.Sync(hm);
-                Check(hm.Selected == 6 && !hm.LevelApplies && hm.Description == m1.Selected.Detail, "the cursor's row follows past the heading, and a sandbox says the levels do not apply");
+                Check(hm.Rows.Count == 11 && hm.Rows[0].Heading && hm.Rows[0].Label == "Missions" && hm.Rows[6].Heading && hm.Rows[6].Label == "Sandboxes" && hm.Rows[10].Quit && hm.Selected == 1, $"the HUD's menu data has two headings, the entries and the quit row ({hm.Rows.Count} rows, the cursor on row {hm.Selected})");
+                m1.Index = 5; m1.Sync(hm);
+                Check(hm.Selected == 7 && !hm.LevelApplies && hm.Description == m1.Selected.Detail, "the cursor's row follows past the heading, and a sandbox says the levels do not apply");
 
                 // what is remembered, beside the game
                 StartSettings.Save("oort", "Hard");
@@ -175,7 +175,7 @@ namespace Monolith.Game
                 Check(m4.Index == 0 && m4.LevelName == "Medium", "a remembered scenario that no longer exists, or a level that is not one, is ignored");
 
                 // what a choice adds to the command line, and that the real flags are still read
-                Check(string.Join(" ", StartCatalog.FlagsFor(m1.Entries[1], "Hard")) == "-mnMission oort -mnDifficulty Hard" && string.Join(" ", StartCatalog.FlagsFor(m1.Entries[4], "Hard")) == "-mnScene flight", "a mission launches as -mnMission and -mnDifficulty, a sandbox as -mnScene");
+                Check(string.Join(" ", StartCatalog.FlagsFor(m1.Entries[1], "Hard")) == "-mnMission oort -mnDifficulty Hard" && string.Join(" ", StartCatalog.FlagsFor(m1.Entries[5], "Hard")) == "-mnScene flight", "a mission launches as -mnMission and -mnDifficulty, a sandbox as -mnScene");
                 var wasArgs = Environment.GetCommandLineArgs();
                 try
                 {

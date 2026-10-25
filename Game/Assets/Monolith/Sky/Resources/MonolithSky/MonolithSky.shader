@@ -2,7 +2,8 @@
 //
 //   Pass 0  Bake    the Milky Way plus the cold ambient fill, into HDRP's lighting cubemap. No stars, no Sun.
 //   Pass 1  Render  full-screen background: Milky Way, black lift, the Sun's core, halo and streak.
-//   Pass 2  Stars   one small quad per catalogue star, additive, on top of pass 1.
+//   Pass 2  Stars   one small quad per catalogue star, additive, on top of pass 1 (hidden behind the backdrop planet's disc).
+//   Pass 3  Planet  the backdrop planet (MonolithPlanet.hlsl), premultiplied over pass 1 and under the stars; the bake draws it too.
 //
 // Stars are placed by the camera's own view-projection (the same matrix, jitter included, that the geometry uses) and each
 // is a point-spread function sized in screen pixels: a Gaussian core integrated exactly over each pixel (so a star's total
@@ -49,6 +50,8 @@ Shader "Hidden/Monolith/Sky"
     float4 _StarExposure;      // x frame brightness at which the stars lose half their light, y how sharply, z the same for the Milky Way (exponent), w fraction of the faintest stars a camera misses
     float4 _StarVariety;       // x brightness jitter, y size jitter, z glint rate (share of the brightest stars with a vertical glint), w glint length px
     TEXTURE2D(_MnSceneKey);    // 1 x 1, written by the camera look's meter: mean of sqrt(luminance) of the last frame (black if there is no meter)
+
+    #include "MonolithPlanet.hlsl"
 
     // ------------------------------------------------------------------------------------------------ helpers
 
@@ -131,6 +134,12 @@ Shader "Hidden/Monolith/Sky"
         float awayFromSun = dot(dirWS, -_SunDirWS.xyz);
         float3 fill = _AmbientFill.rgb * max(0.0, 1.0 + _AmbientShape.x * awayFromSun);
         float3 c = MilkyWay(dirWS) * (_NitsPerUnit * _AmbientShape.y) + fill;
+        if (_PlanetDir.w > 0.5)
+        {
+            // The backdrop planet is the biggest, warmest light in the sky: its reflected sunlight is what lights the ships' planet side (diffuse from the ambient probe, shine from the reflections).
+            float4 pl = PlanetShade(dirWS, dirWS, dirWS, 4.0);
+            c = c * (1.0 - pl.a) + pl.rgb * _PlanetPx.w;
+        }
         return float4(c, 1.0);
     }
 
@@ -149,6 +158,17 @@ Shader "Hidden/Monolith/Sky"
         float3 dirWS = ViewDirWS(input.positionCS.xy);
         float3 c = MilkyWay(dirWS) * pow(CameraCatch(), _StarExposure.z) + _BlackLift.rgb + SunLayer(input.positionCS.xy);
         return float4(c * (_NitsPerUnit * GetCurrentExposureMultiplier()), 1.0);
+    }
+
+    float4 FragPlanet(Varyings input) : SV_Target
+    {
+        UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+        float2 pos = input.positionCS.xy;
+        float3 d = ViewDirWS(pos);
+        if (_PlanetDir.w < 0.5) return 0.0;
+        float4 p = PlanetAndMoons(d, ViewDirWS(pos + float2(1.0, 0.0)), ViewDirWS(pos + float2(0.0, 1.0)));
+        p.rgb *= GetCurrentExposureMultiplier();
+        return p;
     }
 
     // ------------------------------------------------------------------------------------------------ stars
@@ -184,6 +204,8 @@ Shader "Hidden/Monolith/Sky"
         float3 dirWS = mul((float3x3)_SkyToWorld, pm.xyz);
         float4 clip = mul(_SkyViewProj, float4(dirWS, 0.0));
         if (clip.w < 1e-3) return o;
+        float behindPlanet = PlanetAlpha(dirWS);                // the backdrop planet's disc and haze hide the stars behind them
+        if (behindPlanet > 0.999) return o;
 
         // Brightness: real flux ratios raised to gamma, so Sirius and a magnitude-8 star both stay on the screen.
         float mag = pm.w;
@@ -195,7 +217,7 @@ Shader "Hidden/Monolith/Sky"
         float h4 = GenerateHashedRandomFloat(uint2(star, 4u)), h5 = GenerateHashedRandomFloat(uint2(star, 5u)), h6 = GenerateHashedRandomFloat(uint2(star, 6u));
         float keep = 1.0 - _StarExposure.w * saturate((mag - 6.0) / 2.6);
         if (h3 > keep) return o;
-        flux *= CameraCatch() * lerp(1.0 - _StarVariety.x, 1.0 + _StarVariety.x, h1);
+        flux *= CameraCatch() * lerp(1.0 - _StarVariety.x, 1.0 + _StarVariety.x, h1) * (1.0 - behindPlanet);
         if (flux < 1e-6) return o;
 
         float sigma = _StarShape.x * lerp(1.0 - _StarVariety.y, 1.0 + 1.4 * _StarVariety.y, h2);
@@ -301,6 +323,19 @@ Shader "Hidden/Monolith/Sky"
             HLSLPROGRAM
                 #pragma vertex VertStar
                 #pragma fragment FragStar
+            ENDHLSL
+        }
+
+        Pass    // 3: the backdrop planet
+        {
+            Name "Planet"
+            ZWrite Off
+            ZTest LEqual
+            Blend One OneMinusSrcAlpha
+            Cull Off
+            HLSLPROGRAM
+                #pragma vertex Vert
+                #pragma fragment FragPlanet
             ENDHLSL
         }
     }

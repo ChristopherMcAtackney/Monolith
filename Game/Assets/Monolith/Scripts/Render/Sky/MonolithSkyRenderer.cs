@@ -1,3 +1,4 @@
+using Monolith.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -13,7 +14,7 @@ namespace Monolith.Sky
     {
         const string ShaderPath = "MonolithSky/MonolithSky";
         const string MilkyWayPath = "MonolithSky/milkyway";
-        const int PassBake = 0, PassRender = 1, PassStars = 2;
+        const int PassBake = 0, PassRender = 1, PassStars = 2, PassPlanet = 3;
         const float MilkyWayTexelRadians = 2f * Mathf.PI / 4096f;      // the map is 4096 texels around the equator
 
         Material _material;
@@ -96,10 +97,14 @@ namespace Monolith.Sky
             Vector3 sunDirWorld = sky.sunDirection.value.normalized;
             _block.SetVector(IdSunDirWS, new Vector4(sunDirWorld.x, sunDirWorld.y, sunDirWorld.z, 0f));
 
+            var backdrop = sky.backdrop.value;
+            bool planet = backdrop != null && backdrop.Active;
+
             if (renderForCubemap)
             {
                 // Lighting only. The face size sets how blurry a map texel may be (the cubemap is small).
                 int face = bp.colorBuffer != null && bp.colorBuffer.rt != null ? bp.colorBuffer.rt.width : 256;
+                if (planet) backdrop.Push(_block, 0.5f * Mathf.PI / Mathf.Max(face, 16), 0f, true); else BackdropState.PushNone(_block);
                 _block.SetVector(IdMilkyWayParams, new Vector4(mw.x, mw.y, 0.5f * Mathf.PI / Mathf.Max(face, 16), MilkyWayTexelRadians));
                 CoreUtils.DrawFullScreen(cmd, _material, _block, PassBake);
                 return;
@@ -125,6 +130,12 @@ namespace Monolith.Sky
                 sunPx = new Vector2((nx * 0.5f + 0.5f) * bp.screenSize.x, (0.5f - ny * 0.5f) * bp.screenSize.y);   // SV_Position: origin top left
             }
             _block.SetVector(IdSunPx, new Vector4(sunPx.x, sunPx.y, sunValid, 0f));
+            if (planet)
+            {
+                var world = GameWorld.Current;
+                backdrop.Push(_block, fovRad / Mathf.Max(bp.screenSize.y, 1f), world != null ? world.Time : Time.time, false);
+            }
+            else BackdropState.PushNone(_block);
             _block.SetVector(IdSunColor, AsVector(sky.sunColor.value));
             _block.SetVector(IdSunCore, sky.sunCore.value);
 
@@ -136,6 +147,7 @@ namespace Monolith.Sky
             _block.SetVector(IdStarVariety, sky.starVariety.value);
 
             CoreUtils.DrawFullScreen(cmd, _material, _block, PassRender);
+            if (planet) CoreUtils.DrawFullScreen(cmd, _material, _block, PassPlanet);     // over the background, under the stars (which the planet hides itself)
 
             int count = _stars.CountBrighterThan(starParams.w);
             if (count > 0) cmd.DrawProcedural(Matrix4x4.identity, _material, PassStars, MeshTopology.Triangles, count * 6, 1, _block);

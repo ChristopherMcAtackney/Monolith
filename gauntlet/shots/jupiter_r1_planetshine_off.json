@@ -1,0 +1,66 @@
+{
+ "scene": "sky",
+ "sceneOptions": {
+  "Backdrop": {
+   "Body": "jupiter",
+   "DistanceKm": 200000,
+   "Azimuth": 24,
+   "Elevation": -9,
+   "HasSun": true,
+   "SunAzimuth": -100,
+   "SunElevation": 6,
+   "SunDistanceAu": 5.2,
+   "GrsLongitude": -22,
+   "Planetshine": 0.0,
+   "AmbientScale": 0.3,
+   "Moons": [
+    {
+     "Body": "io",
+     "OrbitDeg": 300
+    },
+    {
+     "Body": "europa",
+     "OrbitDeg": 205
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "hull_planetshine_off",
+   "pos": [
+    36.16,
+    -2.08,
+    81.21
+   ],
+   "lookAt": [
+    0,
+    0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 1.0
+  },
+  {
+   "name": "hull_planetshine_low_off",
+   "pos": [
+    50.16,
+    -18.08,
+    81.21
+   ],
+   "lookAt": [
+    0,
+    0,
+    0
+   ],
+   "fov": 40,
+   "warmup": 1.0
+  }
+ ]
+}

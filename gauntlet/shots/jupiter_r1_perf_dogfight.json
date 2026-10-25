@@ -1,0 +1,36 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "dogfight",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": true,
+  "dust": true
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 3.0
+ },
+ "perf": [
+  {
+   "name": "dogfight_battle_opening",
+   "seconds": 40,
+   "follow": true,
+   "fov": 55
+  },
+  {
+   "name": "dogfight_battle_middle",
+   "seconds": 40,
+   "follow": true,
+   "fov": 55
+  },
+  {
+   "name": "dogfight_battle_late",
+   "seconds": 40,
+   "follow": true,
+   "fov": 55
+  }
+ ]
+}

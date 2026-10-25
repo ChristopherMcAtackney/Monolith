@@ -117,6 +117,10 @@ namespace Monolith.Sky
         /// <summary>Screen-space reflections for polished surfaces (smoothness above about 0.5): chrome shows the lit plates and lights next to it instead of one flat tone. Needs supportSSR in the HDRP asset (Hdrp.EnsureAsset sets it).</summary>
         public bool ScreenSpaceReflections = true;
 
+        // ---- a planet in the sky -------------------------------------------------------------------------------------------------------
+        /// <summary>A planet behind the fight (a mission's "backdrop" block). Body empty: none, and everything above is as it always was. See <see cref="BackdropOptions"/>.</summary>
+        public BackdropOptions Backdrop = new BackdropOptions();
+
         // ---- the camera look (lens glare, dust, grain, graded black) ----------------------------------------------------------------
         /// <summary>Switch the camera look on with the sky: the Sun's glare needs the Sun, so the rig feeds it. Its options (Enabled, Intensity and the rest) are here.</summary>
         public bool CameraLook = true;
