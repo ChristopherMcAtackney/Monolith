@@ -83,6 +83,17 @@ namespace Monolith.Game
                 if (ex.Result.Count > 0) Check(ex.Result.Contains(result), $"result {result} is one of [{string.Join(", ", ex.Result)}]" + (rt.Ended ? $" (\"{rt.ResultText}\" at {rt.EndedAt - rt.StartTime:0.0} s)" : $" (still running after {ran:0} s)"));
                 foreach (var n in ex.Fired) { var e = rt.EventNamed(n); Check(e != null && e.FirstFiredAt >= 0f, $"'{n}' fired" + (e != null && e.FirstFiredAt >= 0f ? $" at {e.FirstFiredAt - rt.StartTime:0.0} s" : "")); }
                 foreach (var n in ex.NotFired) { var e = rt.EventNamed(n); Check(e != null && e.FirstFiredAt < 0f, $"'{n}' did not fire" + (e != null && e.FirstFiredAt >= 0f ? $" (it fired at {e.FirstFiredAt - rt.StartTime:0.0} s)" : "")); }
+                float runEnd = (rt.Ended ? rt.EndedAt : ran) - rt.StartTime;
+                foreach (var fi in ex.FiredIf)
+                {
+                    float At(string n) { var e = rt.EventNamed(n); return e != null && e.FirstFiredAt >= 0f ? e.FirstFiredAt - rt.StartTime : -1f; }
+                    string broken = fi.Broken(At, runEnd);
+                    float a = At(fi.If), b = At(fi.Then);
+                    Check(broken == null, broken != null ? broken : a < 0f ? $"'{fi.If}' did not fire, so '{fi.Then}' is not owed"
+                                        : b >= 0f && b <= a ? $"'{fi.If}' fired at {a:0.0} s and '{fi.Then}' had already come at {b:0.0} s"
+                                        : a + fi.Within > runEnd ? $"'{fi.If}' fired at {a:0.0} s, too near the end for '{fi.Then}' to be due"
+                                        : $"'{fi.If}' fired at {a:0.0} s and '{fi.Then}' followed at {b:0.0} s");
+                }
                 if (ex.Order.Count > 1)
                 {
                     float last = -1f; string lastName = null; bool ok = true; var times = new List<string>();
