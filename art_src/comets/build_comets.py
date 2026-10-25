@@ -309,7 +309,7 @@ def main():
         for e in entries:
             old[e["id"]] = e
         doc = dict(schema="monolith-comets/1", materialSet=MATERIAL_SET, material=MATERIAL, models=[old[k] for k in sorted(old)])
-        with open(path, "w") as f:
+        with open(path, "w", newline=chr(10)) as f:
             json.dump(doc, f, indent=1)
         log(f"wrote {path} ({len(doc['models'])} models)")
 

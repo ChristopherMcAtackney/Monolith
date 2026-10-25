@@ -183,7 +183,7 @@ def main():
                        detailAlbedo=0.4, detailNormal=0.5, detailSmoothness=0.3, specularAA=True),
                  layer("oort_ice_albedo", "oort_ice_normal", "oort_ice_mask", baseColor=[0.60, 0.62, 0.66], normalScale=1.0, smoothnessRemap=[0, 0.6], tiling=[1, 1], detailMap="comet_detail",
                        detailAlbedo=0.3, detailNormal=0.4, detailSmoothness=0.3, specularAA=True)]}]
-    with open(os.path.join(OUT, "comets.materials.json"), "w") as f:
+    with open(os.path.join(OUT, "comets.materials.json"), "w", newline=chr(10)) as f:
         json.dump({"about": "The comets' one layered surface material (art_src/oort_art/build_comet_textures.py): crust, dust and ice, blended by the vertex colour.", "materials": mats}, f, indent=1)
     log("done")
 
