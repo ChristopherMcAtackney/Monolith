@@ -29,7 +29,7 @@ namespace Monolith.EditorTools
         {
             var o = new JObject
             {
-                ["ships"] = Find("Assets/Monolith/Resources/ShipArt", "*.prefab", "GameObject"),
+                ["ships"] = Concat(Find("Assets/Monolith/Resources/ShipArt", "*.prefab", "GameObject"), Find("Assets/Monolith/Resources/CometArt", "*.prefab", "GameObject")),
                 ["cabin"] = Find("Assets/Monolith/Resources/Cabin", "*.prefab", "GameObject"),
                 ["effects"] = Concat(
                     Find("Assets/Monolith/Resources/Juice/Flip", "*.png", "Texture2D"),

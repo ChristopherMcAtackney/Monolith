@@ -64,9 +64,13 @@ namespace Monolith.Game
             var root = new GameObject("Scenery").transform;
             root.SetParent(parent, false);
             int n = 0;
+            // The Blender comets (CometField) when they are built; the generated rocks remain as the fallback. The rocks' places, sizes, stretches and spins come from the mission and its random
+            // stream and are the same either way: what a rock looks like is chosen by a stream of its own (CometField.Make), never by this one.
+            bool comets = CometField.Available;
             foreach (var k in sc.Rocks)
             {
-                var go = Rock("Ice " + (++n), k.Radius, k.Stretch, k.Seed, root);
+                var go = comets ? CometField.Make("Ice " + (++n), k.Radius, k.Stretch, 7001 + k.Seed * 13 + n, root) : Rock("Ice " + (++n), k.Radius, k.Stretch, k.Seed, root);
+                if (Monolith.Core.CommandLine.Has("-mnLogScenery")) Monolith.Core.MnLog.Info($"SCENERY single {n} at {k.At.x:0.#} {k.At.y:0.#} {k.At.z:0.#} radius {k.Radius:0.#} stretch {k.Stretch.x:0.##} {k.Stretch.y:0.##} {k.Stretch.z:0.##} seed {k.Seed}");
                 go.transform.position = k.At;
                 go.transform.rotation = Quaternion.Euler(k.Seed * 37f % 360f, k.Seed * 71f % 360f, k.Seed * 13f % 360f);
                 Spin.Add(go, k.Spin, k.Seed);
@@ -85,7 +89,8 @@ namespace Monolith.Game
                     foreach (var c in f.Clear) if (Vector3.Distance(p, new Vector3(c.x, c.y, c.z)) < c.w + radius) { clear = false; break; }
                     if (!clear) continue;
                     var stretch = new Vector3(0.75f + 0.5f * R(), 0.7f + 0.4f * R(), 0.75f + 0.6f * R());
-                    var go = Rock("Ice " + (++n), radius, stretch, f.Seed * 131 + placed % 12, root);
+                    var go = comets ? CometField.Make("Ice " + (++n), radius, stretch, 9001 + f.Seed * 977 + placed, root) : Rock("Ice " + (++n), radius, stretch, f.Seed * 131 + placed % 12, root);
+                    if (Monolith.Core.CommandLine.Has("-mnLogScenery")) Monolith.Core.MnLog.Info($"SCENERY field {n} at {p.x:0.#} {p.y:0.#} {p.z:0.#} radius {radius:0.#} stretch {stretch.x:0.##} {stretch.y:0.##} {stretch.z:0.##} seed {f.Seed * 131 + placed % 12}");
                     go.transform.position = p;
                     go.transform.rotation = Quaternion.Euler(R() * 360f, R() * 360f, R() * 360f);
                     Spin.Add(go, f.Spin * (0.3f + R()) * (R() < 0.5f ? -1f : 1f), f.Seed + placed);

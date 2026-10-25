@@ -1,0 +1,44 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "oort",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "cabin": false
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [],
+ "perf": [
+  {
+   "name": "start_view_follow",
+   "follow": true,
+   "warmup": 0.5,
+   "seconds": 20
+  },
+  {
+   "name": "field_drift_follow",
+   "follow": true,
+   "warmup": 20.0,
+   "seconds": 20
+  },
+  {
+   "name": "strike_follow",
+   "follow": true,
+   "warmup": 70.0,
+   "seconds": 25
+  },
+  {
+   "name": "archon_fight_follow",
+   "follow": true,
+   "warmup": 178.0,
+   "seconds": 30
+  }
+ ]
+}

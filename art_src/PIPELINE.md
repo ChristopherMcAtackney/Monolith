@@ -143,6 +143,28 @@ Earth's two big pieces for the Oort mission, built on the capital kit and three 
   sections are slabs of rock with the station's parts riding the nearest slab. `gauntlet\missions\{outpost,archon}_death_test.mission.json` (target at 2 percent hull, the Mercy's beams free) and
   `tools\ship\make_oortart_plan.py outpost_death|archon_death` make the death captures; `archon_test.mission.json` is the lab for the scale and beam shots.
 
+## The Oort ice field's comets (`mncomet`, `art_src\comets`, `art_src\oort_art\build_comet_textures.py`)
+
+Five free-floating nuclei the Oort mission's scenery scatters by the hundred (`Game/Mission/CometField`, which replaced the generated icospheres of `IceRocks`; piece notes in `gauntlet/pieces/comets/history.md`).
+Not ships: no subsystems, no collision, no damage; the scenery is drawn only.
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\oort_art\build_comet_textures.py   # ~45 s: crust, dust, detail (2,048 / 1,024 px) and comets.materials.json
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\blender.ps1 art_src\comets\build_comets.py             # ~1 min: five FBXs and Resources\CometArt\comets.json  (-- --only a,b --preview a --level 6 --no-export)
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\unity.ps1 Monolith.EditorTools.CometArtSetup.Run        # the layered material and a prefab with a LOD group per model (Setup.Project calls it too)
+```
+
+- **`mncomet`** (numpy only, deterministic): a `Shape` (a smooth union of superellipsoid lobes, optionally cut by planes; the radius along each icosphere direction is found by marching, as in `mnrock`) and a
+  `Terrain` laid on it along the shape's own normal: lumps, rough and smooth provinces, terraces and scarps that rise over a set number of metres (cliffs of a chosen steepness, wherever the noise's
+  gradient lies), craters with flat dusty floors and sharp rims, steep terraced pits, fractures, `rubble` (sharp-crested noise on a ladder of wavelengths), dust that fills every hollow, then boulders
+  (thick at the foot of cliffs and in hollows) and ice sites. Every level of detail (icosphere 7, 6, 5, 4, 3: 330k to 1.3k triangles) is built from the same fields, so the silhouettes agree.
+- **One layered surface material** (HDRP LayeredLit, `MN_CometSurface`): layer 0 the crust, 1 the dust, 2 the frost (the outpost's ice maps); the mesh's vertex colour is the blend (R dust, G ice), so a patch has no
+  edge a face can show. The UVs are box-projected (UV0 metres / 150, UV1 metres / 4, vertices shared between faces of one plane), the textures statistically uniform so a tile never shows.
+  `CometArtSetup` makes the material from `comets.materials.json` (the `layers` recipe) and the prefabs from the manifest: LOD heights per model, no collider, shadows on.
+- **Sizes**: a model is built at its own size (the two large ones ~1.2 km, the small ones ~250 m) and centred on its volume; the manifest's `bound` (the farthest vertex) and `fit` (how far a rock of
+  the mission's radius should reach, in radii) let the game scale it so a rock of radius R fits a sphere of about `fit` x R.
+- **Looks**: `-- --preview a,b` renders Cycles stills (one hard Sun, a black sky, vertex colours as the game blends them) into `art_src\comets\_preview` (gitignored): the geometry in seconds, the real look is the game's.
+
 ## Adding a ship
 
 1. Copy `art_src\earth_corvette`, rename. Reuse `earth_hull` textures for Earth ships; a new faction gets its own `art_src\<set>` script (copy it, change the look: albedo, trim pieces, markings, emissive colours).

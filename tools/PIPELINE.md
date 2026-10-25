@@ -104,6 +104,8 @@ shots on it as the turrets go; warden_runs.txt and .json), `-mnDogfightSoak 0 -m
 pinned after every LateUpdate as well as before rendering (HDRP takes the camera's matrices before `beginCameraRendering`, so in scenes with the
 cockpit camera those shots used to come out from the cockpit).
 
+Oort ice field: `-mnLogScenery` logs every scenery rock's place, radius and stretch (`SCENERY ...`, a layout proof: `python -I tools/ship/check_comets_layout.py a.log b.log`) and which comet model, size, mirror and tint each one got (`COMET ...`); plans `python tools/ship/make_comets_plan.py stills|perf` and `make_comets_tour.py <log>`, the sheet `make_comets_sheet.py`.
+
 Missions (`Play.bat` takes plain words for the common flags: `tools/audio/OPTIONS.txt`, copied into every playtest folder): `-mnMission <name or path>` plays any mission file (`Resources/Missions/<name>.mission.json`, or `Missions/<name>.mission.json` beside
 the exe, read first; `Play.bat <name>` in a playtest folder passes it), with `-mnDifficulty`, `-mnAutopilot`, `-mnInvulnerable`, `-mnSkipBriefing`,
 `-mnPacingLog dir` (events.csv and pacing.csv when a run ends). A plan with `"scene": "mission"` takes `sceneOptions` `mission`, `pilot: "ai"`,

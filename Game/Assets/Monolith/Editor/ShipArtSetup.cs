@@ -186,20 +186,20 @@ namespace Monolith.EditorTools
             return mat;
         }
 
-        static Color Col(JToken t, Color fallback)
+        internal static Color Col(JToken t, Color fallback)
         {
             if (t == null || t.Type == JTokenType.Null) return fallback;
             return new Color((float)t[0], (float)t[1], (float)t[2], 1f).linear;     // the file holds sRGB display values
         }
 
-        static void Remap(Material m, string prefix, JToken t)
+        internal static void Remap(Material m, string prefix, JToken t)
         {
             if (t == null || t.Type == JTokenType.Null) return;
             m.SetFloat(prefix + "Min", (float)t[0]);
             m.SetFloat(prefix + "Max", (float)t[1]);
         }
 
-        static void Tex(Material m, string prop, string dir, string file)
+        internal static void Tex(Material m, string prop, string dir, string file)
         {
             if (string.IsNullOrEmpty(file)) { m.SetTexture(prop, null); return; }
             string path = $"{dir}/{file}.png";

@@ -34,7 +34,7 @@ namespace Monolith.Game
         public static bool Run()
         {
             _checks = 0; _fails = 0;
-            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("queue and beam-fire", QueueAndBeamFire), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
+            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("queue and beam-fire", QueueAndBeamFire), ("comets", Comets), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
             foreach (var (name, t) in tests)
             {
                 try { t(); }
@@ -91,6 +91,74 @@ namespace Monolith.Game
             Check(badMsg != null && badMsg.Contains("name") && badMsg.Contains("has space") && badMsg.Contains("'loud'") && badMsg.Contains("not negative"), "bad theme actions are named: " + (badMsg ?? "(it loaded)").Replace("\n", " "));
             var round = ThemeEvent.Parse(new ThemeEvent { Mission = "oort", Name = "destroyer", FadeIn = 3f, Priority = 20f, Mode = "replace" }.Format(), 1f);
             Check(round != null && round.Key == "oort/destroyer" && round.On && round.FadeIn == 3f && float.IsNaN(round.FadeOut) && round.Priority == 20f && round.Mode == "replace", "a theme's settings reach the audio intact");
+        }
+
+        // ------------------------------------------------------------------------------------------------ the ice field's comets
+
+        static void Comets()
+        {
+            var models = CometField.Models;
+            Check(models.Count == 5, $"the ice field has its five comet models ({string.Join(", ", System.Linq.Enumerable.Select(models, m => m.Id))})");
+            int heroes = 0; foreach (var m in models) if (m.Hero) heroes++;
+            Check(heroes == 2 && models.Count - heroes == 3, $"two large distinctive models and three plainer ones ({heroes} large, {models.Count - heroes} plain)");
+            foreach (var m in models)
+            {
+                var lg = m.Prefab.GetComponent<LODGroup>();
+                var lods = lg != null ? lg.GetLODs() : new LOD[0];
+                var tris = new List<int>();
+                foreach (var l in lods)
+                {
+                    int n = 0;
+                    foreach (var r in l.renderers) { var mf = r.GetComponent<MeshFilter>(); if (mf != null && mf.sharedMesh != null) n += (int)(mf.sharedMesh.GetIndexCount(0) / 3); }
+                    tris.Add(n);
+                }
+                bool falling = tris.Count >= 4; for (int i = 1; i < tris.Count; i++) if (tris[i] >= tris[i - 1]) falling = false;
+                bool noCollider = m.Prefab.GetComponentsInChildren<Collider>(true).Length == 0;
+                Check(falling && noCollider && m.Bound > 50f && m.Fit > 1f, $"{m.Id}: {tris.Count} LODs of {string.Join("/", tris)} triangles, no collider, bound {F(m.Bound)} m");
+            }
+
+            // the look of a rock comes from a stream of its own: the same seed makes the same rock, other seeds make others
+            var rootA = new GameObject("comet-test").transform;
+            var seen = new HashSet<string>(); var scales = new HashSet<string>(); int mirrored = 0;
+            for (int i = 0; i < 80; i++)
+            {
+                var g = CometField.Make("t" + i, 60f, Vector3.one, 5000 + i, rootA);
+                var inst = g.transform.GetChild(0);
+                seen.Add(inst.name); scales.Add(inst.localScale.y.ToString("0.0000", CultureInfo.InvariantCulture) + inst.localRotation.ToString("0.000"));
+                if (inst.localScale.x < 0f) mirrored++;
+            }
+            var a = CometField.Make("same-a", 60f, Vector3.one, 777, rootA); var b = CometField.Make("same-b", 60f, Vector3.one, 777, rootA);
+            bool same = a.transform.GetChild(0).name == b.transform.GetChild(0).name && a.transform.GetChild(0).localScale == b.transform.GetChild(0).localScale && a.transform.GetChild(0).localRotation == b.transform.GetChild(0).localRotation
+                        && a.transform.localScale == b.transform.localScale;
+            Check(same, "a rock's look is a function of its seed (the same seed, the same rock)");
+            Check(seen.Count == 5 && scales.Count >= 78 && mirrored > 20 && mirrored < 60, $"80 small rocks use {seen.Count} of the 5 models, {scales.Count} different sizes and turns, {mirrored} mirrored");
+            var bigPick = new HashSet<string>(); var rng = new System.Random(9);
+            for (int i = 0; i < 100; i++) bigPick.Add(CometField.Pick(900f, rng).Id);
+            bool bigHeroesOnly = true; foreach (var id in bigPick) foreach (var m in models) if (m.Id == id && !m.Hero) bigHeroesOnly = false;
+            Check(bigPick.Count == 2 && bigHeroesOnly, "a big rock is always one of the two large models");
+            UnityEngine.Object.DestroyImmediate(rootA.gameObject);
+
+            // the layout does not depend on what the rocks look like: the Oort field built with the comets and without has every rock in the same place, turned the same way
+            var sc = MissionLibrary.Load("oort").Scenery;
+            var withC = IceRocks.Scenery(sc, null);
+            CometField.Enabled = false;
+            Transform without;
+            try { without = IceRocks.Scenery(sc, null); } finally { CometField.Enabled = true; }
+            bool equalCount = withC.childCount == without.childCount && withC.childCount == sc.Rocks.Count + 160;
+            bool samePlaces = equalCount;
+            for (int i = 0; equalCount && i < withC.childCount; i++)
+            {
+                var p = withC.GetChild(i); var q = without.GetChild(i);
+                if (p.position != q.position || Quaternion.Angle(p.rotation, q.rotation) > 0.01f) { samePlaces = false; MnLog.Info($"MISSION comet layout differs at rock {i}: {p.position} vs {q.position}"); break; }
+            }
+            Check(samePlaces, $"the Oort field is laid out the same with the comets and without: {withC.childCount} rocks, every place and turn equal");
+            Check(withC.GetComponentsInChildren<Collider>(true).Length == 0, "scenery is drawn only: no collider anywhere in the field");
+            var counts = new Dictionary<string, int>();
+            foreach (Transform t in withC) { string id = t.GetChild(0).name; counts[id] = counts.TryGetValue(id, out var c0) ? c0 + 1 : 1; }
+            var parts = new List<string>(); foreach (var kv in counts) parts.Add(kv.Key + " " + kv.Value);
+            parts.Sort(StringComparer.Ordinal);
+            Check(counts.Count == 5, "all five models are in the field: " + string.Join(", ", parts));
+            UnityEngine.Object.DestroyImmediate(withC.gameObject); UnityEngine.Object.DestroyImmediate(without.gameObject);
         }
 
         // ------------------------------------------------------------------------------------------------ every condition and action
