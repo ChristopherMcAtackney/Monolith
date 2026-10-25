@@ -1,0 +1,204 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "oort",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "cabin": false
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 1.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "start_cockpit",
+   "warmup": 0.5,
+   "follow": true
+  },
+  {
+   "name": "start_view",
+   "pos": [
+    0,
+    0.4,
+    1.5
+   ],
+   "lookAt": [
+    759.8,
+    630.0,
+    7194.8
+   ],
+   "fov": 55,
+   "warmup": 3.0
+  },
+  {
+   "name": "start_wide_left",
+   "pos": [
+    0,
+    0.4,
+    1.5
+   ],
+   "lookAt": [
+    -5200,
+    1300,
+    6200
+   ],
+   "fov": 70,
+   "warmup": 0.5
+  },
+  {
+   "name": "big_2km_a",
+   "pos": [
+    4660.3,
+    3129.4,
+    -5563.9
+   ],
+   "lookAt": [
+    2400,
+    2200,
+    -3800
+   ],
+   "fov": 42,
+   "warmup": 0.5
+  },
+  {
+   "name": "big_2km_b",
+   "pos": [
+    -9733.8,
+    2381.5,
+    7005.0
+   ],
+   "lookAt": [
+    -5200,
+    1300,
+    6200
+   ],
+   "fov": 55,
+   "warmup": 0.5
+  },
+  {
+   "name": "small_200m_a",
+   "pos": [
+    -222.4,
+    408.9,
+    1736.5
+   ],
+   "lookAt": [
+    -402,
+    344,
+    1887
+   ],
+   "fov": 40,
+   "warmup": 0.5
+  },
+  {
+   "name": "small_200m_b",
+   "pos": [
+    977.9,
+    752.8,
+    4965.4
+   ],
+   "lookAt": [
+    1196,
+    706,
+    4965
+   ],
+   "fov": 40,
+   "warmup": 0.5
+  },
+  {
+   "name": "pass_50m_a",
+   "pos": [
+    -591.5,
+    -155.3,
+    669.7
+   ],
+   "lookAt": [
+    -664,
+    -181,
+    750
+   ],
+   "fov": 60,
+   "warmup": 0.5
+  },
+  {
+   "name": "pass_50m_b",
+   "pos": [
+    -47.8,
+    -701.4,
+    510.2
+   ],
+   "lookAt": [
+    50,
+    -748,
+    522
+   ],
+   "fov": 60,
+   "warmup": 0.5
+  },
+  {
+   "name": "mid_600m",
+   "pos": [
+    1189.0,
+    474.2,
+    886.2
+   ],
+   "lookAt": [
+    600.5,
+    247.9,
+    1434.1
+   ],
+   "fov": 45,
+   "warmup": 0.5
+  },
+  {
+   "name": "mid_150m",
+   "pos": [
+    -842.5,
+    -1066.1,
+    231.7
+   ],
+   "lookAt": [
+    -530,
+    -1128.1,
+    129.9
+   ],
+   "fov": 55,
+   "warmup": 0.5
+  },
+  {
+   "name": "field_side_1km",
+   "pos": [
+    900,
+    200,
+    1500
+   ],
+   "lookAt": [
+    -400,
+    -300,
+    1700
+   ],
+   "fov": 50,
+   "warmup": 0.5
+  },
+  {
+   "name": "field_side_wide",
+   "pos": [
+    1700,
+    300,
+    600
+   ],
+   "lookAt": [
+    -300,
+    -200,
+    2200
+   ],
+   "fov": 62,
+   "warmup": 0.5
+  }
+ ]
+}

@@ -86,6 +86,8 @@ through `GameWorld.Knocks`. Its sounds go through `IJuiceAudio`, which the audio
 
 **RenderQuality** (`Monolith.RenderQuality`, `Scripts/Render/Quality/`) is the one shared render-quality profile: the Sun's cascade layout and shadow-map resolution, contact shadows, ambient occlusion, micro shadows, and the optional ray-traced AO and Sun shadows. `SkyRig.Enable` builds it next to the Sun, so every scene that turns the sky on has it and no scene builds a shadow volume of its own; `SkyOptions.Quality` holds the options and `-mnQuality '{json}'` (or a file path) overrides them on any player run. The pipeline asset's matching limits (cascade cap, filter quality, ray-tracing support) are set by `Hdrp.EnsureAsset`.
 
+**Comets**: the Oort ice field's rocks are five Blender nuclei (`art_src/comets`, `tools/blender_lib/mncomet.py`: two large and distinctive, three plain, LODs of 330k to 1.3k triangles, one layered crust/dust/ice material blended by vertex colour) that `Game/Mission/CometField` scatters under a mission's scenery, drawn only; each rock's look is chosen by a random stream of its own, so the mission's layout never moves (`gauntlet/pieces/comets/history.md`).
+
 **Game** (`Monolith.Game`) is the composition root. `GameBootstrap` runs after the Boot scene loads and creates
 `GameRoot`, which builds the clock, the world and every system, and registers them. Today it also builds the smoke scene
 (`SmokeWorld`: camera, sun, sphere and box) and, with `-mnScene flight` or a plan's `"scene": "flight"`, the flight

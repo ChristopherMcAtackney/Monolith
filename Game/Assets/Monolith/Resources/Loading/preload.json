@@ -8,7 +8,12 @@
     "ShipArt/earth_heavy|GameObject",
     "ShipArt/earth_interceptor|GameObject",
     "ShipArt/earth_outpost|GameObject",
-    "ShipArt/vanguard_fighter|GameObject"
+    "ShipArt/vanguard_fighter|GameObject",
+    "CometArt/comet_a|GameObject",
+    "CometArt/comet_b|GameObject",
+    "CometArt/comet_c|GameObject",
+    "CometArt/comet_d|GameObject",
+    "CometArt/comet_e|GameObject"
   ],
   "cabin": [
     "Cabin/cabin|GameObject"
