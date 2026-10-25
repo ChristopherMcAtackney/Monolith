@@ -44,6 +44,8 @@ namespace Monolith.Flight
         public bool Matching;
         public float Fuel;
         public bool AfterburnerOn;
+        /// <summary>How many times the tank ran empty with the burner on (it drops even with the key held).</summary>
+        public int EmptyCutOuts;
         /// <summary>The retro-thruster brake is held (<see cref="ControlButtons.Brake"/>), and the retros are firing: held and still moving forward.</summary>
         public bool BrakeHeld, Braking;
         /// <summary>While the brake is held: the throttle setting the pilot will give back on a second click (the pilot sends it in <see cref="ControlInput.Throttle"/>, which the brake ignores). 0 otherwise.</summary>
@@ -172,7 +174,7 @@ namespace Monolith.Flight
             {
                 if (!AfterburnerOn)
                     Fuel = Math.Min(Class.AfterburnerFuel, Fuel + Class.AfterburnerRechargeRate * _rules.AfterburnerRechargeScale * dt);
-                else if (Fuel <= 0f) { Fuel = 0f; AfterburnerOn = false; }
+                else if (Fuel <= 0f) { Fuel = 0f; AfterburnerOn = false; EmptyCutOuts++; }
                 else Fuel = Math.Max(0f, Fuel - Class.AfterburnerBurnRate * dt);
             }
 

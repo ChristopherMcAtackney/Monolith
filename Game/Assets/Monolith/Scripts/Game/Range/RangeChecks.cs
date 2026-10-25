@@ -19,6 +19,27 @@ namespace Monolith.Game
         ControlButtons _seen;
         /// <summary>The largest aim (pitch or yaw) the pilot sent on any tick since the check last zeroed it.</summary>
         float _maxAim;
+        int _yTicks;
+        float _longestFrame;
+
+        /// <summary>
+        /// The main thread stops for this long, once, while Y is down in the Y-tap step (<c>-mnPadStall ms</c>, 200 unless given, 0 for none): what a loaded machine does to a frame, on demand, so the tap
+        /// is checked through a frame longer than itself on every run instead of once in a few under load.
+        /// </summary>
+        int _stallMs = CommandLine.GetInt("-mnPadStall", 200);
+
+        void Update()
+        {
+            _longestFrame = Mathf.Max(_longestFrame, Time.unscaledDeltaTime);
+            var pad = Gamepad.current;
+            if (_stallMs > 0 && _stallOn && pad != null && pad.buttonNorth.isPressed)
+            {
+                MnLog.Info($"PADDRIVE stalling the main thread for {_stallMs} ms with Y down");
+                System.Threading.Thread.Sleep(_stallMs);
+                _stallMs = 0;
+            }
+        }
+        bool _stallOn;
 
         public static bool Requested => CommandLine.Has("-mnPadDrive");
 
@@ -50,8 +71,22 @@ namespace Monolith.Game
                 var cur = _c._world.Pilots.Current(_c._world.LocalPlayerShip);
                 _c._seen |= cur.Buttons;
                 _c._maxAim = Mathf.Max(_c._maxAim, Mathf.Abs(cur.Pitch), Mathf.Abs(cur.Yaw));
+                var pad = Gamepad.current;
+                if (pad != null && pad.buttonNorth.isPressed) _c._yTicks++;
+                // A tick-exact tap (see TapTicks): once the pilot has sampled the button down for the wanted number of ticks, let go of it here, inside the sim, before the next tick.
+                if (_c._tapControl != null && _c._tapControl.isPressed && ++_c._tapSeen >= _c._tapWanted)
+                {
+                    InputState.Change(_c._tapPad, new GamepadState());
+                    _c._tapControl = null;
+                    _c._tapReleasedAt = frame.Tick;
+                }
             }
         }
+
+        // ---- the taps whose length the pilot judges: a press is a tap (next part) or a hold (the quick menu) by the number of sim ticks it is down for (controls.json quickMenuHoldSeconds, 0.25 s).
+        Gamepad _tapPad;
+        UnityEngine.InputSystem.Controls.ButtonControl _tapControl;
+        int _tapSeen, _tapWanted, _tapReleasedAt = -1;
 
         void Check(bool ok, string what)
         {
@@ -72,6 +107,26 @@ namespace Monolith.Game
         }
 
         static IEnumerator Tap(Gamepad pad, params GamepadButton[] buttons) => Hold(pad, 0.12f, buttons);
+
+        /// <summary>Wait for a number of sim ticks (the clock the pilot counts in), not seconds of the wall clock: a loaded machine stretches a frame, and the sim catches up in one go.</summary>
+        IEnumerator WaitTicks(int ticks)
+        {
+            int t0 = _world.Tick;
+            while (_world.Tick < t0 + ticks) yield return null;
+        }
+
+        /// <summary>
+        /// Press one button and let go of it after exactly <paramref name="ticks"/> sim ticks of the pilot seeing it down, the release written from inside the sim step (so no stall of the machine can stretch it), then
+        /// let three ticks see the release. The old tap was 0.12 s of the wall clock, the pilot judges tap or hold in ticks, and a frame that stalls near the release is caught up in one go with the button
+        /// still down: a tap of 0.12 s became 0.27 s and opened the quick menu (it failed once under 20 busy processes).
+        /// </summary>
+        IEnumerator TapTicks(Gamepad pad, GamepadButton button, int ticks)
+        {
+            _tapPad = pad; _tapControl = pad[button]; _tapSeen = 0; _tapWanted = ticks; _tapReleasedAt = -1;
+            InputSystem.QueueStateEvent(pad, new GamepadState(button));
+            while (_tapReleasedAt < 0) yield return null;
+            yield return WaitTicks(3);
+        }
 
         bool Saw(ControlButtons b) => (_seen & b) == b;
         void Clear() => _seen = ControlButtons.None;
@@ -143,13 +198,15 @@ namespace Monolith.Game
             Check(Saw(ControlButtons.TargetAttacker), "View asks for the nearest attacker");
 
             // Y: a tap is the next part; a hold is the quick menu.
-            Clear();
-            yield return Tap(pad, GamepadButton.North);
+            Clear(); _yTicks = 0; _longestFrame = 0f; _stallOn = true;
+            yield return TapTicks(pad, GamepadButton.North, 7);                                         // 7 ticks, 0.117 s
+            _stallOn = false;
+            MnLog.Info($"PADDRIVE tap of Y: down for {_yTicks} ticks ({_yTicks / 60f:0.000} s; the quick menu opens at 15), the longest frame during the tap {_longestFrame * 1000f:0} ms; next part asked for: {Saw(ControlButtons.SubsystemNext)}, quick menu opened: {Saw(ControlButtons.Orders)}");
             Check(Saw(ControlButtons.SubsystemNext) && !Saw(ControlButtons.Orders), "tapping Y steps the target's parts and does not open the menu");
 
             Clear();
             InputSystem.QueueStateEvent(pad, new GamepadState(GamepadButton.North));
-            yield return new WaitForSeconds(0.5f);
+            yield return WaitTicks(32);                                                                 // past the 15 ticks of the hold, with a margin (0.53 s)
             Check(Saw(ControlButtons.Orders) && !Saw(ControlButtons.SubsystemNext), "holding Y opens the quick menu");
             Clear();
             InputSystem.QueueStateEvent(pad, new GamepadState(GamepadButton.North, GamepadButton.DpadUp));

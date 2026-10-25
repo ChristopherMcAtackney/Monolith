@@ -45,6 +45,8 @@ namespace Monolith.Core
         /// <summary>The throttle setting a second click of the brake will give back (0..1). Owner: Flight (the pilot sends it in the throttle while the brake is on), read by the HUD.</summary>
         public float BrakeResume;
         public float Fuel, FuelMax;
+        /// <summary>How many times an empty tank has cut the burner off (counted in the tick it happens, so a frame that runs several ticks, at a low frame rate or after a stall, cannot miss it: the tank has already begun to refill by the time that frame is drawn). Owner: Flight.</summary>
+        public int FuelCutOuts;
         /// <summary>0..1, how loosened the damping is after a knock (1 right after a big hit, fading to 0 over ~2 s).</summary>
         public float Knock;
         /// <summary>The ship this one has targeted, or <see cref="GameWorld.NoShip"/> (owner: Targeting).</summary>

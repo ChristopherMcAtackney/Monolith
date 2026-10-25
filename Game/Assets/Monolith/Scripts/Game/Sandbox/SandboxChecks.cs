@@ -21,10 +21,15 @@ namespace Monolith.Game
         JuicePanel _panel;
         /// <summary>The exit code the run ends with (a failed check in the middle must not be lost when the last line quits with 0).</summary>
         int _exit;
-        /// <summary>The longest frame since it was last zeroed (the death check reports it: a hitch is what the old waits could not stand).</summary>
-        float _worstFrame;
+        /// <summary>The longest frame since it was last zeroed (the death check reports it: a hitch is what the old waits could not stand), and the longest in the first second after the hit (<see cref="_hitAt"/>).</summary>
+        float _worstFrame, _worstFirstSecond, _hitAt = -1f;
 
-        void Update() { _worstFrame = Mathf.Max(_worstFrame, Time.unscaledDeltaTime); }
+        void Update()
+        {
+            float dt = Time.unscaledDeltaTime;
+            _worstFrame = Mathf.Max(_worstFrame, dt);
+            if (_hitAt >= 0f && Time.realtimeSinceStartup - _hitAt < 1f) _worstFirstSecond = Mathf.Max(_worstFirstSecond, dt);
+        }
 
         public static void Attach(JuiceSandbox box, JuicePanel panel, Transform parent)
         {
@@ -262,7 +267,7 @@ namespace Monolith.Game
             var cam = world.MainCamera.transform;
             Quaternion q0 = cam.rotation;
             Vector3 shipAtHit = me.Position, shipVelocityAtHit = me.Velocity;
-            _worstFrame = 0f;
+            _worstFrame = 0f; _worstFirstSecond = 0f; _hitAt = Time.realtimeSinceStartup;
             _box.Trigger("death_gunfire");
             yield return Until(() => board.Time >= 0.25f);
             Check(board.Active && board.CameraActive && !board.Finished && board.Plays == tickPlays + 1, "the sequence has the eye from the hit");
@@ -303,7 +308,8 @@ namespace Monolith.Game
             death.Reset();
             sub.Dispose();
             float worst = _worstFrame;
-            MnLog.Info($"JUICE deathcheck measured: the eye {away:0.0} m from the wreck at {seqT:0.00} s, the camera {camOff:0.00} m off the eye, the worst frame since the hit {worst * 1000f:0} ms");
+            _hitAt = -1f;
+            MnLog.Info($"JUICE deathcheck measured: the eye {away:0.0} m from the wreck at {seqT:0.00} s, the camera {camOff:0.00} m off the eye, the worst frame in the first second after the hit {_worstFirstSecond * 1000f:0} ms (since the hit, {worst * 1000f:0} ms)");
             MnLog.Info($"JUICE deathcheck {(fails == 0 ? "OK" : "FAILED (" + fails + ")")}: the eye, the pieces, the fling, the tumble, the skip, the events, the black, the off switch");
             if (fails > 0) { _exit = 1; Application.Quit(1); }
         }
