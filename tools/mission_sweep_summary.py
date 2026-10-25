@@ -12,7 +12,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-LEVELS = ["VeryEasy", "Easy", "Medium", "Hard", "Insane"]
+LEVELS = ["Veryeasy", "VeryEasy", "Easy", "Medium", "Hard", "Insane"]      # the folder name drops the space of "Very easy"
 
 
 def main(argv):
