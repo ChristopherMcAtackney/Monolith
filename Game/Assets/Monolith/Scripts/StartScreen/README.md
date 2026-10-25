@@ -7,7 +7,7 @@ bars, the two main gauges between the lists showing the chosen level and how har
 ## What the player does
 - Xbox pad: D-pad or left stick to move, **A** to choose, **B** to go back. Keyboard: arrows, **Enter**, **Esc**. F10 quits.
 - **Scenario** (left list): the missions (every `*.mission.json` the game carries, and any in the `Missions` folder beside the game, read first, listed by the `name` written in the file: The Dogfight, The Oculus, The Crossing,
-  Dead Water; others after them) and the sandboxes (Free flight, Combat range, Explosions sandbox), then Quit. A on a mission moves to Difficulty; A on a sandbox launches it (it has no difficulty).
+  Dead Water; others after them, by name: Jupiter Skirmish (test), the backdrop's test) and the sandboxes (Free flight, Combat range, Explosions sandbox), then Quit. A on a mission moves to Difficulty; A on a sandbox launches it (it has no difficulty).
 - **Difficulty** (right list): Very easy, Easy, Medium, Hard, Insane (the AI's own table, `ai.json`), Medium to begin with. A launches.
 - B goes back a list; from the scenarios it jumps to the Quit row, where B or A closes the game.
 - The last scenario and difficulty are remembered in `start.json` beside the game (`{"scenario": "oort", "difficulty": "Hard"}`), the way `hud.json` remembers the HUD style. `-mnDifficulty Hard` on a plain start opens on that level.

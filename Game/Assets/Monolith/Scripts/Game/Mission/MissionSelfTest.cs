@@ -5,6 +5,7 @@ using System.IO;
 using Monolith.AI;
 using Monolith.Core;
 using Monolith.Mission;
+using Monolith.Sky;
 using UnityEngine;
 
 namespace Monolith.Game
@@ -34,7 +35,7 @@ namespace Monolith.Game
         public static bool Run()
         {
             _checks = 0; _fails = 0;
-            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("queue and beam-fire", QueueAndBeamFire), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
+            var tests = new (string, Action)[] { ("format", Format), ("scripted", Scripted), ("queue and beam-fire", QueueAndBeamFire), ("backdrop", Backdrop), ("missions", BuiltIn), ("voices", Voices), ("port", Port) };
             foreach (var (name, t) in tests)
             {
                 try { t(); }
@@ -345,6 +346,64 @@ namespace Monolith.Game
                 Check(r.Runtime.Started && r.Json["checks"] != null && !r.Report.Contains("FAIL  no errors") && !r.Report.Contains("FAIL  no bad numbers"),
                       $"'{n}' runs a minute headless with the AI flying the player: no errors, no bad numbers ({r.Runtime.Log.Entries.Count} timeline entries, {r.Runtime.Radio.Said.Count} radio lines)");
             }
+        }
+
+        // ------------------------------------------------------------------------------------------------ the backdrop (a planet in the sky)
+
+        const string BackdropHead = @"{ ""format"": ""monolith-mission/1"", ""id"": ""bd"", ""name"": ""Bd"", ""player"": ""A"",
+              ""ships"": [ { ""name"": ""A"", ""class"": ""vanguard_fighter"", ""team"": ""diaspora"", ""arrival"": { ""at"": [0, 0, 0] } } ], ";
+
+        static string LoadError(string json)
+        {
+            try { MissionFile.Load(json, "bd"); return null; }
+            catch (InvalidDataException e) { return e.Message; }
+        }
+
+        static void Backdrop()
+        {
+            // The mission that shows the planet off, and the fight in it
+            var jm = MissionLibrary.Load("jupiter");
+            var dm = MissionLibrary.Load("dogfight");
+            var b = jm.Backdrop;
+            Check(b != null && b.Body == "jupiter" && Mathf.Approximately(b.DistanceKm, 200000f) && b.HasSun && Mathf.Approximately(b.SunDistanceAu, 5.2f) && b.Moons.Count == 2,
+                  $"'jupiter' carries a backdrop: {b?.Body} at {b?.DistanceKm} km, direction {b?.Azimuth}/{b?.Elevation}, Sun at {b?.SunDistanceAu} AU, {b?.Moons.Count} moons");
+            Check(dm.Backdrop == null && MissionLibrary.Load("oort").Backdrop == null, "the other missions have no backdrop: their sky is the plain one");
+            bool same = jm.Ships.Count == dm.Ships.Count && jm.Wings.Count == dm.Wings.Count && jm.Events.Count == dm.Events.Count && jm.Objectives.Count == dm.Objectives.Count && jm.Messages.Count == dm.Messages.Count;
+            for (int i = 0; same && i < dm.Messages.Count; i++) same = jm.Messages[i].Text == dm.Messages[i].Text && jm.Messages[i].From == dm.Messages[i].From;
+            Check(same, $"the Jupiter Skirmish is the Dogfight's fight: {jm.Ships.Count} ships, {jm.Wings.Count} wings, {jm.Events.Count} events, {jm.Messages.Count} radio lines, every line word for word the Dogfight's");
+
+            // The planet as the sky builds it: size, light, frame
+            var o = MissionBackdrop.Options(jm);
+            Check(o.Backdrop.Enabled && o.Backdrop.Body == "jupiter" && o.Backdrop.Moons.Count == 2 && !MissionBackdrop.Options(dm).Backdrop.Enabled, "the mission's backdrop block becomes the sky's options (and no block means no planet)");
+            var st = BackdropState.Create(o.Backdrop);
+            var sunDir = BackdropState.AzEl(o.Backdrop.SunAzimuth, o.Backdrop.SunElevation);
+            st.Configure(o.Backdrop, sunDir, o.SunLux, o.SkyRotationEuler);
+            Check(Mathf.Abs(st.AngularDiameterDeg - 41.9f) < 0.15f, $"Jupiter at 200,000 km is {st.AngularDiameterDeg:0.00} degrees across (2 asin(71,492 / 200,000) = 41.9), {st.DistanceRadii:0.000} radii out");
+            float frac = st.AngularDiameterDeg / 55f;
+            Check(frac > 0.7f && frac < 0.85f, $"it fills {frac * 100f:0} percent of the cockpit's 55 degree frame height and {st.AngularDiameterDeg / 86f * 100f:0} percent of its width: it looms and still fits whole");
+            Check(Mathf.Abs(st.PhysicalSunLux - 100000f / 27.04f) < 5f && Mathf.Abs(st.ExposureOpenStops - 4.76f) < 0.02f,
+                  $"the Sun at 5.2 AU is {st.PhysicalSunLux:0} lux (1/{o.SunLux / st.PhysicalSunLux:0.0} of 100,000 at Earth), shown with the camera opened {st.ExposureOpenStops:0.00} stops");
+            float phase = 180f - Vector3.Angle(st.ToCentre, st.SunDir);
+            Check(phase > 40f && phase < 70f, $"the Sun is {Vector3.Angle(st.ToCentre, st.SunDir):0} degrees from the planet: phase angle {phase:0}, {(1f + Mathf.Cos(phase * Mathf.Deg2Rad)) * 50f:0} percent of the disc lit");
+            Check(Mathf.Abs(Vector3.Dot(st.E1, st.Pole)) < 1e-4f && Mathf.Abs(Vector3.Dot(st.E2, st.Pole)) < 1e-4f && Mathf.Abs(Vector3.Dot(st.E1, st.E2)) < 1e-4f && Vector3.Angle(st.Pole, Vector3.up) < 6f,
+                  $"the planet's frame is orthonormal and its real pole lies {Vector3.Angle(st.Pole, Vector3.up):0.0} degrees from the world's up (Jupiter's axis is 3 degrees from its orbit's)");
+            bool moonsOk = st.MoonReport.Count == 2 && st.MoonReport[0].StartsWith("io:") && st.MoonReport[1].StartsWith("europa:");
+            Check(moonsOk, "the moons are placed on their orbits: " + string.Join("; ", st.MoonReport));
+            var wind = st.Body.WindSamples(68);
+            float wmax = 0f, wmin = 0f;
+            foreach (var w in wind) { wmax = Mathf.Max(wmax, w); wmin = Mathf.Min(wmin, w); }
+            Check(wind.Length == 68 && wmax > 100f && wmax < 150f && wmin < -10f && Mathf.Abs(wind[0]) < 1f && Mathf.Abs(wind[67]) < 1f, $"the zonal winds run from {wmin:0} to {wmax:0} m/s and are still at the poles");
+            Check(st.Map != null && st.Map.width == 8192 && st.Map.height == 4096, $"the map is {st.Map.width} x {st.Map.height}");
+
+            // A broken backdrop is refused with every problem named
+            string msg = LoadError(BackdropHead + @"""backdrop"": { ""body"": ""pluto"", ""distanceKm"": -5, ""directon"": { ""azimuth"": 1 } } }");
+            Check(msg != null && msg.Contains("'pluto' is not a body") && msg.Contains("distanceKm") && msg.Contains("'direction' is missing") && msg.Contains("unknown field 'directon'"),
+                  "a broken backdrop is refused with every problem named: " + (msg ?? "(it loaded)").Replace("\n", " "));
+            msg = LoadError(BackdropHead + @"""backdrop"": { ""body"": ""jupiter"", ""direction"": { ""azimuth"": 0, ""elevation"": 120 }, ""sun"": { ""azimuth"": 0, ""elevation"": 10, ""distanceAu"": 0 },
+                          ""look"": { ""brightness"": 20 }, ""moons"": [ { ""body"": ""titan"" } ] } }");
+            Check(msg != null && msg.Contains("-90 to 90") && msg.Contains("distanceAu") && msg.Contains("brightness") && msg.Contains("'titan'"), "out-of-range numbers and an unknown moon are named: " + (msg ?? "(it loaded)").Replace("\n", " "));
+            msg = LoadError(BackdropHead + @"""backdrop"": { ""body"": ""jupiter"", ""direction"": { ""azimuth"": 10, ""elevation"": 0 }, ""moons"": [ { ""body"": ""io"", ""orbitDeg"": 90 } ] } }");
+            Check(msg == null, "a small good backdrop loads" + (msg == null ? "" : ": " + msg.Replace("\n", " ")));
         }
 
         // ------------------------------------------------------------------------------------------------ every radio line is voiced

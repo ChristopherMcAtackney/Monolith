@@ -24,7 +24,7 @@ namespace Monolith.Game
     /// (paused; A or Enter launches), directives and radio on the HUD, the debrief at the end with fly-again and quit. Start pauses (controls,
     /// objectives, difficulty for the next run).
     /// sceneOptions: <c>mission</c> (name or path), <c>pilot</c> ("ai": the AI flies your ship), <c>difficulty</c>, <c>invulnerable</c>, <c>hud</c>,
-    /// <c>dust</c>, <c>juice</c>, <c>spectate</c> (as the dogfight's), <c>lod0</c>. Flags: <c>-mnDifficulty</c>, <c>-mnAutopilot</c>, <c>-mnInvulnerable</c>,
+    /// <c>dust</c>, <c>juice</c>, <c>spectate</c> (as the dogfight's), <c>lod0</c>, <c>noBackdrop</c> (leave out the mission's planet). Flags: <c>-mnDifficulty</c>, <c>-mnAutopilot</c>, <c>-mnInvulnerable</c>,
     /// <c>-mnSkipBriefing</c>, <c>-mnPacingLog dir</c> (writes the timeline when a run ends).
     /// </summary>
     public sealed class MissionScene : MonoBehaviour
@@ -78,7 +78,7 @@ namespace Monolith.Game
             var viewSettings = ViewSettings.Load();
             if (opts != null && opts["dust"] != null && !(bool)opts["dust"]) viewSettings.dust.count = 0;
             var view = CockpitView.Create(world, root.transform, viewSettings);
-            self._sky = SkyRig.Enable(view.Camera, root.transform);
+            self._sky = SkyRig.Enable(view.Camera, root.transform, MissionBackdrop.Options(self._file, !Opt("noBackdrop", "-mnNoBackdrop")));      // the mission may put a planet in the sky ("backdrop"); -mnNoBackdrop leaves it out (a cost or look comparison)
             SkyWarmUp.Attach(view.Camera, root.transform);
             var views = ShipViews.Create(world, root.transform);
             var mats = PlaceholderShips.MakeMaterials();

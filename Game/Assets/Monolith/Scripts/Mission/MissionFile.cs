@@ -37,6 +37,8 @@ namespace Monolith.Mission
         /// <summary>Every radio line of this file is a draft pending the user's approval (a line may say otherwise with its own "pending"): not voiced yet, on purpose.</summary>
         public bool LinesPending;
         public SceneryDef Scenery = new SceneryDef();
+        /// <summary>A planet behind the fight (null: the plain sky). Drawn by the sky, seen from one fixed point; see <see cref="BackdropDef"/>.</summary>
+        public BackdropDef Backdrop;
 
         // ------------------------------------------------------------------------------------------------ the parts of a file
 
@@ -187,6 +189,24 @@ namespace Monolith.Mission
             public Vector3 HullOffset;
             public bool HasRock; public float RockRadius = 400f; public int RockSeed = 1; public Vector3 RockStretch = Vector3.one;
         }
+
+        /// <summary>
+        /// A planet in the sky (<c>"backdrop"</c>): which body (a file in <c>Resources/MonolithSky/Bodies</c>), how far its centre is, which way it lies and which way the Sun does (degrees in the world's frame:
+        /// azimuth from +Z toward +X, elevation above the XZ plane), and optional slow-motion and taste settings. Numbers left out are the body's own defaults (negative here).
+        /// </summary>
+        public sealed class BackdropDef
+        {
+            public string Body;
+            public float DistanceKm = 200000f, Azimuth = 20f, Elevation = -12f;
+            public bool HasSun;
+            public float SunAzimuth = -70f, SunElevation = 28f, SunDistanceAu = 5.2f;
+            public float GrsLongitude = 28f, StartSeconds;
+            public float Spin = -1f, WindScale = -1f, GrsSpin = -1f, MoonSpeed = 100f;
+            public float Brightness = 1f, Planetshine = 1f, AmbientScale = 0.4f, Detail = 1f, Haze = 1f;
+            public List<MoonDef> Moons = new List<MoonDef>();
+        }
+
+        public sealed class MoonDef { public string Body; public float OrbitDeg; }
 
         /// <summary>Scenery: drifting bodies of ice, drawn only (nothing collides with them or shoots at them), single rocks and scattered fields.</summary>
         public sealed class SceneryDef
@@ -345,6 +365,8 @@ namespace Monolith.Mission
                 }
                 sc.Done();
             }
+            var bd = r.Obj("backdrop");
+            if (bd != null) m.Backdrop = ReadBackdrop(bd, errors);
             var cb = r.Obj("cabin");
             if (cb != null)
             {
@@ -395,6 +417,70 @@ namespace Monolith.Mission
             r.Done();
             errors.ThrowIfAny();
             return m;
+        }
+
+        /// <summary>The bodies the game carries (the ids of the <c>.body.json</c> files in Resources/MonolithSky/Bodies).</summary>
+        public static List<string> KnownBodies()
+        {
+            var ids = new List<string>();
+            foreach (var t in Resources.LoadAll<TextAsset>("MonolithSky/Bodies"))
+                if (t.name.EndsWith(".body", StringComparison.Ordinal)) ids.Add(t.name.Substring(0, t.name.Length - 5));
+            return ids;
+        }
+
+        static BackdropDef ReadBackdrop(Reader b, Errors errors)
+        {
+            var d = new BackdropDef { Body = b.Str("body", required: true) };
+            var known = KnownBodies();
+            if (d.Body != null && !known.Contains(d.Body)) errors.Add($"{b.Where}.body: '{d.Body}' is not a body the game carries ({string.Join(", ", known)})");
+            d.DistanceKm = b.Float("distanceKm", 200000f);
+            if (d.DistanceKm <= 0f) errors.Add($"{b.Where}.distanceKm: must be above 0 (from the viewer to the planet's centre; the planet's radius is 71,492 km for Jupiter)");
+            var dir = b.Obj("direction");
+            if (dir != null)
+            {
+                d.Azimuth = dir.Float("azimuth", 20f); d.Elevation = dir.Float("elevation", -12f);
+                if (d.Elevation < -90f || d.Elevation > 90f) errors.Add($"{dir.Where}.elevation: -90 to 90 degrees");
+                dir.Done();
+            }
+            else errors.Add($"{b.Where}: 'direction' is missing ({{ \"azimuth\": degrees from +Z toward +X, \"elevation\": degrees above the horizon }})");
+            var sun = b.Obj("sun");
+            if (sun != null)
+            {
+                d.HasSun = sun.Has("azimuth") || sun.Has("elevation");
+                d.SunAzimuth = sun.Float("azimuth", -70f); d.SunElevation = sun.Float("elevation", 28f);
+                d.SunDistanceAu = sun.Float("distanceAu", 5.2f);
+                if (d.SunElevation < -90f || d.SunElevation > 90f) errors.Add($"{sun.Where}.elevation: -90 to 90 degrees");
+                if (d.SunDistanceAu < 0.1f || d.SunDistanceAu > 100f) errors.Add($"{sun.Where}.distanceAu: 0.1 to 100");
+                sun.Done();
+            }
+            d.GrsLongitude = b.Float("grsLongitude", 28f);
+            d.StartSeconds = b.Float("startSeconds", 0f);
+            var mo = b.Obj("motion");
+            if (mo != null)
+            {
+                d.Spin = mo.Float("spin", -1f); d.WindScale = mo.Float("windScale", -1f); d.GrsSpin = mo.Float("grsSpin", -1f); d.MoonSpeed = mo.Float("moons", 100f);
+                if (d.MoonSpeed < 0f || d.MoonSpeed > 5000f) errors.Add($"{mo.Where}.moons: 0 to 5000 (times the real orbit rate)");
+                mo.Done();
+            }
+            var lk = b.Obj("look");
+            if (lk != null)
+            {
+                d.Brightness = lk.Float("brightness", 1f); d.Planetshine = lk.Float("planetshine", 1f); d.AmbientScale = lk.Float("ambientScale", 0.4f);
+                d.Detail = lk.Float("detail", 1f); d.Haze = lk.Float("haze", 1f);
+                if (d.Brightness < 0f || d.Brightness > 8f) errors.Add($"{lk.Where}.brightness: 0 to 8");
+                if (d.Planetshine < 0f || d.Planetshine > 8f) errors.Add($"{lk.Where}.planetshine: 0 to 8");
+                if (d.AmbientScale < 0f || d.AmbientScale > 4f) errors.Add($"{lk.Where}.ambientScale: 0 to 4");
+                lk.Done();
+            }
+            foreach (var mn in b.Objects("moons"))
+            {
+                var md = new MoonDef { Body = mn.Str("body", required: true), OrbitDeg = mn.Float("orbitDeg", 0f) };
+                if (md.Body != null && !known.Contains(md.Body)) errors.Add($"{mn.Where}.body: '{md.Body}' is not a body the game carries ({string.Join(", ", known)})");
+                d.Moons.Add(md);
+                mn.Done();
+            }
+            b.Done();
+            return d;
         }
 
         static ShipDef ReadShip(Reader s, ParseContext ctx)

@@ -1,0 +1,48 @@
+{
+  "format": "monolith-body/1",
+  "id": "jupiter",
+  "name": "Jupiter",
+  "about": "Jupiter as a backdrop (Sky/Resources/MonolithSky/Bodies, docs/licences/planets.md). Every number that is not a plain fact says where it came from in its own '...Why' line.",
+  "radiusKm": 71492,
+  "radiusKmWhy": "equatorial radius at the 1 bar level, IAU 2015 (Archinal et al. 2018): 71,492 km. The disc the game shows is this sphere; the real oblateness (6.5%) is left out: seen from the ecliptic it is under 3 pixels at 1080p and the limb haze hides it.",
+  "poleRaDeg": 268.0566,
+  "poleDecDeg": 64.4953,
+  "poleWhy": "the north pole of Jupiter's rotation, IAU 2015 (Archinal et al. 2018): RA 268.056595, Dec +64.495303 (J2000). The game puts it into the world's ecliptic frame, so the bands lie 2 to 3 degrees off the world's horizontal, as they do in the real sky.",
+
+  "map": "MonolithSky/Bodies/jupiter_map",
+  "mapWhy": "NASA/JPL/Space Science Institute, Cassini's best maps of Jupiter, PIA07782 (public domain), 0.1 degree a pixel, built into a 8192 x 4096 texture by tools/jupiter/build_map.py: the polar caps Cassini never saw clearly filled with haze, a Lanczos resample. Its colours are the ones NASA says are close to what the eye would see.",
+  "albedoScale": 1.15,
+  "albedoScaleWhy": "ours: the map is a photograph shown on a screen, not a reflectance; its linear mean over the +-35 degree band is 0.44 and its brightest zones 0.81. Jupiter's geometric albedo is about 0.5 at 550 nm (0.54), which with the limb darkening below puts the disc centre near 0.6: 1.15 brings the mean to 0.51 and the zones to 0.93.",
+
+  "grs": {
+    "u": 0.3639, "v": 0.3883, "halfWidthDeg": 11.0, "halfHeightDeg": 6.2, "ovalEnd": 0.8, "collarEnd": 1.6,
+    "why": "the Great Red Spot's centre on the map: pixel (1310, 1101) of 3601 x 1801, planetocentric latitude -20.1 degrees. The oval seen in the map is 17.5 degrees of longitude by 9 of latitude (Cassini, 2000: it is smaller now); the oval and its shear collar are sized to enclose it. Between the oval's edge and the end of the collar the bands slide past it."
+  },
+
+  "spinDegPerSec": 0.06,
+  "spinWhy": "ours, for reading: Jupiter's real spin is 360 degrees in 9.925 h = 0.01 degrees a second; 0.06 (six times) turns it 36 degrees in a ten minute fight, 0.65 pixel a second at the middle of the disc at 1080p, 55 degree view.",
+  "windScale": 120,
+  "windScaleWhy": "ours, for reading: the bands slide at 120 times the real zonal winds relative to each other, so the two fastest belts drift apart by about 10 degrees of longitude in ten minutes (0.1 degree is one pixel of the map, 8 pixels a minute on screen). At 300 times, after half an hour a static map is sheared into herringbone streaks that read as smeared; the real clouds are renewed by turbulence, a static map cannot be.",
+  "grsSpinDegPerSec": 0.5,
+  "grsSpinWhy": "ours, for reading: the Spot's real turning is once in about 5 days (rim speed 120 m/s at 8,000 km); 0.5 degree a second is once in 12 minutes.",
+
+  "winds": [
+    [-90, 0], [-80, 0], [-72, 8], [-66, -12], [-59, 18], [-53, -18], [-47, 12], [-41, 32], [-36, -4], [-31, -18], [-27, 22], [-23.5, 30], [-20.5, -22],
+    [-17.5, 45], [-14, -8], [-11, 6], [-8, 60], [-5, 105], [0, 95], [5, 105], [8, 60], [11, 6], [14, -8], [17, 135], [20, 40], [23, -30], [26, 55], [29, -6], [32, -22], [36, 14],
+    [40, -8], [44, 22], [48, -16], [53, 12], [58, -14], [64, 10], [70, -6], [80, 0], [90, 0]
+  ],
+  "windsWhy": "zonal wind speed in m/s eastward against the Great Red Spot's own frame (System III), by planetocentric latitude. The shape follows the published Cassini and Hubble profiles (Porco et al. 2003; Vasavada and Showman 2005: an eastward equatorial jet of about 100 m/s, then alternating jets, strongest near 17 N at 140 m/s, weaker toward the poles); the values are our own smooth fit, not data, and only set how the bands slide past one another.",
+
+  "atmosphere": {
+    "lommelSeeliger": 0.45,
+    "lommelSeeligerWhy": "ours: the share of Lommel-Seeliger scattering in the mix with Lambert's; it sets how much the limb darkens (at full phase the disc falls to 45 percent at the limb), tuned against Cassini's and Voyager's pictures of the disc",
+    "twilightWidth": 0.09,
+    "twilightWidthWhy": "ours: the sunlight fades over a twilight about 20 degrees wide, as it does on the real planet, where cloud and haze scatter light past the geometric terminator",
+    "twilightReddening": 1.1,
+    "hazeTauLimb": 3.0,
+    "hazeHeightKm": 160,
+    "hazeHeightWhy": "ours, thicker than the real scale height of the gas (27 km at the cloud tops) so the limb haze is a few pixels thick at 1080p, as the real one is in Juno's and Cassini's pictures after the lens has blurred it",
+    "hazeBrightness": 1.0
+  },
+  "detail": { "frequency": 2400, "contrast": 0.22, "stretch": 5 }
+}

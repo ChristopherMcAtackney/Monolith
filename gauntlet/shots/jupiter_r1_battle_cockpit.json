@@ -1,0 +1,114 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "jupiter",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "cockpit_t006",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6.0
+  },
+  {
+   "name": "cockpit_t012",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t018",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t024",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t030",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t036",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t042",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t048",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t054",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t060",
+   "follow": true,
+   "fov": 55,
+   "warmup": 6
+  },
+  {
+   "name": "cockpit_t070",
+   "follow": true,
+   "fov": 55,
+   "warmup": 10
+  },
+  {
+   "name": "cockpit_t080",
+   "follow": true,
+   "fov": 55,
+   "warmup": 10
+  },
+  {
+   "name": "cockpit_t090",
+   "follow": true,
+   "fov": 55,
+   "warmup": 10
+  },
+  {
+   "name": "cockpit_t100",
+   "follow": true,
+   "fov": 55,
+   "warmup": 10
+  },
+  {
+   "name": "cockpit_t110",
+   "follow": true,
+   "fov": 55,
+   "warmup": 10
+  },
+  {
+   "name": "cockpit_t120",
+   "follow": true,
+   "fov": 55,
+   "warmup": 10
+  }
+ ]
+}

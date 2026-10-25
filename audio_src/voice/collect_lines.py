@@ -64,6 +64,16 @@ INTENSITY = {
     'dogfight:sable3_lost': 'frantic',
     'dogfight:lost_capital': 'frantic',   # the Mercy is gone
     'dogfight:won': 'calm',               # t=end, the fight is over: exhausted, quiet
+    # the Jupiter Skirmish (test): the Dogfight's fight and lines, word for word, so the same tags
+    'jupiter:opening': 'tense',          # t=6, battle2: the Mercy's officer gives the order, urgent but in control
+    'jupiter:beams_threat': 'frantic',   # t=0, battle2: the beams are charging at the Mercy
+    'jupiter:bombers': 'frantic',        # bombers inbound on the Mercy
+    'jupiter:capital_hurt': 'frantic',   # "Hull's going"
+    'jupiter:beams_down': 'tense',       # relief, still under fire
+    'jupiter:sable2_lost': 'frantic',    # bad news in the fight: the voice cracks
+    'jupiter:sable3_lost': 'frantic',
+    'jupiter:lost_capital': 'frantic',   # the Mercy is gone
+    'jupiter:won': 'calm',               # t=end, the fight is over: exhausted, quiet
     # the crossing: quiet until 58 s, then battle 1 and 2, battle 3 at 113 s
     'escort:open_tamsin': 'calm',         # t=2, ambient: the briefing over the radio
     'escort:open_sable2': 'calm',         # t=11, ambient: the quiet opening

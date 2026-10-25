@@ -1,0 +1,124 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "jupiter",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Warden",
+   "offset": [
+    -120,
+    90,
+    -300
+   ],
+   "world": true,
+   "look": "ship"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "warden_jupiter_close_t006",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6.0
+  },
+  {
+   "name": "warden_jupiter_close_t012",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t018",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t024",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t030",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t036",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t042",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t048",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t054",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t060",
+   "follow": true,
+   "fov": 30,
+   "warmup": 6
+  },
+  {
+   "name": "warden_jupiter_close_t070",
+   "follow": true,
+   "fov": 30,
+   "warmup": 10
+  },
+  {
+   "name": "warden_jupiter_close_t080",
+   "follow": true,
+   "fov": 30,
+   "warmup": 10
+  },
+  {
+   "name": "warden_jupiter_close_t090",
+   "follow": true,
+   "fov": 30,
+   "warmup": 10
+  },
+  {
+   "name": "warden_jupiter_close_t100",
+   "follow": true,
+   "fov": 30,
+   "warmup": 10
+  },
+  {
+   "name": "warden_jupiter_close_t110",
+   "follow": true,
+   "fov": 30,
+   "warmup": 10
+  },
+  {
+   "name": "warden_jupiter_close_t120",
+   "follow": true,
+   "fov": 30,
+   "warmup": 10
+  }
+ ]
+}

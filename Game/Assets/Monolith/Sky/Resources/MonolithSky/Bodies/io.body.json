@@ -1,0 +1,16 @@
+{
+  "format": "monolith-body/1",
+  "id": "io",
+  "name": "Io",
+  "about": "Io as a small disc in front of or behind the backdrop planet (a mission's backdrop.moons).",
+  "radiusKm": 1821.6,
+  "radiusKmWhy": "mean radius, IAU 2015 (Archinal et al. 2018)",
+  "map": "MonolithSky/Bodies/io_map",
+  "mapWhy": "USGS Astrogeology, Io Galileo SSI / Voyager colour merged global mosaic 1 km (public domain: access constraints 'public domain', use constraints 'none'), the 1024 x 512 browse image; docs/licences/planets.md",
+  "albedoScale": 2.0,
+  "albedoScaleWhy": "ours: the mosaic is a contrast-stretched picture (linear mean 0.26); Io's geometric albedo is about 0.6, so the scale brings the mean to 0.52 and the brightest frost to white",
+  "moon": {
+    "orbitKm": 421700, "periodDays": 1.769,
+    "why": "Io's orbit radius and period (NASA planetary satellite fact sheet): 421,700 km, 1.769 days; its orbit lies in Jupiter's equator plane to within half a degree"
+  }
+}

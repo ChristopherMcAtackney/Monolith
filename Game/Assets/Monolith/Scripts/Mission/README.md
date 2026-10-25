@@ -5,7 +5,7 @@ that fire when a condition tree holds (almost never on a plain timer). `MissionR
 weapons and damage), logs the pacing timeline and publishes the directives and objectives on `GameWorld.Mission` for the HUD. The assembly
 references Core only; the game does its spawning, AI orders and effects through `IMissionHost` (`Game/Mission/GameMissionHost.cs`). Built-in
 missions live in `Resources/Missions/` (`dogfight`; `escort`, "The Crossing"; `cabin`, "Dead Water"; `oort`, "The Oculus", the slice's
-strike on the outpost in the comet); the playtest folder's `Missions/` copies are read first, so they can be edited without a build.
+strike on the outpost in the comet; `jupiter`, "Jupiter Skirmish (test)", the Dogfight's fight in front of Jupiter, the backdrop's test); the playtest folder's `Missions/` copies are read first, so they can be edited without a build.
 
 | File | What |
 |---|---|
@@ -31,6 +31,7 @@ Run: `Monolith.exe -mnMission dogfight` (a name or a path; `-mnDifficulty`, `-mn
   "pacing": { "hulls": ["Tamsin", "Lector"], "quietRange": 2500, "ranges": ["Small Mercy | Archon"] },  // ranges: distances logged each second
   "linesPending": true,                                   // every radio line is a draft awaiting the user's approval (see Messages)
   "scenery": { "rocks": [ ... ], "fields": [ ... ] },     // drawn only: ice and rock (see Scenery)
+  "backdrop": { "body": "jupiter", "distanceKm": 200000, "direction": { "azimuth": 24, "elevation": -9 } },   // a planet in the sky (see Backdrop)
   "ships": [ ... ], "wings": [ ... ], "objectives": [ ... ], "messages": [ ... ], "events": [ ... ],
   "autoplay": { "seconds": 900, "expect": { ... } } }
 ```
@@ -119,6 +120,43 @@ Events are evaluated in file order each tick.
 Single rocks, and fields of `count` rocks scattered through a box with sizes on a power law (many small, few large), kept out of each `clear`
 sphere (`[x, y, z, radius]`). `spin` is degrees per second at the largest size (smaller ones tumble faster). The rocks are icy asteroids
 (`Game/Mission/IceRocks`: a displaced, cratered sphere in dark crust with ice in the cracks, a copy of the flight's plated material).
+
+## Backdrop (a planet behind the fight)
+
+```json
+"backdrop": {
+  "body": "jupiter",                                           // a file in Resources/MonolithSky/Bodies (jupiter; io and europa are moons only)
+  "distanceKm": 200000,                                       // from the viewer to the planet's CENTRE (Jupiter: 71,492 km radius), so 200,000 km is 42 degrees across
+  "direction": { "azimuth": 24, "elevation": -9 },            // where the centre lies: degrees from +Z toward +X, and above the XZ plane (world +Y is up)
+  "sun": { "azimuth": -100, "elevation": 35, "distanceAu": 5.2 },   // where the Sun is (left out: the sky's own Sun) and how far from it the planet is
+  "grsLongitude": -22,                                        // the Great Red Spot's longitude seen from the disc's centre at the start, degrees east of it
+  "startSeconds": 0,                                          // the planet's own clock when the mission begins
+  "motion": { "spin": 0.06, "windScale": 120, "grsSpin": 0.5, "moons": 100 },     // slow motion (below); left out: the body's own (the moons: 100)
+  "look": { "brightness": 1, "planetshine": 3, "ambientScale": 0.3, "detail": 1, "haze": 1 },   // taste knobs (below)
+  "moons": [ { "body": "io", "orbitDeg": 300 }, { "body": "europa", "orbitDeg": 205 } ] }   // small discs on their orbits
+```
+`direction` is required (the other fields have the defaults shown above). All of it is data: a later mission at Jupiter, or at another planet once its `.body.json` and map exist, is one block.
+`MissionFile` checks it like the rest of the file (a body the game does not carry, a missing direction, numbers out of range and misspelt fields are errors, all reported together).
+
+- **What it is.** The planet is drawn by the sky (`Monolith.Sky`, `Scripts/Render/Sky/BackdropState.cs`, `MonolithPlanet.hlsl`), as an analytic sphere seen from one fixed point in the sky pass: it has no depth to lose precision in, no far plane to be clipped
+  by and no size limit, it is behind every ship, beam and explosion because the sky only draws where nothing nearer has been, and the stars, the Milky Way and the Sun behind its disc are hidden by it. A flight of a few kilometres moves it by less than a
+  thousandth of a pixel: there is no parallax, which is what sells the scale; the ships carry it. Cost: about 0.035 ms of GPU at 1080p on the RTX 4070 Ti (`gauntlet/pieces/jupiter/history.md`).
+- **Distance and size.** The disc's angular diameter is 2 asin(radius / distance): 150,000 km is 57 degrees (it overflows the cockpit's 55 degree frame), 200,000 km 42, 250,000 km 33, 300,000 km 28.
+- **Light.** The Sun at `distanceAu` gives 1 / AU^2 of Earth's sunlight (5.2 AU: 3,700 lux against 100,000, 1/27). The camera's exposure is opened by the same factor (4.76 stops), which for everything the Sun lights (the planet, the ships) is the
+  picture the game's reference exposure (EV 14, 100,000 lux) already shows, so the Sun's lux and the exposure stay at the reference and nothing authored in screen units (engine glow, windows, explosions, lasers, the cabin) changes;
+  `BackdropState.PhysicalSunLux` and `ExposureOpenStops` report the real numbers. The planet's reflected light lights the ships: the sky's lighting cubemap includes the planet's disc (so the ambient probe and the reflections have it, warm and soft, from its
+  direction, with its phase), `planetshine` scales it (1 is the physical amount, about 2 percent of the Sun's on a hull facing the planet; it lands in the tonemapper's toe, so the Jupiter Skirmish asks for 3) and `ambientScale` scales the sky's cold fill
+  (the planet takes its place in the directions it covers). Ships keep the Sun's shadows.
+- **Look.** The planet's own light, in order: the Cassini albedo map; Lambert and Lommel-Seeliger sunlight (the limb darkens); a soft terminator (a softplus of the cosine to the Sun, about 20 degrees wide, reddened); a thin blue haze over the clouds
+  and edge-on around the limb; a black night side; the moons as small lit discs (Io, Europa; `orbitDeg` is the angle from the sunward point, 90 toward the planet's east; a moon in the planet's shadow is dark; one behind the disc is hidden). Beyond the map's
+  resolution, where one texel is bigger than a pixel, fine streaks stretched along the bands are added where the map has structure; `detail` scales them, `haze` the limb haze, `brightness` the whole planet.
+- **Slow motion.** `spin` turns the whole planet (degrees of longitude a second; the real one is 0.01), `windScale` multiplies the real zonal winds the bands slide at against each other (Cassini and Hubble's profile, in the body file), `grsSpin` turns the Great Red Spot's oval
+  inside its shear collar. The defaults (0.06, 120, 0.5) read over tens of seconds and never look busy; the planet's clock is the game's own time, so a capture plan reproduces it. `moons` is how many times faster than real the moons go round
+  (100: Io once in 25 minutes, Europa once in 51): a moon crossing the Sun's side of the planet throws its shadow on the clouds, a moon going behind the planet is hidden by it, one in the planet's shadow goes dark.
+- **Bodies.** `Resources/MonolithSky/Bodies/<id>.body.json` (the radius, the pole, the map, the winds, the atmosphere, each number with its source), the maps beside them; sources and licences in `docs/licences/planets.md`.
+- `-mnNoBackdrop` (or a mission plan's `"noBackdrop": true`) plays the mission with a plain sky, for comparing looks and costs. While the pilot stands in the cabin the eye opens to the dim cabin and the planet, like every sunlit thing outside the canopy, burns out toward white.
+- Test: `Monolith.exe -batchmode -nographics -mnMissionSelfTest` (its `backdrop` group: the mission and the sky's numbers, and a broken block refused); a still: `gauntlet/shots/jupiter_r1_planet.json` (`"scene": "sky"` with `"sceneOptions": { "Backdrop": { ... } }`,
+  the fields are `BackdropOptions`'), the battle: `jupiter_r1_battle_*.json` (`python -I tools/jupiter/make_plans.py`, `make_battle_plans.py`).
 
 ## Conditions
 

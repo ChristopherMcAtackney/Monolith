@@ -1,0 +1,124 @@
+{
+ "scene": "mission",
+ "sceneOptions": {
+  "mission": "jupiter",
+  "pilot": "ai",
+  "invulnerable": true,
+  "hud": false,
+  "dust": false,
+  "spectate": {
+   "ship": "Small Mercy",
+   "offset": [
+    -170,
+    90,
+    220
+   ],
+   "world": true,
+   "look": "Warden"
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 3.0
+ },
+ "stills": [
+  {
+   "name": "mercy_t006",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6.0
+  },
+  {
+   "name": "mercy_t012",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t018",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t024",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t030",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t036",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t042",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t048",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t054",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t060",
+   "follow": true,
+   "fov": 45,
+   "warmup": 6
+  },
+  {
+   "name": "mercy_t070",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "mercy_t080",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "mercy_t090",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "mercy_t100",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "mercy_t110",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  },
+  {
+   "name": "mercy_t120",
+   "follow": true,
+   "fov": 45,
+   "warmup": 10
+  }
+ ]
+}

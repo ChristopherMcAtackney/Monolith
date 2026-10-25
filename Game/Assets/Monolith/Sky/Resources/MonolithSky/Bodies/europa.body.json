@@ -1,0 +1,16 @@
+{
+  "format": "monolith-body/1",
+  "id": "europa",
+  "name": "Europa",
+  "about": "Europa as a small disc in front of or behind the backdrop planet (a mission's backdrop.moons).",
+  "radiusKm": 1560.8,
+  "radiusKmWhy": "mean radius, IAU 2015 (Archinal et al. 2018)",
+  "map": "MonolithSky/Bodies/europa_map",
+  "mapWhy": "USGS Astrogeology, Europa Voyager / Galileo SSI global mosaic 500 m (access and use constraints 'none': a U.S. Government work), the 1024 x 512 image, black and white, warmed very slightly and its polar gap filled by tools/jupiter/build_moons.py; docs/licences/planets.md",
+  "albedoScale": 1.9,
+  "albedoScaleWhy": "ours: the mosaic is contrast-stretched (linear mean 0.31); Europa's geometric albedo is about 0.67, the brightest in the system, so the scale brings the mean to 0.59",
+  "moon": {
+    "orbitKm": 671100, "periodDays": 3.551,
+    "why": "Europa's orbit radius and period (NASA planetary satellite fact sheet): 671,100 km, 3.551 days"
+  }
+}

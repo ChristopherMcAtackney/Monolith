@@ -1,0 +1,126 @@
+{
+ "scene": "sky",
+ "sceneOptions": {
+  "Backdrop": {
+   "Body": "jupiter",
+   "DistanceKm": 200000,
+   "Azimuth": 24,
+   "Elevation": -9,
+   "HasSun": true,
+   "SunAzimuth": -100,
+   "SunElevation": 6,
+   "SunDistanceAu": 5.2,
+   "GrsLongitude": -22,
+   "Planetshine": 3,
+   "AmbientScale": 0.3,
+   "Moons": [
+    {
+     "Body": "io",
+     "OrbitDeg": 300
+    },
+    {
+     "Body": "europa",
+     "OrbitDeg": 205
+    }
+   ]
+  }
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.0,
+  "perfWarmup": 2.0
+ },
+ "stills": [
+  {
+   "name": "io_shadow_t235",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 34,
+   "warmup": 235.0
+  },
+  {
+   "name": "io_shadow_t250",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 34,
+   "warmup": 15.0
+  },
+  {
+   "name": "io_shadow_t265",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 34,
+   "warmup": 15.0
+  },
+  {
+   "name": "io_shadow_t280",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 34,
+   "warmup": 15.0
+  },
+  {
+   "name": "io_shadow_t295",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 34,
+   "warmup": 15.0
+  },
+  {
+   "name": "io_shadow_t315",
+   "pos": [
+    -20000,
+    0,
+    0
+   ],
+   "rot": [
+    9.0,
+    24.0,
+    0
+   ],
+   "fov": 34,
+   "warmup": 20.0
+  }
+ ]
+}
