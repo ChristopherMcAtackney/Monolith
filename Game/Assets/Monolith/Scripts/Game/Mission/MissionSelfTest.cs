@@ -372,10 +372,22 @@ namespace Monolith.Game
                            { ""name"": ""B"", ""team"": ""earth"", ""capped"": true, ""ships"": [ { ""class"": ""earth_interceptor"", ""count"": 1 } ], ""arrival"": { ""cue"": { ""time"": 1 }, ""at"": [600, 0, 6000] } },
                            { ""name"": ""C"", ""team"": ""earth"", ""capped"": true, ""capPriority"": 1, ""ships"": [ { ""class"": ""earth_interceptor"", ""count"": 1 } ], ""arrival"": { ""cue"": { ""time"": 2 }, ""at"": [-600, 0, 6000] } } ],
               ""events"": [ { ""name"": ""free"", ""when"": { ""time"": 1 }, ""do"": [ { ""do"": ""beams"", ""ship"": ""Mercy"", ""free"": true, ""target"": ""Far"" } ] } ],
-              ""autoplay"": { ""expect"": { ""maxEngagingMax"": [2, 3, 4, 5, 99] } } }";
+              ""autoplay"": { ""expect"": { ""maxEngagingMax"": [2, 3, 4, 5, 99], ""firedIf"": [ { ""if"": ""free"", ""then"": ""free"", ""within"": 5 } ] } } }";
             var file = MissionFile.Load(json, "queue");
             Check(file.Autoplay.MaxEngagingAt(0) == 2 && file.Autoplay.MaxEngagingAt(3) == 5 && file.Autoplay.MaxEngagingAt(9) == 99, "an auto-play expectation can be one number per difficulty level (maxEngagingMax)");
+            var owes = file.Autoplay.FiredIf.Count == 1 ? file.Autoplay.FiredIf[0] : null;
+            bool ok1 = owes != null && owes.Broken(n => -1f, 100f) == null;                                   // the trigger never happened: nothing owed
+            bool ok2 = owes != null && new MissionFile.FiredIfDef { If = "a", Then = "b", Within = 5f }.Broken(n => n == "a" ? 10f : 13f, 100f) == null;         // answered in time
+            bool ok3 = owes != null && new MissionFile.FiredIfDef { If = "a", Then = "b", Within = 5f }.Broken(n => n == "a" ? 10f : -1f, 100f) != null;         // never answered
+            bool ok4 = owes != null && new MissionFile.FiredIfDef { If = "a", Then = "b", Within = 5f }.Broken(n => n == "a" ? 10f : 20f, 100f) != null;         // answered late
+            bool ok5 = owes != null && new MissionFile.FiredIfDef { If = "a", Then = "b", Within = 5f }.Broken(n => n == "a" ? 10f : -1f, 12f) == null;          // the mission ended before the answer was due
+            Check(owes != null && owes.If == "free" && owes.Within == 5f && ok1 && ok2 && ok3 && ok4 && ok5,
+                  $"an auto-play expectation can say one event owes another (firedIf): nothing owed if the trigger never fired or the mission ended first, a late or missing answer is broken ({ok1} {ok2} {ok3} {ok4} {ok5})");
             string bad = null;
+            try { MissionFile.Load(json.Replace(@"""then"": ""free""", @"""then"": ""nope"""), "queue_firedif"); }
+            catch (InvalidDataException e) { bad = e.Message; }
+            Check(bad != null && bad.Contains("no event called 'nope'"), "firedIf naming an event that does not exist is refused: " + (bad ?? "(it loaded)").Replace("\n", " "));
+            bad = null;
             try { MissionFile.Load(json.Replace(@"""name"": ""C"", ""team"": ""earth"", ""capped"": true,", @"""name"": ""C"", ""team"": ""earth"", ""capped"": false,"), "queue_bad"); }
             catch (InvalidDataException e) { bad = e.Message; }
             Check(bad != null && bad.Contains("capPriority"), "capPriority on a wing that is not capped is refused: " + (bad ?? "(it loaded)").Replace("\n", " "));

@@ -218,11 +218,17 @@ Event ids and fields: `Core/MissionBoard.cs`.
   each built-in mission runs a minute headless; the dogfight's port matches the hand-written dogfight to the bit for 240 s.
 - `-mnMissionAutoPlay <mission> -mnOut dir [-mnSeconds n] [-mnDifficulty x] [-mnMortal] [-mnSeed n]`: the AI flies the player (invulnerable unless the
   mission's `autoplay.invulnerable` is false) until the end; then the mission's `autoplay.expect` is asserted: `result` (any of), `fired`,
-  `notFired`, `order` (the ones that fired, in that order), `longestQuietMax`, `maxEngagingMax` (a number, or one per difficulty level), `maxThreatsMax`,
+  `notFired`, `firedIf` (`[ { "if": "Sable 2 lost", "then": "Lantern here", "within": 10 } ]`: a beat that answers something else, like a relay that comes
+  after a loss: when `if` fired and the mission ran on `within` seconds more, `then` must have fired by then; if `if` never fired nothing is owed, so the
+  rule holds at every level and every seed, where a plain `fired` would demand the loss), `order` (the ones that fired, in that order), `longestQuietMax`,
+  `maxEngagingMax` (a number, or one per difficulty level: the AI's own cap on the player is `[2, 3, 4, 5, 99]`), `maxThreatsMax`,
   `threatsAvgMin`; plus no errors, no bad numbers, no stuck AI. Writes `events.csv`, `pacing.csv` (with the `pacing.ranges` distances), `autoplay.txt`,
   `autoplay.json`, `radio.txt`; the report ends with the `pacing.hulls` ships' fates, lowest hulls, hull damage by source and every part they lost (when,
   to whom, with what). `-mnGoDark`: the stub goes dark for every scan sweep (a player who obeys the call), so a mission's unseen path can be run.
   `-mnSeed n` salts every random seed of the sim (weapons, turret gunners, AI pilots; `Core/Sim.cs` `SimSeed`), so one mission can be played with many
   different dice: 0, the default, is the same run as before it existed. The Oort round 2 sweeps ran 30 seeds a level this way.
+  `tools\mission_sweep.ps1 -Exe <exe> -Mission escort -Levels "Very easy,Easy,Medium,Hard,Insane" -Seeds 30 -Out dir` runs every level x seed in parallel
+  (`-Mission` can be a path to a mission file, to try an edit without a build) and prints, per level, the passes out of the runs, the length, the longest quiet,
+  the most hostiles on the player, whether the `pacing.hulls` ship survived, and each failed check with its seeds (`tools\mission_sweep_summary.py dir`).
 - `-mnDogfightPortCheck seconds -mnOut dir [-mnDifficulty x]`: `DogfightBattle` against `dogfight.mission.json`, every ship's state compared
   once a second.

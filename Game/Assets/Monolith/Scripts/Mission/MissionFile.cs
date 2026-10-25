@@ -247,6 +247,25 @@ namespace Monolith.Mission
             /// <summary>"maxEngagingMax" as a number, or one per difficulty level (the AI's own cap on the player rises with the level).</summary>
             public float[] MaxEngagingPerLevel;
             public int MaxEngagingAt(int level) => MaxEngagingPerLevel == null ? MaxEngagingMax : Mathf.RoundToInt(MaxEngagingPerLevel[Mathf.Clamp(level, 0, MaxEngagingPerLevel.Length - 1)]);
+            /// <summary>"firedIf": a beat that comes only when something else happened (a relay that answers a loss): if event <c>If</c> fired and the run
+            /// went on for <c>Within</c> seconds after, event <c>Then</c> must have fired by then, whatever the level or the dice.</summary>
+            public List<FiredIfDef> FiredIf = new List<FiredIfDef>();
+        }
+
+        public sealed class FiredIfDef
+        {
+            public string If, Then;
+            public float Within = 10f;
+
+            /// <summary>Null when the rule holds, else what is wrong. <paramref name="firedAt"/> gives an event's first firing time (-1: never) and
+            /// <paramref name="runEnd"/> the time the run stopped (the mission's end, or when the time ran out), both on one clock.</summary>
+            public string Broken(System.Func<string, float> firedAt, float runEnd)
+            {
+                float a = firedAt(If);
+                if (a < 0f || a + Within > runEnd) return null;                       // the trigger never happened, or the mission ended before the answer was due
+                float b = firedAt(Then);
+                return b >= 0f && b <= a + Within ? null : $"'{If}' fired at {a:0.0} s but '{Then}' " + (b < 0f ? "never fired" : $"fired {b - a:0.0} s later") + $" (due within {Within:0} s)";
+            }
         }
 
         // ------------------------------------------------------------------------------------------------ loading
@@ -388,6 +407,15 @@ namespace Monolith.Mission
                     a.ThreatsAvgMin = ex.Float("threatsAvgMin", -1f);
                     if (ex.Has("maxEngagingMax")) { a.MaxEngagingPerLevel = ex.PerLevel("maxEngagingMax"); a.MaxEngagingMax = Mathf.RoundToInt(a.MaxEngagingPerLevel[0]); }
                     a.MaxThreatsMax = ex.Int("maxThreatsMax", -1);
+                    foreach (var fi in ex.Objects("firedIf"))
+                    {
+                        var d = new FiredIfDef { If = fi.Str("if", required: true), Then = fi.Str("then", required: true), Within = fi.Float("within", 10f) };
+                        if (d.If != null) ctx.CheckEvent(d.If, fi.Where + ".if");
+                        if (d.Then != null) ctx.CheckEvent(d.Then, fi.Where + ".then");
+                        if (d.Within < 0f) errors.Add($"{fi.Where}.within: seconds, not negative");
+                        fi.Done();
+                        a.FiredIf.Add(d);
+                    }
                     ex.Done();
                 }
                 ap.Done();
