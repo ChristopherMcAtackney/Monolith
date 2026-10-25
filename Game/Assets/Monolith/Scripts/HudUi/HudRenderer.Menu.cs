@@ -102,7 +102,7 @@ namespace Monolith.HudUi
             Gauge(g, false, fillR, 0f, ink, ink, -1f, false);
             Box("menuGauges", new Vector2(C.x - g.ROuter - 14f * s, C.y - g.ROuter * Mathf.Sin(g.Half) - 8f * s), new Vector2(C.x + g.ROuter + 14f * s, C.y + g.ROuter * Mathf.Sin(g.Half) + 8f * s));
             string level = m.LevelApplies && m.Level < m.Levels.Count ? Up(m.Levels[m.Level]) : "NO DIFFICULTY";
-            T(level, new Vector2(C.x, C.y - capV * 0.5f - (m.LevelApplies ? 4f * s : 0f)), TextRole.Value, m.LevelApplies ? ink : dim, TextAlign.Center);
+            T(level, new Vector2(C.x, m.LevelApplies ? C.y - capV - 4f * s : C.y - capV * 0.5f), TextRole.Value, m.LevelApplies ? ink : dim, TextAlign.Center);
             if (m.LevelApplies && m.Level < m.Stat.Count) T(Up(m.StatName) + "  " + Pct(m.Stat[m.Level]), new Vector2(C.x, C.y + 8f * s), TextRole.Label, dim, TextAlign.Center);
 
             // ---- about the highlighted scenario, and the keys

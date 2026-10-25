@@ -34,14 +34,14 @@ Proof, `-mnStartSelfTest`, windowed at 1920x1080 through the real loading screen
 | game objects / roots / event listeners | 3 / 4 / 0 | 3 / 4 / 0 | 3 / 4 / 0 | 3 / 4 / 0 |
 | audio system / world / clock | none | none | none | none |
 | Unity objects | 8,580 | 8,784 (+204) | 8,840 (+56) | 8,840 (+0) |
-| managed memory in use | 249.6 MB | 264.5 | 265.1 | 265.6 |
-| allocated memory | 178.1 MB | 315.4 | 349.3 | 349.4 |
+| managed memory in use | 249.6 MB | 264.6 | 265.2 | 265.7 |
+| allocated memory | 178.1 MB | 315.2 | 349.1 | 349.2 |
 
 and during each trip: the Oculus 14 sim systems, 69 event listeners, 5 audio voices at most; the Dogfight 14, 69, 4; the Oculus again **14, 69, 5** (the same world built twice). At the start screen no voices at all.
 Read it honestly: the game objects, roots, listeners, audio system, world and clock are back to the baseline exactly, every time. Memory is not back to the figure at the first start screen, and cannot be: the first world a run builds
 leaves the caches the game keeps on purpose (+204 objects: 117 meshes and 79 materials, the cabin's cut pieces and effects) and the render pipeline's buffers (+137 MB allocated, +15 MB managed), and a second kind of scenario adds
 its own once (the Dogfight: +56 objects, +34 MB). What matters is that it does not grow: the third trip leaves exactly what the second did (+0 objects, +0.1 MB allocated, +0.5 MB managed). Six identical round trips (`windowed_oort6`): objects +0 on every return after the first;
-managed memory 272.5, 273.3, 273.6, 273.7, 273.6, 273.7 MB (+1.2 MB over the five that follow the first, flattening); allocated 315.5 to 315.7 MB (+0.2 MB in all). The managed figure moves a few MB from one process to the next (the first start screen read 249.6 MB in one run and 249.7 in another, the first return 264.5 and 272.5), so the figures to compare are the ones within one run. Headless, eight scenarios in a row (`headless`: the Oculus, Free flight, the Dogfight, the Combat range, the Explosions sandbox,
+managed memory 264.5, 265.3, 265.5, 265.6, 265.6, 265.7 MB (+1.2 MB over the five that follow the first, flattening); allocated 315.5, 315.8, 316.0, 316.0, 316.0, 316.0 MB (+0.5 MB in all). The managed figure moves a few MB from one process to the next (the first start screen read 249.6 MB in one run and 249.7 in another, the first return 264.5 and 272.5), so the figures to compare are the ones within one run. Headless, eight scenarios in a row (`headless`: the Oculus, Free flight, the Dogfight, the Combat range, the Explosions sandbox,
 Dead Water, the Crossing, the Oculus again): 3 game objects, 2 roots and 0 listeners after every return; the Oculus built again is 13 sim systems and 37 listeners both times; objects flat after the first of each kind (+0 on the last two).
 Not measured: the graphics driver's own memory (the counter reads 0 on this machine), and audio voices headless (a headless run makes no sound, so it has no audio system).
 
@@ -52,7 +52,7 @@ Boot to the start screen: **2.4 s** after the game's code could draw (start 0, s
 ### Checks (this build, `gauntlet/captures/start_checks/`, `gauntlet/captures/start_screen/selftests/`)
 - `-mnStartSelfTest`: **109 of 109** headless (the logic with no devices: the listing by display name with a `Missions` folder that adds, replaces and has a broken file; the levels; every key; `start.json` good, broken and stale; the flags a choice adds; which starts are plain; then eight scenarios in a
   row through a virtual pad (D-pad, left stick and arrow keys in turn), each launched, checked to be what was chosen, left by the pause screen, a debrief or F10, and checked to be gone; then B to the Quit row and A to quit), **65 of 65** windowed for the three round trips, **102 of 102** windowed for the six identical ones, 58 of 58 windowed with no loading screens at 1280x720.
-- `-mnHudSelfTest` **122 of 122** (the start screen drawn at 8 screen shapes x 3 styles x 3 lists x 5 cursors: nothing off screen, no two panels or words overlapping, nothing under 8.5 px).
+- `-mnHudSelfTest` **125 of 125** (the start screen drawn at 8 screen shapes x 3 styles x 3 lists x 5 cursors: nothing off screen, no two panels or words overlapping, nothing under 8.5 px, a gap between the level's name and the line under it).
 - `-mnLoadingSelfTest` 55/55, `-mnMissionSelfTest` 81/81, `tools\mission.ps1` all four missions pass on Medium with events.csv and pacing.csv byte-identical to the build at main 0e9ad06, `-mnAiSelfTest` 39/39, `-mnCombatSelfTest` 98/98,
   `-mnCabinSelfTest` 75/75, `-mnAudioSelfTest` 150 checks pass, `-mnScene range -mnPadDrive` 42/42.
 - Captures of the screen in three styles and four states (the first mission, the level list, a sandbox, quit) and at 21:9, 4:3 and 5:4: `gauntlet/captures/start_screen/r1/<style>/`, side by side in `.../r1/sheets/`. Real windows grabbed while a windowed run went through the whole flow: `gauntlet/captures/start_screen/window/`.

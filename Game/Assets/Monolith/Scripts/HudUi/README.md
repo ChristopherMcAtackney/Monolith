@@ -79,7 +79,7 @@ bright hull. The HUD's render target is sRGB and blends in linear light, so the 
 
 ## Checks
 
-`Monolith.exe -batchmode -nographics -mnHudSelfTest [-mnOut dir]` (122 checks; 90 before the scale, opacity and start screen): the fonts and their licence, that every character in the mission and ship files has a glyph, the type scale, the styles, the gauges' and the radar's
+`Monolith.exe -batchmode -nographics -mnHudSelfTest [-mnOut dir]` (125 checks; 90 before the scale, opacity and start screen): the fonts and their licence, that every character in the mission and ship files has a glyph, the type scale, the styles, the gauges' and the radar's
 geometry, a real world read into a frame (speed, throttle, fuel, hull, shield, energy, the guns, missiles and decoys, the target, the contacts, the sensors' static, the systems list, a missile in flight, the mission and the cabin's boards),
 the layout of every style at eight screen shapes in six states (nothing off screen, no two panels or words overlapping, the middle of the screen clear), once at the design size and once at the default scale, the scale and opacity (where they come from, the limits, a bad `hud.json`, what a save keeps, the alpha of every vertex at opacity 0.5 with the warnings untouched, the type readable at 1080p, the area covered, the cost of the opacity), the start screen at eight shapes in three styles, the pause screens' switches, and the CPU cost of a frame. `-mnHudCost` logs the
 HUD's own CPU time per frame in a running game. Capture plans: `gauntlet/shots/hud/hud_r1_*.json` (made from `gauntlet/shots/specs/hud_r1_*.json` by `tools/juice/make_plan.py`); `tools/hud/capture_moments.ps1` takes every moment in every style and makes the side-by-side sheets.

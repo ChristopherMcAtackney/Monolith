@@ -641,6 +641,14 @@ namespace Monolith.Game
                 counts.Add(L.VertexCount);
             }
             Check(counts[0] != counts[1] && counts[1] != counts[2], $"the start screen reads differently in the three styles ({counts[0]}, {counts[1]}, {counts[2]} vertices)");
+            // the level's name and the line under it in the gauges are clear of each other (the words must not touch, as the check on overlaps would let them)
+            foreach (var st in HudStyles.Styles)
+            {
+                L.Clear(1f, st); R.Draw(L, new HudFrame { Width = 1920f, Height = 1080f, Menu = d0, Time = 1f });
+                Rect? name = null, line = null;
+                foreach (var t in L.Texts) { if (t.Text == "MEDIUM" && t.Bounds.center.x > 800f && t.Bounds.center.x < 1120f) name = t.Bounds; else if (t.Text.StartsWith("DAMAGE TO YOU")) line = t.Bounds; }
+                Check(name.HasValue && line.HasValue && line.Value.yMin - name.Value.yMax >= 6f, $"{st.Name}: the level's name and the line under it in the gauges have a gap of {(name.HasValue && line.HasValue ? N(line.Value.yMin - name.Value.yMax) : "?")} px (at least 6)");
+            }
             L.Clear(1f, HudStyles.Styles[0]); d0.Fade = 0f; R.Draw(L, new HudFrame { Width = 1920f, Height = 1080f, Menu = d0, Time = 1f });
             Check(L.VertexCount == 0, "faded out, the start screen draws nothing");
         }
