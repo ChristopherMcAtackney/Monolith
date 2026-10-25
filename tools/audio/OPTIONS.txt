@@ -2,8 +2,9 @@ MONOLITH - PLAYTEST OPTIONS
 
 Play.bat takes plain words, in any order:
 
-  Play.bat                         The Dogfight, fullscreen, Medium
-  Play.bat oort                    The Oculus (the Oort Cloud mission)
+  Play.bat                         the START SCREEN: choose a scenario and a difficulty (see below), fullscreen
+  Play.bat hard                    the start screen, with Hard already chosen
+  Play.bat oort                    The Oculus (the Oort Cloud mission), straight in: no start screen
   Play.bat oort hard skip          The Oculus on Hard, no briefing
   Play.bat dogfight god window     The Dogfight, you can't die, in a window
   Play.bat escort ai               watch the AI fly your ship through The Crossing
@@ -11,8 +12,20 @@ Play.bat takes plain words, in any order:
 To use them, make a shortcut to Play.bat and add the words to the end of its Target, or type them in a command prompt opened in this folder.
 
 
-WHAT TO PLAY (one of these)
-  dogfight      The Dogfight: the Mercy against the Warden corvette and Earth's drone waves (the default)
+THE START SCREEN (Play.bat with no mission or scene word)
+  After the loading screen you choose what to play, in the HUD's own look (F9 changes the style):
+    Xbox pad:  D-pad or left stick to move, A to choose, B to go back.     Keyboard:  arrows, Enter, Esc.
+  Scenario: the missions (The Dogfight, The Oculus, The Crossing, Dead Water, and any file you put in the Missions folder, by the name written
+  in it) and the sandboxes (free flight, the combat range, the explosions sandbox). A on a mission moves you to Difficulty (Very easy, Easy,
+  Medium, Hard, Insane); A there launches it. A sandbox launches at once. B jumps to QUIT at the bottom of the list; B or A there closes the game.
+  When a mission ends, or you quit from the pause screen (B), you are back on this screen, not on the desktop (F10 does it in the explosions
+  sandbox, which also has a button on its panel). Your last scenario and difficulty are remembered in start.json next to Play.bat.
+  The other words still apply to whatever you launch from it: god, skip, ai, nohud, nocabin, nosound, a HUD style...
+  Playing a mission or scene by name (Play.bat oort) skips the screen, and B on its pause screen closes the game as before.
+
+
+WHAT TO PLAY (one of these; with none, the start screen)
+  dogfight      The Dogfight: the Mercy against the Warden corvette and Earth's drone waves
   oort          The Oculus: the Oort Cloud strike on the comet outpost, the slice's main mission
   escort        The Crossing: get the crippled freighter Tamsin to the jump point
   cabin         Dead Water: hide from the Lector's scans (go dark, hand repairs)
@@ -22,7 +35,7 @@ WHAT TO PLAY (one of these)
   range         the combat range: targets and turrets to shoot at
   juice         the explosions sandbox (Start opens the tuning panel)
 
-DIFFICULTY (Medium if you give none)
+DIFFICULTY (Medium if you give none; on the start screen, the last one you chose)
   veryeasy   easy   medium   hard   insane
   (On the pause screen the D-pad left/right also changes it, for the next run.)
 
@@ -31,7 +44,11 @@ SCREEN
 
 HUD STYLE
   halo   meridian   cipher
-  (F9 cycles the styles while you play; the game remembers your choice in hud.json.)
+  (F9 cycles the styles while you play and on the start screen; the game remembers your choice in hud.json.)
+HUD SIZE AND STRENGTH
+  Edit hud.json next to Play.bat:  "scale": 0.86 (how big the flight HUD is; 1 is the old size) and "opacity": 0.8 (how solid; 1 is the old strength).
+  Warnings (an incoming missile, a lock on you, hull critical, a lost system) are always full strength. The pause, briefing and debrief screens and the battle map keep the old size.
+  For one run:  Play.bat oort -mnHudScale 1 -mnHudOpacity 1
 
 TESTING HELPERS
   god           you can't die
@@ -58,5 +75,6 @@ FILES NEXT TO PLAY.BAT YOU CAN EDIT (no rebuild needed)
   music.json, Audio\         your own music, effects and voices (see MUSIC.txt and SOUND.txt)
   controls.json              the controls (the pad layout, the brake, look inversion)
   cabin.json                 the cabin's numbers (walking speed and so on)
-  hud.json                   the HUD style and text size
+  hud.json                   the HUD style, text size, scale and opacity (scale 0.86 and opacity 0.8 are the defaults; 1 and 1 are the old full-size, full-strength HUD)
+  start.json                 the start screen's last scenario and difficulty
   Monolith_audio_log.txt     the log of the last run: every radio line and music change

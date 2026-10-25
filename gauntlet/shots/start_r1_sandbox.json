@@ -1,0 +1,18 @@
+{
+ "scene": "start",
+ "sceneOptions": {
+  "scenario": "range",
+  "fade": 1.0
+ },
+ "defaults": {
+  "width": 1920,
+  "height": 1080,
+  "warmup": 0.5
+ },
+ "stills": [
+  {
+   "name": "start_sandbox",
+   "warmup": 0.5
+  }
+ ]
+}

@@ -29,6 +29,8 @@ namespace Monolith.Cabin
             return o;
         }
 
+        void OnDestroy() => _lines?.Dispose();
+
         void LateUpdate()
         {
             float h = _cam != null ? _cam.pixelHeight : 1080f;

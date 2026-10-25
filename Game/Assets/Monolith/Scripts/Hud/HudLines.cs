@@ -39,9 +39,24 @@ namespace Monolith.Hud
         /// <summary>The style everything is drawn in (set by <see cref="Clear"/>) and the screen scale of this frame.</summary>
         public HudStyle Style { get; private set; }
         public float Scale { get; private set; } = 1f;
+        /// <summary>
+        /// How solid everything drawn from now on is (1 as authored): the alpha of every vertex is scaled by it, except the warnings, which are anything in the style's accent colour and always keep their full
+        /// strength. The HUD sets it (<see cref="HudStyles.Opacity"/>); the cabin's displays, the loading screen and the menus leave it at 1. It costs one compare per vertex.
+        /// </summary>
+        public float Opacity = 1f;
+        /// <summary>
+        /// The smallest the type is drawn, as a share of its design size, on a small screen (the type holds this floor while the layout keeps shrinking). The HUD brings it down with the player's scale
+        /// (0.72 of the scale), so a smaller HUD keeps the same room for its type as the full-size one has.
+        /// </summary>
+        public float TypeFloor = 0.72f;
+        Color32 _warn32;
         /// <summary>Pixels around a shape that its quad reaches past the shape, for the glow and the keyline.</summary>
         public float Pad { get; private set; } = 8f;
         public int VertexCount => _nv;
+        /// <summary>The colour of vertex <paramref name="i"/> as it will be drawn (for the checks).</summary>
+        public Color32 VertexColor(int i) => _v[i].C;
+        /// <summary>True when a colour is the style's warning accent (the one thing <see cref="Opacity"/> leaves alone).</summary>
+        public bool IsWarn(Color32 c) => c.r == _warn32.r && c.g == _warn32.g && c.b == _warn32.b;
         public int GlyphCount { get; private set; }
         /// <summary>Every piece of text drawn this frame, with the pixel size it was drawn at, for the checks (only while <see cref="RecordTexts"/> is on).</summary>
         public readonly List<TextRecord> Texts = new List<TextRecord>(256);
@@ -60,6 +75,12 @@ namespace Monolith.Hud
         /// <summary>The picture <see cref="Image"/> draws (one per canvas).</summary>
         public Texture ImageTexture;
 
+        /// <summary>Let go of the mesh (its owner is going away: a scene taken down must not leave one mesh a canvas behind).</summary>
+        public void Dispose()
+        {
+            if (Mesh != null) Object.Destroy(Mesh);
+        }
+
         public HudLines()
         {
             Mesh = new Mesh { name = "MN_Hud", indexFormat = IndexFormat.UInt32, hideFlags = HideFlags.HideAndDontSave };
@@ -74,6 +95,7 @@ namespace Monolith.Hud
             Texts.Clear();
             Style = style ?? HudStyles.Current;
             Scale = scale;
+            _warn32 = Style.Warn;
             Pad = 2.1f * GlowPx + KeyPx + 1.5f;
         }
 
@@ -146,7 +168,7 @@ namespace Monolith.Hud
         {
             var font = Style.Font;
             p.SetVector(GlowId, new Vector4(GlowPx, Mathf.Pow(Style.GlowStrength, 2.2f), Pad, 1.4427f / GlowPx));
-            p.SetVector(KeyId, new Vector4(KeyPx, Style.KeyAlpha, Style.Bold * Mathf.Max(Scale, 0.72f), 0f));
+            p.SetVector(KeyId, new Vector4(KeyPx, Style.KeyAlpha, Style.Bold * Mathf.Max(Scale, TypeFloor), 0f));
             p.SetVector(FontPId, new Vector4(font.AtlasW, font.AtlasH, font.Spread, 0f));
             p.SetTexture(FontTexId, font.Texture);
         }
@@ -167,7 +189,7 @@ namespace Monolith.Hud
             if (_nv == 0) return;
             var font = Style.Font;
             mat.SetVector(GlowId, new Vector4(GlowPx, Mathf.Pow(Style.GlowStrength, 2.2f), Pad, 1.4427f / GlowPx));
-            mat.SetVector(KeyId, new Vector4(KeyPx, Style.KeyAlpha, Style.Bold * Mathf.Max(Scale, 0.72f), 0f));
+            mat.SetVector(KeyId, new Vector4(KeyPx, Style.KeyAlpha, Style.Bold * Mathf.Max(Scale, TypeFloor), 0f));
             mat.SetVector(FontPId, new Vector4(font.AtlasW, font.AtlasH, font.Spread, 0f));
             mat.SetTexture(FontTexId, font.Texture);
             if (_ni > 0) { if (ImageTexture != null) mat.SetTexture(ImageTexId, ImageTexture); mat.SetPass(5); Graphics.DrawMeshNow(Mesh, Matrix4x4.identity, 2); }
@@ -189,6 +211,7 @@ namespace Monolith.Hud
         {
             ref var v = ref _v[_nv];
             v.P.x = p.x; v.P.y = p.y;
+            if (Opacity < 1f && !(c.r == _warn32.r && c.g == _warn32.g && c.b == _warn32.b)) c.a = (byte)(c.a * Opacity + 0.5f);
             v.C = c;
             v.Uv.x = u0; v.Uv.y = u1; v.Uv.z = u2; v.Uv.w = u3;
             return _nv++;
@@ -429,7 +452,7 @@ namespace Monolith.Hud
         /// <summary>Cap height in pixels of a role at this frame's scale (the type never scales below 0.72 of 1080p, so a small window stays readable).</summary>
         public float Cap(TextRole role)
         {
-            float s = Mathf.Max(Scale, 0.72f) * HudStyles.TextScale;
+            float s = Mathf.Max(Scale, TypeFloor) * HudStyles.TextScale;
             switch (role)
             {
                 case TextRole.Label: return Style.CapLabel * s;

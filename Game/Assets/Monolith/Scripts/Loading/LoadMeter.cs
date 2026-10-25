@@ -123,7 +123,10 @@ namespace Monolith.Loading
             if (CommandLine.Has("-mnCapture") || Application.isBatchMode) return;
             try
             {
-                var steps = new JObject();
+                // a load that is only part of a start (the start screen's two halves) keeps what the other half wrote
+                JObject steps = null;
+                try { if (File.Exists(StatsFile)) steps = JObject.Parse(File.ReadAllText(StatsFile))["steps"] as JObject; } catch (Exception) { steps = null; }
+                steps ??= new JObject();
                 foreach (var s in _steps) if (s.Done) steps[s.Id] = Math.Round(s.Ms, 1);
                 File.WriteAllText(StatsFile, new JObject { ["steps"] = steps, ["totalMs"] = Math.Round(ElapsedMs, 0) }.ToString());
             }

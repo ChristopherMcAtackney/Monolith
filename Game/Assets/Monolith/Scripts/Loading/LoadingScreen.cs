@@ -117,6 +117,7 @@ namespace Monolith.Loading
         {
             if (Current == this) Current = null;
             if (Splash != null) Destroy(Splash);
+            _lines?.Dispose();
         }
 
         void LateUpdate()

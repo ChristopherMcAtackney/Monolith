@@ -1,0 +1,21 @@
+{
+    "name": "Monolith.StartScreen",
+    "rootNamespace": "Monolith.Start",
+    "references": [
+        "Monolith.Core",
+        "Monolith.Hud",
+        "Monolith.HudUi",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.HighDefinition.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

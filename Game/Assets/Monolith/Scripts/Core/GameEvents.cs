@@ -122,6 +122,17 @@ namespace Monolith.Core
             return new Subscription(() => _all = Remove(_all, handler));
         }
 
+        /// <summary>How many listeners there are (for the checks that a torn-down session left none behind).</summary>
+        public static int SubscriberCount
+        {
+            get
+            {
+                int n = _all.Length;
+                foreach (var kv in ById) n += kv.Value.Length;
+                return n;
+            }
+        }
+
         /// <summary>Drop every listener and the history (a new game session).</summary>
         public static void Reset()
         {

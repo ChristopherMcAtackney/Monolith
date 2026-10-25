@@ -1,0 +1,13 @@
+{
+ "scene": "dogfight",
+ "sceneOptions": { "pilot": "ai", "invulnerable": true, "hud": true },
+ "defaults": { "width": 1920, "height": 1080, "warmup": 1.0, "perfWarmup": 3.0 },
+ "stills": [
+  { "name": "dog_t15_open",    "follow": true, "warmup": 15.0 },
+  { "name": "dog_t27_burn",    "follow": true, "warmup": 12.0 },
+  { "name": "dog_t36_notices", "follow": true, "warmup": 9.0 },
+  { "name": "dog_t39_hull",    "follow": true, "warmup": 3.0 },
+  { "name": "dog_t48_lock",    "follow": true, "warmup": 9.0 },
+  { "name": "dog_t57_fighter", "follow": true, "warmup": 9.0 }
+ ]
+}

@@ -344,7 +344,7 @@ namespace Monolith.Game
                 _hud.Overlay = PauseText();
                 if (_pad.SystemPressed(SystemAction.Pause) || _pad.SystemPressed(SystemAction.Resume)) SetPaused(false);
                 else if (_pad.SystemPressed(SystemAction.Respawn)) { RespawnPlayer(); SetPaused(false); }
-                else if (_pad.SystemPressed(SystemAction.Quit)) Application.Quit(0);
+                else if (_pad.SystemPressed(SystemAction.Quit)) StartFlow.QuitOrMenu();
                 return;
             }
             if (_pad.SystemPressed(SystemAction.Pause)) SetPaused(true);
@@ -366,7 +366,7 @@ namespace Monolith.Game
                 "PAUSED",
                 "START	RESUME",
                 "Y	RESPAWN",
-                "B	QUIT",
+                "B	" + StartFlow.QuitWord,
             };
             lines.AddRange(_hudControls.SettingsLines());
             lines.Add("#CONTROLS");

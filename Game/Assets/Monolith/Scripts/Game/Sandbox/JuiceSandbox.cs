@@ -259,6 +259,7 @@ namespace Monolith.Game
             events.Add(PanelItem.Button("Hit on you: shield", () => Trigger("you_shield"), "LB+RB+A"), PanelItem.Button("Hit on you: hull", () => Trigger("you_hull"), "LB+RB+B"));
             events.Add(PanelItem.Toggle("Ambient battle", () => Combat.Battle, v => Combat.Battle = v), PanelItem.Toggle("Slow motion", () => _slowMo, SetSlowMo));
             events.Add(PanelItem.Info(() => "last: " + _lastAction));
+            if (StartFlow.Active) events.Add(PanelItem.Button("Back to the start screen", () => StartFlow.QuitOrMenu(), "F10"));
             _panel.Pages.Add(events);
 
             var fx = new PanelPage("EFFECTS");
@@ -421,7 +422,7 @@ namespace Monolith.Game
                 string[] keyEvents = { "fighter_kill", "bomber_kill", "capital_death", "beam_strike", "shield_hit", "hull_hit", "near_miss", "flak" };
                 Key[] keys = { Key.F1, Key.F2, Key.F3, Key.F4, Key.F5, Key.F6, Key.F7, Key.F8 };
                 for (int i = 0; i < keys.Length; i++) if (kb[keys[i]].wasPressedThisFrame) Trigger(keyEvents[i]);
-                if (kb.f10Key.wasPressedThisFrame) Application.Quit(0);
+                if (kb.f10Key.wasPressedThisFrame) StartFlow.QuitOrMenu();
                 if (kb.backspaceKey.wasPressedThisFrame) ResetPlayer();
             }
         }
