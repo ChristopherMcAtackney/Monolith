@@ -13,7 +13,7 @@ FS2's flight behaviour, our own code (design section 4). One `ShipFlight` per sh
 3. **Move.** In the frame from the start of the tick: forward velocity = ramp speed, sideways and vertical velocity decay
    with `sideDamp` (so a turning ship slips). Then turn rates chase their goals with `rotDamp` and the ship turns by the
    new rates (Unity's Euler order is FS2's heading-pitch-bank order).
-4. **Afterburner** starts need 10 fuel and 1.3 s since the last start; it cuts out at empty even with the key held.
+4. **Afterburner** starts need 10 fuel and 1.3 s since the last start; it cuts out at empty even with the key held (counted in `ShipState.FuelCutOuts` in the tick it happens, which the juice's empty-tank sputter reads: a frame that runs several ticks has already refilled a little by the time it is drawn).
 5. **Fuel** burns while on and refills whenever off (table rate x `afterburnerRechargeScale`).
 
 Knocks (`GameWorld.Knocks`, from weapons, collisions, shockwaves later; the playtest's View button for now) change

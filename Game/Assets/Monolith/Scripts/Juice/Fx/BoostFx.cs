@@ -38,6 +38,7 @@ namespace Monolith.Juice
         StreamWriter _log;
 
         bool _on, _key, _seen;
+        int _cutOutsSeen;       // the flight model's count of empty-tank cut-offs at the last frame
         float _k;               // 0..1: how fully the boost shows. Rises in a tenth of a second, falls over about a second.
         float _sinceIgnite = 99f, _sinceDry = 99f, _sinceDenied = 99f;
         bool _dry;              // the last cut-off was the tank running out
@@ -112,6 +113,7 @@ namespace Monolith.Juice
                 w.FovKick = 0f; w.DustStretch = 1f; w.DustBright = 1f;
                 ClearLens();
                 _on = on; _k = 0f;
+                if (me != null) _cutOutsSeen = me.FuelCutOuts;
                 UpdateFlames(dt, false);
                 return;
             }
@@ -121,7 +123,7 @@ namespace Monolith.Juice
             Vector3 earPos = _c.CameraPosition;
 
             // ---- edges
-            if (!_seen) { _seen = true; _on = on; }              // the first frame is not an ignition
+            if (!_seen) { _seen = true; _on = on; _cutOutsSeen = me.FuelCutOuts; }              // the first frame is not an ignition
             if (on && !_on)
             {
                 // Ignition. The loudest reaction there is: it is the player's own act, and it worked.
@@ -132,7 +134,9 @@ namespace Monolith.Juice
             }
             else if (!on && _on)
             {
-                bool empty = me.Fuel <= 0.5f && key;                 // the tank ran out with the key still down
+                // The tank ran out with the key still down. The flight model counts it in the tick it happens: the frame that draws it may have run several ticks (30 fps is two, a stall more),
+                // and by then the tank has begun to refill, so reading the fuel level here missed it (the old test: fuel <= 0.5 on the frame the burner went out).
+                bool empty = me.FuelCutOuts != _cutOutsSeen && key;
                 if (empty) { StartSputter(sound, 1f); }
                 else _c.Rumble.Pulse(0.22f * s.rumble, 0.10f, 0.18f);    // a soft let-go
             }
@@ -143,6 +147,7 @@ namespace Monolith.Juice
                 _sinceDenied = 0f;
             }
             _on = on;
+            _cutOutsSeen = me.FuelCutOuts;
 
             // ---- the amount
             float target = on ? 1f : 0f;

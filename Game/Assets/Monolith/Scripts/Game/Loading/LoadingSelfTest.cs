@@ -5,6 +5,7 @@ using System.IO;
 using Monolith.Core;
 using Monolith.Hud;
 using Monolith.Loading;
+using Monolith.Look;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
@@ -56,6 +57,7 @@ namespace Monolith.Game
                 Meter();
                 Hold();
                 Manifest();
+                Dust();
                 Wiring();
             }
             catch (Exception e)
@@ -294,6 +296,30 @@ namespace Monolith.Game
                 if (!found) unlisted++;
             }
             Check(unlisted == 0, $"every ship's art is in the manifest ({all.Length - unlisted} of {all.Length})");
+        }
+
+        // ------------------------------------------------------------------------------------------------ the lens dust
+
+        /// <summary>
+        /// The lens dust takes half a second to draw. It used to be drawn inside the lens pass the first time the Sun was in view, a 0.5 s frame wherever that came (the player's death in the sandbox
+        /// and its checks); now a worker thread draws it while the game loads and the main thread only makes the texture. It must be the same dirt: the pixels drawn on a thread are the pixels drawn on the main thread.
+        /// </summary>
+        static void Dust()
+        {
+            var main = DustTexture.Draw(7);
+            Color32[] other = null;
+            var t = new System.Threading.Thread(() => other = DustTexture.Draw(7));
+            t.Start(); t.Join();
+            int diff = other == null ? -1 : 0;
+            if (other != null) for (int i = 0; i < main.Length; i++) if (!main[i].Equals(other[i])) diff++;
+            Check(main.Length == DustTexture.Width * DustTexture.Height && diff == 0, $"the lens dust drawn on a worker thread is the dirt drawn on the main thread, pixel for pixel ({main.Length} pixels, {diff} differ)");
+            int r = 0, g = 0;
+            foreach (var px in main) { if (px.r > 8) r++; if (px.g > 8) g++; }
+            Check(r > 5000 && g > 50000, $"it has dirt in it (dust {r}, smudges {g} pixels above 8/255)");      // (the blue, bokeh channel is empty as drawn: Mathf.SmoothStep is not an edge function; the look is left as it was)
+            DustTexture.Prepare();
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            while (!DustTexture.Ready && sw.Elapsed.TotalSeconds < 20) { DustTexture.Poll(); System.Threading.Thread.Sleep(20); }
+            Check(DustTexture.Ready && DustTexture.Get() != null && DustTexture.Get().width == DustTexture.Width, $"the worker's pixels become the texture without anyone waiting for it, {sw.Elapsed.TotalMilliseconds:0} ms after it was started");
         }
 
         // ------------------------------------------------------------------------------------------------ the real start

@@ -6,6 +6,7 @@
         "Monolith.Capture",
         "Monolith.Flight",
         "Monolith.Sky",
+        "Monolith.Look",
         "Monolith.Input",
         "Monolith.View",
         "Monolith.Hud",

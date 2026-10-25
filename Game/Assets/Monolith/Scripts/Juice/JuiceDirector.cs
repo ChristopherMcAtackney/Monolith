@@ -205,6 +205,7 @@ namespace Monolith.Juice
         void Update()
         {
             if (!_built) return;
+            if (HitchLog) _updStart = Time.realtimeSinceStartup;
             var c = Context;
             float real = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
             c.HitStop.Update(real);
@@ -212,15 +213,18 @@ namespace Monolith.Juice
             c.Audio.Enabled = c.Settings.effects.sound;
             c.Audio.MasterVolume = c.Settings.levels.volume;
             c.Lights.Enabled = c.Settings.effects.lights;
+            float d0 = HitchLog ? Time.realtimeSinceStartup : 0f;
             _death.Update(c.World.Sim.OneTickPerFrame ? Sim.Dt : real);                  // before the pad is written: it adds pulses and shake
+            if (HitchLog) _deathMs = (Time.realtimeSinceStartup - d0) * 1000f;
             c.Rumble.Update(real);
             c.Audio.SetTimeScale(BaseTimeScale);
             c.Audio.Update(real);
+            if (HitchLog) _updEnd = Time.realtimeSinceStartup;
         }
 
         static readonly bool HitchLog = CommandLine.Has("-mnJuiceHitchLog");
         int _gcBefore;
-        float _lastRealTime;
+        float _lastRealTime, _updStart, _updEnd, _deathMs;
 
         void LateUpdate()
         {
@@ -231,7 +235,7 @@ namespace Monolith.Juice
                 float now = Time.realtimeSinceStartup, frameMs = (now - _lastRealTime) * 1000f;
                 int gc = System.GC.CollectionCount(0);
                 if (_lastRealTime > 0f && frameMs > 10f)
-                    MnLog.Info($"HITCH {frameMs:0.0} ms at t={c.Time:0.00}s: particles {c.Particles.Count}, quads {_frame.Add.Count}, lights {c.Lights.Active}, debris {_debris.Count}, gen0 GCs this frame {gc - _gcBefore}");
+                    MnLog.Info($"HITCH {frameMs:0.0} ms at t={c.Time:0.00}s (frame {Time.frameCount}{(_death.Active ? $", death {_death.Time:0.00} s in" : "")}): particles {c.Particles.Count}, quads {_frame.Add.Count}, lights {c.Lights.Active}, debris {_debris.Count}, gen0 GCs this frame {gc - _gcBefore}; after the last LateUpdate to this Update {(_updStart - _lastRealTime) * 1000f:0.0} ms, the director's Update {(_updEnd - _updStart) * 1000f:0.0} ms (death {_deathMs:0.0}), Update end to now {(now - _updEnd) * 1000f:0.0} ms");
                 _gcBefore = gc; _lastRealTime = now;
             }
             var sim = c.World.Sim;
