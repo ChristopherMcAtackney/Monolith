@@ -181,3 +181,97 @@ relay), Insane only "at most 4 on the player" (Insane has no attacker cap): both
 - The AI flying the player gets few kills (0 to 5) under the escort plan; the auto-play shows the beats fire and resolve, not the balance.
 - The hidden bonus ("without the Lector finding you") fails in every auto-play: the AI never goes dark. Expected; the real cabin makes it
   possible by hand.
+
+## Round 3: the escort at every level (builder, 2026-10-25)
+
+Worktree `escort-wt` from main at 9deb7eb. The brief: the escort's auto-play passed on Medium and failed on the other levels: "Lantern here" at Very easy and
+Easy, 11 Earth fighters on the player at Hard. Its expectations were written for Medium. For each failure: is the expectation wrong (a), or is the mission or the AI
+at fault (b)? Measured, not judged: every number below is the AI flying an invulnerable player, and the sweeps are **100 seeds a level** with `-mnSeed n` (30 for the first
+look, `captures/mission-system/r3/base30`; 100 for before and after, `base100` and `final100`), because one run a level would have said "Medium is fine". New tools:
+`tools\mission_sweep.ps1` runs a mission at every level and seed in parallel (500 escort runs in 100 s) and `tools\mission_sweep_summary.py` prints, per level, the passes,
+the length, the longest quiet, the most hostiles on the player, whether the Tamsin lives, and each failed check with its seeds.
+
+### 1. "Lantern here" at Very easy and Easy: (a), an expectation that was wrong, and wrong at Medium too
+The relay is written to answer a loss: Lantern jumps in 6 s after Sable 2 dies, or when the Tamsin falls below 45%; Wick 8 s after Lantern is lost. The briefing says
+so ("on call, one after the other, if you lose ground") and so does the design (section 7: allied ships arrive in a relay as earlier ones die). Over the first 150
+runs Lantern came in exactly the runs where one trigger held, and in none of the others:
+
+| 30 runs a level | Sable 2 lost | the Tamsin's lowest hull | Lantern came |
+|---|---|---|---|
+| Very easy | 0 | 49 to 65% (never under 45) | 0 |
+| Easy | 0 | 35 to 56% | 17: every run that dipped under 45% (34.7 to 44.7), none of the 13 that stayed over (45.1 to 56.3) |
+| Medium | 1 | 13 to 50% | 26: the same split (the 4 without: 45.1, 46.4, 47.8, 47.9%) |
+| Hard | 27 | 0 to 48% | 30 |
+| Insane | 30 | 0 to 36% | 30 |
+
+So "Lantern here" was never a beat of every run, and Medium passed it only because seed 0 happens to hurt the freighter (over 100 seeds Medium has no Lantern in 10).
+A per-level list would not have fixed it: Medium is flaky too. Nor is it a broken mission for an Easy player: when a trigger holds the relay comes at Very easy and Easy.
+Proof: the same file with the Tamsin starting at 40% (the second trigger true at once) gives Lantern in 10 of 10 runs at Very easy and 10 of 10 at Easy
+(`captures/mission-system/r3/relay_tamsin`); the Sable 2 trigger is exercised in 58 of the 150 runs, Lantern exactly 6.0 s after in 53 of them and sooner in the other
+five (the Tamsin's hull got there first). (A try with Sable 2 at 2% hull did not kill it at Very easy or Easy: the wingmen's mercy, `wingDamageScale` 0.25 and 0.5, and
+their courage keep it alive.)
+
+**Fix, in the check:** `autoplay.expect.firedIf` (new, `MissionFile.FiredIfDef`; in the Mission README): `{ "if": "Sable 2 lost", "then": "Lantern here", "within": 10 }`
+means "if `if` fired and the mission ran on `within` seconds more, `then` must have fired by then; if it never fired nothing is owed". The escort now says that for
+Sable 2's loss, for the Tamsin falling under 45% (a new bookkeeping event, "Tamsin low", with no actions) and Lantern, and for Lantern's loss (another, "Lantern lost") and
+Wick. The relay's wiring is asserted at every level and every seed, and "Lantern here" is out of `fired`. The self-test has two new checks (the rule and its edge cases,
+an unknown event refused).
+
+### 2. 11 Earth fighters on the player at Hard: (b), the mission's ending, not the fight
+Hard's cap on the player is 5 (`maxPlayerAttackers` `[2, 3, 4, 5, 99]`). Splitting every run's pacing at the moment the Tamsin is gone: **before** it jumps or dies, the most on
+the player was at most 5 in all 30 Hard runs (Easy 3, Medium 4, as the caps say); the 10, 11 and 12 (11 of 30 runs; Insane 12 to 15 in 9 runs; one Very easy run 3) all came in
+the seconds after it had jumped, in the four seconds before "Tamsin away" ends the mission. The cause: with the Tamsin gone, every drone that was on it has to choose again, nothing
+else of ours is left in the fight (in the Hard run looked at, Sable 2 and both relay flights were dead by then), and the AI's cap gives way when the player is the only target there is
+(`AiPilot.BestTarget`: the nearest other enemy anywhere before one too many on the player, else the capped player). Fifteen drones, one target. That is real, if brief: a human
+playing Hard sees the freighter jump and eleven fighters turn on them.
+**Fix, mission data:** a new event, "Earth breaks off", on the Tamsin having departed: every Earth wing departs (`jumpAfter` 3, as the Oculus' "Earth withdraws"; wings not yet in are
+stood down), so the drones jump out as the freighter does and the pile-on never forms. Nothing before the jump changes: 149 of the 150 runs of the first sweep are identical to the
+hundredth of a second, event by event, up to the Tamsin leaving (the 150th is the Thurible fix below), and every run ends at the same time. `maxEngagingMax` is now per level,
+`[2, 3, 4, 5, 99]` (the AI's own cap, as the Oculus), not Medium's 4 for every level. Hard's most on the player: 13 -> 5.
+
+### 3. Found on the way
+- **No bombers in 3 of 100 Medium runs (b), fixed.** The Thurible bombers were meant to be a beat of every crossing (the Lector throws them in when the Tamsin reaches the jump point,
+  "Holding"). When Earth's last wing was already in, "Spooling" fired in the same tick the Tamsin arrived and "Holding" (which says "and not Spooling") never did, so a Medium run could cross
+  without a bomber. The cue is now Holding or Spooling. Thurible in: Medium 97 -> 100 of 100 (they then have the 20 s of the spool).
+- **Very easy, one run in 100: 3 on the player against a cap of 2.** Not the AI's cap, which held at 2: an Acolyte heavy escorting the bombers had dropped the player as its target (its pilot's
+  target was none), but `ShipState.Target` is only written, never cleared, when a pilot has no target (`TargetingSystem`: a `TargetShip` of 0 means "leave it"), and the pacing counts
+  `Ship.Target`. A lag in a measure, and a stale target that the weapons read too. Left as it is: clearing it is the targeting and AI builders' call and moves every AI number measured so far.
+- **Quiet stretches of 31, 35 and 38 s (Medium, 3 runs in 100) and 36 s (Very easy, 1), left.** All at 80 to 130 s, between the first wave's last stragglers (1 to 3 ships, 2.5 to 7.6 km from
+  the player, who is guarding the freighter while they fight Sable 2 far off) and the next arrival. The lever is Lauds' time-out (70 s from Matins; 55 s would end these by about 113 s but
+  moves everything after it).
+- **The freighter on Hard: lost in 18 of 100 runs** (at 252 s on average; Medium 1 of 100, Very easy and Easy 0, Insane 92). Always to fighter guns (100% of the hull damage) with the Lector at 100%:
+  the Compline heavies and the Lauds and Prime attackers that the AI escort (2.0 kills a run on Hard) does not stop; 5 of the 82 survivors end under 5% hull. Not changed: it is a balance call and
+  these are only an AI pilot's numbers. The lever is the Tamsin's `hullScale` (6 now), measured over 100 seeds: 7 gives Hard 90 of 100, 8 gives 98 of 100 (Medium 100 of 100 either way, its lowest hull
+  mean 38% and 40% against 35%); the cost is that the freighter reads as tougher, and at 8 it lives through two bomber waves (its comment says it should not).
+- **Insane** (not tuned): 8 of 100. The Tamsin is lost in 92 (at 243 s on average), so "Spooling" is reached in 34 and the bombers in 40; no cap on the player, 3 to 10 attackers.
+
+### The escort by level (100 seeds each, the AI flying an invulnerable player; `captures/mission-system/r3/base100` and `final100`)
+| Level | passes before -> after | length mean (min to max) | longest quiet mean (max) | most on the player mean (max) | the Tamsin lives | Lantern / Wick came |
+|---|---|---|---|---|---|---|
+| Very easy | 0 -> **98** | 301 s (291 to 315) | 2.7 s (36) | 2.0 (3) | 100 of 100 | 0 / 0 |
+| Easy | 53 -> **100** | 296 s (291 to 315) | 3.0 s (24) | 2.8 (3) | 100 of 100 | 53 / 0 |
+| Medium | 83 -> **96** | 295 s (278 to 315) | 4.4 s (38) | 2.8 (4) | 99 of 100 | 90 / 0 |
+| Hard | 19 -> **82** | 296 s (225 to 315) | 1.3 s (17) | 4.3 (5; was 13) | 82 of 100 | 100 / 52 |
+| Insane | 0 -> 8 | 247 s (199 to 315) | 0.3 s (4) | 4.5 (10; no cap) | 8 of 100 | 100 / 94 |
+
+What still fails: Very easy 2 (one 36 s quiet, one 3 on the player); Medium 4 (three quiet stretches of 31 to 38 s, one lost freighter); Hard 18 and Insane 92 (the freighter lost).
+`tools\mission.ps1 -Exe` at seed 0: the escort passes at Very easy (305.6 s, 2 on the player), Easy (290.8 s, 3), Medium (296.3 s, 3) and Hard (315.3 s, 5), the Tamsin jumping out in all four;
+Insane loses it at 268.6 s.
+
+### Checks (this worktree's build)
+`tools\mission.ps1 -Exe` at Very easy, Easy, Medium and Hard, all four missions, seed 0: **16 of 16 PASS**. Nothing that passed on main fails, and every number but the escort's is the
+one the Oculus round 2 recorded (Very easy / Easy / Medium / Hard: oort 653.8 / 630.2 / 671.4 / 692.2 s; dogfight 427.4 / 381.9 / 410.6 s, and on Hard the Mercy lost at 459.5 s, as before;
+cabin 120.2 / 140.6 / 142.5 / 127.6 s). The escort, which failed on main at Very easy and Easy ("Lantern here") and at Hard (11 on the player), passes. Mission self-test **96 of 96**
+(94 + the 2 above). Port check SAME at Very easy, Easy, Medium and Hard (900 s each, every ship to the bit, timelines identical). AI 39 of 39, combat 115 of 115, HUD 125 of 125, start screen
+109 of 109, cabin 75 of 75, audio PASS (150 checks; no radio line added, no voice made).
+
+### Known gaps
+- The Hard freighter (18 of 100) and the 31 to 38 s quiet stretches (4 of 400 runs at the four easier levels) are balance, with the levers above; the stale `ShipState.Target` is the AI builders'.
+- The Lector does not leave with Earth's fighters; the mission ends four seconds after the jump anyway.
+- A player who goes dark never meets Compline: the auto-play's stub is always powered, and `-mnGoDark` (the unseen path) was not swept here.
+- Not tested by hand. Every line is still a draft pending the user's approval; no line was added.
+
+### How to run
+- Sweep: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\mission_sweep.ps1 -Exe <exe> -Mission escort -Levels "Very easy,Easy,Medium,Hard,Insane" -Seeds 100 -Out dir`
+  (`-Mission` takes a path, so an edited file can be tried without a build; `python -I tools\mission_sweep_summary.py dir --events "Lantern here,Wick here"` counts the runs that fired each event).
+- Play: `Playtest\Monolith_2026-10-25_escort\Play.bat escort hard` (ESCORT.txt says what to look for).
