@@ -124,3 +124,20 @@ log: `python -I tools/ship/make_comets_tour.py <player.log>`; sheets `python -I 
   LayeredLit has no object-space triplanar (`objectSpaceMapping` is false in its data code), so the models carry box-projected UVs.
 - Unity's SetColor on a LayeredLit `_BaseColor0..2` is the multiplier used for the tints, raw (not converted).
 - Displacing along the shape's normal by more than the local radius of curvature makes spikes; the terraces therefore take a height and a width in metres instead of an amplitude.
+
+## Round 1 verdict (lead, 2026-10-25)
+Blind round `comets_r1`: three pairs, three separate critics, each pair one of our comets (cropped to the body, greyscale) against a real
+spacecraft photo (greyscale as they are): big_2km_b against Rosetta's 67P NavCam mosaic of 19 September 2014, pass_50m_b against 67P from
+19 km on 5 October 2014, mid_150m against Stardust's Wild 2. References in `reference/comets/` (critics only). Keys: `gauntlet/keys/comets_r1.json`.
+
+**Lost 3 of 3, every critic "certain".** The giveaways agree:
+- Lighting: soft, low-contrast, flat; the real nuclei have one hard sun, bright sunlit faces and black cast shadows with a clean terminator.
+- Surface: "one uniform fine noise texture", "a repetitive field of pitted, blobby cavities"; the real ones have multi-scale fractured
+  geometry: sharp cliffs, talus and boulder fields, smooth dust-mantled plains.
+- Context: stars and the Milky Way behind a sunlit body (no real exposure records both), and the scattered small rocks. That one is the sky's
+  game-wide choice (The Expanse shows stars too), not the comets'.
+- Pair 3: a bright speck in the pit's bowl read as a "bullseye".
+
+Read as pointers, not prescriptions: round 2's biggest lever is the light (contrast and a hard terminator on the rock), then large-scale
+fracture geometry over fine noise. Note: in the real Oort Cloud the Sun is only a bright star; the mission's Sun is an artistic choice, and
+the references were all taken within a few AU of it.
