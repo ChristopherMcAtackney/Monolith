@@ -76,9 +76,9 @@
       "ships": [ { "class": "earth_bomber", "ai": "drone_bomber", "role": "bomber", "count": 2, "ammo": { "torpedo_heavy": 1 } } ],
       "goal": { "order": "bomb", "target": "Tamsin" },
       "arrival": { "cue": { "or": [ { "hull": "Lector", "below": 70 },
-                                    { "and": [ { "event": "Holding" }, { "not": { "destroyed": "Lector" } } ] } ] },
+                                    { "and": [ { "or": [ { "event": "Holding" }, { "event": "Spooling" } ] }, { "not": { "destroyed": "Lector" } } ] } ] },
                    "near": "Lector", "distance": 900, "facing": "Tamsin", "formation": "line", "spacing": [60, 0, 30], "speed": 0.9 },
-      "arrivalWhy": "FS2's 'Slaying Ravana': reinforcements when the big target's hull drops below 70%, then 40% (Incense). Left alone, the Lector still throws these bombers in when the Tamsin reaches the jump point, so the bombers are a beat of every crossing (in its climax), not only of the ones where the escort goes for the corvette" },
+      "arrivalWhy": "FS2's 'Slaying Ravana': reinforcements when the big target's hull drops below 70%, then 40% (Incense). Left alone, the Lector still throws these bombers in when the Tamsin reaches the jump point (Holding, or Spooling when Earth's last wing was already in and the drive spooled at once: 1 Medium run in 30 had no bombers at all before this), so the bombers are a beat of every crossing (in its climax), not only of the ones where the escort goes for the corvette" },
     { "name": "Acolyte", "team": "earth",
       "ships": [ { "class": "earth_heavy", "ai": "drone_heavy", "count": 2 } ],
       "goal": { "order": "guard", "target": "Thurible" },
@@ -151,6 +151,10 @@
     { "name": "Thurible in", "when": { "arrived": "Thurible" }, "do": [ { "do": "radio", "message": "thurible" }, { "do": "radio", "message": "thurible_ours" } ] },
     { "name": "Incense in", "when": { "arrived": "Incense" }, "do": [ { "do": "radio", "message": "incense" } ] },
     { "name": "Tamsin hurt", "when": { "hull": "Tamsin", "below": 40 }, "do": [ { "do": "radio", "message": "tamsin_hurt" } ] },
+    { "name": "Tamsin low", "when": { "hull": "Tamsin", "below": 45 },
+      "about": "No action: it marks the moment the relay's second trigger holds (Lantern's arrival cue says the same), so the auto-play can check that Lantern follows it (autoplay.expect.firedIf)." },
+    { "name": "Lantern lost", "when": { "destroyed": "Lantern" },
+      "about": "No action: the moment Wick's arrival cue starts its eight seconds, for the same check." },
     { "name": "Lantern here", "when": { "arrived": "Lantern", "any": true }, "do": [ { "do": "radio", "message": "lantern" } ] },
     { "name": "Wick here", "when": { "arrived": "Wick", "any": true }, "do": [ { "do": "radio", "message": "wick" } ] },
     { "name": "Sable 2 lost", "when": { "destroyed": "Sable 2" }, "do": [ { "do": "radio", "message": "sable2_lost" } ] },
@@ -176,6 +180,11 @@
           "then": [ { "do": "order", "ship": "<player>", "order": "guard", "target": "Tamsin" } ] },
         { "if": { "and": [ { "arrived": "Lector" }, { "not": { "destroyed": "Lector" } } ] }, "then": [ { "do": "order", "ship": "<player>", "order": "attack", "target": "Lector" } ] },
         { "else": [ { "do": "order", "ship": "<player>", "order": "guard", "target": "Tamsin" } ] } ] } ] },
+    { "name": "Earth breaks off", "when": { "departed": "Tamsin" },
+      "do": [ { "do": "depart", "ship": "Matins", "jumpAfter": 3 }, { "do": "depart", "ship": "Lauds", "jumpAfter": 3 }, { "do": "depart", "ship": "Prime", "jumpAfter": 3 },
+              { "do": "depart", "ship": "Terce", "jumpAfter": 3 }, { "do": "depart", "ship": "Compline", "jumpAfter": 3 }, { "do": "depart", "ship": "Thurible", "jumpAfter": 3 },
+              { "do": "depart", "ship": "Acolyte", "jumpAfter": 3 }, { "do": "depart", "ship": "Incense", "jumpAfter": 3 } ],
+      "whenWhy": "the Tamsin is the only thing Earth came for. With it gone every drone in the fight has no target but the player, and the AI's cap on the player (2, 3, 4, 5 and none by level) gives way when nothing else is left: on Hard 11 fighters turned on the player in the four seconds before 'Tamsin away' (Very easy 3, Insane 15). Earth's ships now jump out as the freighter does (the Oculus withdraws the same way), so the pile-on never forms; nothing before the jump changes, bit for bit" },
     { "name": "Tamsin lost", "when": { "destroyed": "Tamsin" },
       "do": [ { "do": "radio", "message": "lost" }, { "do": "end", "result": "defeat", "text": "TAMSIN LOST" } ] },
     { "name": "Tamsin away", "when": { "departed": "Tamsin", "delay": 4 },
@@ -192,10 +201,13 @@
     "seconds": 900, "difficulty": "Medium", "invulnerable": true,
     "expect": {
       "result": ["victory"],
-      "fired": ["Opening", "Matins in", "Lauds in", "Prime in", "Terce in", "Terce again", "Lector here", "Lector sweeps", "Spotted", "Thurible in", "Lantern here", "Spooling", "Tamsin away"],
+      "fired": ["Opening", "Matins in", "Lauds in", "Prime in", "Terce in", "Terce again", "Lector here", "Lector sweeps", "Spotted", "Thurible in", "Spooling", "Earth breaks off", "Tamsin away"],
+      "firedIf": [ { "if": "Sable 2 lost", "then": "Lantern here", "within": 10 }, { "if": "Tamsin low", "then": "Lantern here", "within": 10 }, { "if": "Lantern lost", "then": "Wick here", "within": 12 } ],
+      "firedIfWhy": "the relay answers a loss, so it is not a beat of every run: over 150 runs Lantern came in exactly those where Sable 2 died or the Tamsin fell below 45% (Very easy 0 of 30, Easy 17, Medium 26, Hard 30, Insane 30), and Wick where Lantern was lost. 'Lantern here' used to be required outright, which Medium met only by its seed 0 happening to hurt the freighter",
       "notFired": ["Tamsin lost"],
-      "order": ["Opening", "Matins in", "Lauds in", "Prime in", "Terce in", "Terce again", "Spooling", "Tamsin away"],
-      "longestQuietMax": 30, "maxEngagingMax": 4, "threatsAvgMin": 1.5
+      "order": ["Opening", "Matins in", "Lauds in", "Prime in", "Terce in", "Terce again", "Spooling", "Earth breaks off", "Tamsin away"],
+      "longestQuietMax": 30, "maxEngagingMax": [2, 3, 4, 5, 99], "threatsAvgMin": 1.5,
+      "maxEngagingMaxWhy": "the AI's own cap on the player by level (Very easy 2, Easy 3, Medium 4, Hard 5, Insane none: ai.json maxPlayerAttackers), as the Oculus; it was Medium's 4 for every level"
     }
   }
 }
