@@ -7,6 +7,9 @@ diaspora, coming home to fight Earth's would-be gods. First person only.
 - The design: `docs/superpowers/specs/2026-10-20-monolith-vertical-slice-design.md`
 - How work is built and judged (builders, blind critics, the bar, agent rules): `gauntlet/PROTOCOL.md`
 - Each piece's history, numbers and known gaps: `gauntlet/pieces/<piece>/history.md`
+- The project plan, Mission Command: https://claude.ai/artifact/Br18Rh9ENujMTiNKPWvUsF (milestones, items per station, decisions, the user's
+  playtest debriefs; all in the artifact's database: read `debriefs` and `decisions` before planning a round, and set item statuses there as work
+  lands). Page source: `gauntlet/command/index.html`
 - The progress board: https://claude.ai/artifact/THAZKCkV2CwctB8FSAks7H (its data lives in the artifact's database)
 - Building, running, captures and every command-line flag: `tools/PIPELINE.md`; the code's layout: `docs/architecture/README.md`
 - The mission format: `Game/Assets/Monolith/Scripts/Mission/README.md`
